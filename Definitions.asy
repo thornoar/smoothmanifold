@@ -1,5 +1,7 @@
 // This is where all the constants and structures are defined.
 
+
+
 int dummynumber = -100;
 pair dummypair = (dummynumber, dummynumber);
 int prohibitednumber = -200;
