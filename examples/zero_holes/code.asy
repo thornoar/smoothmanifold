@@ -1,5 +1,4 @@
-
-import "Smooth.asy" as smooth;
+import "smoothmanifold.asy" as smooth;
 
 settings.render = 8;
 
