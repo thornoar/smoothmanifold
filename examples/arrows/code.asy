@@ -1,6 +1,6 @@
 import "smoothmanifold.asy" as smooth;
 
-settings.outformat = "pdf";
+// settings.outformat = "pdf";
 
 settings.render = 16;
 
@@ -48,3 +48,5 @@ draw(smp, viewdir = viewdir);
 
 draw_arrow(sm, smp, curve = -.15, L = Label("\(f\)", align = N));
 draw_arrow(sm, smp, ind1 = 0, ind2 = 0, curve = .34, overlap = true, L = "\(\begin{array}{c|c}    \lefteqn{f}\ & \\ & \hspace{-4pt} \lefteqn{U} \end{array}\)");
+
+shipout(prefix = "picture", format = "pdf");
