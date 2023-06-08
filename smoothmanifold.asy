@@ -43,6 +43,29 @@ path[] concave_sample_path = new path[]{
     scale(.3)*shift(-.8,-.8)*((-2,0)..(0,4)..(1.8,2)..(4,0)..(0,-2)..cycle)
 };
 
+path wavypath (real[] nums)
+{
+    if (nums.length == 1) return scale(nums[0])*ucircle;
+
+    pair[] points = sequence(new pair (int i){return nums[i]*dir(-360*(i/nums.length));}, nums.length);
+
+    path get_path (pair[] arr)
+    {
+        if (arr.length == 2) return arr[0]{rotate(-90)*arr[0]}..{rotate(-90)*arr[1]}arr[1];
+
+        pair a = arr.pop();
+
+        return get_path(arr) .. {rotate(-90)*a}a;
+    }
+
+    return get_path(points)..cycle;
+}
+
+real dist (pair a, pair b)
+{
+    return length(b-a);
+}
+
 int[] decompose (int n)
 {
     int[] res;
@@ -354,6 +377,10 @@ path[] tangent_section_ellipse (pair p1, pair p2, pair dir1, pair dir2, pair vie
     path line1 = (p1 - 10*dir1) -- (p1 + 10*dir1);
     path line2 = (p2 - 10*dir2) -- (p2 + 10*dir2);
 
+    real cang = (cang1+cang2)/2;
+
+    if (l*l*.25 - cang^2 * h^2 / (1 - cang^2) < 0) return new path[]{p1--p2};
+
     pair pos = ((naive || defaultUBS) && !(grade(p1, p2, dir1, dir2) < defaultGLB)) ? locate_ellipse_search(l, h, cang1, cang2) : locate_ellipse_symmetric(l, h, (cang1+cang2)/2);
 
     real c = pos.x;
@@ -578,13 +605,14 @@ int defaultSN = 7;
 real defaultSR = .8;
 int defaultSP = 50;
 int defaultNN = 2;
-real defaultOL = .06;
+real defaultOL = .015;
+real defaultOLW = 4;
 real defaultATM = .04;
 real defaultTAVAN = 25;
 real defaultTARN = 15;
 pen defaultSmP = lightgrey;
 pen defaultSbP = grey;
-pen defaultSmSP = currentpen+linewidth(.3);
+pen defaultSmSP = currentpen+linewidth(.5);
 real defaultSmM = .5;
 real defaultSmAR = .1;
 real defaultSmVS = .2;
@@ -706,7 +734,7 @@ struct subset
         this.labelalign = labelalign;
     }
 
-    subset set_label (string label, pair labeldir = this.labeldir)
+    subset set_label (string label = this.label, pair labeldir = this.labeldir)
     {
         this.label = label;
         this.labeldir = labeldir;
@@ -726,6 +754,8 @@ struct subset
         this.contour = srap(scale, rotate, point)*shift(shift)*this.contour;
 
         this.center = srap(scale, rotate, point)*shift(shift)*this.center;
+
+        this.labeldir = rotate(rotate)*this.labeldir;
         
         return this;
     }
@@ -774,6 +804,12 @@ struct smooth
         this.label = label;
         this.labeldir = labeldir;
         
+        return this;
+    }
+    smooth set_subset_label (int ind = 0, string label = this.subsets[ind].label, pair labeldir = this.subsets[ind].labeldir)
+    {
+        this.subsets[ind].set_label(label, labeldir);
+
         return this;
     }
     real get_ratio_y_point (real y)
@@ -1399,7 +1435,7 @@ void draw_vertical_sections (picture pic, path[] g, real x, real ignore, pair vi
 
 void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+opacity(.5), pair viewdir = (0,0), string mode = defaultSmMode, bool explain = defaultSmE, bool drawdashes = defaultSmDD, real margin = defaultSmM)
 {
-    viewdir = s.scale*defaultSmVS*viewdir;
+    viewdir = defaultSmVS*viewdir;
 
     xaxis(min(s.contour).x-margin, max(s.contour).x+margin, invisible);
     yaxis(min(s.contour).y-margin, max(s.contour).y+margin, invisible);
@@ -1409,7 +1445,6 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
     }, s.holes.length));
 
     filldraw(pic = pic, contour, fillpen = smoothpen, drawpen = contourpen);
-
 
     if(s.label != "") label(s.label, polar_intersection(s.contour, s.center, s.labeldir), align = (s.labelalign == dummypair) ? rotate(90)*dir(s.contour, polar_intersection_time(s.contour, s.center, s.labeldir)) : s.labelalign);
 
@@ -1543,7 +1578,7 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
     }
 }
 
-void draw_arrow (picture pic = currentpicture, smooth s1, smooth s2, int ind1 = -1, int ind2 = -1, Label L = "", pen p = currentpen, real curve = 0, arrowbar arrow = Arrow(SimpleHead), bool overlap = false, real timemargin = defaultATM)
+void draw_arrow (picture pic = currentpicture, smooth s1, smooth s2, int ind1 = -1, int ind2 = -1, Label L = "", pen p = currentpen, pen ovpen1 = defaultSmP, pen ovpen2 = defaultSmP, pen bgpen = white, real curve = 0, arrowbar arrow = Arrow(SimpleHead), bool overlap = false, real timemargin = defaultATM)
 {
     path g1 = (ind1 == -1) ? s1.contour : s1.subsets[ind1].contour;
     path g2 = (ind2 == -1) ? s2.contour : s2.subsets[ind2].contour;
@@ -1560,46 +1595,81 @@ void draw_arrow (picture pic = currentpicture, smooth s1, smooth s2, int ind1 = 
 
     if(overlap && intersect1.length > 0)
     {
-        void draw_gap(path curpath)
+        real ovlength = (arclength(s1.contour)+arclength(s2.contour))/2*defaultOL;
+
+        path[] get_paths (path[] curpaths, int orient)
         {
-            real ovtime = intersect(gs, curpath)[1];
+            path[] res = new path[];
+            
+            for (int j = 0; j < curpaths.length; ++j)
+            {
+                path curpath = curpaths[j];
 
-            real t1 = arctime(curpath, sub_arclength(curpath, 0, ovtime - defaultOL/2));
-            real t2 = arctime(curpath, sub_arclength(curpath, 0, ovtime + defaultOL/2));
+                real[][] ovtimes = intersections(gs, curpath);
 
-            draw(pic, subpath(curpath, t1, t2), white+(linewidth(p)+.3));
+                for (int i = 0; i < ovtimes.length; ++i)
+                {
+                    real ovtime = ovtimes[i][1];
+
+                    int sign = (-1)^(i + ovtimes.length + 1 + orient);
+
+                    real sang = abs(cross(dir(curpath, ovtime), dir(gs, intersect(gs, curpath)[0])));
+
+                    if(sang == 0) continue;
+
+                    real t1 = arctime(curpath, sub_arclength(curpath, 0, ovtime) - sign*ovlength/sang/2);
+                    real t2 = arctime(curpath, sub_arclength(curpath, 0, ovtime) + sign*ovlength/sang/2);
+
+                    res.push(subpath(curpath, t1, t2));
+                }
+            }
+
+            return res;
         }
 
-        for (int i = 0; i < s1.subsets.length; ++i)
+        void fill_overlap (path p1, path p2, pen ovpen, bool begin = false, bool end = false)
         {
-            if (i == ind1) continue;
+            real curvep1 = curve * (dist(point(p1, 0), point(p2, 0)) / dist(point(gs, 0), point(gs, length(gs))));
+            real curvep2 = curve * (dist(point(p1, length(p1)), point(p2, length(p2))) / dist(point(gs, 0), point(gs, length(gs))));
 
-            path curpath = s1.subsets[i].contour;
+            path fillpath = reverse(p1)--curved_path(point(p1,0), point(p2,0), curve = curvep1)--p2--curved_path(point(p2, length(p2)), point(p1, length(p1)), curve = -curvep2)--cycle;
 
-            if (intersect(gs, curpath).length == 0) continue;
+            fill(pic = pic, fillpath, ovpen);
 
-            draw_gap(curpath);
+            if(!begin) draw(p1, linewidth(p)+.5 + bgpen);
+            if(!end) draw(p2, linewidth(p)+.5 + bgpen);
         }
 
-        for (int i = 0; i < s2.subsets.length; ++i)
+        if (ind1 > -1)
         {
-            if (i == ind2) continue;
+            path[] contour1 = s1.contour ^^ sequence(new path(int i){return s1.holes[i].contour;}, s1.holes.length) ^^ sequence(new path(int i){return s1.subsets[i].contour;}, s1.subsets.length);
 
-            path curpath = s2.subsets[i].contour;
+            path[] ovpaths1 = new path[];
 
-            if (intersect(gs, curpath).length == 0) continue;
+            ovpaths1.push((point(gs,0)+ovlength/2*(rotate(90)*dir(gs,0)))--(point(gs,0)+ovlength/2*(rotate(-90)*dir(gs,0))));
 
-            draw_gap(curpath);
+            ovpaths1.append(sort(get_paths(contour1, 0), new bool(path a, path b){return (sub_arclength(gs, 0, intersect(a, gs)[1]) < sub_arclength(gs, 0, intersect(b, gs)[1]));}));
+
+            for (int i = 0; i < ovpaths1.length-1; i += 2)
+            {
+                fill_overlap(ovpaths1[i], ovpaths1[i+1], ovpen1, begin = (i == 0));
+            }
         }
 
-        if (intersect(gs, s1.contour).length > 0)
+        if (ind1 > -1)
         {
-            draw_gap(s1.contour);
-        }
+            path[] contour2 = s2.contour ^^ sequence(new path(int i){return s2.holes[i].contour;}, s2.holes.length) ^^ sequence(new path(int i){return s2.subsets[i].contour;}, s2.subsets.length);
 
-        if (intersect(gs, s2.contour).length > 0)
-        {
-            draw_gap(s2.contour);
+            path[] ovpaths2 = new path[];
+
+            ovpaths2.append(sort(get_paths(contour2, 1), new bool(path a, path b){return (sub_arclength(gs, 0, intersect(a, gs)[1]) < sub_arclength(gs, 0, intersect(b, gs)[1]));}));
+
+            ovpaths2.push((point(gs,length(gs))+ovlength/2*(rotate(90)*dir(gs,length(gs))))--(point(gs,length(gs))+ovlength/2*(rotate(-90)*dir(gs,length(gs)))));
+            
+            for (int i = 0; i < ovpaths2.length-1; i += 2)
+            {
+                fill_overlap(ovpaths2[i], ovpaths2[i+1], ovpen2, end = (i == ovpaths2.length-2));
+            }
         }
     }
 
