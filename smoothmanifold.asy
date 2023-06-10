@@ -163,6 +163,11 @@ path cyclic_subpath (path p, real t1, real t2)
     return subpath(p, t1,length(p))--subpath(p, 0, t2);
 }
 
+bool clockwise (path p)
+{
+    return (windingnumber(p, inside(p)) == -1);
+}
+
 struct gauss
 {
     int x;
@@ -276,32 +281,117 @@ path[] combination (path p, path q, int mode)
     return res;
 }
 
-path[] intersection (path p, path q)
+path[] concat (path[][] a)
 {
+    if (a.length == 1) return a[0];
+
+    path[] b = a.pop();
+
+    return concat(concat(a), b);
+}
+
+bool inside_path (path p, path q)
+{
+    return (windingnumber(p, point(q, 0)) == windingnumber(p, inside(p)));
+}
+
+path[] intersection (path p, path q, bool correct = true)
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+
     if (intersect(p, q).length == 0)
     {
-        if (windingnumber(p, point(q,0)) == -1) return new path[]{q};
-        if (windingnumber(q, point(p,0)) == -1) return new path[]{p};
+        if (inside_path(p,q)) return new path[]{q};
+        if (inside_path(q,p)) return new path[]{p};
 
         return new path[];
     }
 
     return combination(p, q, mode = -1);
 }
-path[] union (path p, path q)
+path[] intersection (path[] paths, bool correct = true)
 {
+    if (correct)
+    {
+        for (int i = 0; i < paths.length; ++i)
+        {
+            if (!clockwise(paths[i])) paths[i] = reverse(paths[i]);
+        }
+    }
+
+    if (paths.length == 0) return new path[];
+    if (paths.length == 1) return paths;
+    if (paths.length == 2) return intersection(paths[0], paths[1], correct);
+
+    path p = paths.pop();
+    path[] prev = intersection(paths, correct = false);
+
+    return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
+}
+path[] intersection (bool correct = true ... path[] paths) {return intersection(paths, correct);}
+
+path[] union (path p, path q, bool correct = true)
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+
     if (intersect(p, q).length == 0)
     {
-        if (windingnumber(p, point(q,0)) == -1) return new path[]{p};
-        if (windingnumber(q, point(p,0)) == -1) return new path[]{q};
+        if (inside_path(p,q)) return new path[]{p};
+        if (inside_path(q,p)) return new path[]{q};
 
         return new path[]{p,q};
     }
 
     return combination(p, q, mode = 1);
 }
-path[] difference (path p, path q)
+path[] union (path[] paths, bool correct = true)
 {
+    if (correct)
+    {
+        for (int i = 0; i < paths.length; ++i)
+        {
+            if (!clockwise(paths[i])) paths[i] = reverse(paths[i]);
+        }
+    }
+
+    if (paths.length == 0) return new path[];
+    if (paths.length == 1) return paths;
+    if (paths.length == 2) return union(paths[0], paths[1], correct);
+
+    for (int i = 0; i < paths.length; ++i)
+    {
+        for (int j = i+1; j < paths.length; ++j)
+        {
+            if (intersect(paths[i], paths[j]).length > 0)
+            {
+                paths[i] = union(paths[i], paths[j], correct)[0];
+                paths.delete(j);
+                if (i+1 == paths.length) break;
+                j = i;
+            }
+        }
+    }
+
+    return paths;
+}
+path[] union (bool correct = true ... path[] paths) {return union(paths, correct);}
+
+path[] difference (path p, path q, bool correct = true)
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+
     if (intersect(p, q).length == 0)
     {
         if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
@@ -311,6 +401,20 @@ path[] difference (path p, path q)
     }
 
     return combination(p, reverse(q), mode = -1);
+}
+path[] difference (path[] p, path q, bool correct = true)
+{
+    if (correct)
+    {
+        for (int i = 0; i < p.length; ++i)
+        {
+            if (!clockwise(p[i])) p[i] = reverse(p[i]);
+        }
+
+        if (!clockwise(q)) q = reverse(q);
+    }
+
+    return concat(sequence(new path[] (int i){return difference(p[i], q, correct);}, p.length));
 }
 
 real grade (pair p1, pair p2, pair dir1, pair dir2)
@@ -808,7 +912,7 @@ struct hole
         path pseudocontour = t*contour;
         pair pseudocenter = path_middle(pseudocontour);
 
-        this.contour = (windingnumber(pseudocontour, pseudocenter) > 0) ? reverse(pseudocontour) : pseudocontour;
+        this.contour = (!clockwise(pseudocontour)) ? reverse(pseudocontour) : pseudocontour;
 
         this.center = shift(shift)*center;
 
@@ -887,7 +991,7 @@ struct subset
         path pseudocontour = t*contour;
         pair pseudocenter = path_middle(pseudocontour);
 
-        this.contour = (windingnumber(pseudocontour, pseudocenter) > 0) ? reverse(pseudocontour) : pseudocontour;
+        this.contour = (!clockwise(pseudocontour)) ? reverse(pseudocontour) : pseudocontour;
 
         this.center = shift(shift)*center;
 
@@ -1300,7 +1404,7 @@ struct smooth
 
         pair pseudocenter = path_middle(contour);
 
-        this.contour = shift(shift)*srap(scale, rotate, center)*((windingnumber(contour, pseudocenter) > 0) ? reverse(contour) : contour);
+        this.contour = shift(shift)*srap(scale, rotate, center)*((!clockwise(contour)) ? reverse(contour) : contour);
         this.label = label;
         this.labeldir = labeldir;
         this.labelalign = labelalign;
@@ -1493,14 +1597,51 @@ smooth samplesmooth (int type = 0, int num = 0)
     return smooth();
 }
 
-// smooth nullsmooth = smooth(contour = nullpath)
+smooth[] intersection (smooth sm1, smooth sm2, bool copy = false)
+{
+    if (intersect(sm1.contour, sm2.contour).length == 0) return null;
 
-// smooth[] intersection (smooth sm1, smooth sm2)
-// {
-    
+    path[] contours = intersection(sm1.contour, sm2.contour);
 
-    
-// }
+    hole[] holes = concat(sm1.holes, sm2.holes);
+    subset[] subsets = concat(sm1.subsets, sm2.subsets);
+
+    int[] avholes;
+
+    for (int i = 0; i < holes.length; ++i)
+    {
+        if (intersect(holes[i].contour, (i < sm1.holes.length) ? sm2.contour : sm1.contour).length == 0)
+        {
+            avholes.push(i);
+        }
+        else contours = difference(contours, holes[i].contour);
+    }
+
+    smooth[] res;
+
+    for (int i = 0; i < contours.length; ++i)
+    {
+        int[] curholes;
+        int[] cursubsets;
+
+        for (int j = 0; j < avholes.length; ++j)
+        {
+            if (inside_path(contours[i], holes[avholes[j]].contour)) curholes.push(j);
+        }
+        for (int j = 0; j < subsets.length; ++j)
+        {
+            if (inside_path(contours[i], subsets[j].contour)) cursubsets.push(j);
+        }
+
+        res.push(smooth(
+            contour = contours[i],
+            holes = sequence(new hole (int i){return copy ? holes[curholes[i]].copy() : holes[curholes[i]];}, curholes.length),
+            subsets = sequence(new subset (int i){return copy ? subsets[cursubsets[i]].copy() : subsets[cursubsets[i]];}, cursubsets.length)
+        ));
+    }
+
+    return res;
+}
 
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
 {
