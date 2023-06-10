@@ -1,8 +1,8 @@
-// ------------------------------------------------------------------- //
-// This is module smoothmanifold. First goes a list of (generally) useful
-// path functions.
-// ------------------------------------------------------------------- //
-// keyword: $paths
+// ---------------------------------------------------------------------- //
+// This is module smoothmanifold. First goes a list of (generally) useful //
+// path functions.                                                        //
+// ---------------------------------------------------------------------- //
+// navigation keyword: $paths
 
 real defaultBSP = .0001;
 real defaultNaP = .1;
@@ -60,6 +60,11 @@ path wavypath (real[] nums)
 
     return get_path(points)..cycle;
 }
+
+// int find_index (T[] arr, T a)
+// {
+//     return find(map(new bool (T x){return (x == a);}, arr));
+// }
 
 real dist (pair a, pair b)
 {
@@ -138,17 +143,174 @@ path turn_int (path g, pair a, pair b)
 
     int n = arr[0];
 
-    return subpath(g, n, length(g))..subpath(g, 0, n)..cycle;
+    return subpath(g, n, length(g))--subpath(g, 0, n)--cycle;
 }
 
 path reorient (path g, real time)
 {
-    return subpath(g, time, length(g))..subpath(g, 0, time)..cycle;
+    return subpath(g, time, length(g))--subpath(g, 0, time)--cycle;
 }
 
 path turn (path g, pair a, pair b)
 {
     return reorient(g, polar_intersection_time(g, a, b));
+}
+
+path cyclic_subpath (path p, real t1, real t2)
+{
+    if (t1 <= t2) return subpath(p, t1, t2);
+
+    return subpath(p, t1,length(p))--subpath(p, 0, t2);
+}
+
+struct gauss
+{
+    int x;
+    int y;
+
+    void operator init (int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+gauss operator cast (pair p)
+{
+    return gauss(floor(p.x), floor(p.y));
+}
+pair operator cast (gauss g)
+{
+    return (g.x, g.y);
+}
+
+path[] combination (path p, path q, int mode)
+{
+    if (intersect(p, q).length == 0) return new path[];
+
+    real[][] times = intersections(p, q);
+
+    for (int i = 0; i < times.length; ++i)
+    {
+        pair pdi = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = -1) : dir(p, times[i][0]);
+        pair pdo = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = 1) : dir(p, times[i][0]);
+        pair qdi = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = -1) : dir(q, times[i][1]);
+        pair qdo = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = 1) : dir(q, times[i][1]);
+
+        if (sgn(cross(qdi, pdi))*sgn(cross(pdo, qdo)) >= 0)
+        {
+            times.delete(i);
+            --i;
+        }
+    }
+
+    int n = times.length;
+
+    int[] pinds = sort(sequence(n), new bool (int a, int b){return (times[a][1] <= times[b][1]);});
+    int[] qinds = sort(sequence(n), new bool (int a, int b){return (times[pinds[a]][0] <= times[pinds[b]][0]);});
+
+    path[] res;
+
+    gauss start = (0, qinds[0]);
+
+    gauss[] nextstarts;
+
+    int visited = 0;
+    
+    gauss curind = start;
+    
+    path curpath;
+
+    while (visited < n)
+    {
+        visited += 1;
+
+        bool pway;
+
+        gauss newind;
+
+        pair pdir = (times[curind.x][0] == floor(times[curind.x][0])) ? dir(p, floor(times[curind.x][0]), sign = 1) : dir(p, times[curind.x][0]);
+        pair qdir = (times[curind.x][1] == floor(times[curind.x][1])) ? dir(q, floor(times[curind.x][1]), sign = 1) : dir(q, times[curind.x][1]);
+
+        if(cross(pdir, qdir)*mode < 0) pway = true;
+        else pway = false;
+
+        if(pway)
+        {
+            newind = ((curind.x+1)%n, qinds[(curind.x+1)%n]);
+
+            if ((-(newind.y - curind.y)*windingnumber(q, inside(q)))%n > 1)
+            {
+                nextstarts.insert(i = 0, (pinds[(curind.y+1)%n], (curind.y+1)%n));
+            }
+        }
+        else
+        {
+            newind = (pinds[(curind.y+1)%n], (curind.y+1)%n);
+
+            if ((-(newind.x - curind.x)*windingnumber(p, inside(p)))%n > 1)
+            {
+                nextstarts.insert(i = 0, ((curind.x+1)%n, qinds[(curind.x+1)%n]));
+            }
+        }
+
+        curpath = curpath -- cyclic_subpath(pway ? p : q, times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]);
+
+        if ((pair)newind == (pair)start)
+        {
+            res.push(curpath--cycle);
+            curpath = nullpath;
+
+            if (nextstarts.length == 0) break;
+
+            start = nextstarts.pop();
+
+            curind = start;
+        }
+        else
+        {
+            curind = newind;
+        }
+    }
+
+    return res;
+}
+
+path[] intersection (path p, path q)
+{
+    if (intersect(p, q).length == 0)
+    {
+        if (windingnumber(p, point(q,0)) == -1) return new path[]{q};
+        if (windingnumber(q, point(p,0)) == -1) return new path[]{p};
+
+        return new path[];
+    }
+
+    return combination(p, q, mode = -1);
+}
+path[] union (path p, path q)
+{
+    if (intersect(p, q).length == 0)
+    {
+        if (windingnumber(p, point(q,0)) == -1) return new path[]{p};
+        if (windingnumber(q, point(p,0)) == -1) return new path[]{q};
+
+        return new path[]{p,q};
+    }
+
+    return combination(p, q, mode = 1);
+}
+path[] difference (path p, path q)
+{
+    if (intersect(p, q).length == 0)
+    {
+        if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
+        if (windingnumber(q, point(p,0)) == -1) return new path[];
+
+        return new path[]{p};
+    }
+
+    return combination(p, reverse(q), mode = -1);
 }
 
 real grade (pair p1, pair p2, pair dir1, pair dir2)
@@ -590,9 +752,9 @@ void draw_overlap (picture pic=currentpicture, Label L="", path g, align align =
 }
 
 
-// ----------------------- //
-// Here the definitions start
-// ----------------------- //
+// -------------------------- //
+// Here the definitions start //
+// -------------------------- //
 // keyword: $definitions
 
 
@@ -612,7 +774,7 @@ real defaultTAVAN = 25;
 real defaultTARN = 15;
 pen defaultSmP = lightgrey;
 pen defaultSbP = grey;
-pen defaultSmSP = currentpen+linewidth(.5);
+pen defaultSmSP = currentpen+linewidth(.3);
 real defaultSmM = .5;
 real defaultSmAR = .1;
 real defaultSmVS = .2;
@@ -1331,16 +1493,25 @@ smooth samplesmooth (int type = 0, int num = 0)
     return smooth();
 }
 
+// smooth nullsmooth = smooth(contour = nullpath)
+
+// smooth[] intersection (smooth sm1, smooth sm2)
+// {
+    
+
+    
+// }
+
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
 {
     return smooth(contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle, label = "$\mathrm{R}^" + ((n == -1) ? "n" : (string)n)  + "$", labeldir = (1,1), labelalign = (-1,-1.5), hsectratios = new real[]{.5}, vsectratios = new real[]{.5}, shift = shift, scale = scale, rotate = rotate);
 }
 
 
-// --------------------------------------------------------- //
-// From here the real fun begins. This is the collection of the
-// drawing functions provided by the module.
-// --------------------------------------------------------- //
+// ------------------------------------------------------------ //
+// From here the real fun begins. This is the collection of the //
+// drawing functions provided by the module.                    //
+// ------------------------------------------------------------ //
 // keyword: $smooth
 
 import animate;
@@ -1433,7 +1604,7 @@ void draw_vertical_sections (picture pic, path[] g, real x, real ignore, pair vi
     draw_sections(pic, v_cartsections(g, x, ignore), viewdir, drawdashes, explain, scale, sectionpen, dashpen, "naive");
 }
 
-void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+opacity(.5), pair viewdir = (0,0), string mode = defaultSmMode, bool explain = defaultSmE, bool drawdashes = defaultSmDD, real margin = defaultSmM)
+void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+grey, pair viewdir = (0,0), string mode = defaultSmMode, bool explain = defaultSmE, bool drawdashes = defaultSmDD, real margin = defaultSmM)
 {
     viewdir = defaultSmVS*viewdir;
 
@@ -1516,8 +1687,6 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
             }
             else
             {
-                write("yes");
-
                 if(hl.drawsections_neigh)
                 {   
                     for (int j = 0; j < s.holes.length; ++j)
