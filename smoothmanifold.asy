@@ -11,6 +11,7 @@ real defaultCLB = .0000001;
 real defaultGLB = .01;
 real defaultSGUB = .55;
 real defaultSpCh = .65;
+pen defaultBgC = white;
 
 import math;
 
@@ -168,6 +169,21 @@ bool clockwise (path p)
     return (windingnumber(p, inside(p)) == -1);
 }
 
+bool do_intersect (path p, path q)
+{
+    return (intersect(p, q).length > 0);
+}
+
+bool do_intersect (path p, path[] q)
+{
+    for (int i = 0; i < q.length; ++i)
+    {
+        if (do_intersect(p, q[i])) return true;
+    }
+
+    return false;
+}
+
 struct gauss
 {
     int x;
@@ -191,7 +207,7 @@ pair operator cast (gauss g)
 
 path[] combination (path p, path q, int mode)
 {
-    if (intersect(p, q).length == 0) return new path[];
+    if (!do_intersect(p, q)) return new path[];
 
     real[][] times = intersections(p, q);
 
@@ -292,6 +308,8 @@ path[] concat (path[][] a)
 
 bool inside_path (path p, path q)
 {
+    if (do_intersect(p, q)) return false;
+
     return (windingnumber(p, point(q, 0)) == windingnumber(p, inside(p)));
 }
 
@@ -303,7 +321,7 @@ path[] intersection (path p, path q, bool correct = true)
         if (!clockwise(q)) q = reverse(q);
     }
 
-    if (intersect(p, q).length == 0)
+    if (!do_intersect(p, q))
     {
         if (inside_path(p,q)) return new path[]{q};
         if (inside_path(q,p)) return new path[]{p};
@@ -342,7 +360,7 @@ path[] union (path p, path q, bool correct = true)
         if (!clockwise(q)) q = reverse(q);
     }
 
-    if (intersect(p, q).length == 0)
+    if (!do_intersect(p, q))
     {
         if (inside_path(p,q)) return new path[]{p};
         if (inside_path(q,p)) return new path[]{q};
@@ -370,11 +388,10 @@ path[] union (path[] paths, bool correct = true)
     {
         for (int j = i+1; j < paths.length; ++j)
         {
-            if (intersect(paths[i], paths[j]).length > 0)
+            if (do_intersect(paths[i], paths[j]))
             {
                 paths[i] = union(paths[i], paths[j], correct)[0];
                 paths.delete(j);
-                if (i+1 == paths.length) break;
                 j = i;
             }
         }
@@ -392,7 +409,7 @@ path[] difference (path p, path q, bool correct = true)
         if (!clockwise(q)) q = reverse(q);
     }
 
-    if (intersect(p, q).length == 0)
+    if (!do_intersect(p, q))
     {
         if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
         if (windingnumber(q, point(p,0)) == -1) return new path[];
@@ -599,10 +616,10 @@ pair locate_ellipse_search (real l, real h, real cang1, real cang2)
         real c1 = (r1+l1)/2;
         real c2 = (r2+l2)/2;
 
-        if(intersect(line1, get_ellipse(c1, r2)).length == 0){l1 = c1;}
+        if(!do_intersect(line1, get_ellipse(c1, r2))){l1 = c1;}
         else {r1 = c1;}
 
-        if(intersect(line2, get_ellipse(r1, c2)).length == 0){l2 = c2;}
+        if(!do_intersect(line2, get_ellipse(r1, c2))){l2 = c2;}
         else {r2 = c2;}
     }
 
@@ -848,7 +865,7 @@ path midpath (path g, path h, int n = 20)
     return res .. {(dir(g, reltime(g, 1)) + dir(h, reltime(h, 1)))/2}((point(g, reltime(g, 1)) + point(h, reltime(h, 1)))/2);
 }
 
-void draw_overlap (picture pic=currentpicture, Label L="", path g, align align = NoAlign, pen p = currentpen, arrowbar arrow = None, arrowbar bar = None, margin margin = NoMargin, Label legend = "", marker marker = nomarker, pen fillpen = white+linewidth(8pt))
+void draw_overlap (picture pic=currentpicture, Label L="", path g, align align = NoAlign, pen p = currentpen, arrowbar arrow = None, arrowbar bar = None, margin margin = NoMargin, Label legend = "", marker marker = nomarker, pen fillpen = defaultBgC+linewidth(8pt))
 {
     draw(pic = pic, g = g, align = align, p = fillpen, margin = margin);
 
@@ -864,6 +881,7 @@ void draw_overlap (picture pic=currentpicture, Label L="", path g, align align =
 
 int dummynumber = -100;
 pair dummypair = (dummynumber, dummynumber);
+string dummystring = (string)dummynumber;
 int prohibitednumber = -200;
 real defaultSAB = 220;
 real defaultSAS = 30;
@@ -974,6 +992,16 @@ struct hole
     }
 }
 
+path operator cast (hole h)
+{
+    return h.contour;
+}
+
+path[] operator cast (hole[] h)
+{
+    return sequence(new path (int i){return h[i].contour;}, h.length);
+}
+
 struct subset
 {
     path contour;
@@ -984,7 +1012,7 @@ struct subset
     pair labeldir;
     pair labelalign;
 
-    void operator init (path contour = reverse(unitcircle), pair center = path_middle(contour), string label = "$U$", pair labeldir = E, pair labelalign = dummypair, pair shift = (0,0), real scale = 1, real rotate = 0)
+    void operator init (path contour = reverse(unitcircle), pair center = path_middle(contour), string label = dummystring, pair labeldir = dummypair, pair labelalign = dummypair, pair shift = (0,0), real scale = 1, real rotate = 0)
     {
         transform t = shift(shift)*srap(scale, rotate, center);
 
@@ -995,16 +1023,17 @@ struct subset
 
         this.center = shift(shift)*center;
 
-        this.label = label;
-        this.labeldir = labeldir;
-        this.labelalign = labelalign;
+        this.label = label == dummystring ? "" : label;
+        this.labeldir = labeldir == dummypair ? S : labeldir;
+        this.labelalign = labelalign == dummypair ? rotate(90)*dir(this.contour, polar_intersection_time(this.contour, this.center, this.labeldir)) : labelalign;
     }
 
-    subset set_label (string label = this.label, pair labeldir = this.labeldir)
+    subset set_label (string label = dummystring, pair labeldir = dummypair, pair labelalign = dummypair)
     {
-        this.label = label;
-        this.labeldir = labeldir;
-        
+        this.label = label == dummystring ? this.label : label;
+        this.labeldir = labeldir == dummypair ? this.labeldir : labeldir;
+        this.labelalign = labelalign == dummypair ? rotate(90)*dir(this.contour, polar_intersection_time(this.contour, this.center, this.labeldir)) : labelalign;
+
         return this;
     }
     subset move (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center)
@@ -1030,6 +1059,16 @@ struct subset
     {
         return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign);
     }
+}
+
+path operator cast (subset s)
+{
+    return s.contour;
+}
+
+path[] operator cast (subset[] s)
+{
+    return sequence(new path (int i){return s[i].contour;}, s.length);
 }
 
 struct smooth
@@ -1065,16 +1104,17 @@ struct smooth
         
         return this;
     }
-    smooth set_label (string label = this.label, pair labeldir = this.labeldir)
+    smooth set_label (string label = this.label, pair labeldir = this.labeldir, pair labelalign = dummypair)
     {
-        this.label = label;
-        this.labeldir = labeldir;
-        
+        this.label = label == dummystring ? this.label : label;
+        this.labeldir = labeldir == dummypair ? this.labeldir : labeldir;
+        this.labelalign = labelalign == dummypair ? rotate(90)*dir(this.contour, polar_intersection_time(this.contour, this.center, this.labeldir)) : labelalign;
+
         return this;
     }
-    smooth set_subset_label (int ind = 0, string label = this.subsets[ind].label, pair labeldir = this.subsets[ind].labeldir)
+    smooth set_subset_label (int ind = 0, string label = this.subsets[ind].label, pair labeldir = this.subsets[ind].labeldir, pair labelalign = this.subsets[ind].labelalign)
     {
-        this.subsets[ind].set_label(label, labeldir);
+        this.subsets[ind].set_label(label, labeldir, labelalign);
 
         return this;
     }
@@ -1396,7 +1436,7 @@ struct smooth
         return this;
     }
 
-    void operator init (path contour = reverse(unitcircle), pair center = path_middle(contour), string label = "$M$", pair labeldir = W+N, pair labelalign = dummypair, hole[] holes = {}, subset[] subsets = {}, real[] hsectratios = {}, real[] vsectratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, bool unit = true)
+    void operator init (path contour = reverse(unitcircle), pair center = path_middle(contour), string label = "", pair labeldir = W+N, pair labelalign = dummypair, hole[] holes = {}, subset[] subsets = {}, real[] hsectratios = {}, real[] vsectratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, bool unit = true)
     {
         this.shift = shift;
         this.scale = scale;
@@ -1405,10 +1445,11 @@ struct smooth
         pair pseudocenter = path_middle(contour);
 
         this.contour = shift(shift)*srap(scale, rotate, center)*((!clockwise(contour)) ? reverse(contour) : contour);
+        this.center = shift(shift)*center;
+
         this.label = label;
         this.labeldir = labeldir;
-        this.labelalign = labelalign;
-        this.center = shift(shift)*center;
+        this.labelalign = labelalign == dummypair ? rotate(90)*dir(this.contour, polar_intersection_time(this.contour, this.center, this.labeldir)) : labelalign;
 
         this.holes = new hole[];
 
@@ -1476,17 +1517,13 @@ smooth samplesmooth (int type = 0, int num = 0)
         if(num == 1)
         {
             return smooth(
-                contour = concave_sample_path[0],
-                label = "",
-                labeldir = dir(90)
+                contour = concave_sample_path[0]
             ); 
         }
         if(num == 2)
         {
             return smooth(
                 contour = concave_sample_path[2],
-                label = "$M$",
-                labeldir = dir(100),
                 subsets = new subset[]{
                     subset(
                         contour = concave_sample_path[3],
@@ -1531,8 +1568,7 @@ smooth samplesmooth (int type = 0, int num = 0)
     if(type == 2)
     {
         return smooth(
-            contour = concave_sample_path[4], label = "$N$",
-            labeldir = (-2,8),
+            contour = concave_sample_path[4],
             holes = new hole[]{
                 hole(
                     contour = convex_sample_path[4],
@@ -1563,7 +1599,6 @@ smooth samplesmooth (int type = 0, int num = 0)
     {
         return smooth(
             contour = concave_sample_path[5],
-            label = "",
             holes = new hole[]{
                 hole(
                     contour = convex_sample_path[5],
@@ -1597,47 +1632,106 @@ smooth samplesmooth (int type = 0, int num = 0)
     return smooth();
 }
 
-smooth[] intersection (smooth sm1, smooth sm2, bool copy = false)
+smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true)
 {
-    if (intersect(sm1.contour, sm2.contour).length == 0) return null;
+    if (!do_intersect(sm1.contour, sm2.contour)) return new smooth[];
 
     path[] contours = intersection(sm1.contour, sm2.contour);
 
     hole[] holes = concat(sm1.holes, sm2.holes);
     subset[] subsets = concat(sm1.subsets, sm2.subsets);
 
-    int[] avholes;
+    path[] avholes;
+    int[] hrefs;
+
+    path[] avsubsets;
+    int[] srefs;
+
+    path[] contour1 = sm1.contour ^^ sequence(new path (int i){return sm1.holes[i].contour;}, sm1.holes.length);
+    path[] contour2 = sm2.contour ^^ sequence(new path (int i){return sm2.holes[i].contour;}, sm2.holes.length);
 
     for (int i = 0; i < holes.length; ++i)
     {
-        if (intersect(holes[i].contour, (i < sm1.holes.length) ? sm2.contour : sm1.contour).length == 0)
+        if (!do_intersect(holes[i], (i < sm1.holes.length) ? contour2 : contour1))
         {
-            avholes.push(i);
+            avholes.push(holes[i]);
+            hrefs.push(i);
         }
-        else contours = difference(contours, holes[i].contour);
+        else contours = difference(contours, holes[i]);
+    }
+    for (int i = 0; i < subsets.length; ++i)
+    {
+        if (!do_intersect(subsets[i], (i < sm1.subsets.length) ? contour2 : contour1))
+        {
+            avsubsets.push(subsets[i]);
+            srefs.push(i);
+        }
+    }
+
+    bool[] htaken = array(avholes.length, false);
+
+    for (int i = 0; i < avholes.length; ++i)
+    {
+        if (htaken[i]) continue;
+
+        for (int j = i+1; j < avholes.length; ++j)
+        {
+            if(do_intersect(avholes[i], avholes[j]) && !htaken[j])
+            {
+                avholes[i] = union(avholes[i], avholes[j])[0];
+                htaken[j] = true;
+                hrefs[i] = -1;
+                j = i;
+            }
+        }
+    }
+
+
+    bool[] staken = array(avsubsets.length, false);
+
+    for (int i = 0; i < avsubsets.length; ++i)
+    {
+        if (staken[i]) continue;
+
+        for (int j = i+1; j < avsubsets.length; ++j)
+        {
+            if(do_intersect(avsubsets[i], avsubsets[j]) && !staken[j])
+            {
+                avsubsets[i] = union(avsubsets[i], avsubsets[j])[0];
+                staken[j] = true;
+                srefs[i] = -1;
+                j = i;
+            }
+        }
     }
 
     smooth[] res;
 
     for (int i = 0; i < contours.length; ++i)
     {
-        int[] curholes;
-        int[] cursubsets;
+        smooth cursm = smooth(
+            contour = contours[i],
+            label = (length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+"$\cap$"+sm2.label) : ""
+        );
 
         for (int j = 0; j < avholes.length; ++j)
         {
-            if (inside_path(contours[i], holes[avholes[j]].contour)) curholes.push(j);
+            if (htaken[j]) continue;
+            if (inside_path(contours[i], avholes[j]))
+            {
+                cursm.add_hole((hrefs[j] == -1 || !keepdata) ? hole(contour = avholes[j]) : holes[hrefs[j]]);
+            }
         }
-        for (int j = 0; j < subsets.length; ++j)
+        for (int j = 0; j < avsubsets.length; ++j)
         {
-            if (inside_path(contours[i], subsets[j].contour)) cursubsets.push(j);
+            if (staken[j]) continue;
+            if (inside_path(contours[i], avsubsets[i]))
+            {
+                cursm.add_subset((srefs[j] == -1 || !keepdata) ? subset(contour = avsubsets[j]) : subsets[srefs[j]]);
+            }
         }
 
-        res.push(smooth(
-            contour = contours[i],
-            holes = sequence(new hole (int i){return copy ? holes[curholes[i]].copy() : holes[curholes[i]];}, curholes.length),
-            subsets = sequence(new subset (int i){return copy ? subsets[cursubsets[i]].copy() : subsets[cursubsets[i]];}, cursubsets.length)
-        ));
+        res.push(cursm);
     }
 
     return res;
@@ -1758,7 +1852,7 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
 
     filldraw(pic = pic, contour, fillpen = smoothpen, drawpen = contourpen);
 
-    if(s.label != "") label(s.label, polar_intersection(s.contour, s.center, s.labeldir), align = (s.labelalign == dummypair) ? rotate(90)*dir(s.contour, polar_intersection_time(s.contour, s.center, s.labeldir)) : s.labelalign);
+    if(s.label != "") label(s.label, polar_intersection(s.contour, s.center, s.labeldir), align = s.labelalign);
 
     if (mode == 'free' || mode == 'naive')
     {
@@ -1870,7 +1964,7 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
 
         filldraw(pic = pic, sb.contour, fillpen = subsetpen, drawpen = subsetcontourpen);
 
-        label(pic, sb.label, polar_intersection(sb.contour, sb.center, sb.labeldir), align = (sb.labelalign == dummypair) ? rotate(90)*dir(sb.contour, polar_intersection_time(sb.contour, sb.center, sb.labeldir)) : sb.labelalign);
+        label(pic, sb.label, polar_intersection(sb.contour, sb.center, sb.labeldir), align = sb.labelalign);
 
         if(explain) dot(sb.center, red+3);
     }
@@ -1888,7 +1982,32 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
     }
 }
 
-void draw_arrow (picture pic = currentpicture, smooth s1, smooth s2, int ind1 = -1, int ind2 = -1, Label L = "", pen p = currentpen, pen ovpen1 = defaultSmP, pen ovpen2 = defaultSmP, pen bgpen = white, real curve = 0, arrowbar arrow = Arrow(SimpleHead), bool overlap = false, real timemargin = defaultATM)
+smooth[] draw_intersection (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, pair shift = (0,0), pen ghostpen = mediumgrey, string label = dummystring, pair labeldir = dummypair, pair labelalign = dummypair, pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+grey, pair viewdir = (0,0), string mode = defaultSmMode, bool explain = defaultSmE, bool drawdashes = defaultSmDD, real margin = defaultSmM)
+{
+    smooth smp1 = sm1.copy().move(shift = shift);
+    smooth smp2 = sm2.copy().move(shift = shift);
+    
+    smooth[] res = intersection(smp1, smp2, keepdata);
+
+    if(res.length == 0) return res;
+
+    res[0].set_label(label, labeldir, labelalign);
+
+    smp1.subsets.delete();
+    smp2.subsets.delete();
+
+    draw(pic, smp1, contourpen = ghostpen, smoothpen = defaultBgC, mode = "2d", margin = margin);
+    draw(pic, smp2, contourpen = ghostpen, smoothpen = defaultBgC, mode = "2d", margin = margin);
+
+    for (int i = 0; i < res.length; ++i)
+    {
+        draw(pic, res[i], contourpen = contourpen, smoothpen = smoothpen, subsetcontourpen = subsetcontourpen, subsetpen = subsetpen, sectionpen = sectionpen, dashpen = dashpen, viewdir = viewdir, mode = mode, explain = explain, drawdashes = drawdashes);
+    }
+
+    return res;
+}
+
+void draw_arrow (picture pic = currentpicture, smooth s1, smooth s2, int ind1 = -1, int ind2 = -1, Label L = "", pen p = currentpen, pen ovpen1 = defaultSmP, pen ovpen2 = defaultSmP, pen bgpen = defaultBgC, real curve = 0, arrowbar arrow = Arrow(SimpleHead), bool overlap = false, real timemargin = defaultATM)
 {
     path g1 = (ind1 == -1) ? s1.contour : s1.subsets[ind1].contour;
     path g2 = (ind2 == -1) ? s2.contour : s2.subsets[ind2].contour;
