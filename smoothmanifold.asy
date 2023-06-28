@@ -4,6 +4,8 @@
 // ---------------------------------------------------------------------- //
 // navigation keyword: $paths
 
+a (b = c)
+
 real defaultBSP = .0001;
 real defaultNaP = .1;
 bool defaultUBS = false;
@@ -12,19 +14,18 @@ real defaultGLB = .01;
 real defaultSGUB = .55;
 real defaultSpCh = .65;
 pen defaultBgC = white;
+real defaultRPR = .03;
 
-import math;
+path defaultUC = reverse(unitcircle);
 
-path ucircle = reverse(unitcircle);
-
-path[] convex_sample_path = new path[]{
-    ucircle,
+path[] defaultCVSP = new path[]{
+    defaultUC,
     scale(.4)*shift(-.4,.3)*((-3,0)..(-1,2)..(1.5, 1)..(3,-2.5)..(-1,-2)..cycle),
     scale(.5)*shift(-.8,-.4)*((-1,0)..(0,2.1)..(1.8,-1.5)..cycle),
     rotate(-100)*scale(.29)*shift(1,-1)*((-5,0)..(1,3.5)..(2,-1.9)..(-1,-1.8)..cycle),
     scale(.54)*shift(-.9,.4)*((-1.5,0)..(0,1)..(3,-1)..(-1,-1)..cycle),
     scale(.47)*shift(-.4,.2)*((-2,0)..(-.3, 2)..(0, -2.5)..(-1.3, -1.3).. cycle),
-    (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691)..(-0.996593,0.106021)..controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
+    (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
     (-0.614919,1.31465)..controls (-0.614919,1.31465) and (-0.614919,1.31465)..(-0.614919,1.31465)..controls (-0.614919,1.31465) and (-0.614919,1.31465)..cycle,
     (0.989525,-0.664395)..controls (-0.155497,-1.61858) and (-1.40332,0.329701)..(-0.862301,0.79162)..controls (0.346334,1.82355) and (1.39766,-0.324279)..cycle,
     (0.28979,-0.834028)..controls (0.093337,-0.908653) and (-1.20138,-1.95019)..(-1.15209,0.0777484)..controls (-1.10261,2.11334) and (3.02512,0.204973)..cycle,
@@ -34,11 +35,10 @@ path[] convex_sample_path = new path[]{
     (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle
 };
 
-path[] concave_sample_path = new path[]{
+path[] defaultCCSP = new path[]{
     scale(.2)*shift(0, -1)*((-4.5,1)..(-2.3,7.5)..(2,2.8)..(5.6,1)..(2,-4)..(-3,-2.5)..cycle),
     (0.523035,-1.10261)..controls (-2.62474,-1.37362) and (0.932069,3.11139)..(0.558375,0.388742)..controls (0.508899,0.0282721) and (1.59031,-1.01073)..cycle,
-    rotate(-90)*scale(.7)*shift(-.5, 0)*((-1.5, 0)..(-.7,.7)..(0, .4)..(1.5, 1.3)..(2.4, .3)..(1.3, -1)..(.1, -.8)..(-.7, -.7)..cycle),
-    rotate(-90)*scale(.37)*shift(-3,-2)*((0,0)..(1,2)..(3,5)..(2,-1)..cycle),
+    rotate(-90)*scale(.7)*shift(-.5, 0)*((-1.5, 0)..(-.7,.7)..(0, .4)..(1.5, 1.3)..(2.4, .3)..(1.3, -1)..(.1, -.8)..(-.7, -.7)..cycle), rotate(-90)*scale(.37)*shift(-3,-2)*((0,0)..(1,2)..(3,5)..(2,-1)..cycle),
     scale(.27)*((-5,0)..(-1,2)..(1.5, 5)..(1,-2.5)..(-1,-3)..cycle),
     scale(.23)*shift(1,0)*((-4,1)..(-1,6)..(1,2.5)..(3.5,1)..(2,-3)..(-4.7,-2.8)..cycle),
     scale(.3)*shift(-.8,-.8)*((-2,0)..(0,4)..(1.8,2)..(4,0)..(0,-2)..cycle)
@@ -46,7 +46,7 @@ path[] concave_sample_path = new path[]{
 
 path wavypath (real[] nums)
 {
-    if (nums.length == 1) return scale(nums[0])*ucircle;
+    if (nums.length == 1) return scale(nums[0])*defaultUC;
 
     pair[] points = sequence(new pair (int i){return nums[i]*dir(-360*(i/nums.length));}, nums.length);
 
@@ -60,6 +60,10 @@ path wavypath (real[] nums)
     }
 
     return get_path(points)..cycle;
+}
+path wavypath (... real[] nums)
+{
+    return wavypath(nums = nums);
 }
 
 // int find_index (T[] arr, T a)
@@ -86,7 +90,7 @@ int[] decompose (int n)
     return res;
 }
 
-bool inside(real a, real b, real c)
+bool inside (real a, real b, real c)
 {
     return (a <= c && c <= b);
 }
@@ -205,9 +209,17 @@ pair operator cast (gauss g)
     return (g.x, g.y);
 }
 
-path[] combination (path p, path q, int mode)
+path round_connect (path p, path q)
+{
+    return p -- (point(p, length(p)){dir(p, length(p))} .. {dir(q, 0)}point(q, 0)) -- q;
+}
+
+path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 {
     if (!do_intersect(p, q)) return new path[];
+
+    real proundlength = roundcoeff*arclength(p);
+    real qroundlength = roundcoeff*arclength(q);
 
     real[][] times = intersections(p, q);
 
@@ -275,11 +287,36 @@ path[] combination (path p, path q, int mode)
             }
         }
 
-        curpath = curpath -- cyclic_subpath(pway ? p : q, times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]);
+        path addpath = cyclic_subpath(pway ? p : q, times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]);
+
+        if (!round || curpath == nullpath) curpath = curpath -- addpath;
+        else
+        {
+            path subcurpath = subpath(curpath, 0, arctime(curpath, arclength(curpath)- (pway ? qroundlength : proundlength)));
+
+            path subaddpath = subpath(addpath, arctime(addpath, (pway ? proundlength : qroundlength)), length(addpath));
+
+            curpath = round_connect(subcurpath, subaddpath);
+        }
 
         if ((pair)newind == (pair)start)
         {
-            res.push(curpath--cycle);
+            path finpath;
+
+            if (!round)
+            {
+                finpath = curpath--cycle;
+            }
+            else
+            {
+                real begin = arctime(curpath, (pway ? qroundlength : proundlength));
+                real end = arctime(curpath, arclength(curpath)-(pway ? proundlength : qroundlength));
+
+                finpath = subpath(curpath, begin, end)--(point(curpath, end){dir(curpath, end)}..{dir(curpath, begin)}point(curpath, begin))--cycle;
+
+            }
+
+            res.push(finpath);
             curpath = nullpath;
 
             if (nextstarts.length == 0) break;
@@ -306,14 +343,14 @@ path[] concat (path[][] a)
     return concat(concat(a), b);
 }
 
-bool inside_path (path p, path q)
+bool inside_path (path p, path q, bool checkintersection = true)
 {
-    if (do_intersect(p, q)) return false;
+    if (checkintersection) if(do_intersect(p, q)) return false;
 
     return (windingnumber(p, point(q, 0)) == windingnumber(p, inside(p)));
 }
 
-path[] difference (path p, path q, bool correct = true)
+path[] difference (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -329,9 +366,9 @@ path[] difference (path p, path q, bool correct = true)
         return new path[]{p};
     }
 
-    return combination(p, reverse(q), mode = -1);
+    return combination(p, reverse(q), mode = -1, round = round, roundcoeff = roundcoeff);
 }
-path[] difference (path[] p, path q, bool correct = true)
+path[] difference (path[] p, path q, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -343,10 +380,10 @@ path[] difference (path[] p, path q, bool correct = true)
         if (!clockwise(q)) q = reverse(q);
     }
 
-    return concat(sequence(new path[] (int i){return difference(p[i], q, correct = false);}, p.length));
+    return concat(sequence(new path[] (int i){return difference(p[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, p.length));
 }
 
-path[] intersection (path p, path q, bool correct = true)
+path[] intersection (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -362,9 +399,9 @@ path[] intersection (path p, path q, bool correct = true)
         return new path[];
     }
 
-    return combination(p, q, mode = -1);
+    return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
 }
-path[] intersection (path[] paths, bool correct = true)
+path[] intersection (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -376,16 +413,16 @@ path[] intersection (path[] paths, bool correct = true)
 
     if (paths.length == 0) return new path[];
     if (paths.length == 1) return paths;
-    if (paths.length == 2) return intersection(paths[0], paths[1], correct);
+    if (paths.length == 2) return intersection(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
 
     path p = paths.pop();
-    path[] prev = intersection(paths, correct = false);
+    path[] prev = intersection(paths, correct = false, round = round, roundcoeff = roundcoeff);
 
     return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
 }
-path[] intersection (bool correct = true ... path[] paths) {return intersection(paths, correct);}
+path[] intersection (bool correct = true, bool round = false, real roundcoeff = defaultRPR ... path[] paths) {return intersection(paths, correct, round, roundcoeff);}
 
-path[] intersection (path p, path q, bool correct = true, path[] keyword holes)
+path[] intersection (path p, path q, path[] holes, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -398,19 +435,19 @@ path[] intersection (path p, path q, bool correct = true, path[] keyword holes)
         }
     }
 
-    path[] pcapq = intersection(p, q);
+    path[] pcapq = intersection(p, q, correct = false, round = round, roundcoeff = roundcoeff);
 
     path[][] res;
 
     for (int i = 0; i < holes.length; ++i)
     {
-        res.push(difference(pcapq, holes[i], correct = false));
+        res.push(difference(pcapq, holes[i], correct = false, round = round, roundcoeff = roundcoeff));
     }
 
     return concat(res);
 }
 
-path[] union (path p, path q, bool correct = true)
+path[] union (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -426,9 +463,9 @@ path[] union (path p, path q, bool correct = true)
         return new path[]{p,q};
     }
 
-    return combination(p, q, mode = 1);
+    return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
 }
-path[] union (path[] paths, bool correct = true)
+path[] union (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultRPR)
 {
     if (correct)
     {
@@ -440,7 +477,7 @@ path[] union (path[] paths, bool correct = true)
 
     if (paths.length == 0) return new path[];
     if (paths.length == 1) return paths;
-    if (paths.length == 2) return union(paths[0], paths[1], correct = false);
+    if (paths.length == 2) return union(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
 
     for (int i = 0; i < paths.length; ++i)
     {
@@ -448,7 +485,7 @@ path[] union (path[] paths, bool correct = true)
         {
             if (do_intersect(paths[i], paths[j]))
             {
-                paths[i] = union(paths[i], paths[j], correct = false)[0];
+                paths[i] = union(paths[i], paths[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
                 paths.delete(j);
                 j = i;
             }
@@ -457,7 +494,7 @@ path[] union (path[] paths, bool correct = true)
 
     return paths;
 }
-path[] union (bool correct = true ... path[] paths) {return union(paths, correct);}
+path[] union (bool correct = true, bool round = false, real roundcoeff = defaultRPR ... path[] paths) {return union(paths, correct, round, roundcoeff);}
 
 real grade (pair p1, pair p2, pair dir1, pair dir2)
 {
@@ -1139,7 +1176,7 @@ struct smooth
 
         return this;
     }
-    smooth set_subset_label (int ind = 0, string label = this.subsets[ind].label, pair labeldir = this.subsets[ind].labeldir, pair labelalign = this.subsets[ind].labelalign)
+    smooth set_subset_label (int ind = 0, string label = this.subsets[ind].label, pair labeldir = this.subsets[ind].labeldir, pair labelalign = dummypair)
     {
         this.subsets[ind].set_label(label, labeldir, labelalign);
 
@@ -1307,13 +1344,9 @@ struct smooth
 
         pair defaultdir = (Hp.center == this.center) ? (-1,0) : unit(Hp.center - this.center);
 
-        if(data.length == 0) newdata.push(new real[] {defaultdir.x, defaultdir.y, defaultSAB, defaultSN, defaultSR, defaultSP});
-        else
+        for (int i = 0; i < data.length; ++i)
         {
-            for (int i = 0; i < data.length; ++i)
-            {
-                newdata.push(new real[] {((data[i][0] == dummynumber) ? defaultdir.x : data[i][0]), ((data[i][1] == dummynumber) ? defaultdir.y : data[i][1]), ((data[i][2] == dummynumber || data[i][2] <= 0) ? defaultSAB : data[i][2]), ((data[i][3] == dummynumber || data[i][3] <= 0 || ceil(data[i][3]) != data[i][3]) ? defaultSN : ceil(data[i][3])), ((data[i][4] == dummynumber || data[i][4] <= 0 || data[i][4] > 1) ? defaultSR : data[i][4]), ((data[i][5] == dummynumber || data[i][5] <= 0 || ceil(data[i][5]) != data[i][5]) ? defaultSP : (int)data[i][5])});
-            }
+            newdata.push(new real[] {((data[i][0] == dummynumber) ? (rotate(360*i/data.length)*defaultdir).x : data[i][0]), ((data[i][1] == dummynumber) ? (rotate(360*i/data.length)*defaultdir).y : data[i][1]), ((data[i][2] == dummynumber || data[i][2] <= 0) ? defaultSAB : data[i][2]), ((data[i][3] == dummynumber || data[i][3] <= 0 || ceil(data[i][3]) != data[i][3]) ? defaultSN : ceil(data[i][3])), ((data[i][4] == dummynumber || data[i][4] <= 0 || data[i][4] > 1) ? defaultSR : data[i][4]), ((data[i][5] == dummynumber || data[i][5] <= 0 || ceil(data[i][5]) != data[i][5]) ? defaultSP : (int)data[i][5])});
         }
 
         this.holes.insert(i = ind, hole(
@@ -1537,23 +1570,23 @@ smooth samplesmooth (int type = 0, int num = 0)
         if(num == 0)
         {
             return smooth(
-                contour = convex_sample_path[0],
+                contour = defaultCVSP[0],
                 hsectratios = new real[] {.5}
             );
         }
         if(num == 1)
         {
             return smooth(
-                contour = concave_sample_path[0]
+                contour = defaultCCSP[0]
             ); 
         }
         if(num == 2)
         {
             return smooth(
-                contour = concave_sample_path[2],
+                contour = defaultCCSP[2],
                 subsets = new subset[]{
                     subset(
-                        contour = concave_sample_path[3],
+                        contour = defaultCCSP[3],
                         scale = .48,
                         shift = (.18, -.65),
                         labeldir = dir(140)
@@ -1568,11 +1601,11 @@ smooth samplesmooth (int type = 0, int num = 0)
         if (num == 0)
         {
             return smooth(
-                contour = convex_sample_path[1],
+                contour = defaultCVSP[1],
                 labeldir = (-2,1),
                 holes = new hole[]{
                     hole(
-                        contour = convex_sample_path[2],
+                        contour = defaultCVSP[2],
                         sections = new real[][]{
                             new real[] {dummynumber, dummynumber, 270, dummynumber, .35, dummynumber}
                         },
@@ -1582,7 +1615,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                 },
                 subsets = new subset[] {
                     subset(
-                        contour = convex_sample_path[3],
+                        contour = defaultCVSP[3],
                         labeldir = S,
                         shift = (.45,-.45),
                         scale = .43,
@@ -1595,10 +1628,10 @@ smooth samplesmooth (int type = 0, int num = 0)
     if(type == 2)
     {
         return smooth(
-            contour = concave_sample_path[4],
+            contour = defaultCCSP[4],
             holes = new hole[]{
                 hole(
-                    contour = convex_sample_path[4],
+                    contour = defaultCVSP[4],
                     sections = new real[][]{
                         new real[]{-2,1.5, 60, 3},
                         new real[]{0, -1, 80, 4}
@@ -1610,7 +1643,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                     rotate = 15
                 ),
                 hole(
-                    contour = convex_sample_path[3],
+                    contour = defaultCVSP[3],
                     sections = new real[][]{
                         new real[]{dummynumber, dummynumber, 230, 10}
                     },
@@ -1625,10 +1658,10 @@ smooth samplesmooth (int type = 0, int num = 0)
     if(type == 3)
     {
         return smooth(
-            contour = concave_sample_path[5],
+            contour = defaultCCSP[5],
             holes = new hole[]{
                 hole(
-                    contour = convex_sample_path[5],
+                    contour = defaultCVSP[5],
                     sections = new real[][]{
                         new real[]{3,-1, 140, 7}
                     },
@@ -1643,7 +1676,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                     scale = .25
                 ),
                 hole(
-                    contour = concave_sample_path[6],
+                    contour = defaultCCSP[6],
                     neighnumber = 1,
                     sections = new real[][]{
                         new real[]{-3,-1, 150, 6}
@@ -1659,80 +1692,51 @@ smooth samplesmooth (int type = 0, int num = 0)
     return smooth();
 }
 
-smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool intersectsubsets = true)
+smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool intersectsubsets = true, bool round = true, real roundcoeff = defaultRPR)
 {
-    path[] contours = intersection(sm1.contour, sm2.contour);
+    path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
     
     if (contours.length == 0) return new smooth[];
 
-    path[] contour1 = sm1.contour ^^ sequence(new path (int i){return sm1.holes[i].contour;}, sm1.holes.length);
-    path[] contour2 = sm2.contour ^^ sequence(new path (int i){return sm2.holes[i].contour;}, sm2.holes.length);
+    path[] contour1 = sm1.contour ^^ (path[])sm1.holes;
+    path[] contour2 = sm2.contour ^^ (path[])sm2.holes;
 
-    hole[] holes = concat(sm1.holes, sm2.holes);
-    path[] avholes;
-    int[] hrefs;
+    hole[] trueholes = concat(sm1.holes, sm2.holes);
+    path[] holes = concat(sm1.holes, sm2.holes);
+    bool[] htaken = array(holes.length, false);
+    int[] hrefs = sequence(holes.length);
+    int[] hsmrefs = array(holes.length, -1);
 
     for (int i = 0; i < holes.length; ++i)
     {
-        if (!do_intersect(holes[i], (i < sm1.holes.length) ? contour2 : contour1))
-        {
-            avholes.push(holes[i]);
-            hrefs.push(i);
-        }
-        else contours = difference(contours, holes[i]);
-    }
-
-    bool[] htaken = array(avholes.length, false);
-
-    for (int i = 0; i < avholes.length; ++i)
-    {
         if (htaken[i]) continue;
 
-        for (int j = i+1; j < avholes.length; ++j)
+        for (int j = i+1; j < holes.length; ++j)
         {
-            if(do_intersect(avholes[i], avholes[j]) && !htaken[j])
+            if(do_intersect(holes[i], holes[j]) && !htaken[j])
             {
-                avholes[i] = union(avholes[i], avholes[j])[0];
+                holes[i] = union(holes[i], holes[j], round = round, roundcoeff = roundcoeff)[0];//
                 htaken[j] = true;
                 hrefs[i] = -1;
                 j = i;
+            }
+        }
+
+        if (do_intersect(holes[i], sm1.contour) || do_intersect(holes[i], sm2.contour)) continue;
+
+        for (int j = 0; j < contours.length; ++j)
+        {
+            if (inside_path(contours[j], holes[i]))
+            {
+                hsmrefs[i] = j;
+                break;
             }
         }
     }
 
     subset[] subsets = concat(sm1.subsets, sm2.subsets);
 
-    // bool[] svisited = array(subsets.length, false);
-
-    // path[] avsubsets;
-    // int[] srefs;
-
-    // for (int i = 0; i < subsets.length; ++i)
-    // {
-    //     if (!do_intersect(subsets[i], (i < sm1.subsets.length) ? contour2 : contour1))
-    //     {
-    //         avsubsets.push(subsets[i]);
-    //         srefs.push(i);
-    //     }
-    // }
-
     bool[] staken = array(subsets.length, false);
-
-    // for (int i = 0; i < avsubsets.length; ++i)
-    // {
-    //     if (staken[i]) continue;
-
-    //     for (int j = i+1; j < avsubsets.length; ++j)
-    //     {
-    //         if(do_intersect(avsubsets[i], avsubsets[j]) && !staken[j])
-    //         {
-    //             avsubsets[i] = union(avsubsets[i], avsubsets[j])[0];
-    //             staken[j] = true;
-    //             srefs[i] = -1;
-    //             j = i;
-    //         }
-    //     }
-    // }
 
     smooth[] res;
 
@@ -1743,12 +1747,16 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
             label = (length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+"$\cap$"+sm2.label) : ""
         );
 
-        for (int j = 0; j < avholes.length; ++j)
+        for (int j = 0; j < holes.length; ++j)
         {
             if (htaken[j]) continue;
-            if (inside_path(contours[i], avholes[j]))
+            if (hsmrefs[j] == -1)
             {
-                cursm.add_hole((hrefs[j] == -1 || !keepdata) ? hole(contour = avholes[j]) : holes[hrefs[j]]);
+                cursm.contour = difference(cursm.contour, holes[j], round = round, roundcoeff = roundcoeff)[0];
+            }
+            else
+            {
+                cursm.add_hole((hrefs[j] == -1 || !keepdata) ? hole(contour = holes[j]) : trueholes[hrefs[j]]);
             }
         }
 
@@ -1774,7 +1782,7 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
             }
             else
             {
-                path[] cursbcontours = intersection(subsets[j], contours[i], holes = cursm.holes);
+                path[] cursbcontours = intersection(subsets[j], contours[i], holes = cursm.holes, round = round, roundcoeff = roundcoeff);
 
                 for (int k = 0; k < cursbcontours.length; ++k)
                 {
@@ -1795,7 +1803,7 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
             {
                 for (int k = (j < curboundindex ? curboundindex : 0); k < (j < curboundindex ? cursize : curboundindex); ++k)
                 {
-                    path[] cursbcontours = intersection(cursm.subsets[j], cursm.subsets[k]);
+                    path[] cursbcontours = intersection(cursm.subsets[j], cursm.subsets[k], round = round, roundcoeff = roundcoeff);
 
                     for (int l = 0; l < cursbcontours.length; ++l)
                     {
@@ -1815,19 +1823,26 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
     return res;
 }
 
-// smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
-// {
-//     if (!do_intersect(sm1.contour, sm2.contour) && !inside_path(sm1.contour, sm2.contour) && !inside_path(sm2.contour, sm1.contour)) return new smooth[]{sm1, sm2};
-
-//     path contour = union(sm1.contour, sm2.contour)[0];
-
-//     smooth res = smooth(contour = contour);
-
-//     for (int i = 0; i < sm1.holes.length; ++i)
-//     {
-        
-//     }
-// }
+//smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
+//{
+//    if (!do_intersect(sm1.contour, sm2.contour) && !inside_path(sm1.contour, sm2.contour) && !inside_path(sm2.contour, sm1.contour)) return new smooth[]{sm1, sm2};
+//
+//    path[] union = union(sm1.contour, sm2.contour);
+//
+//    path contour;
+//
+//    for (int i = 0; i < union.length; ++i)
+//    {
+//     if (windingnumber(union[i], inside(union[i])) < 0)
+//    }
+//
+//    smooth res = smooth(contour = contour);
+//
+//    for (int i = 0; i < sm1.holes.length; ++i)
+//    {
+//
+//    }
+//}
 
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
 {
@@ -2088,8 +2103,8 @@ smooth[] draw_intersection (picture pic = currentpicture, smooth sm1, smooth sm2
     smp1.subsets.delete();
     smp2.subsets.delete();
 
-    draw(pic, smp1, contourpen = ghostpen, smoothpen = defaultBgC, mode = "2d", margin = margin);
-    draw(pic, smp2, contourpen = ghostpen, smoothpen = defaultBgC, mode = "2d", margin = margin);
+    draw(pic, smp1, contourpen = ghostpen, smoothpen = invisible, mode = "2d", margin = margin);
+    draw(pic, smp2, contourpen = ghostpen, smoothpen = invisible, mode = "2d", margin = margin);
 
     for (int i = 0; i < res.length; ++i)
     {
