@@ -4,8 +4,6 @@
 // ---------------------------------------------------------------------- //
 // navigation keyword: $paths
 
-a (b = c)
-
 real defaultBSP = .0001;
 real defaultNaP = .1;
 bool defaultUBS = false;
@@ -2216,11 +2214,11 @@ void compile (animation a, int seconds = 5, string format = "gif")
 {
     int frames = a.pictures.length;
 
-    if(format == "gif") a.movie(loops = 0, delay = 1000*seconds/frames);
+    if (format == "gif") a.movie(loops = 0, delay = 1000*seconds/frames);
     else a.pdf(delay = 1000*seconds/frames);
 }
 
-animation transform (smooth sm, string mode = "free", pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+opacity(.5), pair shift = (0,0), real scale = 1, real rotate = 0, bool drawdashes = defaultSmDD, bool explain = defaultSmE, real margin = defaultSmM, pair viewdir = (0,0), int frames = 10)
+animation lin_transform (smooth sm, string mode = "free", pen contourpen = currentpen, pen smoothpen = defaultSmP, pen subsetcontourpen = contourpen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+opacity(.5), pair shift = (0,0), real scale = 1, real rotate = 0, bool drawdashes = defaultSmDD, bool explain = defaultSmE, real margin = defaultSmM, pair viewdir = (0,0), int frames = 10)
 {
     animation a;
 
