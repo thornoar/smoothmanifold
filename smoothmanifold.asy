@@ -14,7 +14,7 @@ real defaultSpCh = .65;
 pen defaultBgC = white;
 real defaultRPR = .03;
 
-path defaultUC = reverse(unitc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 ircle);
+path defaultUC = reverse(unitcircle);
 
 path[] defaultCVSP = new path[]{
     defaultUC,
