@@ -3,7 +3,7 @@
 // path functions.                                                        //
 // ---------------------------------------------------------------------- //
 // navigation keyword: $paths
-//pointless addition
+
 real defaultBSP = .0001;
 real defaultNaP = .1;
 bool defaultUBS = false;
@@ -14,7 +14,7 @@ real defaultSpCh = .65;
 pen defaultBgC = white;
 real defaultRPR = .03;
 
-path defaultUC = reverse(unitcircle);
+path defaultUC = reverse(unitc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 ircle);
 
 path[] defaultCVSP = new path[]{
     defaultUC,
