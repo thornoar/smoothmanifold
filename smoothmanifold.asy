@@ -3,7 +3,7 @@
 // path functions.                                                        //
 // ---------------------------------------------------------------------- //
 // navigation keyword: $paths
-
+//pointless addition
 real defaultBSP = .0001;
 real defaultNaP = .1;
 bool defaultUBS = false;
