@@ -1826,7 +1826,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool unitesubsets 
 
     path[] holes;
     int[] hrefs;
-    bool[] used = new bool[sm2.holes.length];
+    bool[] used = array(value = false, sm2.holes.length);
     
     for (int i = 0; i < sm1.holes.length; ++i)
     {
@@ -1843,6 +1843,24 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool unitesubsets 
         hrefs.append(array(value = -1, diff.length));
     }
 
+    for (int i = 0; i < sm1.holes.length; ++i)
+    {
+        bool used1 = false;
+
+        for (int j = 0; j < sm2.holes.length; ++j)
+        {
+            path[] intersect = intersection(sm1.holes[i], sm2.holes[j]);
+
+            if (intersect.length > 0)
+            {
+                used1 = true;
+                used[j] = true;
+            }
+
+            holes.append(intersect);
+            hrefs.append(array(value = -1, intersect.length));
+        }
+    }
 
     for (int i = 0; i < union.length; ++i)
     {
@@ -1850,7 +1868,11 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool unitesubsets 
         {
             contour = union[i];
         }
-        else 
+        else
+        {
+            holes.push(union[i]);
+            hrefs.push(-1);
+        }
     }
 
     smooth res = smooth(contour = contour);
