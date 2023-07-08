@@ -1816,7 +1816,7 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
     return res;
 }
 
-smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
+smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool unitesubsets = false, bool round = false, real roundcoeff = defaultRPR)
 {
     if (!do_intersect(sm1.contour, sm2.contour) && !inside_path(sm1.contour, sm2.contour) && !inside_path(sm2.contour, sm1.contour)) return new smooth[]{sm1, sm2};
 
@@ -1826,8 +1826,23 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
 
     path[] holes;
     int[] hrefs;
+    bool[] used = new bool[sm2.holes.length];
     
-    
+    for (int i = 0; i < sm1.holes.length; ++i)
+    {
+        if(!do_intersect(sm1.holes[i], sm2.contour)) continue;
+        path[] diff = difference(sm1.holes[i], sm2.contour, correct = false);
+        holes.append(diff);
+        hrefs.append(array(value = -1, diff.length));
+    }
+    for (int i = 0; i < sm2.holes.length; ++i)
+    {
+        if(!do_intersect(sm2.holes[i], sm1.contour)) continue;
+        path[] diff = difference(sm2.holes[i], sm1.contour, correct = false);
+        holes.append(diff);
+        hrefs.append(array(value = -1, diff.length));
+    }
+
 
     for (int i = 0; i < union.length; ++i)
     {
@@ -2073,11 +2088,16 @@ void draw (picture pic = currentpicture, smooth s, pen contourpen = currentpen, 
     {
         subset sb = s.subsets[i];
 
-        filldraw(pic = pic, sb.contour, fillpen = subsetpen, drawpen = subsetcontourpen);
+        fill(pic = pic, sb.contour, subsetpen);
 
         label(pic, sb.label, polar_intersection(sb.contour, sb.center, sb.labeldir), align = sb.labelalign);
 
         if(explain) dot(sb.center, red+3);
+    }
+
+    for (int i = 0; i < s.subsets.length; ++i)
+    {
+        draw(pic = pic, s.subsets[i].contour, subsetcontourpen);
     }
 
     if(explain) draw(pic = pic, s.center -- s.center+unit(viewdir)*s.scale, purple+.5, arrow = Arrow(SimpleHead));
