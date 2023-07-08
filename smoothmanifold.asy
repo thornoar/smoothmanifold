@@ -64,11 +64,6 @@ path wavypath (... real[] nums)
     return wavypath(nums = nums);
 }
 
-// int find_index (T[] arr, T a)
-// {
-//     return find(map(new bool (T x){return (x == a);}, arr));
-// }
-
 real dist (pair a, pair b)
 {
     return length(b-a);
@@ -1821,26 +1816,37 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool inters
     return res;
 }
 
-//smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
-//{
-//    if (!do_intersect(sm1.contour, sm2.contour) && !inside_path(sm1.contour, sm2.contour) && !inside_path(sm2.contour, sm1.contour)) return new smooth[]{sm1, sm2};
-//
-//    path[] union = union(sm1.contour, sm2.contour);
-//
-//    path contour;
-//
-//    for (int i = 0; i < union.length; ++i)
-//    {
-//     if (windingnumber(union[i], inside(union[i])) < 0)
-//    }
-//
-//    smooth res = smooth(contour = contour);
-//
-//    for (int i = 0; i < sm1.holes.length; ++i)
-//    {
-//
-//    }
-//}
+smooth[] union (smooth sm1, smooth sm2, bool keepdata = true)
+{
+    if (!do_intersect(sm1.contour, sm2.contour) && !inside_path(sm1.contour, sm2.contour) && !inside_path(sm2.contour, sm1.contour)) return new smooth[]{sm1, sm2};
+
+    path[] union = union(sm1.contour, sm2.contour);
+
+    path contour;
+
+    path[] holes;
+    int[] hrefs;
+    
+    
+
+    for (int i = 0; i < union.length; ++i)
+    {
+        if (windingnumber(union[i], inside(union[i])) < 0)
+        {
+            contour = union[i];
+        }
+        else 
+    }
+
+    smooth res = smooth(contour = contour);
+
+    for (int i = 0; i < sm1.holes.length; ++i)
+    {
+
+    }
+
+    return new smooth[];
+}
 
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
 {
