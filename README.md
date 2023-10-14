@@ -6,12 +6,17 @@
 
 ## Features
 
-- A wide collection of convenient functions. Examples include `void produce` (an advanced version of `shipout`), `path reorient(path p, real time)` (makes `p` start at time `time`), `path[] combination(path p, path q, ...)` (allows one to take unions, intersections, differences (i.e. set operations) on regions enclosed by `p` and `q`, and return the boundaries of the resulting regions), `path randompath(pair[] controlpoints, ...)` (draws an 'arbitrary' smooth path connecting `controlpoints`) and many more. Many convenient operators are also provided, such as `p - q` for difference, `p & q` for intersection, and `p | q` for union.
+- A wide collection of convenient functions. Examples include:
+    * `void produce` (an advanced version of `shipout`);
+    * `path reorient(path p, real time)` (makes `p` start at time `time`);
+    * `path[] combination(path p, path q, ...)` (allows one to take unions, intersections, differences (i.e. set operations) on regions enclosed by `p` and `q`, and return the boundaries of the resulting regions);
+    * `path randompath(pair[] controlpoints, ...)` (draws an 'arbitrary' smooth path connecting `controlpoints`);
+    ...and many more. Many convenient operators are also provided, such as `p - q` for difference, `p & q` for intersection, and `p | q` for union.
 
 - Three most important custom structures:
-  * `smooth` --- the main class of the module. It has a `contour`, a `label`, and potentially multiple `holes` and `subsets`. It also stores a parameter `viewdir`, which is responsible for the illusion of three-dimensional rotation.
-  * `hole` --- an area cut out of a `smooth` object. Has a `contour` and different `section` parameters, which define the circular cross sections rendered on call of the `draw` function.
-  * `subset` --- an area placed inside a `smooth` object.  Has a `contour` and a `label`.
+    * `smooth` --- the main class of the module. It has a `contour`, a `label`, and potentially multiple `holes` and `subsets`. It also stores a parameter `viewdir`, which is responsible for the illusion of three-dimensional rotation.
+    * `hole` --- an area cut out of a `smooth` object. Has a `contour` and different `section` parameters, which define the circular cross sections rendered on call of the `draw` function.
+    * `subset` --- an area placed inside a `smooth` object.  Has a `contour` and a `label`.
 
 All paths that constitute these custom objects are meant to go __clockwise__, because that is the way they are usually drawn on paper and the way most people usually imagine a cyclic path. But don't worry -- even if you lose track of the orientation of your cyclic path, the constructor will correct it for you.
 
