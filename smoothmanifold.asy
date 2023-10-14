@@ -28,7 +28,7 @@ private string defaultversion = "v3.0.5-alpha";
 
 private real currentSyMaEH = defaultSyMaEH; // [Ma]ximal [E]llipse [H]eight
 private real currentSyMiEH = defaultSyMiEH; // [Mi]nimal [E]llipse [H]eight
-private int currentSyRID = 150; // [R]asterized [I]mage [D]ensity (in dpi)
+private int currentSyRID = 300; // [R]asterized [I]mage [D]ensity (in dpi)
 
 // [Se]ction
 private real defaultSeWT = .65; // [N]ot [T]oo [W]ide
