@@ -2,7 +2,7 @@ import smoothmanifold;
 settings.render = 16;
 
 size(15cm);
-background(paleyellow);
+setproduce(bgpen = paleyellow);
 defaultpen(darkmagenta);
 
 pair viewdir = dir(45);
@@ -23,6 +23,6 @@ void draw ()
 draw();
 produce("picture", "pdf", 1 cm, exit = false);
 erase();
-explain(true);
+smoothdraw(explain = true);
 draw();
 produce("picture (marked)", "pdf", 1 cm);

@@ -2,16 +2,14 @@ import smoothmanifold;
 
 settings.render = 8;
 
-size(20 cm);
-setmargin(1.5 cm);
-background(paleyellow);
-multiproduce(true);
+size(30 cm);
+setproduce(bgpen = paleyellow, margin = 1.5 cm, exit = false);
 
 pair viewdir = dir(40);
 
 smooth sm1 = samplesmooth(3).setlabel("M", dir(140)).view(viewdir);
 smooth sm2 = samplesmooth(2).setlabel("N", dir(-30)).view(viewdir);
-sm2.move(shift = (.1,-1.3), scale = 1.1, rotate = 10);
+sm2.move(shift = (0,-1.5), scale = 1.1, rotate = 10);
 smooth union = union(sm1, sm2, round = false)[0];
 union.setlabel(labeldir = dir(110));
 union.addholesection(0, a(1, -.15, 40, 1));

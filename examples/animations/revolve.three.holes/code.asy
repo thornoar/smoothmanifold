@@ -5,13 +5,11 @@ settings.render = 4;
 import graph;
 
 size(25cm);
-background(paleyellow);
-
-quality(300);
-animationclose(false);
-
-defaultpen(linewidth(2.2));
-sectiondraw(thickness = 1.1);
+setproduce(dpi = 300, bgpen = paleyellow);
+defaultpen(linewidth(2));
+sectiondraw(thickness = 1);
+animationparams(close = false);
+setframe(1.6, 1);
 
 pair xsh = (.03,0);
 pair ysh = (0,.03);
@@ -22,19 +20,23 @@ pair viewdir2 = dir(180);
 pair viewdir3 = dir(90);
 pair viewdir4 = dir(-90);
 
-setframe(1.6, 1);
-
 smooth sm = samplesmooth(3).move(shift = (-.15,0));
 
-int frames = 40;
+int frames = 30;
 
-revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, shift = xsh, back = false, frames = frames);
-revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, shift = ysh-xsh, back = false, frames = 2*frames);
-revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, shift = -2*ysh, back = false, frames = 2*frames);
-revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, shift = -xsh+ysh, back = false, frames = 2*frames);
-revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, shift = xsh, back = false, frames = frames);
+void animate (string mode)
+{
+	smoothdraw(mode = mode);
+	revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, shift = xsh, back = false, frames = frames);
+	revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, shift = ysh-xsh, back = false, frames = 2*frames);
+	revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, shift = -2*ysh, back = false, frames = 2*frames);
+	revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, shift = -xsh+ysh, back = false, frames = 2*frames);
+	revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, shift = xsh, back = false, frames = frames);
+	compile(fps = frames, outprefix = "animation."+mode, outformat = "mp4");
+}
 
-compile(outformat = "mp4", fps = frames);
+animate(mode = "strict");
+animate(mode = "cart");
 
 printtime();
 exit();

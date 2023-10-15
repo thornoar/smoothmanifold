@@ -2,7 +2,7 @@ import smoothmanifold;
 
 size(25 cm);
 setframe(2);
-background(paleyellow);
+setproduce(bgpen = paleyellow);
 
 defaultpen(linewidth(1.2));
 sectiondraw(thickness = .6);

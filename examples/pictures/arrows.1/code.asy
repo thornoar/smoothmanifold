@@ -3,9 +3,8 @@ import smoothmanifold;
 settings.render = 16;
 
 size(25 cm);
-background(paleyellow);
-overlaplength(.1);
-setmargin(2 cm);
+setproduce(bgpen = paleyellow, margin = 2 cm);
+arrowparams(.1);
 
 pair viewdir = dir(30);
 
@@ -43,6 +42,6 @@ void draw ()
 draw();
 produce("picture", "pdf", exit = false);
 erase();
-explain(true);
+smoothdraw(explain = true);
 draw();
 produce("picture (marked)", "pdf");

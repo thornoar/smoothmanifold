@@ -3,9 +3,7 @@ import smoothmanifold;
 settings.render = 8;
 
 size(10cm);
-background(paleyellow);
-setmargin(1 cm);
-multiproduce(true);
+setproduce(bgpen = paleyellow, margin = 1 cm, exit = false);
 
 smooth sm = samplesmooth(3).view(dir(-35));
 

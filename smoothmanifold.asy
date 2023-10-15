@@ -21,14 +21,15 @@ private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
 private real defaultSyRR = .03; // [R]ounded [P]ath [R]atio
 int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
-private bool defaultSyEOP = true; // [E]xit [O]n [P]roduce
 private real defaultSyMaEH = .05; // [Ma]ximal [E]llipse [H]eight
-private real defaultSyMiEH = .001; // [Mi]nimal [E]llipse [H]eight
-private string defaultversion = "v3.0.5-alpha";
+private real defaultSyMiEHR = .0001; // [Mi]nimal [E]llipse [H]eight [R]atio
+private string defaultversion = "v3.5.1-beta";
 
+private bool currentSyEOP = true; // [E]xit [O]n [P]roduce
 private real currentSyMaEH = defaultSyMaEH; // [Ma]ximal [E]llipse [H]eight
-private real currentSyMiEH = defaultSyMiEH; // [Mi]nimal [E]llipse [H]eight
 private int currentSyRID = 300; // [R]asterized [I]mage [D]ensity (in dpi)
+private pen currentSyBG = white; // [B]ack[G]round
+private real currentSyM = 0; // [M]argin
 
 // [Se]ction
 private real defaultSeWT = .65; // [N]ot [T]oo [W]ide
@@ -42,18 +43,12 @@ private real defaultSmNC = .15; // [Ne]igh [C]urve
 private real defaultSmAR = 0.1; // [A]rc [R]atio
 private real defaultSmVA = 15; // [V]iew [A]ngle in degrees
 private real defaultSmEAL = .2; // [E]xplain [A]rrow [L]ength
-private real defaultSmCIR = .05; // [C]art [I]gnore [R]atio
-private real defaultSmCSD = .0505; // [C]art [S]tep [D]istance
+private real defaultSmCEM = .07; // [C]art [E]dge [M]argin
+private real defaultSmCSD = .1; // [C]art [S]tep [D]istance
 private real defaultSmCMLR = .5; // [C]art [M]aximum [L]ength [R]atio
-private real defaultSmSPM = .5; // [S]ubset [P]en [M]ultiplier;
 private real defaultSmSVS = .28; // [S]ubset [V]iew [S]hift
 
-private bool currentSmDS = false; // [Sm]ooth [D]raw [S]hade
-private bool currentSmDD = true; // [Sm]ooth [D]raw [D]ashes
-private string currentSmM = "strict"; // [Sm]ooth [Mode]
-private bool currentSmLI = true; // [L]abel [I]ntersections
-private bool currentSmLU = true; // [L]abel [U]nions
-private real currentSmDO = .8; // [D]rag [O]pacity
+private bool currentSmIL = true; // [I]nfer [L]abels
 private bool currentSmSS = true; // [S]hift [S]ubsets
 
 // [Ar]rows
@@ -61,16 +56,19 @@ private real currentArOL = .065; // [Ar]row [O]verlap [L]ength (see "arrow")
 private real currentArM = currentArOL*.7; // [A]rrow [M]argin (see "arrow")
 
 // [Dr]awing
-private pen defaultDrEP = linewidth(.3);
+private pen defaultDrEP = linewidth(.3); // [E]xplain [P]en
 
-private pen currentDrBG = white; // [B]ack[G]round
-private bool currentDrDC = true; // [Dr]aw [C]ache
-private real currentDrM = 0; // [M]argin
+private string currentDrM = "strict"; // [Sm]ooth [Mode]
+private bool currentDrDC = false; // [Dr]aw [C]ache
 private real currentDrSS = .5; // [S]ection [S]cale
 private pen currentDrST = linewidth(.4); // [S]ection [T]hickness
+private bool currentDrDD = true; // [D]raw [D]ashes
 private real currentDrSS = .8; // [S]hade [S]cale
 private pen currentDrEP = linewidth(2.5); // [E]lement [P]en
-private bool currentDrE = false; // [Sm]ooth [E]xplain
+private bool currentDrE = false; // [E]xplain
+private bool currentDrDS = false; // [D]raw [S]hade
+private real currentDrDO = .8; // [D]rag [O]pacity
+private real currentDrSPM = .2; // [S]ubset [P]en [M]ultiplier;
 
 // [Fr]ame
 private bool currentFrEP = false; // [E]nclose [P]icture
@@ -86,12 +84,11 @@ private string defaultPrEPP = " :: "; // [E]rror [P]ost [P]refix
 private bool defaultPrJBK = true; // [J]ust [B]egan [C]ompiling
 
 private bool currentPrPM = true; // [P]rint [M]essages
-private bool currentPrAE = false; // [A]bort on [E]rror
+private bool currentPrAE = true; // [A]bort on [E]rror
 private int currentPrIL = 0; // The current [M]essage indent [L]evel.
 private int currentPrTS = seconds(); // [T]ime in [S]econds
 private path[] currentPrDP; // [D]ebug [P]aths
 private int currentPrFC = 0; // [F]rame [C]ount
-private bool currentPrMI = false; // [M]essage [I]ndent
 
 // [An]imations
 private int defaultAnFPS = 3; // [S]econds
@@ -359,18 +356,15 @@ void printsuccess ()
 {
 	if (!currentPrPM) return;
 	write("[SUCCESS]");
-	if (currentPrMI && currentPrIL == 0) write();
 }
 void printwarning (string str)
 {
 	if (!currentPrPM) return;
 	write("[WARNING] !");
 	printmessage(str);
-	if (currentPrMI && currentPrIL == 0) write();
 }
 void printfailure (string str)
 {
-	if (!currentPrPM) return;
 	write("[FAILURE] !");
 	printmessage(str);
 	if (currentPrAE)
@@ -378,7 +372,6 @@ void printfailure (string str)
 		write("Aborting...", suffix = none);
 		exit();
 	}
-	if (currentPrMI && currentPrIL == 0) write();
 }
 void printstarted ()
 {
@@ -393,7 +386,6 @@ void printfinished ()
 	string res = copychar(defaultPrMP, currentPrIL) + defaultPrMPP + "Finished.";
 	while (length(res) < defaultPrML-9) res += " ";
 	write(res + "^^^^^^^^^");
-	if (currentPrMI && currentPrIL == 0) write();
 }
 void printtime ()
 {
@@ -419,6 +411,26 @@ bool checksection (real[] section)
 
 // -- User setting functions -- //
 
+void printprogress (bool val) { currentPrPM = val; }
+void setproduce (int dpi = currentSyRID, pen bgpen = currentSyBG, real margin = currentSyM, bool exit = currentSyEOP)
+{
+	printbeginning("Setting produce parameters...");
+	if (dpi < 10)
+	{
+		printfailure("Could not apply changes: inacceptable quality.");
+		return;
+	}
+	if (margin < 0)
+	{
+		printfailure("Could not set margin: value must be positive.");
+		return;
+	}
+	currentSyRID = dpi;
+	currentSyBG = bgpen;
+	currentSyM = margin;
+	currentSyEOP = exit;
+	printsuccess();
+}
 void setsection (real[] section, int nn, real na)
 {
 	printbeginning("Setting default section parameters...");
@@ -434,48 +446,107 @@ void setsection (real[] section, int nn, real na)
 
 	printsuccess();
 }
-void background (pen bgpen = currentDrBG) { currentDrBG = bgpen; }
-void labelintersections (bool val) { currentSmLI = val; }
-void labelunions (bool val) { currentSmLU = val; }
-void overlaplength (real val, real sc = .7)
+void inferlabels (bool val)
 {
+	printbeginning("Setting labeling patterns...");
+	currentSmIL = val;
+	printsuccess();
+}
+void shiftsubsets (bool val)
+{
+	printbeginning("Setting subset view behavior...");
+	currentSmSS = val;
+	printsuccess();
+}
+void arrowparams (real val, real sc = .7)
+{
+	printbeginning("Setting arrow draw parameters");
 	currentArOL = val;
 	currentArM = currentArOL*sc;
+	if (val > 1) printwarning("Value looks too big: the result may be ugly.");
+	else printsuccess();
 }
-void smoothfill (pen val) { smoothcolor = val; }
-void subsetfill (pen val) { subsetcolor = val; }
-void sectiondraw (bool drawdashes = currentSmDD, bool fill = currentSmDS, real scale = currentDrSS, real thickness = .4, real opacity = 1)
+void sectiondraw (bool drawdashes = currentDrDD, bool fill = currentDrDS, real scale = currentDrSS, real thickness = .4, real opacity = 1)
 {
-	currentSmDS = fill;
-	currentSmDD = drawdashes;
+	printbeginning("Setting cross section draw parameters...");
+	currentDrDS = fill;
+	currentDrDD = drawdashes;
 	currentDrSS = scale;
 	currentDrST = linewidth(thickness) + opacity(opacity);
+	printsuccess();
 }
-void setelement (real thickness = 2, real opacity = 1)
-{ currentDrEP = linewidth(thickness) + opacity(opacity); }
-void mode (string mode) { currentSmM = mode; }
-void cachedraw (bool val) { currentDrDC = val; }
-void printprogress (bool val) { currentPrPM = val; }
-void printabort (bool val) { currentPrAE = val; }
-void debug () { draw(currentPrDP); }
-void inprefix (string str) { currentAnIP = str; }
-void informat (string str) { currentAnIF = str; }
-void outprefix (string str) { currentAnOP = str; }
-void outformat (string str) { currentAnOF = str; }
-void quality (int dpi) { currentSyRID = dpi; }
+void elementdraw (real thickness = 2, real opacity = 1)
+{
+	printbeginning("Setting element draw parameters...");
+	currentDrEP = linewidth(thickness) + opacity(opacity);
+	printsuccess();
+}
+void smoothdraw (string mode = currentDrM, pen smoothfill = smoothcolor, pen subsetfill = subsetcolor, real minscale = currentDrSPM, bool cache = currentDrDC, bool explain = currentDrE, real dragop = currentDrDO)
+{
+	printbeginning("Setting draw parameters...");
+	if (find("strict|free|cart|plain", mode) == -1)
+	{
+		printfailure("Could not set mode: invalid entry provided.");
+		return;
+	}
+	if (!inside(0,1, minscale))
+	{
+		printfailure("Could not apply changes: subset color scale argument out of range: must be between 0 and 1.");
+		return;
+	}
+	if (!inside(0,1, dragop))
+	{
+		printfailure("Could not set drag opacity: entry out of bounds: must be between 0 and 1.");
+		return;
+	}
+	currentDrM = mode;
+	smoothcolor = smoothfill;
+	subsetcolor = subsetfill;
+	currentDrSPM = minscale;
+	currentDrDC = cache;
+	currentDrE = explain;
+	currentDrDO = dragop;
+	printsuccess();
+}
+void abort (bool val)
+{
+	printbeginning("Setting abort patterns...");
+	currentPrAE = val;
+	printsuccess();
+}
+void drawdebug ()
+{
+	printbeginning("Drawing debug paths...");
+	draw(currentPrDP);
+	printsuccess();
+}
+void animationparams (string inprefix = currentAnIP, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
+{
+	printbeginning("Setting animation details...");
+	if (find(inprefix, " ") > -1 || find(outprefix, " ") > -1)
+	{
+		printfailure("Could not apply changes: prefix should not contain spaces.");
+		return;
+	}
+	if (find("eps|jpg|png|pdf", informat) == -1)
+	{ printwarning("You have chosen an unfamiliar input format. Proceed with caution."); }
+	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", informat) == -1)
+	{ printwarning("You have chosen an unfamiliar output format. Proceed with caution."); }
+	
+	currentAnIP = inprefix;
+	currentAnIF = informat;
+	currentAnOP = outprefix;
+	currentAnOF = outformat;
+	currentAnC = close;
+}
 void setframe (real ymax, real ratio = 1.777777777, bool crop = true)
 {
+	printbeginning("Setting frame...");
 	currentFrEP = true;
 	currentFrFC = (ymax*ratio, ymax);
 	if (crop) currentFrCP = true;
+	printsuccess();
 }
-void indent (bool val) { currentPrMI = val; }
-void setmargin (real margin){ currentDrM = margin; }
-void multiproduce (bool val){ defaultSyEOP = !val; }
-void dragopacity (real val){ currentSmDO = val; }
-void explain (bool val){ currentDrE = val; }
-void shiftsubsets (bool val) { currentSmSS = val; }
-void animationclose (bool val) { currentAnC = val; }
 
 // -- Low-level path functions -- //
 
@@ -906,94 +977,60 @@ path randompath (pair[] controlpoints, real angle)
 real sectionissymmetric (pair p1, pair p2, pair dir1, pair dir2)
 { return abs(dot(unit(dir2), unit(p1-p2))-dot(unit(p2-p1), unit(dir1))); }
 
-bool sectionnottoowide (pair p1, pair p2, pair dir1, pair dir2)
+bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 {
-    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) > -defaultSeWT && max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) < defaultSeWT);
+    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
 
-// -- Technical functions to construct [h]orizontal and [v]ertical sections -- //
+// -- Technical functions to construct horizontal and vertical sections -- //
 
-pair[][] hsectionpoints (path[] g, real y, real ignore)
+pair[][] cartsectionpoints (path[] g, real r, bool horiz)
 {
-    real ymin = ypart(min(g));
-    real ymax = ypart(max(g));
-    real ri = ignore * (ymax-ymin);
+    real min = horiz ? ypart(min(g)) : xpart(min(g));
+    real max = horiz ? ypart(max(g)) : xpart(max(g));
     pair[][] res = new pair[][];
-    real ry = ymin*(1-y)+ymax*y;
+    r = min*(1-r)+max*r;
 	
 	for (int i = 0; i < g.length; ++i)
     {
-        real[] times = times(g[i], (0, ry));
-        real curymin = ypart(min(g[i]));
-        real curymax = ypart(max(g[i]));
+        real[] times = horiz ? times(g[i], (0, r)) : times(g[i], r);
         for (int j = 0; j < times.length; ++j)
-        {
-            if(abs(ry - curymin) >= ri && abs(ry - curymax) >= ri)
-            { res.push(new pair[] {point(g[i], times[j]), dir(g[i], times[j])}); }
-        }
+        { res.push(new pair[] {point(g[i], times[j]), dir(g[i], times[j]), (i,0)}); }
     }
     
-	return sort(res, new bool (pair[] i, pair[] j){ return (xpart(i[0]) < xpart(j[0])); });
+	return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
-pair[][] hcartsections (path[] g, real y, real ignore)
-// Marks the places where it is suitable to draw [h]orizontal sections of `g` at height `y`.
+pair[][] cartsections (path[] g, real r, bool horiz)
+// Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
-    int n = floor(y);
-    y = y-n;
-    pair[][] presections = hsectionpoints(g, y, ignore);
-    int[] arr = decompose(n);
-    pair[][] sections = new pair[][];
-    
-	for (int j = 0; j < presections.length; j += 2)
-    {
-        if (!sectionnottoowide(presections[j][0], presections[j+1][0], presections[j+1][1], presections[j][1])) continue;
-        sections.push(new pair[] {presections[j][0], presections[j+1][0], presections[j][1], presections[j+1][1]});
-    }
-    for (int j = 0; j < arr.length; ++j)
-    { if(sections.length > arr[j]){sections[arr[j]].push(-1);} }
-    
-	return sections;
-}
-pair[][] vsectionpoints (path[] g, real x, real ignore)
-{
-    real xmin = xpart(min(g));
-    real xmax = xpart(max(g));
-    real ri = ignore * (xmax-xmin);
-    pair[][] res = new pair[][];
-    real rx = xmin*(1-x)+xmax*x;
-    
-	for (int i = 0; i < g.length; ++i)
-    {
-        real[] times = times(g[i], rx);
-        real curxmin = xpart(min(g[i]));
-        real curxmax = xpart(max(g[i]));
-        for (int j = 0; j < times.length; ++j)
-        {
-            if(abs(rx - curxmin) > ri && abs(rx - curxmax) > ri)
-            { res.push(new pair[] {point(g[i], times[j]), dir(g[i], times[j])}); }
-        }
-    }
-    
-	return sort(res, new bool (pair[] i, pair[] j){ return (ypart(i[0]) < ypart(j[0])); });
-}
-pair[][] vcartsections (path[] g, real x, real ignore)
-// Marks the places where it is suitable to draw [v]ertical sections of `g` at width `x`.
-{
-    int n = floor(x);
-    x = x-n;
-    pair[][] presections = vsectionpoints(g, x, ignore);
-    if(presections.length % 2 == 1) return new pair[][];
-    int[] arr = decompose(n);
-    pair[][] sections = new pair[][];
-    
-	for (int j = 0; j < presections.length; j += 2)
-    {
-        if (!sectionnottoowide(presections[j][0], presections[j+1][0], presections[j][1], presections[j+1][1])) continue;
-        sections.push(new pair[] {presections[j][0], presections[j+1][0], presections[j][1], presections[j+1][1]});
-    }
-    for (int j = 0; j < arr.length; ++j)
-    { if(sections.length > arr[j]){sections[arr[j]].push(-1);} }
-    
+    pair[][] presections = cartsectionpoints(g, r, horiz);
+	if (presections.length % 2 == 1) return new pair[][];
+    pair[][] sections;
+
+	for (int i = 0; i < presections.length; i += 2)
+	{
+		if (sectiontoowide(presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]))
+		{ continue; }
+		if (length(presections[i][0]-presections[i+1][0]) > defaultSmCMLR*(horiz ? xsize(g[0]) : ysize(g[0])))
+		{ continue; }
+	
+		bool exclude = false;
+		for (int j = 0; j < g.length; ++j)
+		{
+			if (j == presections[i][2].x || j == presections[i+1][2].x) continue;
+			if (meet(g[j], curvedpath(presections[i][0], presections[i+1][0], defaultSmNC)) || meet(g[j], curvedpath(presections[i+1][0], presections[i][0], defaultSmNC)))
+			{
+				exclude = true;
+				break;
+			}
+		}
+
+		if (!exclude)
+		{
+			sections.push(new pair[]{presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]});
+		}
+	}
+
 	return sections;
 }
 pair ellipseparams (real l, real h, real cang1, real cang2, bool binsearch)
@@ -1046,8 +1083,8 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir, boo
 	pair hv = (rotate(90)*p1p2) * cross(p2-p1, viewdir)*.5;
 	if (length(hv) == 0) return new path[] {p1--p2};
     real h = sectionheight(length(hv), currentSyMaEH);
-	if (h < currentSyMiEH) h = currentSyMiEH;
-    
+	if (h < defaultSyMiEHR*l) return new path[]{p1--p2};
+
 	if(cross(p1p2, dir1) < 0) dir1 = rotate(180)*dir1;
     if(cross(dir2, -p1p2) < 0) dir2 = rotate(180)*dir2;
     
@@ -1389,13 +1426,13 @@ path[] subsetcontours (subset[] s)
 void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
 { s.move(shift, scale, rotate, shift(-shift) * point, true); }
 
-subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmLI)
+subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmIL)
 {
 	path[] contours = intersection(sb1.contour, sb2.contour);
 	return sequence(new subset (int i){
 		return subset(
 			contour = contours[i],
-			label = (currentSmLI && setlabel && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
+			label = (currentSmIL && setlabel && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
 			labeldir = rotate(-90)*unit(sb1.center - sb2.center),
 			labelalign = setlabel ? 2*(rotate(90)*unit(sb1.center - sb2.center)) : defaultSyDP,
 			layer = max(sb1.layer, sb2.layer)+1,
@@ -1561,106 +1598,7 @@ struct smooth
         x = x - floor(x);
         return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x);
     }
-    void updatehratios ()
-    {
-        real height = this.ysize();
-        real length = this.xsize();
-        real yrealCI = defaultSmCIR * height;
-        real yrealSD = defaultSmCSD * height;
-        path[] contour = (this.contour ^^ sequence(new path(int i){
-            return this.holes[i].contour;
-        }, this.holes.length));
-        real[] yres;
-        triple[] ycontour = sequence(new triple (int i){return (ypart(min(contour[i])), ypart(max(contour[i])), (i == 0) ? this.center.x : this.holes[i-1].center.x);}, contour.length);
-        int count = 1;
-        while (count*yrealSD < 1)
-        {
-            yres.push(count*yrealSD);
-            count += 1;
-        }
-        for (int i = 0; i < yres.length; ++i)
-        {
-            pair[][] sections = hcartsections(contour, yres[i], defaultSmCIR);
-            bool foundsection = false;
-            real yreal = getypoint(yres[i]);
-            for (int j = 0; j < sections.length; ++j)
-            {
-                real x1 = sections[j][0].x;
-                real x2 = sections[j][1].x;
-                bool exlude = false;
-                for (int k = 0; k < ycontour.length; ++k)
-                {
-                    if (!inside(x1, x2, ycontour[k].z)) continue;
-                    if (abs(yreal - ycontour[k].x) < yrealCI || abs(yreal - ycontour[k].y) < yrealCI || x2-x1 > defaultSmCMLR*length)
-                    {
-                        exlude = true;
-                        break;
-                    }
-                }
-                if (exlude) yres[i] += 2^j;
-                else foundsection = true; 
-            }
-            if (!foundsection)
-            {
-                yres.delete(i);
-                i -= 1;
-            }
-        }
-        this.hratios = yres;
-    }
-    void updatevratios ()
-    {
-        real length = this.xsize();
-        real height = this.ysize();
-        real xrealCI = defaultSmCIR * length;
-        real xrealSD = defaultSmCSD * length;
-        real[] xres;
-        path[] contour = (this.contour ^^ sequence(new path(int i){
-            return this.holes[i].contour;
-        }, this.holes.length));
-        triple[] xcontour = sequence(new triple (int i){return (xpart(min(contour[i])), xpart(max(contour[i])), (i == 0) ? this.center.y : this.holes[i-1].center.y);}, contour.length);
-        int count = 1;
-        while (count*xrealSD < 1)
-        {
-            xres.push(count*xrealSD);
-            count += 1;
-        }
-        for (int i = 0; i < xres.length; ++i)
-        {
-            pair[][] sections = vcartsections(contour, xres[i], defaultSmCIR);
-            bool foundsection = false;
-            real xreal = getxpoint(xres[i]);
-            for (int j = 0; j < sections.length; ++j)
-            {
-                real y1 = sections[j][0].y;
-                real y2 = sections[j][1].y;
-                bool exlude = false;
-                for (int k = 0; k < xcontour.length; ++k)
-                {
-                    if (!inside(y1, y2, xcontour[k].z)) continue;
-                    if (abs(xreal - xcontour[k].x) < xrealCI || abs(xreal - xcontour[k].y) < xrealCI || y2-y1 > defaultSmCMLR*height)
-                    {
-                        exlude = true;
-                        break;
-                    }
-                }
-                if (exlude) xres[i] += 2^j;
-                else foundsection = true; 
-            }
-            if (!foundsection)
-            {
-                xres.delete(i);
-                i -= 1;
-            }
-        }
-        this.vratios = xres;
-    }
-    void updateratios ()
-    {
-        this.updatehratios();
-        this.updatevratios();
-    }
-    smooth simplemove (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center, bool updateratios = true)
+    smooth simplemove (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center)
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*rotate(rotate, point)*this.center;
@@ -1671,9 +1609,6 @@ struct smooth
         { this.holes[i].move(shift, scale, rotate, point, true); }
         for (int i = 0; i < this.subsets.length; ++i)
         { this.subsets[i].move(shift, scale, rotate, point, true); }
-		
-		if (rotate != 0 && updateratios)
-        { this.updateratios(); }
 
         return this;
     }
@@ -1744,9 +1679,9 @@ struct smooth
         if (length(dir) == 0) return this;
 		
 		real deg = degrees(dir);
-        this.simplemove(rotate = -deg, updateratios = false);
+        this.simplemove(rotate = -deg);
         this.xscale(s);
-        this.simplemove(rotate = deg, updateratios = false);
+        this.simplemove(rotate = deg);
         
 		return this;
     }
@@ -1778,39 +1713,34 @@ struct smooth
         
 		return this;
     }
-
-    smooth setvratios (real[] vratios)
+    smooth setratios (real[] ratios, bool horiz)
     {
-		printbeginning("Setting vertical ratios for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
+		printbeginning("Setting " + (horiz ? "horizontal" : "vertical") + " ratios for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 
-		for (int i = 0; i < vratios.length; ++i)
+		if (ratios.length == 0)
 		{
-			if (!inside(0,1, vratios[i]))
+			int count = 0;
+			real[] curratios = horiz ? this.hratios : this.vratios;
+			while (defaultSmCEM + count*defaultSmCSD < 1 - defaultSmCEM)
+			{
+				curratios.push(defaultSmCEM + count*defaultSmCSD);
+				count += 1;
+			}
+
+			printsuccess();
+			return this;
+		}
+		for (int i = 0; i < ratios.length; ++i)
+		{
+			if (!inside(0,1, ratios[i]))
 			{
 				printfailure("Could not set ratios: all entries must lie between 0 and 1.");
 				return this;
 			}
 		}
 
-        this.vratios = vratios;
-		printsuccess();
-
-        return this;
-    }
-    smooth sethratios (real[] hratios)
-    {
-		printbeginning("Setting horizontal ratios for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-
-		for (int i = 0; i < hratios.length; ++i)
-		{
-			if (!inside(0,1, hratios[i]))
-			{
-				printfailure("Could not set ratios: all entries must lie between 0 and 1.");
-				return this;
-			}
-		}
-        
-		this.hratios = hratios;
+		if (horiz) this.hratios = ratios;
+		else this.vratios = ratios;
 		printsuccess();
         
         return this;
@@ -1859,9 +1789,9 @@ struct smooth
 		printsuccess();
 		return this;
 	}
-	smooth addelement (pair pos, string label = "x_{"+(string)(this.elements.length + 1)+"}", pair labelalign = S, bool unit = true)
+	smooth addelement (pair pos, string label = 'x_{'+(string)(this.elements.length + 1)+'}', pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
-    smooth addhole (hole hl, int ind = this.holes.length, bool unit = true, bool updateratios = true)
+    smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
     {
 		printbeginning("Adding hole to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
         
@@ -1921,7 +1851,6 @@ struct smooth
             if (hl.sections[i][5] == defaultSyDN || hl.sections[i][5] <= 0 || hl.sections[i][5] != ceil(hl.sections[i][5])) hl.sections[i][5] = currentsection[5];
         }
         this.holes.insert(i = ind, hl);
-        if (updateratios) this.updateratios();
 		printsuccess();
         
 		return this;
@@ -1930,11 +1859,10 @@ struct smooth
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
-    smooth rmhole(int ind, bool updateratios = true)
+    smooth rmhole(int ind)
     {
 		printbeginning("Removing hole from " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
      	this.holes.delete(ind);
-		if (updateratios) this.updateratios;
         printsuccess();
 
         return this;
@@ -2153,16 +2081,15 @@ struct smooth
 		else printfinished();
         return this;
     }
-	smooth view (real angle, bool drag = true)
-	{ return this.view(dir(angle), drag); }
-    smooth movehole (int ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.holes[ind].center, bool movesections = false, bool updateratios = true, bool keepview = false)
+	smooth view (real angle, bool shiftsubsets = true, bool drag = true)
+	{ return this.view(dir(angle), shiftsubsets, drag); }
+    smooth movehole (int ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.holes[ind].center, bool movesections = false, bool keepview = false)
     {
 		printbeginning("Moving hole for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		pair viewdir = this.viewdir;    
 		
 		if (!keepview) this.dropview();
 		this.holes[ind].move(shift, scale, rotate, point, movesections);
-        if (updateratios) this.updateratios();
 		if (!keepview) this.setview(viewdir);
 
 		printsuccess();
@@ -2381,14 +2308,12 @@ struct smooth
             this.holes = new hole[];
 
             for (int i = 0; i < holes.length; ++i)
-            { addhole(holes[i], unit = unit, updateratios = false); }
+            { addhole(holes[i], unit = unit); }
             for (int i = 0; i < subsets.length; ++i)
             { addsubset(subsets[i], unit = unit, findplace = true); }
 
-			this.sethratios(hratios);
-			this.setvratios(vratios);
-            if (this.hratios.length == 0) updatehratios();
-            if (this.vratios.length == 0) updatevratios();
+			this.setratios(hratios, true);
+			this.setratios(vratios, false);
 
 			this.shiftsubsets = shiftsubsets;
 			this.setview(viewdir);
@@ -2772,7 +2697,7 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round 
         path curcontour = contours.pop();
         smooth cursm = smooth(
             contour = curcontour,
-            label = (currentSmLI && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
+            label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
             labeldir = rotate(90)*unit(sm1.center - sm2.center),
 			viewdir = (sm1.viewdir + sm2.viewdir)*.5,
 			copy = true
@@ -2843,6 +2768,9 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round 
 		}
 		for (int i = 0; i < subsets2.length; ++i)
 		{ subset2add(ind = new int[]{}, ind2 = i); }
+
+		cursm.setratios(new real[], true);
+		cursm.setratios(new real[], false);
 
 		res.push(cursm);
 	}
@@ -3022,7 +2950,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
 
     smooth res = smooth(
         contour = contour,
-        label = (currentSmLU && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cup "+sm2.label) : "",
+        label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cup "+sm2.label) : "",
         labeldir = unit(sm1.center - sm2.center),
 		viewdir = (sm1.viewdir + sm2.viewdir)*.5
     );
@@ -3220,17 +3148,12 @@ void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bool dash,
     drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode);
 }
 
-void drawhsections (picture pic, path[] g, real y, real ignore, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+void drawcartsections (picture pic, path[] g, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
-    drawsections(pic, hcartsections(g, y, ignore), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, "free");
+    drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, "free");
 }
 
-void drawvsections (picture pic, path[] g, real x, real ignore, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
-{
-    drawsections(pic, vcartsections(g, x, ignore), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, "free");
-}
-
-void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentSmM, bool explain = currentDrE, bool dash = currentSmDD, bool shade = currentSmDS, bool drag = true, bool cache = currentDrDC)
+void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true, bool cache = currentDrDC)
 // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
 	printbeginning("Drawing smooth object " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + " in mode " + mode + "...");
@@ -3243,7 +3166,6 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
 	currentSyMaEH = defaultSyMaEH*min(xsize(sm.contour), ysize(sm.contour));
-	currentSyMiEH = defaultSyMiEH*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] contour = (sm.contour ^^ sequence(new path(int i){
         return reverse(sm.holes[i].contour);
@@ -3308,7 +3230,7 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
                 {
                     if (holeconnected[i][j] || holeconnected[j][i]) continue;                    
 
-                    if (intersect(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmNC)).length > 0 || intersect(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmNC)).length > 0) continue;
+                    if (meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmNC)) || meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmNC))) continue;
                     
                     bool near = true;
                     for (int k = 0; k < sm.holes.length; ++k)
@@ -3337,16 +3259,16 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawhsections(pic, contour, sm.hratios[i], defaultSmCIR, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, sm.hratios[i], true, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawvsections(pic, contour, sm.vratios[i], defaultSmCIR, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, sm.vratios[i], false, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
         }
     }
 
 	int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
-	real penscale = (maxlayer > 0) ? defaultSmSPM^(1/maxlayer) : 1;
+	real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 	pen[] subsetpens = {subsetfill};
 	for (int i = 1; i < maxlayer+1; ++i)
 	{ subsetpens[i] = penscale*subsetpens[i-1]; }
@@ -3366,14 +3288,14 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
     {
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
-        {label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = Fill(currentDrBG)));}
+        {label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = Fill(currentSyBG)));}
     }
 
 	if (drag)
 	{
 		for (int i = 0; i < sm.attached.length; ++i)
 		{
-			draw(pic = pic, sm = sm.attached[i], contourpen = contourpen, smoothfill =  smoothfill + opacity(currentSmDO), subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, mode = mode, explain = explain, dash = dash, drag = true);
+			draw(pic = pic, sm = sm.attached[i], contourpen = contourpen, smoothfill =  smoothfill + opacity(currentDrDO), subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, mode = mode, explain = explain, dash = dash, drag = true);
 		}
 	}
 
@@ -3389,7 +3311,7 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
 	else printsuccess();
 }
 
-void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentSmM, bool explain = currentDrE, bool dash = currentSmDD, bool shade = currentSmDS, bool drag = true)
+void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true)
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
@@ -3397,7 +3319,7 @@ void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentp
 	}
 }
 
-smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentSmM, bool explain = currentDrE, bool dash = currentSmDD, bool shade = currentSmDS)
+smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
 // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
 	printbeginning("Drawing the intersection of " + ((length(sm1.label) == 0) ? "[unlabeled]" : sm1.label) + " and " + ((length(sm2.label) == 0) ? "[unlabeled]" : sm2.label) + "...");
@@ -3422,7 +3344,7 @@ smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bo
 	printfinished();
     return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentSmM, bool explain = currentDrE, bool dash = currentSmDD, bool shade = currentSmDS)
+smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
 {
 	printbeginning("Drawing the intersection of an array of smooth objects...");
 	printstarted();
@@ -3443,12 +3365,12 @@ smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdat
 	printfinished();
 	return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentSmM, bool explain = currentDrE, bool dash = currentSmDD, bool shade = currentSmDS ... smooth[] sms)
+smooth[] drawintersect (picture pic = currentpicture, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, string mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS ... smooth[] sms)
 {
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade);
 }
 
-void overlap (picture pic=currentpicture, Label L="", path g, align align = NoAlign, pen p = currentpen, arrowbar arrow = None, arrowbar bar = None, margin margin = NoMargin, Label legend = "", marker marker = nomarker, pen fillpen = currentDrBG+linewidth(8pt))
+void overlap (picture pic=currentpicture, Label L="", path g, align align = NoAlign, pen p = currentpen, arrowbar arrow = None, arrowbar bar = None, margin margin = NoMargin, Label legend = "", marker marker = nomarker, pen fillpen = currentSyBG+linewidth(8pt))
 // Draws a path with a stripe of filled space on the background.
 {
     draw(pic = pic, g = g, align = align, p = fillpen, margin = margin);
@@ -3529,7 +3451,7 @@ void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar
 				}
 			}
 			int maxlayer = subsetmaxlayer(sm.subsets, subsetindeces);
-			real penscale = (maxlayer > 0) ? defaultSmSPM^(1/maxlayer) : 1;
+			real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 			pen[] subsetpens = {smoothfill, subsetfill};
 			for (int i = 2; i < maxlayer+1; ++i)
 			{ subsetpens[i] = penscale*subsetpens[i-1]; }
@@ -3540,7 +3462,7 @@ void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar
 				ovpaths.append(getpaths(gs, sequence(new path (int j){return sm.subsets[curlayer[j]].contour;}, curlayer.length), subsetpens[i]));
 			}
 
-			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentDrBG));
+			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentSyBG));
 
 			ovpaths = sort(ovpaths, new bool(signedpath a, signedpath b){return (intersect(a.p, gs)[1] < intersect(b.p, gs)[1]);});
 
@@ -3708,6 +3630,7 @@ void clean ()
 {
 	for (int i = 0; i < currentPrFC; ++i)
 	{ system("rm "+currentAnIP+"_"+copychar("0", defaultAnNL - length((string)i))+(string)i + "."+currentAnIF); }
+	currentPrFC = 0;
 }
 
 void compile (int fps = defaultAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
@@ -3734,20 +3657,20 @@ picture framedpicture (picture pic)
 void shipnative (picture pic = currentpicture, string prefix, string format, real margin)
 {
 	picture aux = framedpicture(pic);
-	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentDrBG)), prefix = prefix, format = format);
+	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentSyBG)), prefix = prefix, format = format);
 }
 
 void shipconvert (picture pic = currentpicture, string prefix, string format, real margin, int density = currentSyRID)
 {
 	picture aux = framedpicture(pic);
-	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentDrBG)), prefix = prefix, format = "eps");
+	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentSyBG)), prefix = prefix, format = "eps");
 	int width = ceil(density * 9.83);
 	if (width % 2 == 1) width += 1;
 	system("mogrify -density "+(string)density+" -resize "+(string)width+" -format "+format+" "+prefix+".eps");
 	system("rm "+prefix+".eps");
 }
 
-void produce (picture pic = currentpicture, string prefix = "output", string format = settings.outformat, real margin = currentDrM, int density = currentSyRID, bool exit = defaultSyEOP, bool time = true)
+void produce (picture pic = currentpicture, string prefix = "output", string format = settings.outformat, real margin = currentSyM, int density = currentSyRID, bool exit = currentSyEOP, bool time = true)
 {
 	printbeginning("Producing output file " + prefix+"."+format + " ...");
 
@@ -3767,7 +3690,7 @@ void produce (picture pic = currentpicture, string prefix = "output", string for
 void animate (void prefix () = new void (){
 	printbeginning("Writing custom animation...");
 	printstarted();
-}, void update (int), int n = defaultAnFN, bool back = false, real margin = currentDrM, int density = currentSyRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = defaultAnFPS)
+}, void update (int), int n = defaultAnFN, bool back = false, real margin = currentSyM, int density = currentSyRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = defaultAnFPS)
 {
 	prefix();
 	bool pm = currentPrPM;
@@ -3810,7 +3733,7 @@ void animate (void prefix () = new void (){
 	printfinished();
 }
 
-void move (smooth sm, string mode = "strict", pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentSmDD, bool explain = currentDrE, bool shade = currentSmDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentDrM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void move (smooth sm, string mode = "strict", pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
 // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
 	void prefix ()
@@ -3842,7 +3765,7 @@ void move (smooth sm, string mode = "strict", pen contourpen = currentpen, pen s
 	animate(prefix = prefix, update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-void revolve (smooth sm, string mode = "strict", pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, bool dash = currentSmDD, bool explain = currentDrE, bool shade = currentSmDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentDrM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void revolve (smooth sm, string mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
 // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
 	void prefix ()

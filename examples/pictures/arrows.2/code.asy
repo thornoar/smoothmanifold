@@ -2,12 +2,11 @@ import smoothmanifold;
 settings.render = 16;
 
 size(20 cm);
-// background(paleyellow);
-// smoothfill(lightcyan);
-// subsetfill(lightblue);
+setproduce(bgpen = paleyellow);
+smoothdraw(smoothfill = lightcyan, subsetfill = lightblue);
 sectiondraw(drawdashes = false);
 
-overlaplength(.12);
+arrowparams(.12);
 
 pair viewdir = dir(-50);
 
@@ -31,6 +30,6 @@ void draw ()
 draw();
 produce("picture", "pdf", 1.5 cm, exit = false);
 erase();
-explain(true);
+smoothdraw(explain = true);
 draw();
 produce("picture (marked)", "pdf", 1.5 cm);

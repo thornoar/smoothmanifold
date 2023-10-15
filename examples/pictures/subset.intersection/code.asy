@@ -3,9 +3,10 @@ import smoothmanifold;
 settings.render = 8;
 
 size(20 cm);
-background(paleyellow);
+setproduce(bgpen = paleyellow);
 
 defaultpen(1);
+smoothdraw(minscale = .1);
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 

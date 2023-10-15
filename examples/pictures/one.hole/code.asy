@@ -4,9 +4,7 @@ settings.render = 8;
 settings.outformat = "pdf";
 
 size(10cm);
-background(paleyellow);
-multiproduce(true);
-setmargin(1 cm);
+setproduce(bgpen = paleyellow, exit = false, margin = 1 cm);
 
 smooth sm = samplesmooth(1).setview(dir(-35));
 

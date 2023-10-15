@@ -6,9 +6,9 @@ settings.outformat = "pdf";
 import graph;
 
 size(15 cm);
-// background(paleyellow);
-overlaplength(.09);
-dragopacity(.7);
+setproduce(bgpen = paleyellow);
+arrowparams(.09);
+smoothdraw(dragop = .7);
 
 smooth sm = samplesmooth(1).setview(dir(-40)).setlabel(label = "M").setlabel(i(0), label = "S", labeldir = S);
 smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10, size = .7);
@@ -27,6 +27,6 @@ void draw ()
 draw();
 produce("picture", "pdf", 1 cm, exit = false);
 erase();
-explain(true);
+smoothdraw(explain = true);
 draw();
 produce("picture (marked)", "pdf", 1 cm);

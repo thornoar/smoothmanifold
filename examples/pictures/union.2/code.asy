@@ -2,7 +2,7 @@ import smoothmanifold;
 settings.render = 16;
 
 size(20 cm);
-background(paleyellow);
+setproduce(bgpen = paleyellow);
 
 smooth sm1 = samplesmooth(3).move(rotate = 60);
 smooth sm2 = samplesmooth(3,1).move(shift = (1.7,0), rotate = -90);
@@ -16,6 +16,6 @@ void draw ()
 draw();
 produce("picture", "pdf", 1 cm, exit = false);
 erase();
-explain(true);
+smoothdraw(explain = true);
 draw();
 produce("picture (marked)", "pdf", 1 cm);

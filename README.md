@@ -2,7 +2,7 @@
 
 ## Description
 
-`smoothmanifold` is an Asymptote package that allows one to quickly and easily create and render high-quality `smooth` objects of topological and diff. geometric nature, similarly to how they would be drawn in a textbook or in lecture notes. These objects strongly resemble smooth two-dimensional manifolds in $\mathbb{R}^3$: spheres, tori, planes and other surfaces. However, most importantly, the module does __not__ depend on the package `three` to render three-dimensional objects. They all are, in fact, completely flat, but made __look__ three-dimensional by imitating perspective and projections. This means that `smoothmanifold` objects enjoy all the benefits of vector graphics, which is one of Asymptote's selling points and which works (almost) only in 2D.
+`smoothmanifold` is an Asymptote module that allows one to quickly and easily create and render high-quality `smooth` objects of topological and diff. geometric nature, similarly to how they would be drawn in a textbook or in lecture notes. These objects strongly resemble smooth two-dimensional manifolds in $\mathbb{R}^3$: spheres, tori, planes and other surfaces. However, most importantly, the module does __not__ depend on the package `three` to render three-dimensional objects. They all are, in fact, completely flat, but made __look__ three-dimensional by imitating perspective and projections. This means that `smoothmanifold` objects enjoy all the benefits of vector graphics, which is one of Asymptote's selling points and which works (almost) only in 2D.
 
 ## Features
 
@@ -32,7 +32,7 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
 
     Furthermore, an `arrow` can be drawn between two `smooth` objects of their subsets (see *examples/pictures/arrows*). The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection*).
 
-- Animations. One can animate a `smooth` object `move` (shift, scale and rotate), or `revolve` (change its `viewdir` parameter, creating the illusion of three-dimensional rotation). The animation can be then converted to a video in any format supported by ImageMagick. See *examples/animations/*.
+- Animations. One can animate a `smooth` object `move` (shift, scale and rotate), or `revolve` (change its `viewdir` parameter, creating the illusion of three-dimensional rotation). The animation can be then converted to a video in any format supported by ffmpeg. See *examples/animations/*.
 
 - Independence. `smoothmanifold` does not depend on any other Asymptote module.
 
@@ -51,14 +51,14 @@ You can clone this git repository to receive regular updates.
 First, you create a `smooth` object with
 
 ```asymptote
-void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = N, pair labelalign = dummypair, hole[] holes = {}, subset[] subsets = {}, real[] hratios = {}, real[] vratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair viewdir = (0,0), bool unit = true, bool copy = false)
+void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = N, pair labelalign = dummypair, hole[] holes = {}, subset[] subsets = {}, real[] hratios = {}, real[] vratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair viewdir = (0,0), bool unit = true, bool copy = false, bool shiftsubsets = currentSmSS)
 ```
 
 The only required argument is `contour`, everything else is optional. To see examples of pre-built `smooth` objects, search for 'samplesmooth' in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `union`, `intersection`, `view`, etc. Finally, `draw` your object, or draw an `arrow` connecting two objects. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.
 
 ## Contact
 
-Any suggestions, bug reports, questions and contributions are most welcome. You can contact me via email: `r.a.maksimovich@gmail.com`, Telegram: `https://t.me/hrm2715`, or open an issue on this GitHub repository. I will, however, kindly ask that any question or bug report be written in a readable manner and that it comply with the following scheme:
+Any suggestions, bug reports, questions and contributions are most welcome. You can contact me via email: `r.a.maksimovich@gmail.com`, Telegram: `https://t.me/thornoar`, or open an issue on this GitHub repository. I will, however, kindly ask that any question or bug report be written in a readable manner and that it comply with the following scheme:
 
 - Minimal reproducible example;
 - Expected behavior;
