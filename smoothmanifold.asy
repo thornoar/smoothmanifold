@@ -1789,7 +1789,7 @@ struct smooth
 		printsuccess();
 		return this;
 	}
-	smooth addelement (pair pos, string label = "x_{" + ((string)(this.elements.length + 1)) + "}", pair labelalign = S, bool unit = true)
+	smooth addelement (pair pos, string label = "x_{" + (string)(this.elements.length + 1) + "}", pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
     smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
     {
