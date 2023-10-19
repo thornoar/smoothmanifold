@@ -4,11 +4,11 @@ This is module smoothmanifold. It is designed to construct and render high-quali
 
 Copyright (C) 2023 Maksimovich Roman Alekseevich. All rights reserved.
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -3733,7 +3733,7 @@ void animate (void prefix () = new void (){
 	printfinished();
 }
 
-void move (smooth sm, string mode = "strict", pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void move (smooth sm, string mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSS*contourpen+currentDrST, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrSS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
 // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
 	void prefix ()
