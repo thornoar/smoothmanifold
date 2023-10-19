@@ -67,4 +67,4 @@ Any suggestions, bug reports, questions and contributions are most welcome. You 
 
 ## License
 
-The module, similarly to the Asymptote project, is release:d under version 3 (or later) of the GNU Lesser General Public License (see the LICENSE and LICENSE.LESSER files).
+The module is released under version 3 of the GNU General Public License (see the LICENSE file in source).
