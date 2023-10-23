@@ -18,6 +18,6 @@ sm.addsubset(contour = convexpath[8], point = (0,0), shift = (-.1,-.1), scale = 
 sm.addsubset(contour = convexpath[5], point = (0,0), shift = (-.3,-.65), scale = .2);
 sm.addsubset(contour = concavepath[2], point = (0,0), shift = (.25,.45), scale = .4, rotate = 140);
 
-draw(sm, mode = 'plain', subsetfill = cyan);
+draw(sm, mode = plain, subsetfill = cyan);
 
 produce("picture", "pdf", 1.5 cm);

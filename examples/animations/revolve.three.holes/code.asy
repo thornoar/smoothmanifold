@@ -7,7 +7,7 @@ import graph;
 size(25cm);
 setproduce(dpi = 300, bgpen = paleyellow);
 defaultpen(linewidth(2));
-sectiondraw(thickness = 1);
+sectiondraw(linewidth(1));
 animationparams(close = false);
 setframe(1.6, 1);
 
@@ -24,7 +24,7 @@ smooth sm = samplesmooth(3).move(shift = (-.15,0));
 
 int frames = 30;
 
-void animate (string mode)
+void animate (int mode)
 {
 	smoothdraw(mode = mode);
 	revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, shift = xsh, back = false, frames = frames);
@@ -32,11 +32,11 @@ void animate (string mode)
 	revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, shift = -2*ysh, back = false, frames = 2*frames);
 	revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, shift = -xsh+ysh, back = false, frames = 2*frames);
 	revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, shift = xsh, back = false, frames = frames);
-	compile(fps = frames, outprefix = "animation."+mode, outformat = "mp4");
+	compile(fps = frames, outprefix = "animation."+mode(mode), outformat = "mp4");
 }
 
-animate(mode = "strict");
-animate(mode = "cart");
+animate(mode = strict);
+animate(mode = cartesian);
 
 printtime();
 exit();

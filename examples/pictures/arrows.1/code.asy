@@ -3,6 +3,7 @@ import smoothmanifold;
 settings.render = 16;
 
 size(25 cm);
+printprogress(false);
 setproduce(bgpen = paleyellow, margin = 2 cm);
 arrowparams(.1);
 

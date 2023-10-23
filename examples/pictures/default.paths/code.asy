@@ -3,7 +3,7 @@ import smoothmanifold;
 settings.render = 8;
 
 size(15cm);
-background(paleyellow);
+setproduce(bgpen = paleyellow);
 
 real x = 3;
 real y = -1.6;

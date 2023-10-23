@@ -5,7 +5,7 @@ setframe(2);
 setproduce(bgpen = paleyellow);
 
 defaultpen(linewidth(1.2));
-sectiondraw(thickness = .6);
+sectiondraw(linewidth(.6));
 
 pair viewdir = dir(45);
 

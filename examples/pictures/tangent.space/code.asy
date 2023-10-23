@@ -17,8 +17,8 @@ rn.addsubset(contour = convexpath[9], shift = (.4,-.2), scale = .4);
 
 void draw ()
 {
-	draw(sm, mode = 'strict');
-	draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = 'cart');
+	draw(sm, mode = strict);
+	draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = cartesian);
 
 	drawarrow(ts, rn, arrow = Arrows(SimpleHead), curve = -.2, L = Label("$\cong$", align = Relative(W)));
 	drawarrow(sm, rn, i(0), i(0), curve = .3, margin1 = .07, margin2 = .1, L = Label("$f$"));

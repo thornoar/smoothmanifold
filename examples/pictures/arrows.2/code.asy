@@ -19,7 +19,7 @@ smooth sm2 = samplesmooth(0,2).move(shift = (4,-.2), scale = 1.2).setlabel(i(0),
 void draw ()
 {
 	draw(sm1);
-	draw(sm2, mode = "cart");
+	draw(sm2, mode = cartesian);
 
 	drawarrow(sm1, sm2, curve = -.4);
 	drawarrow(sm1, sm2, i(2), i(0), curve = -.1, overlap = true);

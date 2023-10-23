@@ -36,6 +36,8 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
 
 - Independence. `smoothmanifold` does not depend on any other Asymptote module.
 
+- Logging. By default the module will output a detailed log in the console, recording internal module warnings and errors. This is especially useful when writing animations, to have a progress bar. The logging functionality can be easily turned off by calling `printprogress(false)` in the beginning of your code.
+
 ## Installation
 
 Just download the `smoothmanifold.asy` file and insert this line in your code:
