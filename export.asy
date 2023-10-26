@@ -4,7 +4,6 @@
 // [Pr]ogress
 private int defaultPrML = 50; // [M]essage [L]ength
 // [An]imations
-int defaultAnFPS = 3; // [S]econds
 int defaultAnFN = 30; // [F]rame [N]umber
 int defaultAnNL = 4; // [N]ame [L]ength
 
@@ -22,6 +21,7 @@ private bool currentFrEP = false; // [E]nclose [P]icture
 private bool currentFrCP = false; // [C]lip [P]icture
 private pair currentFrFC = (0,0); // [F]rame [C]orner
 // [An]imations
+int currentAnFPS = 25; // [FPS]
 private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]otput [F]ormat
@@ -82,7 +82,7 @@ void clean ()
 	currentPrFC = 0;
 }
 
-void compile (int fps = defaultAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
+void compile (int fps = currentAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
 {
 	write("> Compiling... ", suffix = none);
 	system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+currentAnIF+" "+outprefix+"."+outformat);
@@ -133,7 +133,7 @@ void export (picture pic = currentpicture, string prefix = outname(), string for
 	if (exit) exit();
 }
 
-void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = defaultAnFPS, bool clean = true)
+void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");

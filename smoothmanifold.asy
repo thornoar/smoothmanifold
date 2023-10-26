@@ -378,7 +378,7 @@ private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = defaultsection, int nn = defaultSeNN, real na = defaultSeNA, real nl = defaultSeMLR)
+void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR)
 {
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
 	{ abort("Could not change default section parameters: invalid intries"); }
@@ -431,6 +431,21 @@ void invertcolors ()
 	currentDrElP = inverse(currentDrElP);
 }
 void drawdebug () { draw(currentPrDP); }
+void defaults ()
+{
+	currentsection = copy(defaultsection);
+	currentSeNN = defaultSeNN;
+	currentSeNA = defaultSeNA;
+	currentSeMLR = defaultSeMLR;
+	currentArOL = defaultArOL;
+	currentArM = defaultArM;
+	currentDrSeP = defaultDrSeP;
+	currentDrExP = defaultDrExP;
+	currentDrElP = defaultDrElP;
+	currentDrShS = defaultDrShS;
+	currentDrDO = defaultDrDO;
+	currentDrSPM = defaultDrSPM;
+}
 
 // -- Technical functions to construct horizontal and vertical sections -- //
 
@@ -2990,7 +3005,7 @@ void drawarrow (picture pic = currentpicture, smooth sm, int[] ind = {}, real an
 
 // -- Animations -- //
 
-void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = currentAnFPS, bool close = currentAnC)
 // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
     smooth smp;
@@ -3011,7 +3026,7 @@ void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen sm
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = currentAnFPS, bool close = currentAnC)
 // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
     smooth smp;
