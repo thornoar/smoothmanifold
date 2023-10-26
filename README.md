@@ -6,17 +6,14 @@
 
 ## Features
 
-- A wide collection of convenient functions. Examples include:
-    * `void produce` (an advanced version of `shipout`);
-    * `path reorient(path p, real time)` (makes `p` start at time `time`);
-    * `path[] combination(path p, path q, ...)` (allows one to take unions, intersections, differences (i.e. set operations) on regions enclosed by `p` and `q`, and return the boundaries of the resulting regions);
-    * `path randompath(pair[] controlpoints, ...)` (draws an 'arbitrary' smooth path connecting `controlpoints`);
-    ...and many more. Many convenient operators are also provided, such as `p - q` for difference, `p & q` for intersection, and `p | q` for union.
+- The module includes two dependency sub-modules:
+    * `pathmethods.asy` --- a collection of useful path functions essential for the main module, such as `path[] union (...)`, `path[] intersection (...)`, `pair center (...)` and more. In summary, cyclic paths in this sub-module are viewed as boundaries of areas on the plane, and its functions have to do with manipulating those areas. `pathmethods` can be very useful outside of `smoothmanifold` as well.
+    * `export.asy` --- a collection of routines that make it much easier to produce an output file from an Asymptote picture. Provides a function `void export (...)`, a sophisticated alternative to `shipout`. It allows for a faster production of rasterized images, it fixes this [issue](https://github.com/vectorgraphics/asymptote/issues/396), it avoids issues [this](https://github.com/PreTeXtBook/pretext/issues/1065) and [this](https://github.com/vectorgraphics/asymptote/issues/33) with SVG output, it allows for setting the picture background and margin, and it can default to plain `shipout` on demand. All that at the cost of using third-party conversion utilities such as ImageMagick and pdf2svg. But this is not the end. `export.asy` provides a simple general animation interface. Given an update function, the module will compile you an animation in given quality and in any format supported by FFmpeg. A nice terminal progress bar is included. Unlike the `animation` base module, the algorithm provided by `export` does not create a massive array of pictures, it only stores one at a time, which can be crucial for machines with little RAM. As in the previous case, this sub-module can be used for general purposes as well.
 
-- Three most important custom structures:
+- The module `smoothmanifold` itself features three most important custom structures:
     * `smooth` --- the main class of the module. It has a `contour`, a `label`, and potentially multiple `holes` and `subsets`. It also stores a parameter `viewdir`, which is responsible for the illusion of three-dimensional rotation.
     * `hole` --- an area cut out of a `smooth` object. Has a `contour` and different `section` parameters, which define the circular cross sections rendered on call of the `draw` function.
-    * `subset` --- an area placed inside a `smooth` object.  Has a `contour` and a `label`.
+    * `subset` --- an area placed inside a `smooth` object.  Has its own `subset`s, a `contour` and a `label`. If you add two intersection subsets to a `smooth` object, they will automatically intersect and produce a third subset.
 
 All paths that constitute these custom objects are meant to go __clockwise__, because that is the way they are usually drawn on paper and the way most people usually imagine a cyclic path. But don't worry -- even if you lose track of the orientation of your cyclic path, the constructor will correct it for you.
 
@@ -25,35 +22,39 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
 - Wide drawing functionality. The main drawing function is
 
     ```asymptote
-    void draw (picture pic = currentpicture, smooth sm, pen outlinepen = defaultSmCP, pen smoothpen = defaultSmP, pen subsetoutlinepen = outlinepen, pen subsetpen = defaultSbP, pen sectionpen = defaultSmSP, pen dashpen = sectionpen+dashed+grey, pen shadepen = defaultSmSSP, string mode = defaultSmMode, bool explain = defaultSmE, bool shade = defaultSmSh, bool drawdashes = defaultSmDD, real margin = defaultSmM)
+    void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = (!currentDrIC ? inverse(.5*inverse(sectionpen)) : .5*sectionpen) + dashed + linewidth(sectionpen), pen shadepen = currentDrIC ? inverse(currentDrShS*inverse(smoothfill)) : currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true, bool cache = currentDrDC)
     ```
 
-    With this function one can render a `smooth` object with different `pens`. The illusion of volume is created by multiple "cross sections" inside the figure. There are four cross section modes: `plain` (no sections, a plain 2D picture), `free` (searches for cross sections in most suitable locations, but provides little control of their positioning), `cart` (renders only vertical and horizontal ("cartesian") cross sections), and `strict` (similar to `free`, but uses a different searching algorithm, giving total control over technical aspects). Each mode has its use cases (see *examples/pictures/three.holes*). The `explain` parameter can be tweaked to hide or show auxillary information about the object on the picture. Useful for debugging.
+    With this function one can render a `smooth` object with different `pens`. The illusion of volume is created by multiple "cross sections" inside the figure. There are four cross section modes: `plain` (no sections, a plain 2D picture), `free` (searches for cross sections in most suitable locations, but provides little control of their positioning), `cartesian` (renders only vertical and horizontal ("cartesian") cross sections), and `strict` (similar to `free`, but uses a different searching algorithm, giving total control over technical aspects). Each mode has its use cases (see *examples/pictures/three.holes*). The `explain` parameter can be tweaked to hide or show auxillary information about the object on the picture. Useful for debugging.
 
-    Furthermore, an `arrow` can be drawn between two `smooth` objects of their subsets (see *examples/pictures/arrows*). The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection*).
+    Furthermore, an `arrow` can be drawn between two `smooth` objects of their subsets (see *examples/pictures/arrows.1*). The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection.1*).
 
-- Animations. One can animate a `smooth` object `move` (shift, scale and rotate), or `revolve` (change its `viewdir` parameter, creating the illusion of three-dimensional rotation). The animation can be then converted to a video in any format supported by ffmpeg. See *examples/animations/*.
+- Integrated animations. One can animate a `smooth` object `move` (shift, scale and rotate), or `revolve` (change its `viewdir` parameter, creating the illusion of three-dimensional rotation). See *examples/animations/*.
 
-- Independence. `smoothmanifold` does not depend on any other Asymptote module.
-
-- Logging. By default the module will output a detailed log in the console, recording internal module warnings and errors. This is especially useful when writing animations, to have a progress bar. The logging functionality can be easily turned off by calling `printprogress(false)` in the beginning of your code.
+- Independence. `smoothmanifold` does not depend on any other Asymptote module, apart from its sub-modules.
 
 ## Installation
 
-Just download the `smoothmanifold.asy` file and insert this line in your code:
+Just download the `smoothmanifold.asy`, `pathmethods.asy`, and `export.asy` files and insert this line in your code:
 
 ```asymptote
 import "/path/to/smoothmanifold.asy" as smooth;
 ```
 
+Make sure that the sub-modules are visible by Asymptote for the main module to import.
+
 You can clone this git repository to receive regular updates.
+
+## Optional dependencies
+
+As mentioned before, there is some third-party software needed for the correct work of the `export` sub-module. This includes ImageMagick's `mogrify` utility and pdf2svg for image format conversion, as well as FFmpeg for compiling animations. They do not, however, impact the functionality of `pathmethods` and the main module itself.
 
 ## Basic usage
 
 First, you create a `smooth` object with
 
 ```asymptote
-void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = N, pair labelalign = dummypair, hole[] holes = {}, subset[] subsets = {}, real[] hratios = {}, real[] vratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair viewdir = (0,0), bool unit = true, bool copy = false, bool shiftsubsets = currentSmSS)
+void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = N, pair labelalign = defaultSyDP, hole[] holes = {}, subset[] subsets = {}, real[] hratios = {}, real[] vratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair viewdir = (0,0), smooth[] attached = {}, bool unit = true, bool copy = false, bool shiftsubsets = currentSmSS)
 ```
 
 The only required argument is `contour`, everything else is optional. To see examples of pre-built `smooth` objects, search for 'samplesmooth' in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `union`, `intersection`, `view`, etc. Finally, `draw` your object, or draw an `arrow` connecting two objects. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.

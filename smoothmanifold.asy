@@ -15,22 +15,20 @@ You should have received a copy of the GNU General Public License along with thi
 // -- Default constants -- //
 
 // [Sy]stem
-private string defaultversion = "v3.5.2-beta";
+private string defaultversion = "v4.0.0-beta";
 private real defaultSySN = .000001; // [S]mall [N]umber
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it"
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
-private real defaultSyRR = .03; // [R]ounded [P]ath [R]atio
 int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
-private real defaultSeMaEHR = .05; // [Ma]ximal [E]llipse [H]eight
-private real defaultSeMiEHR = .00005; // [Mi]nimal [E]llipse [H]eight [R]atio
 
 // [Se]ction
 private real defaultSeWT = .65; // [W]idth [T]est
-private int defaultSyRID = 300; // [R]asterized [I]mage [D]ensity (in dpi)
 real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,220,7,.8,50};
-private int defaultSeNN = 1; // [Se]ction [N]eigh [N]umber
-private real defaultSeNA = 25; // [Se]ction [N]eigh [A]ngle
-private real defaultSeMLR = .5; // [S]ection [M]aximum [L]ength [R]atio
+private int defaultSeNN = 1; // [N]eigh [N]umber
+private real defaultSeNA = 25; // [N]eigh [A]ngle
+private real defaultSeMLR = .4; // [M]aximum [L]ength [R]atio
+private real defaultSeMaEHR = .05; // [Ma]ximal [E]llipse [H]eight
+private real defaultSeMiEHR = .00005; // [Mi]nimal [E]llipse [H]eight [R]atio
 
 // [Sm]ooth
 private real defaultSmNC = .15; // [Ne]igh [C]urve
@@ -42,160 +40,262 @@ private real defaultSmCSD = .1; // [C]art [S]tep [D]istance
 private real defaultSmSVS = .28; // [S]ubset [V]iew [S]hift
 
 // [Ar]rows
-private real defaultArOL = .065; // [Ar]row [O]verlap [L]ength (see "arrow")
-private real defaultArM = defaultArOL*.7; // [A]rrow [M]argin (see "arrow")
+private real defaultArOL = .065; // [O]verlap [L]ength (see "arrow")
+private real defaultArM = defaultArOL*.7; // [M]argin (see "arrow")
 
 // [Dr]awing
 private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
-private pen defaultDrSeP = linewidth(.4); // [Se]ction [P]en
-private pen defaultDrElP = linewidth(2.5); // [E]lement [P]en
-private real defaultDrShS = .8; // [S]hade [S]cale
+private pen defaultDrSeP = black+linewidth(.4); // [Se]ction [P]en
+private pen defaultDrElP = black+linewidth(2.5); // [E]lement [P]en
+private real defaultDrShS = .9; // [S]hade [S]cale
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .2; // [S]ubset [P]en [M]ultiplier;
 
-// [Pr]ogress
-private int defaultPrML = 80; // [M]essage [L]ength
-private string defaultPrMP = "--"; // [M]essage [P]refix
-private string defaultPrEP = "~"; // [E]rror [P]refix
-private string defaultPrMPP = "> "; // [M]essage [P]ost [P]refix
-private string defaultPrEPP = " :: "; // [E]rror [P]ost [P]refix
-private bool defaultPrJBK = true; // [J]ust [B]egan [C]ompiling
-
-// [An]imations
-private int defaultAnFPS = 3; // [S]econds
-private int defaultAnFN = 30; // [F]rame [N]umber
-private int defaultAnNL = 4; // [N]ame [L]ength
-
 // [Pa]ths
-private path defaultPaUC = reverse(unitcircle); // [U]nit [C]ircle
-private path defaultPaUS = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 private path[] defaultPaCV = new path[]{ // [C]on[V]ex
-    defaultPaUC,
 	(
-		(-1.36,0.12).. controls (-1.41582401154407,0.55520889431617) and (-1.0257435069498,0.909513009349874) ..(-0.56,0.92).. controls 
-		(-0.19125699521161,0.928302862811423) and (0.136521131315988,0.729039581322326) ..(0.44,0.52).. controls (0.980220404034304,0.147890246293586) 
-		and (1.3845331406982,-0.436724893999579) ..(1.04,-0.88).. controls (0.676761074059661,-1.34734190235919) and 
-		(0.00872773210022468,-1.01537316934592) ..(-0.56,-0.68).. controls (-0.907218133872674,-0.475248869645885) and 
+		(1,0).. controls
+		(1,-0.552284749830793) and
+		(0.552284749830793,-1) ..(0,-1).. controls
+		(-0.552284749830793,-1) and
+		(-1,-0.552284749830793) ..(-1,0).. controls
+		(-1,0.552284749830793) and
+		(-0.552284749830793,1) ..(0,1).. controls
+		(0.552284749830793,1) and
+		(1,0.552284749830793) ..cycle
+	),
+	(
+		(-1.36,0.12).. controls
+		(-1.41582401154407,0.55520889431617) and
+		(-1.0257435069498,0.909513009349874) ..(-0.56,0.92).. controls 
+		(-0.19125699521161,0.928302862811423) and
+		(0.136521131315988,0.729039581322326) ..(0.44,0.52).. controls
+		(0.980220404034304,0.147890246293586) and
+		(1.3845331406982,-0.436724893999579) ..(1.04,-0.88).. controls
+		(0.676761074059661,-1.34734190235919) and
+		(0.00872773210022468,-1.01537316934592) ..(-0.56,-0.68).. controls
+		(-0.907218133872674,-0.475248869645885) and 
 		(-1.30919263224224,-0.276098698989278) ..cycle
 	),
 	(
-		(-0.9,-0.2).. controls (-0.98697538178619,0.235654776414453) and (-0.802491449341473,0.68992759626606) ..(-0.4,0.85).. controls 
-		(0.757294206364072,1.31026037507916) and (1.55936164643754,-0.313112268122339) ..(0.5,-0.95).. controls (-0.0523592332287122,-1.28207811554792) 
-		and (-0.762864236084435,-0.886905298259319) ..cycle
+		(-0.9,-0.2).. controls
+		(-0.98697538178619,0.235654776414453) and
+		(-0.802491449341473,0.68992759626606) ..(-0.4,0.85).. controls
+		(0.757294206364072,1.31026037507916) and
+		(1.55936164643754,-0.313112268122339) ..(0.5,-0.95).. controls
+		(-0.0523592332287122,-1.28207811554792) and
+		(-0.762864236084435,-0.886905298259319) ..cycle
 	),
 	(
-		(-1.16,-0.29).. controls (-1.51490974493491,0.472081630946601) and (-0.477254187508288,1.32777856008382) ..(0.58,0.725).. controls 
-		(1.27874595396837,0.326619851712201) and (1.42032178500218,-0.540171661770456) ..(0.87,-0.841).. controls 
-		(0.604809353021201,-0.985964026173039) and (0.294974401744962,-0.873430194586726) ..(0,-0.812).. controls 
-		(-0.446281873437747,-0.71905911372773) and (-0.968891850910363,-0.700357878373073) ..cycle
+		(-1.16,-0.29).. controls
+		(-1.51490974493491,0.472081630946601) and
+		(-0.477254187508288,1.32777856008382) ..(0.58,0.725).. controls
+		(1.27874595396837,0.326619851712201) and
+		(1.42032178500218,-0.540171661770456) ..(0.87,-0.841).. controls
+		(0.604809353021201,-0.985964026173039) and
+		(0.294974401744962,-0.873430194586726) ..(0,-0.812).. controls
+		(-0.446281873437747,-0.71905911372773) and
+		(-0.968891850910363,-0.700357878373073) ..cycle
 	),
 	(
-		(-1.296,0.216).. controls (-1.26312498012001,0.569201604422407) and (-0.867914412848729,0.717747636150192) ..(-0.486,0.756).. controls 
-		(0.434078114000025,0.848154581243612) and (1.29268841709499,0.385208414599532) ..(1.134,-0.324).. controls 
-		(0.956228080358488,-1.11849618061162) and (-0.223352205726549,-1.14281592154973) ..(-1.026,-0.324).. controls 
-		(-1.1748059346048,-0.172196594639885) and (-1.3155538271241,0.0059182072575597) ..cycle
+		(-1.296,0.216).. controls
+		(-1.26312498012001,0.569201604422407) and
+		(-0.867914412848729,0.717747636150192) ..(-0.486,0.756).. controls
+		(0.434078114000025,0.848154581243612) and
+		(1.29268841709499,0.385208414599532) ..(1.134,-0.324).. controls
+		(0.956228080358488,-1.11849618061162) and
+		(-0.223352205726549,-1.14281592154973) ..(-1.026,-0.324).. controls
+		(-1.1748059346048,-0.172196594639885) and
+		(-1.3155538271241,0.0059182072575597) ..cycle
 	),
  	(
-		 (-1.128,0.094).. controls (-1.21016526223606,0.573735885775383) and (-0.828320640135585,1.00438671484956) ..(-0.329,1.034).. controls 
-		 (1.51338131904807,1.14326638911221) and (1.18983717454328,-1.38637374143692) ..(-0.188,-1.081).. controls 
-		 (-0.469732848058533,-1.01855879469152) and (-0.632916087419128,-0.753035005305983) ..(-0.799,-0.517).. controls 
-		 (-0.933882065353422,-0.325308411593601) and (-1.08829562994141,-0.137820730815523) ..cycle
+		(-1.128,0.094).. controls
+		(-1.21016526223606,0.573735885775383) and
+		(-0.828320640135585,1.00438671484956) ..(-0.329,1.034).. controls
+		(1.51338131904807,1.14326638911221) and
+		(1.18983717454328,-1.38637374143692) ..(-0.188,-1.081).. controls
+		(-0.469732848058533,-1.01855879469152) and
+		(-0.632916087419128,-0.753035005305983) ..(-0.799,-0.517).. controls
+		(-0.933882065353422,-0.325308411593601) and
+		(-1.08829562994141,-0.137820730815523) ..cycle
  	),
     (
-		(0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and 
+		(0.890573,-0.36047)..controls
+		(-0.148296,-1.45705) and
+		(-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls
+		(-0.669702,1.58481) and 
 		(2.03559,0.848164)..cycle
     ),
     (
-		(0.989525,-0.664395)..controls (-0.155497,-1.61858) and (-1.40332,0.329701)..(-0.862301,0.79162)..controls (0.346334,1.82355) and 
+		(0.989525,-0.664395)..controls
+		(-0.155497,-1.61858) and
+		(-1.40332,0.329701)..(-0.862301,0.79162)..controls
+		(0.346334,1.82355) and 
 		(1.39766,-0.324279)..cycle
     ),
     (
-		(0.28979,-0.834028)..controls (0.093337,-0.908653) and (-1.20138,-1.95019)..(-1.15209,0.0777484)..controls (-1.10261,2.11334) and 
+		(0.28979,-0.834028)..controls
+		(0.093337,-0.908653) and
+		(-1.20138,-1.95019)..(-1.15209,0.0777484)..controls
+		(-1.10261,2.11334) and 
 		(3.02512,0.204973)..cycle
     ),
     (
-		(1.01073,-0.409946)..controls (0.812824,-1.99319) and (-2.2123,-0.523035)..(-0.897641,0.36047)..controls (0.779873,1.48783) and 
+		(1.01073,-0.409946)..controls
+		(0.812824,-1.99319) and
+		(-2.2123,-0.523035)..(-0.897641,0.36047)..controls
+		(0.779873,1.48783) and 
 		(1.20823,1.17008)..cycle
     ),
     (
-		(0.636123,-0.975389)..controls (-0.853465,-1.50787) and (-1.37827,0.219109)..(-0.770416,0.961253)..controls (-0.154452,1.7133) and 
+		(0.636123,-0.975389)..controls
+		(-0.853465,-1.50787) and
+		(-1.37827,0.219109)..(-0.770416,0.961253)..controls
+		(-0.154452,1.7133) and 
 		(2.19816,-0.417014)..cycle
     ),
     (
-		(0.805756,0.918845)..controls (1.7034,-0.664395) and (-0.374882,-1.93278)..(-0.890573,-0.742144)..controls (-1.3712,0.367538) and 
+		(0.805756,0.918845)..controls
+		(1.7034,-0.664395) and
+		(-0.374882,-1.93278)..(-0.890573,-0.742144)..controls
+		(-1.3712,0.367538) and 
 		(0.34086,1.73882)..cycle
     ),
     (
-		(0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and 
+		(0.572511,-0.925913)..controls
+		(-1.47015,-1.5479) and
+		(-1.32586,0.925729)..(-0.28979,1.00366)..controls
+		(1.30759,1.12382) and 
 		(1.65924,-0.595004)..cycle
     )
 };
 private path[] defaultPaCC = new path[]{ // [C]on[C]ave
 	(
-		(-0.9,0).. controls (-1.07649842837266,0.638748977821067) and (-0.964116819714307,1.31556675048848) 
-		..(-0.46,1.3).. controls (0.0281888161644762,1.28492509435253) and (0.0424415730404705,0.611597145023648) 
-		..(0.4,0.36).. controls (0.623716050683286,0.202581476469435) and (0.955392557398132,0.2268850080704) 
-		..(1.12,0).. controls (1.39778902724123,-0.382887703564746) and (1.00985460296201,-0.913845673503591) 
-		..(0.4,-1).. controls (0.0314808795565626,-1.05206079689921) and (-0.356264634361184,-0.976905732695238) 
-		..(-0.6,-0.7).. controls (-0.770480811250471,-0.506318160575248) and (-0.831474513408123,-0.247994188496873) 
+		(-0.9,0).. controls
+		(-1.07649842837266,0.638748977821067) and
+		(-0.964116819714307,1.31556675048848) 
+		..(-0.46,1.3).. controls
+		(0.0281888161644762,1.28492509435253) and
+		(0.0424415730404705,0.611597145023648) 
+		..(0.4,0.36).. controls
+		(0.623716050683286,0.202581476469435) and
+		(0.955392557398132,0.2268850080704) 
+		..(1.12,0).. controls
+		(1.39778902724123,-0.382887703564746) and
+		(1.00985460296201,-0.913845673503591) 
+		..(0.4,-1).. controls
+		(0.0314808795565626,-1.05206079689921) and
+		(-0.356264634361184,-0.976905732695238) 
+		..(-0.6,-0.7).. controls
+		(-0.770480811250471,-0.506318160575248) and
+		(-0.831474513408123,-0.247994188496873) 
 		..cycle
 	),
     (
-		(0.523035,-1.10261)..controls (-2.62474,-1.37362) and (0.932069,3.11139)..(0.558375,0.388742)..controls 
-		(0.508899,0.0282721) and (1.59031,-1.01073)..cycle
+		(0.523035,-1.10261)..controls
+		(-2.62474,-1.37362) and
+		(0.932069,3.11139)..(0.558375,0.388742)..controls
+		(0.508899,0.0282721) and
+		(1.59031,-1.01073)..cycle
     ),
 	(
-		(-1.4,0).. controls (-1.4330976353941,0.309902105154151) and (-1.14752451684655,0.558611632511754) 
-		..(-0.84,0.49).. controls (-0.66443424676999,0.450829617534925) and (-0.529507080118944,0.301231459889368) 
-		..(-0.35,0.28).. controls (0.10216096608008,0.226520006851507) and (0.27539586949137,0.862356630570909) 
-		..(0.7,0.91).. controls (1.05908418967551,0.950291602166852) and (1.33041677912753,0.603698618857815) 
-		..(1.33,0.21).. controls (1.32951602626534,-0.247172104636948) and (1.00821765736334,-0.645111266508212) 
-		..(0.56,-0.7).. controls (0.274611440338081,-0.734948682488405) and (0.00179568356868698,-0.609311459905892) 
-		..(-0.28,-0.56).. controls (-0.46548899922109,-0.527541258147606) and (-0.65562744488586,-0.528541447729153) 
-		..(-0.84,-0.49).. controls (-1.11441028298393,-0.432636963666203) and (-1.37134558383179,-0.268299042718725) 
+		(-1.4,0).. controls
+		(-1.4330976353941,0.309902105154151) and
+		(-1.14752451684655,0.558611632511754) 
+		..(-0.84,0.49).. controls
+		(-0.66443424676999,0.450829617534925) and
+		(-0.529507080118944,0.301231459889368) 
+		..(-0.35,0.28).. controls
+		(0.10216096608008,0.226520006851507) and
+		(0.27539586949137,0.862356630570909) 
+		..(0.7,0.91).. controls
+		(1.05908418967551,0.950291602166852) and
+		(1.33041677912753,0.603698618857815) 
+		..(1.33,0.21).. controls
+		(1.32951602626534,-0.247172104636948) and
+		(1.00821765736334,-0.645111266508212) 
+		..(0.56,-0.7).. controls
+		(0.274611440338081,-0.734948682488405) and
+		(0.00179568356868698,-0.609311459905892) 
+		..(-0.28,-0.56).. controls
+		(-0.46548899922109,-0.527541258147606) and
+		(-0.65562744488586,-0.528541447729153) 
+		..(-0.84,-0.49).. controls
+		(-1.11441028298393,-0.432636963666203) and
+		(-1.37134558383179,-0.268299042718725) 
 		..cycle
 	),
 	(
-		(-0.74,1.11).. controls (-0.45217186192491,1.16995417728509) and (-0.244186500029556,0.896228533675695) 
-		..(-1.11022302462516e-16,0.74).. controls (0.394876451006404,0.487361263147939) and 
-		(1.0095388806718,0.479180198886787) ..(1.11,1.1327982892113e-16).. controls 
-		(1.33690476375748,-1.08229204047052) and (-0.898239052326633,-1.59366714480983) ..(-1.11,0.37).. controls 
-		(-1.14560254698906,0.700143742564816) and (-1.03848931729363,1.04782511478409) ..cycle
+		(-0.74,1.11).. controls
+		(-0.45217186192491,1.16995417728509) and
+		(-0.244186500029556,0.896228533675695) 
+		..(-1.11022302462516e-16,0.74).. controls
+		(0.394876451006404,0.487361263147939) and
+		(1.0095388806718,0.479180198886787) ..(1.11,1.1327982892113e-16).. controls
+		(1.33690476375748,-1.08229204047052) and
+		(-0.898239052326633,-1.59366714480983) ..(-1.11,0.37).. controls
+		(-1.14560254698906,0.700143742564816) and
+		(-1.03848931729363,1.04782511478409) ..cycle
 	),
 	(
-		(-1.35,0).. controls (-1.18010190019904,0.416395394711846) and (-0.593260371382216,0.281172231186116) 
-		..(-0.27,0.54).. controls (0.0113914268982608,0.76530418707376) and (0.0415625335934956,1.24549540856936) 
-		..(0.405,1.35).. controls (1.23327036593247,1.5881649229556) and (1.85490272745839,-0.0949264215164867) 
-		..(0.27,-0.675).. controls (0.0952777069905893,-0.738948268869059) and (-0.0857655726904087,-0.78403391700961) 
-		..(-0.27,-0.81).. controls (-0.962087418222204,-0.907543111787485) and (-1.54255992615578,-0.471936216774976) 
+		(-1.35,0).. controls
+		(-1.18010190019904,0.416395394711846) and
+		(-0.593260371382216,0.281172231186116) 
+		..(-0.27,0.54).. controls
+		(0.0113914268982608,0.76530418707376) and
+		(0.0415625335934956,1.24549540856936) 
+		..(0.405,1.35).. controls
+		(1.23327036593247,1.5881649229556) and
+		(1.85490272745839,-0.0949264215164867) 
+		..(0.27,-0.675).. controls
+		(0.0952777069905893,-0.738948268869059) and
+		(-0.0857655726904087,-0.78403391700961) 
+		..(-0.27,-0.81).. controls
+		(-0.962087418222204,-0.907543111787485) and
+		(-1.54255992615578,-0.471936216774976) 
 		..cycle
 	),
 	(
-		(-0.69,0.23).. controls (-0.56530943588509,0.830213108154057) and (-0.490658723837313,1.55646651437028) 
-		..(0,1.38).. controls (0.325235552510512,1.26302830152094) and (0.237200927517758,0.801860482003199) 
-		..(0.46,0.575).. controls (0.619891745450561,0.41219358416926) and (0.894509662874465,0.412735950982866) 
-		..(1.035,0.23).. controls (1.25559773374585,-0.0569317384062731) and (1.01749624107123,-0.438647936878262) 
-		..(0.69,-0.69).. controls (0.106935122935565,-1.13749997528092) and (-0.664799927016652,-1.18767474273486) 
-		..(-0.851,-0.644).. controls (-0.950985536038634,-0.352058059741617) and 
+		(-0.69,0.23).. controls
+		(-0.56530943588509,0.830213108154057) and
+		(-0.490658723837313,1.55646651437028) 
+		..(0,1.38).. controls
+		(0.325235552510512,1.26302830152094) and
+		(0.237200927517758,0.801860482003199) 
+		..(0.46,0.575).. controls
+		(0.619891745450561,0.41219358416926) and
+		(0.894509662874465,0.412735950982866) 
+		..(1.035,0.23).. controls
+		(1.25559773374585,-0.0569317384062731) and
+		(1.01749624107123,-0.438647936878262) 
+		..(0.69,-0.69).. controls
+		(0.106935122935565,-1.13749997528092) and
+		(-0.664799927016652,-1.18767474273486) 
+		..(-0.851,-0.644).. controls
+		(-0.950985536038634,-0.352058059741617) and
 		(-0.751751264242251,-0.0672471774939401) ..cycle
 	),
 	(
-		(-0.84,-0.24).. controls (-1.18825254216645,0.432752580408028) and (-0.749760426462422,1.11594975136258) 
-		..(-0.24,0.96).. controls (0.0302529853898903,0.877322170006355) and (0.10736936611544,0.557158491533225) 
-		..(0.3,0.36).. controls (0.513175121412852,0.141814114802958) and (0.878268025246844,0.063643117790086) 
-		..(0.96,-0.24).. controls (1.09910636339287,-0.756795171199751) and (0.418309528013558,-1.17658493090488) 
-		..(-0.24,-0.84).. controls (-0.497994898468632,-0.708090630046164) and (-0.706794583247006,-0.497325581279094) 
+		(-0.84,-0.24).. controls
+		(-1.18825254216645,0.432752580408028) and
+		(-0.749760426462422,1.11594975136258) 
+		..(-0.24,0.96).. controls
+		(0.0302529853898903,0.877322170006355) and
+		(0.10736936611544,0.557158491533225) 
+		..(0.3,0.36).. controls
+		(0.513175121412852,0.141814114802958) and
+		(0.878268025246844,0.063643117790086) 
+		..(0.96,-0.24).. controls
+		(1.09910636339287,-0.756795171199751) and
+		(0.418309528013558,-1.17658493090488) 
+		..(-0.24,-0.84).. controls
+		(-0.497994898468632,-0.708090630046164) and
+		(-0.706794583247006,-0.497325581279094) 
 		..cycle
 	)
 };
 
 // -- Current values (subject to change) -- //
-
-// [Sy]stem
-private int currentSyRID = defaultSyRID;
-private bool currentSyEOP = true; // [E]xit [O]n [P]roduce
-private pen currentSyBG = white; // [B]ack[G]round
-private real currentSyM = 0; // [M]argin
 
 // [Se]ction
 real[] currentsection = copy(defaultsection);
@@ -225,31 +325,12 @@ private bool currentDrDC = true; // [Dr]aw [C]ache
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrE = false; // [E]xplain
 private bool currentDrDS = false; // [D]raw [S]hade
-
-// [Fr]ame
-private bool currentFrEP = false; // [E]nclose [P]icture
-private bool currentFrCP = false; // [C]lip [P]icture
-private pair currentFrFC = (0,0); // [F]rame [C]orner
+private bool currentDrIC = false; // [I]nvert [C]olors
 
 // [Pr]ogress
-private bool currentPrPM = true; // [P]rint [M]essages
-private bool currentPrAE = true; // [A]bort on [E]rror
-private int currentPrIL = 0; // The current [M]essage indent [L]evel.
-private int currentPrTS = seconds(); // [T]ime in [S]econds
 private path[] currentPrDP; // [D]ebug [P]aths
-private int currentPrFC = 0; // [F]rame [C]ount
-
-// [An]imations
-private string currentAnIF = "jpg"; // [I]nput [F]ormat
-private string currentAnOP = "animation"; // [O]otput [P]refix
-private string currentAnOF = "mp4"; // [O]otput [F]ormat
-private bool currentAnC = true; // [C]lose
-
-private bool vector (string format = currentAnIF) {return format == "" || format == "eps" || format == "pdf" || format == "svg";}
 
 // User variables
-path ucircle = defaultPaUC;
-path usquare = defaultPaUS;
 pen smoothcolor = lightgrey;
 pen subsetcolor = grey;
 path[] convexpath = copy(defaultPaCV);
@@ -259,89 +340,12 @@ int free = 1;
 int cartesian = 2;
 int plain = 3;
 
-// -- Low-level functions -- //
+// -- Auxiliary utilities -- //
 
-pair center (path p, int n = 10, bool arc = true)
-{
-    pair sum = (0,0);
-    for (int i = 0; i < n; ++i)
-    { sum += point(p, arc ? arctime(p, arclength(p)*i/n) : length(p) * i/n); }
-	if (inside(p, sum/n)) return sum/n;
-	real[] times = times(p, (0, ypart(sum/n)));
-	return (point(p, times[0]) + point(p, times[1])) * .5;
-}
+import pathmethods;
+import export;
 
-transform srap (real scale, real rotate, pair point)
-{ return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
-// [S]cale [R]otate [A]round [P]oint
-
-bool inside (real a, real b, real c)
-{ return (a <= c && c <= b); }
-
-bool isinside (path p, pair x)
-{ return windingnumber(p, x) == windingnumber(p, inside(p)); }
-
-bool insidepath (path p, path q)
-// Checks if q is completely inside p (the direction of p does not matter). Shorthand for inside(p, q) == 1
-{ return (inside(p, srap(scale = .99, rotate = 0, point = center(p))*q) == 1); }
-
-transform dscale (real scale, pair center = (0,0), pair dir) 
-{
-	if (length(dir) == 0) return identity;
-	return rotate(degrees(dir), center) * xscale(scale) * rotate(-degrees(dir), center);
-}
-
-real[] a (... real[] source)
-{ return source; }
-real[][] a (... real[][] source)
-{ return source; }
-real[][] aa (... real[] source)
-{ return new real[][]{source}; }
-
-int[] i (... int[] source)
-{ return source; }
-int[][] i (... int[][] source)
-{ return source; }
-int[][] ii (... int[] source)
-{ return new int[][]{source}; }
-
-pair comb (pair a, pair b, real t)
-{ return t*b + (1-t)*a;}
-
-pair[] concat (pair[][] a)
-{
-	if (a.length == 1) return a[0];
-	pair[] b = a.pop();
-	return concat(concat(a), b);
-}
-path[] concat (path[][] a)
-// Same as the standard Asymptote `concat` function, but with more than two arguments.
-{
-    if (a.length == 1) return a[0];
-    path[] b = a.pop();
-    return concat(concat(a), b);
-}
-
-bool contains (int[] source, int a)
-{
-	bool res = false;
-	for (int i = 0; i < source.length; ++i)
-	{
-		if (source[i] == a)
-		{
-			res = true;
-			break;
-		}
-	}
-	return res;
-}
-int[] difference (int[] a, int[] b)
-{
-	int[] res = {};
-	for (int i = 0; i < a.length; ++i)
-	{ if (!contains(b, a[i])) res.push(a[i]); }
-	return res;
-}
+// -- System functions -- //
 
 private bool checksection (real[] section)
 {
@@ -357,131 +361,6 @@ private bool checksection (real[] section)
 	{ return false; }
 	return true;
 }
-
-real arclength (path g, real a, real b)
-{ return arclength(subpath(g, a, b)); }
-
-real intersectiontime (path g, pair point, pair dir)
-// Returns the time of the intersection of `g` with a beam going from `point` in direction `dir`
-{
-    int dist = 2;
-    while (dist < 1024)
-    {
-        path line = point -- (point + unit(dir)*dist);
-        real[] isect = intersect(g, line);
-        if (isect.length > 0) return isect[0];
-        else dist *= 2;
-    }
-    return -1;
-}
-
-path connect (pair[] points)
-{
-	path res = nullpath;
-	for (int i = 0; i < points.length; ++i)
-	{ res = res..points[i]; }
-	return res;
-}
-
-pair intersection (path g, pair point, pair dir)
-{ return point(g, intersectiontime(g, point, dir)); }
-
-path reorient (path g, real time)
-{ return subpath(g, time, length(g))--subpath(g, 0, time)--cycle; }
-
-path turn (path g, pair point, pair dir)
-{ return reorient(g, intersectiontime(g, point, dir)); }
-
-path subcyclic (path p, pair t)
-{
-    if (t.x <= t.y) return subpath(p, t.x, t.y);
-    return subpath(p, t.x, length(p))--subpath(p, 0, t.y);
-}
-
-bool clockwise (path p)
-{ return (windingnumber(p, inside(p)) == -1); }
-
-bool meet (path p, path q)
-{ return (intersect(p, q).length > 0); }
-
-bool meet (path p, path[] q)
-{
-    for (int i = 0; i < q.length; ++i)
-    { if (meet(p, q[i])) return true; }
-    return false;
-}
-
-path ellipsepath (pair a, pair b, real curve = 0, bool abs = false)
-// Returns half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
-{
-    if (!abs) curve = curve*length(b-a);
-    pair mid = (a+b)*.5;
-    path e = rotate(degrees(a-b), z = mid)*ellipse(mid, length(b-a)*.5, curve);
-    return subpath(e, 0, reltime(e, .5));
-}
-
-path curvedpath (pair a, pair b, real curve = 0, bool abs = false)
-// Constucts a curved path between two points.
-{
-    if (abs) curve = curve/length(b-a);
-    pair mid = (a+b)*.5;
-    return a .. (mid + curve * (rotate(-90) * (b-a))) .. b;
-}
-
-path cyclepath (pair a, real angle, real radius)
-{ return shift(a)*rotate(angle)*scale(radius)*shift(1,0)*rotate(180)*reverse(unitcircle); }
-
-pair range (path g, pair center, pair dir, real ang, real orientation = 1)
-{
-    return (intersectiontime(g, center, rotate(orientation*ang*.5)*dir), intersectiontime(g, center, rotate(-orientation*ang*.5)*dir));
-}
-
-bool outsidepath (path p, path q)
-{ return !meet(p,q) && !insidepath(p,q); }
-
-path midpath (path g, path h, int n = 20)
-// Constructs the "mean" path between two given paths.
-{
-    path res;
-    for (int i = 0; i < n; ++i)
-    {
-        res = res .. {(dir(g, reltime(g, i/n)) + dir(h, reltime(h, i/n)))*.5}((point(g, reltime(g, i/n)) + point(h, reltime(h, i/n)))*.5);
-    }
-    return res .. {(dir(g, reltime(g, 1)) + dir(h, reltime(h, 1)))*.5}((point(g, reltime(g, 1)) + point(h, reltime(h, 1)))*.5);
-}
-
-path pop (path[] source)
-{
-	path i = source[0];
-	source.delete(0);
-	return i;
-}
-
-real xsize (path p){return xpart(max(p)) - xpart(min(p));}
-real ysize (path p){return ypart(max(p)) - ypart(min(p));}
-
-real xsize (picture p){return xpart(max(p)) - xpart(min(p));}
-real ysize (picture p){return ypart(max(p)) - ypart(min(p));}
-
-path wavypath (real[] nums)
-{
-    if (nums.length == 1) return scale(nums[0])*defaultPaUC;
-    
-	pair[] points = sequence(new pair (int i){return nums[i]*dir(-360*(i/nums.length));}, nums.length);
-    path getpath (pair[] arr)
-    {
-        if (arr.length == 2) return arr[0]{rotate(-90)*arr[0]}..{rotate(-90)*arr[1]}arr[1];
-        pair a = arr.pop();
-        return getpath(arr) .. {rotate(-90)*a}a;
-    }
-    
-	return getpath(points)..cycle;
-}
-path wavypath (... real[] nums)
-{ return wavypath(nums = nums); }
-
-// -- Printing functions -- //
-
 string mode (int md)
 {
 	if (md == 0) return "strict";
@@ -490,512 +369,72 @@ string mode (int md)
 	if (md == 3) return "plain";
 	return "";
 }
-
-private string copychar (string str, int n)
+private real sectionissymmetric (pair p1, pair p2, pair dir1, pair dir2)
+{ return abs(dot(unit(dir2), unit(p1-p2))-dot(unit(p2-p1), unit(dir1))); }
+private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 {
-	if (n == 0) return "";
-	return copychar(str, n-1) + str;
-}
-
-private void printversion ()
-{
-	write("This is module smoothmanifold, Roman Maksimovich, " + time(format = "%D") + ". Version " + defaultversion + ".");
-	write();
-}
-private void print (string str)
-{ write(copychar(defaultPrMP, currentPrIL) + defaultPrMPP + str, suffix = none); }
-private void printbeginning (string str, bool indent = false)
-{
-	if (!currentPrPM) return;
-	if (defaultPrJBK)
-	{
-		printversion();
-		defaultPrJBK = false;
-	}
-	if (indent) write();
-	string res = copychar(defaultPrMP, currentPrIL) + defaultPrMPP + str;
-	while (length(res) < defaultPrML-9) res += " ";
-	write(res, suffix = none);
-}
-private void printmessage (string str)
-{
-	currentPrIL += 1;
-	write(copychar(defaultPrEP, currentPrIL) + defaultPrEPP + str);
-	write();
-	currentPrIL -= 1;
-}
-private void printsuccess ()
-{
-	if (!currentPrPM) return;
-	write("[SUCCESS]");
-}
-private void printwarning (string str)
-{
-	if (!currentPrPM) return;
-	write("[WARNING] !");
-	printmessage(str);
-}
-private void printfailure (string str)
-{
-	write("[FAILURE] !");
-	printmessage(str);
-	if (currentPrAE)
-	{
-		write("Aborting...", suffix = none);
-		exit();
-	}
-}
-private void printstarted ()
-{
-	if (!currentPrPM) return;
-	write(".........");
-	currentPrIL += 1;
-}
-private void printfinished ()
-{
-	currentPrIL -= 1;
-	if (!currentPrPM) return;
-	string res = copychar(defaultPrMP, currentPrIL) + defaultPrMPP + "Finished.";
-	while (length(res) < defaultPrML-9) res += " ";
-	write(res + "^^^^^^^^^");
-}
-void printtime ()
-{
-	if (!currentPrPM) return;
-	printbeginning("Compilation time:");
-	write((string)(seconds()-currentPrTS) + " s.");
+    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
 
 // -- User setting functions -- //
 
-void printprogress (bool val) { currentPrPM = val; }
-void setproduce (int dpi = defaultSyRID, pen bgpen = currentSyBG, real margin = currentSyM, bool exit = currentSyEOP)
+void sectionparams (real[] section = defaultsection, int nn = defaultSeNN, real na = defaultSeNA, real nl = defaultSeMLR)
 {
-	printbeginning("Setting produce parameters...");
-	if (dpi < 10)
-	{
-		printfailure("Could not apply changes: inacceptable quality.");
-		return;
-	}
-	if (margin < 0)
-	{
-		printfailure("Could not set margin: value must be positive.");
-		return;
-	}
-	currentSyRID = dpi;
-	currentSyBG = bgpen;
-	currentSyM = margin;
-	currentSyEOP = exit;
-	printsuccess();
-}
-void setsection (real[] section = defaultsection, int nn = defaultSeNN, real na = defaultSeNA, real nl = defaultSeMLR)
-{
-	printbeginning("Setting default section parameters...");
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
-	{
-		printfailure("Could not change default section parameters: invalid intries");
-		return;
-	}
-	if (!inside(0,1, nl))
-	{
-		printfailure("Could not change default section parameters: length ratio value out of range: must be between 0 and 1.");
-	}
+	{ abort("Could not change default section parameters: invalid intries"); }
+	if (nl <= 0)
+	{ abort("Could not change default section parameters: section length value must be positive"); }
 	for (int i = 0; i < section.length; ++i)
 	{ if (section[i] != defaultSyDN) currentsection[i] = section[i]; }
 	currentSeNN = nn;
 	currentSeNA = na;
 	currentSeMLR = nl;
-
-	printsuccess();
 }
-void inferlabels (bool val)
+void inferlabels (bool val) { currentSmIL = val; }
+void shiftsubsets (bool val) { currentSmSS = val; }
+void arrowparams (real ovlength = defaultArOL, real margin = defaultArM)
 {
-	printbeginning("Setting labeling patterns...");
-	currentSmIL = val;
-	printsuccess();
+	currentArOL = ovlength;
+	currentArM = margin;
+	if (ovlength > 1) write("> ! Value for arrow overlap length looks too big: the result may be ugly.");
 }
-void shiftsubsets (bool val)
+void drawparams (int mode = currentDrM, pen smoothfill = smoothcolor, pen subsetfill = subsetcolor, real minscale = currentDrSPM, bool cache = currentDrDC, bool explain = currentDrE, pen explainpen = currentDrExP, real dragop = currentDrDO, bool drawdashes = currentDrDD, bool shade = currentDrDS, pen sectionpen = currentDrSeP, pen elementpen = currentDrElP)
 {
-	printbeginning("Setting subset view behavior...");
-	currentSmSS = val;
-	printsuccess();
-}
-void arrowparams (real ol = defaultArOL, real mar = defaultArM)
-{
-	printbeginning("Setting arrow draw parameters");
-	currentArOL = ol;
-	currentArM = mar;
-	if (ol > 1) printwarning("length value looks too big: the result may be ugly.");
-	else printsuccess();
-}
-void sectiondraw (bool drawdashes = currentDrDD, bool shade = currentDrDS, pen sep = defaultDrSeP)
-{
-	printbeginning("Setting cross section draw parameters...");
-	currentDrDD = drawdashes;
-	currentDrDS = shade;
-	currentDrSeP = sep;
-	printsuccess();
-}
-void elementdraw (pen ep = defaultDrElP)
-{
-	printbeginning("Setting element draw parameters...");
-	currentDrElP = ep;
-	printsuccess();
-}
-void smoothdraw (int mode = currentDrM, pen smoothfill = smoothcolor, pen subsetfill = subsetcolor, real minscale = defaultDrSPM, bool cache = currentDrDC, bool explain = currentDrE, real dragop =  defaultDrDO)
-{
-	printbeginning("Setting draw parameters...");
 	if (!inside(0,3, mode))
-	{
-		printfailure("Could not set mode: invalid entry provided.");
-		return;
-	}
+	{ abort("Could not set mode: invalid entry provided."); }
 	if (!inside(0,1, minscale))
-	{
-		printfailure("Could not apply changes: subset color scale argument out of range: must be between 0 and 1.");
-		return;
-	}
+	{ abort("Could not apply changes: subset color scale argument out of range: must be between 0 and 1."); }
 	if (!inside(0,1, dragop))
-	{
-		printfailure("Could not set drag opacity: entry out of bounds: must be between 0 and 1.");
-		return;
-	}
+	{ abort("Could not set drag opacity: entry out of bounds: must be between 0 and 1."); }
 	currentDrM = mode;
 	smoothcolor = smoothfill;
 	subsetcolor = subsetfill;
 	currentDrSPM = minscale;
 	currentDrDC = cache;
 	currentDrE = explain;
+	currentDrExP = explainpen;
 	currentDrDO = dragop;
-	printsuccess();
+	currentDrDD = drawdashes;
+	currentDrDS = shade;
+	currentDrSeP = sectionpen;
+	currentDrElP = elementpen;
 }
-void abort (bool val)
+void invertcolors ()
 {
-	printbeginning("Setting abort patterns...");
-	currentPrAE = val;
-	printsuccess();
+	exportparams(bgpen = inverse(currentExBG));
+	defaultpen(inverse(currentpen));
+	smoothcolor = inverse(smoothcolor);
+	subsetcolor = inverse(subsetcolor);
+	currentDrIC = !currentDrIC;
+	currentDrExP = inverse(currentDrExP);
+	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
+	currentDrElP = inverse(currentDrElP);
 }
-void drawdebug ()
-{
-	printbeginning("Drawing debug paths...");
-	draw(currentPrDP);
-	printsuccess();
-}
-void animationparams (string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
-{
-	printbeginning("Setting animation details...");
-	if (find(outprefix, " ") > -1)
-	{
-		printfailure("Could not apply changes: prefix should not contain spaces.");
-		return;
-	}
-	if (find("eps|jpg|png|pdf", informat) == -1)
-	{ printwarning("You have chosen an unfamiliar input format. Proceed with caution."); }
-	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", informat) == -1)
-	{ printwarning("You have chosen an unfamiliar output format. Proceed with caution."); }
-	
-	currentAnIF = informat;
-	currentAnOP = outprefix;
-	currentAnOF = outformat;
-	currentAnC = close;
-}
-void setframe (real ymax, real ratio = 1.777777777, bool crop = true)
-{
-	printbeginning("Setting frame...");
-	currentFrEP = true;
-	currentFrFC = (ymax*ratio, ymax);
-	if (crop) currentFrCP = true;
-	printsuccess();
-}
-
-// -- More complicated path utilities -- //
-
-struct gauss
-// A Gaussian integer.
-{
-    int x;
-    int y;
-
-    void operator init (int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-bool operator == (gauss a, gauss b)
-{ return a.x == b.x && a.y == b.y; }
-
-gauss operator cast (pair p)
-{ return gauss(floor(p.x), floor(p.y)); }
-pair operator cast (gauss g)
-{ return (g.x, g.y); }
-
-path connect (path p, path q)
-// Connects `p` and `q` smoothly.
-{ return p -- (point(p, length(p)){dir(p, length(p))} .. {dir(q, 0)}point(q, 0)) -- q; }
-
-path[] combination (path p, path q, int mode, bool round, real roundcoeff)
-// A general way to "combine" two paths based on their intersection points.
-{
-    if (!meet(p, q)) return new path[];
-
-	real proundlength = roundcoeff*arclength(p);
-    real qroundlength = roundcoeff*arclength(q);
-    
-	real[][] times = intersections(p, q);
-    for (int i = 0; i < times.length; ++i)
-    {
-        pair pdi = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = -1) : dir(p, times[i][0]);
-        pair pdo = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = 1) : dir(p, times[i][0]);
-        pair qdi = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = -1) : dir(q, times[i][1]);
-        pair qdo = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = 1) : dir(q, times[i][1]);
-
-        if (sgn(cross(qdi, pdi))*sgn(cross(pdo, qdo)) >= 0)
-        {
-            times.delete(i);
-            --i;
-        }
-    }
-    
-	int n = times.length;
-    int[] pinds = sort(sequence(n), new bool (int a, int b){return (times[a][1] <= times[b][1]);});
-    int[] qinds = sort(sequence(n), new bool (int a, int b){return (times[pinds[a]][0] <= times[pinds[b]][0]);});
-    
-	path[] res;
-    
-	gauss start = (0, qinds[0]);
-    gauss[] nextstarts;
-    int visited = 0;
-    gauss curind = start;
-    path curpath;
-    
-	while (visited < n)
-    {
-        visited += 1;
-        bool pway;
-        gauss newind;
-        pair pdir = (times[curind.x][0] == floor(times[curind.x][0])) ? dir(p, floor(times[curind.x][0]), sign = 1) : dir(p, times[curind.x][0]);
-        pair qdir = (times[curind.x][1] == floor(times[curind.x][1])) ? dir(q, floor(times[curind.x][1]), sign = 1) : dir(q, times[curind.x][1]);
-        if(cross(pdir, qdir)*mode < 0) pway = true;
-        else pway = false;
-        if(pway)
-        {
-            newind = ((curind.x+1)%n, qinds[(curind.x+1)%n]);
-            if ((-(newind.y - curind.y)*windingnumber(q, inside(q)))%n > 1)
-            { nextstarts.insert(i = 0, (pinds[(curind.y+1)%n], (curind.y+1)%n)); }
-        }
-        else
-        {
-            newind = (pinds[(curind.y+1)%n], (curind.y+1)%n);
-            if ((-(newind.x - curind.x)*windingnumber(p, inside(p)))%n > 1)
-            { nextstarts.insert(i = 0, ((curind.x+1)%n, qinds[(curind.x+1)%n])); }
-        }
-        path addpath = subcyclic(pway ? p : q, (times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]));
-        if (!round || curpath == nullpath) curpath = curpath -- addpath;
-        else
-        {
-            path subcurpath = subpath(curpath, 0, arctime(curpath, arclength(curpath)- (pway ? qroundlength : proundlength)));
-            path subaddpath = subpath(addpath, arctime(addpath, (pway ? proundlength : qroundlength)), length(addpath));
-            curpath = connect(subcurpath, subaddpath);
-        }
-        if (newind == start)
-        {
-            path finpath;
-            if (!round) finpath = curpath--cycle;
-            else
-            {
-                real begin = arctime(curpath, (pway ? qroundlength : proundlength));
-                real end = arctime(curpath, arclength(curpath)-(pway ? proundlength : qroundlength));
-                finpath = subpath(curpath, begin, end)--(point(curpath, end){dir(curpath, end)}..{dir(curpath, begin)}point(curpath, begin))--cycle;
-            }
-            res.push(finpath);
-            curpath = nullpath;
-            if (nextstarts.length == 0) break;
-            start = nextstarts.pop();
-            curind = start;
-        }
-        else curind = newind;
-    }
-
-	res = sort(res, new bool (path i, path j){
-		if (clockwise(i)) return true;
-		else if (!clockwise(j)) return true;
-		else return false;
-	});
-
-    return res;
-}
-
-// -- Set operations on paths! Cool, huh? -- //
-
-path[] difference (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
-    if (!meet(p, q))
-    {
-        if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
-        if (windingnumber(q, point(p,0)) == -1) return new path[]{};
-        return new path[]{p};
-    }
-
-    return combination(p, reverse(q), mode = -1, round = round, roundcoeff = roundcoeff);
-}
-path[] difference (path[] paths, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
-        if (!clockwise(q)) q = reverse(q);
-    }
-
-    return concat(sequence(new path[] (int i){return difference(paths[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, paths.length));
-}
-path[] operator - (path p, path q)
-{ return difference(p, q); }
-path[] operator - (path[] p, path q)
-{ return difference(p, q); }
-
-path[] intersection (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
-    if (!meet(p, q))
-    {
-        if (insidepath(p,q)) return new path[]{q};
-        if (insidepath(q,p)) return new path[]{p};
-        return new path[];
-    }
-
-    return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
-}
-path[] intersection (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
-    }
-    if (paths.length == 0) return new path[];
-    if (paths.length == 1) return paths;
-    if (paths.length == 2) return intersection(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
-	
-	paths = sequence(new path (int i){return paths[i];}, paths.length);
-    
-	path p = paths.pop();
-    path[] prev = intersection(paths, correct = false, round = round, roundcoeff = roundcoeff);
-    
-	return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
-}
-path[] intersection (bool correct = true, bool round = false, real roundcoeff = defaultSyRR ... path[] paths)
-{return intersection(paths, correct, round, roundcoeff);}
-path[] intersection (path p, path q, path[] holes, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-        for (int i = 0; i < holes.length; ++i)
-        { if (!clockwise(holes[i])) holes[i] = reverse(holes[i]); }
-    }
-    
-	path[] res = intersection(p, q, correct = false, round = round, roundcoeff = roundcoeff);
-    for (int i = 0; i < holes.length; ++i)
-    { res = difference(res, holes[i], correct = false, round = round, roundcoeff = roundcoeff); }
-    
-	return res;
-}
-path[] operator & (path p, path q)
-{ return intersection(p, q); }
-
-path[] union (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
-    if (!meet(p, q))
-    {
-        if (insidepath(p,q)) return new path[]{p};
-        if (insidepath(q,p)) return new path[]{q};
-        return new path[]{p,q};
-    }
-    
-	return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
-}
-path[] union (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
-{
-    if (correct)
-    {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
-    }
-    
-	if (paths.length == 0) return new path[];
-    if (paths.length == 1) return paths;
-    if (paths.length == 2) return union(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
-    
-	for (int i = 0; i < paths.length; ++i)
-    {
-        for (int j = i+1; j < paths.length; ++j)
-        {
-            if (meet(paths[i], paths[j]))
-            {
-                paths[i] = union(paths[i], paths[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
-                paths.delete(j);
-                j = i;
-            }
-        }
-    }
-    
-	return paths;
-}
-path[] union (bool correct = true, bool round = false, real roundcoeff = defaultSyRR ... path[] paths)
-{return union(paths, correct, round, roundcoeff);}
-path[] operator | (path p, path q)
-{ return union(p, q); }
-
-pair randomdir (pair dir, real angle)
-{ return dir(degrees(dir) + (unitrand()-.5)*angle); }
-
-path randompath (pair[] controlpoints, real angle)
-{
-	if (controlpoints.length < 2) return nullpath;
-
-	pair outdir = randomdir(controlpoints[1]-controlpoints[0], angle);
-	path res = controlpoints[0];
-	for (int i = 1; i < controlpoints.length; ++i)
-	{
-		pair indir = randomdir(controlpoints[i]-controlpoints[i-1], angle);
-		res = res{outdir} .. {indir}controlpoints[i];
-		outdir = indir;
-	}
-
-	return res;
-}
-
-// -- All the functions that construct section positions -- //
-
-real sectionissymmetric (pair p1, pair p2, pair dir1, pair dir2)
-{ return abs(dot(unit(dir2), unit(p1-p2))-dot(unit(p2-p1), unit(dir1))); }
-
-bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
-{
-    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
-}
+void drawdebug () { draw(currentPrDP); }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
 
-pair[][] cartsectionpoints (path[] g, real r, bool horiz)
+private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
 {
     real min = horiz ? ypart(min(g)) : xpart(min(g));
     real max = horiz ? ypart(max(g)) : xpart(max(g));
@@ -1011,7 +450,7 @@ pair[][] cartsectionpoints (path[] g, real r, bool horiz)
     
 	return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
-pair[][] cartsections (path[] g, real r, bool horiz)
+private pair[][] cartsections (path[] g, real r, bool horiz)
 // Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
     pair[][] presections = cartsectionpoints(g, r, horiz);
@@ -1042,7 +481,7 @@ pair[][] cartsections (path[] g, real r, bool horiz)
 
 	return sections;
 }
-pair ellipseparams (real l, real h, real cang1, real cang2, bool binsearch)
+private pair ellipseparams (real l, real h, real cang1, real cang2, bool binsearch)
 {
     if (!binsearch) 
     {
@@ -1075,13 +514,13 @@ pair ellipseparams (real l, real h, real cang1, real cang2, bool binsearch)
 	return ((l1 + (l-l2))*.5, (l-l1-l2)*.5);
 }
 
-real sectionheight (real x, real max)
+private real sectionheight (real x, real max)
 {
 	real m2 = max/2;
 	return (x < m2) ? x : (x - m2)/(1+(2*(x-m2)/max))+m2;
 }
 
-path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir, bool free)
+private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir, bool free)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
 	if (length(viewdir) == 0) return new path[]{p1--p2};
@@ -1133,7 +572,7 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir, boo
     
 	return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
-pair[][] sectionparamsfree (path g, path h, int p, int step)
+private pair[][] sectionparamsfree (path g, path h, int p, int step)
 // Searches for potential section positions between two given paths in the way that first comes to mind. Has its benefits and limitations.
 {
     pair[][] res = new pair[][];
@@ -1159,7 +598,7 @@ pair[][] sectionparamsfree (path g, path h, int p, int step)
     }
     return res;
 }
-pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, bool addtimes = false)
+private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, bool addtimes = false)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
     real goddstep = arclength(g)/(n + (n-1)*(1 - ratio)/ratio);
@@ -1261,7 +700,7 @@ element operator cast (pair a)
 bool operator == (element a, element b)
 { return a.pos == b.pos; }
 
-void elementadjust (element elt, pair shift, real scale, real rotate, pair point)
+private void elementadjust (element elt, pair shift, real scale, real rotate, pair point)
 { elt.pos = srap(scale, rotate, point)*shift(shift)*elt.pos; }
 
 struct hole
@@ -1335,7 +774,7 @@ hole[] holecopy (hole[] holes)
 path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
-void holeadjust (hole hl, pair shift, real scale, real rotate, pair point)
+private void holeadjust (hole hl, pair shift, real scale, real rotate, pair point)
 { hl.move(shift, scale, rotate, shift(-shift) * point, false); }
 
 struct subset
@@ -1432,10 +871,10 @@ subset[] subsetcopy (subset[] subsets)
 path[] subsetcontours (subset[] s)
 { return sequence(new path (int i){return s[i].contour;}, s.length); }
 
-void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
+private void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
 { s.move(shift, scale, rotate, shift(-shift) * point, true); }
 
-subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmIL)
+private subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmIL)
 {
 	path[] contours = intersection(sb1.contour, sb2.contour);
 	return sequence(new subset (int i){
@@ -1449,7 +888,7 @@ subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmIL
 		);
 	}, contours.length);
 }
-void subsetdelete (subset[] subsets, int ind, bool recursive)
+private void subsetdelete (subset[] subsets, int ind, bool recursive)
 {
 	subset cursb = subsets[ind];
 	if (recursive)
@@ -1467,31 +906,31 @@ void subsetdelete (subset[] subsets, int ind, bool recursive)
 		}
 	}
 }
-void subsetsort (subset[] subsets, int[] range)
+private void subsetsort (subset[] subsets, int[] range)
 { range = sort(range, new bool (int i, int j){return subsets[i].layer <= subsets[j].layer;}); }
 
-int subsetgetindex (subset[] subsets, int[] ind)
+private int subsetgetindex (subset[] subsets, int[] ind)
 {
 	int res = ind[0];
 	for (int i = 1; i < ind.length; ++i)
 	{ res = subsets[res].subsets[ind[i]]; }
 	return res;
 }
-int subsetgetindex (subset[] subsets ... int[] ind)
+private int subsetgetindex (subset[] subsets ... int[] ind)
 { return subsetgetindex(subsets, ind); } // try to change later
-subset subsetget (subset[] subsets, int[] ind)
+private subset subsetget (subset[] subsets, int[] ind)
 { return subsets[subsetgetindex(subsets, ind)]; }
-subset subsetget (subset[] subsets ... int[] ind)
+private subset subsetget (subset[] subsets ... int[] ind)
 { return subsets[subsetgetindex(subsets, ind)]; }
 
-int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
+private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 {
 	int[] res;
 	for (int i = 0; i < range.length; ++i)
 	{ if (subsets[range[i]].layer == layer) res.push(range[i]); }
 	return res;
 }
-int[] subsetgetall (subset[] subsets, subset s)
+private int[] subsetgetall (subset[] subsets, subset s)
 {
 	bool[] wanted = array(subsets.length, false);
 	void fill (subset sp)
@@ -1508,26 +947,26 @@ int[] subsetgetall (subset[] subsets, subset s)
 	{ if (wanted[i]) res.push(i); }
 	return res;
 }
-int[] subsetgetall (subset[] subsets, int ind)
+private int[] subsetgetall (subset[] subsets, int ind)
 { return subsetgetall(subsets, subsets[ind]); }
-int[] subsetgetall (subset[] subsets, int[] ind)
+private int[] subsetgetall (subset[] subsets, int[] ind)
 { return subsetgetall(subsets, subsetget(subsets, ind)); }
 
-int[] subsetgetallnot (subset[] subsets, subset s)
+private int[] subsetgetallnot (subset[] subsets, subset s)
 { return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
-int[] subsetgetallnot (subset[] subsets, int ind)
+private int[] subsetgetallnot (subset[] subsets, int ind)
 { return difference(sequence(subsets.length), subsetgetall(subsets, ind)); }
-int[] subsetgetallnot (subset[] subsets, int[] ind)
+private int[] subsetgetallnot (subset[] subsets, int[] ind)
 { return difference(sequence(subsets.length), subsetgetall(subsets, ind)); }
 
-void subsetdeepen (subset[] subsets, subset s)
+private void subsetdeepen (subset[] subsets, subset s)
 {
 	s.layer += 1;
 	for (int i = 0; i < s.subsets.length; ++i)
 	{ if (s.layer == subsets[s.subsets[i]].layer) subsetdeepen(subsets, subsets[s.subsets[i]]); }
 }
 
-int subsetinsertindex (subset[] subsets, int layer)
+private int subsetinsertindex (subset[] subsets, int layer)
 {
 	int insertindex = subsets.length;
 	for (int i = 0; i < subsets.length; ++i)
@@ -1541,7 +980,7 @@ int subsetinsertindex (subset[] subsets, int layer)
 	
 	return insertindex;
 }
-int subsetinsert (subset[] subsets, subset s)
+private int subsetinsert (subset[] subsets, subset s)
 {
 	int ind = subsetinsertindex(subsets, s.layer);
 	subsets.insert(ind, s);
@@ -1554,7 +993,7 @@ int subsetinsert (subset[] subsets, subset s)
 	return ind;
 }
 
-int subsetmaxlayer (subset[] subsets, int[] range)
+private int subsetmaxlayer (subset[] subsets, int[] range)
 {
 	int res = -1;
 	for (int i = 0; i < range.length; ++i)
@@ -1724,8 +1163,6 @@ struct smooth
     }
     smooth setratios (real[] ratios, bool horiz)
     {
-		printbeginning("Setting " + (horiz ? "horizontal" : "vertical") + " ratios for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-
 		if (ratios.length == 0)
 		{
 			int count = 0;
@@ -1736,39 +1173,31 @@ struct smooth
 				count += 1;
 			}
 
-			printsuccess();
 			return this;
 		}
 		for (int i = 0; i < ratios.length; ++i)
 		{
 			if (!inside(0,1, ratios[i]))
-			{
-				printfailure("Could not set ratios: all entries must lie between 0 and 1.");
-				return this;
-			}
+			{ abort("Could not set ratios: all entries must lie between 0 and 1."); }
 		}
 
 		if (horiz) this.hratios = ratios;
 		else this.vratios = ratios;
-		printsuccess();
         
         return this;
     }
     smooth setcenter (int[] ind = {}, pair center = center(this.contour), bool unit = true)
     {
-		printbeginning("Setting center for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		if (ind.length == 0) this.center = unit ? shift(this.shift)*center : center;
 		else subsetget(this.subsets, ind).setcenter(unit ? shift(this.shift)*center : center);
         
 		if (!this.isinside(this.center))
-		{ printwarning("Center out of bounds: could cause problems later."); }
-		else printsuccess();
+		{ write("> ! Center out of bounds: might cause problems later."); }
 
         return this;
     }
     smooth setlabel (int[] ind = {}, string label = this.label, pair labeldir = this.labeldir, pair labelalign = defaultSyDP, bool keepalign = false)
     {
-		printbeginning("Setting label " + (label == this.label ? "" : label + " ") + "for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		if (ind.length == 0)
 		{
 			this.label = label;
@@ -1777,7 +1206,6 @@ struct smooth
 		}
 		else
 		{ subsetget(this.subsets, ind).setlabel(label, labeldir, labelalign, keepalign); }
-		printsuccess();
 
         return this;
     }
@@ -1785,38 +1213,31 @@ struct smooth
     { return this.setlabel(ind, label, dir(angle)); }
 	smooth addelement (element elt, bool unit = true)
 	{
-		printbeginning("Adding element to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-		
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
 
 		if (!this.isinside(elt.pos))
-		{
-			printfailure("Couldnot add element: position out of bound.");
-			return this;
-		}
+		{ abort("Could not add element: position out of bounds."); }
+
 		this.elements.push(elt);
-		printsuccess();
 		return this;
 	}
 	smooth addelement (pair pos, string label = "", pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
     smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
     {
-		printbeginning("Adding hole to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-        
 		if (unit) holeadjust(hl, this.shift, this.scale, 0, this.center);
 		if (!insidepath(this.contour, hl.contour))
 		{
-			printfailure("Could not add hole: contour out of bounds.");
 			currentPrDP.push(hl.contour);
+			write("> ! Could not add hole: contour out of bounds. Call `drawdebug()` in the end to adjust.");
 			return this;
 		}
 		for (int i = 0; i < this.holes.length; ++i)
 		{
 			if (!outsidepath(this.holes[i].contour, hl.contour))
 			{
-				printfailure("Could not add hole: contour intersecting with other holes.");
 				currentPrDP.push(hl.contour);
+				write("> ! Could not add hole: contour intersecting with other holes. Call `drawdebug()` in the end to adjust.");
 				return this;
 			}
 		}
@@ -1833,8 +1254,8 @@ struct smooth
 		}
 		if (abort)
 		{
-			printfailure("Could not add hole: contour intervening with subsets");
 			currentPrDP.push(hl.contour);
+			write("> ! Could not add hole: contour intervening with subsets. Call `drawdebug()` in the end to adjust.");
 			return this;
 		}
 		else
@@ -1859,9 +1280,8 @@ struct smooth
             if (hl.sections[i][4] == defaultSyDN || hl.sections[i][4] <= 0 || hl.sections[i][4] > 1) hl.sections[i][4] = currentsection[4];
             if (hl.sections[i][5] == defaultSyDN || hl.sections[i][5] <= 0 || hl.sections[i][5] != ceil(hl.sections[i][5])) hl.sections[i][5] = currentsection[5];
         }
+
         this.holes.insert(i = ind, hl);
-		printsuccess();
-        
 		return this;
     }
     smooth addhole (path contour, real[][] sections = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center(contour), bool unit = true)
@@ -1870,20 +1290,13 @@ struct smooth
 	}
     smooth rmhole(int ind)
     {
-		printbeginning("Removing hole from " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
      	this.holes.delete(ind);
-        printsuccess();
-
         return this;
     }
     smooth addholesection (int ind, real[] section = {}, bool unit = false)
     {
-		printbeginning("Adding hole section to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		if (!checksection(section))
-		{
-			printfailure("Could not add section: invalid entries.");
-			return this;
-		}
+		{ abort("Could not add section: invalid entries."); }
 		for (int i = 0; i < section.length; ++i)
 		{ if (section[i] == defaultSyDN) section[i] = currentsection[i]; }
         while(section.length < currentsection.length)
@@ -1894,14 +1307,12 @@ struct smooth
 			section[0] = holedir.x;
 			section[1] = holedir.y;
 		}
-        this.holes[ind].sections.push(section);
-        printsuccess();
 
+        this.holes[ind].sections.push(section);
         return this;
     }
     smooth setholesection (int ind, int ind2 = 0, real[] section = {}, bool unit = false)
     {
-		printbeginning("Setting hole section for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
         this.holes[ind].sections.delete(ind2);
         while(section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
@@ -1912,17 +1323,13 @@ struct smooth
 			section[1] = holedir.y;
 		}
 		if (!checksection(section)) return this;
-        this.holes[ind].sections.insert(i = ind2, section);
-        printsuccess();
 
+        this.holes[ind].sections.insert(i = ind2, section);
         return this;
     }
     smooth rmholesection (int ind, int ind2 = 0)
     {
-		printbeginning("Removing hole section from " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
         this.holes[ind].sections.delete(ind2);
-        printsuccess();
-
         return this;
     }
 	smooth addsubset (subset sb, int[] ind = {}, bool unit = true, bool findplace = false)
@@ -1945,8 +1352,6 @@ struct smooth
 
 			return this.addsubset(sb, (index == -1 ? new int[]{} : i(index)), false, false);
 		}
-		
-		printbeginning("Adding subset to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		
 		sb.subsets.delete();
 		
@@ -1971,8 +1376,8 @@ struct smooth
 
 		if (!insidepath(pcontour, sb.contour))
 		{
-			printfailure("Could not add subset: contour out of bounds.");
 			currentPrDP.push(sb.contour);
+			write("> ! Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust.");
 			return this;
 		}
 		if (!sub)
@@ -1981,8 +1386,8 @@ struct smooth
 			{
 				if (meet(this.holes[i].contour, sb.contour) || isinside(this.holes[i].contour, inside(sb.contour)))
 				{
-					printfailure("Could not add subset: contour out of bounds.");
 					currentPrDP.push(sb.contour);
+					write("> ! Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust.");
 					return this;
 				}
 			}
@@ -1998,8 +1403,8 @@ struct smooth
 			if (insidepath(curchild.contour, sb.contour))
 			{
 				subsetdelete(this.subsets, insertindex, true);
-				printfailure("Could not add subset: contour is contained in another subset unlisted in `ind`.");
 				currentPrDP.push(sb.contour);
+				write("Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
 				return this;
 			}
 			if (insidepath(sb.contour, curchild.contour))
@@ -2041,8 +1446,6 @@ struct smooth
 		}
 
 		if (sub) subsetget(this.subsets, ind).subsets.push(insertindex);	
-	
-		printsuccess();
 		return this;
 	}
 	smooth addsubset (int[] ind = {}, path contour, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center(contour), bool unit = true, bool findplace = false)
@@ -2051,18 +1454,13 @@ struct smooth
 	}
 	smooth rmsubset (int ind, bool recursive = true)
 	{
-		printbeginning("Removing subset from " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		subsetdelete(this.subsets, ind, recursive);
-		printsuccess();
 		return this;
 	}
 	smooth rmsubset (int[] ind, bool recursive = true)
 	{ return this.rmsubset(subsetgetindex(this.subsets, ind), recursive); }
     smooth view (pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
     {
-		printbeginning("Setting view for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-		if (drag && this.attached.length > 0) printstarted();
-
 		this.shiftsubsets = shiftsubsets;
 
 		bool corrected = false;
@@ -2074,34 +1472,25 @@ struct smooth
 
 		this.dropview();
 		this.setview(viewdir);
-		
+
 		if (drag)
 		{
 			for (int i = 0; i < this.attached.length; ++i)
 			{ this.attached[i].view(viewdir, drag = true); }
 		}
 
-		if (!drag || this.attached.length == 0)
-		{
-			if (corrected)
-			{ printwarning("View direction exceeded 1 in length, so scaled it down."); }
-			else printsuccess();
-		}
-		else printfinished();
         return this;
     }
 	smooth view (real angle, bool shiftsubsets = true, bool drag = true)
 	{ return this.view(dir(angle), shiftsubsets, drag); }
     smooth movehole (int ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.holes[ind].center, bool movesections = false, bool keepview = false)
     {
-		printbeginning("Moving hole for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		pair viewdir = this.viewdir;    
 		
 		if (!keepview) this.dropview();
 		this.holes[ind].move(shift, scale, rotate, point, movesections);
 		if (!keepview) this.setview(viewdir);
 
-		printsuccess();
         return this;
     }
 	bool onlyprimary (int ind)
@@ -2139,8 +1528,6 @@ struct smooth
 	}
 	smooth movesubset (int[] ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = defaultSyDP, bool movelabel = false, bool recursive = true, bool keepview = false)
 	{
-		printbeginning("Moving subset for " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
-		
 		bool sub = ind.length > 1;
 		int index = subsetgetindex(this.subsets, ind);
 		subset cursb = this.subsets[index];
@@ -2149,10 +1536,7 @@ struct smooth
 		int[] allsubsets = subsetgetall(this.subsets, cursb);
 
 		if (cursb.isintersection) 
-		{
-			printfailure("Could not move subset: subset is an intersection.");
-			return this;
-		}
+		{ abort("Could not move subset: subset under index "+(string)index+" is an intersection of subsets."); }
 		
 		path pcontour;
 		int[] range; 
@@ -2174,8 +1558,8 @@ struct smooth
 		path newcontour = shift(shift)*srap(scale, rotate, point)*cursb.contour;
 		if (!insidepath(pcontour, newcontour))
 		{
-			printfailure("Could not move subset: new contour out of bounds.");
 			currentPrDP.push(newcontour);
+			write("> ! Could not move subset: new contour out of bounds. Call `drawdebug()` in the end to adjust.");
 			return this;
 		}
 
@@ -2183,7 +1567,6 @@ struct smooth
 		{
 			rmsubset(index);
 			addsubset(cursb.move(shift, scale, rotate, point, movelabel));
-			printsuccess();
 			return this;
 		}
 		if (onlyprimary(index))
@@ -2194,8 +1577,8 @@ struct smooth
 				
 				if (meet(newcontour, this.subsets[range[i]].contour) || insidepath(newcontour, this.subsets[range[i]].contour) || insidepath(this.subsets[range[i]].contour, newcontour))
 				{
-					printfailure("Could not move subset: new contour intersects with other subsets");
 					currentPrDP.push(newcontour);
+					write("> ! Could not move subset: new contour intersects with other subsets. Call `drawdebug()` in the end to adjust.");
 					return this;
 				}
 			}
@@ -2213,7 +1596,8 @@ struct smooth
 				{
 					if (!insidepath(newcontour, this.subsets[cursb.subsets[i]].contour))
 					{
-						printfailure("Could not move subset: new contour makes existing subsets out-of-bounds.");
+						currentPrDP.push(newcontour);
+						write("> ! Could not move subset: new contour makes existing subsets out-of-bounds. Call `drawdebug()` in the end to adjust.");
 						return this;
 					}
 				}
@@ -2221,22 +1605,16 @@ struct smooth
 				cursb.move(shift, scale, rotate, point, movelabel);
 			}
 
-			printsuccess();
 			return this;
 		}
 
-		printfailure("Could not move subset: situation too complicated: both primary and secondary subsets present.");
+		abort("Could not move subset: situation too complicated: both primary and secondary subsets present.");
 		return this;
 	}
     smooth move (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center, bool keepview = false, bool drag = true)
     {
-		printbeginning("Moving smooth object " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
 		if (scale <= 0)
-		{
-			printfailure("Could not move: scale value must be positive.");
-			return this;
-		}
-		if (drag && this.attached.length > 0) printstarted();
+		{ abort("Could not move: scale value must be positive."); }
 		
 		this.rotate += rotate;
         this.scale *= scale;
@@ -2249,19 +1627,13 @@ struct smooth
 
         if (!drag) return this;
         for (int i = 0; i < this.attached.length; ++i)
-        {
-            this.attached[i].move(shift = shift, scale = scale, rotate = rotate, point = point, keepview = keepview, drag = true);
-        }
+        { this.attached[i].move(shift = shift, scale = scale, rotate = rotate, point = point, keepview = keepview, drag = true); }
 		
-		if (!drag || this.attached.length == 0) printsuccess();
-		else printfinished();
         return this;
     }
     smooth attach (smooth sm)
     {
-		printbeginning("Attaching " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + " to " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "...");
         this.attached.push(sm);
-		printsuccess();
         return this;
     }
 	smooth fit (int[] ind = {}, picture pic = currentpicture, picture addpic, pair shift = (0,0))
@@ -2297,13 +1669,8 @@ struct smooth
         }
         else
         {
-			printbeginning("Building smooth object " + ((length(label) == 0) ? "[unlabeled]" : label) + "...");
 			if (scale <= 0)
-			{
-				printfailure("Could not build: scale value must be positive.");
-				return;
-			}
-			printstarted();
+			{ abort("Could not build: scale value must be positive."); }
             
 			this.shift = shift;
             this.scale = scale;
@@ -2328,8 +1695,6 @@ struct smooth
 			this.setview(viewdir);
 			
 			this.attached = attached;
-			
-			printfinished();
         }
     }
 
@@ -2361,9 +1726,7 @@ struct smooth
 
 	void print ()
 	{
-		printbeginning("Printing information for smooth object " + (length(this.label) > 0 ? this.label : "[unlabeled]" + "..."));
-		printstarted();
-		write();
+		
 	}
 }
 
@@ -2641,7 +2004,7 @@ smooth samplesmooth (int type = 0, int num = 0)
 		);
 	}
 
-    return smooth(defaultPaUC);
+    return smooth(ucircle);
 }
 
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
@@ -2652,20 +2015,17 @@ smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, rea
 
 // -- Set operations with smooth objects -- //
 
-smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, bool addsubsets = false)
+smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
 // Constructs the intersection of two given smooth objects.
 {
-	printbeginning("Intersecting " + ((length(sm1.label) == 0) ? "[unlabeled]" : sm1.label) + " and " + ((length(sm2.label) == 0) ? "[unlabeled]" : sm2.label) + "...");
-	   
 	path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
     int initialsize = contours.length;
 
     if (contours.length == 0)
 	{
-		printfailure("Smooth objects are not intersecting");
+		write("> ! Smooth objects are not intersecting, so returning an empty array.");
 		return new smooth[];
 	}
-	printstarted();
 
     path[] contour1 = sm1.contour ^^ holecontours(sm1.holes);
     path[] contour2 = sm2.contour ^^ holecontours(sm2.holes);
@@ -2826,13 +2186,10 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round 
 		res.push(cursm);
 	}
 
-	printfinished();
     return res;
 }
-smooth[] intersection (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, bool addsubsets = false)
+smooth[] intersection (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
 {
-	printbeginning("Intersecting an array of smooth objects...");
-	printstarted();
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
 
 	smooth[] getintersection (smooth[] smsp, bool keepdata, bool round, real roundcoeff, bool addsubsets)
@@ -2851,30 +2208,23 @@ smooth[] intersection (smooth[] sms, bool keepdata = true, bool round = false, r
 	}
 
 	smooth[] res = getintersection(sms, keepdata, round, roundcoeff, addsubsets);
-	printfinished();
 	return res;
 }
-smooth[] intersection (bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, bool addsubsets = false ... smooth[] sms)
+smooth[] intersection (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false ... smooth[] sms)
 { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
-smooth intersect (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, bool addsubsets = false)
+smooth intersect (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
 { return intersection(sm1, sm2, keepdata, round, roundcoeff)[0]; }
-smooth intersect (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR)
+smooth intersect (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 { return intersection(sms, keepdata, round, roundcoeff)[0]; }
-smooth intersect (bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR ... smooth[] sms)
+smooth intersect (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return intersection(sms, keepdata, round, roundcoeff)[0]; }
 
-smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR)
+smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 // Constructs the union of two given smooth objects. //
 {
-	printbeginning("Uniting " + ((length(sm1.label) == 0) ? "[unlabeled]" : sm1.label) + " and " + ((length(sm2.label) == 0) ? "[unlabeled]" : sm2.label) + "...");
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
-	{
-		printsuccess();
-		return new smooth[]{sm1, sm2};
-	}
-
-	printstarted();
+	{ return new smooth[]{sm1, sm2}; }
 
     path[] union = union(sm1.contour, sm2.contour, correct = false, round = round, roundcoeff = roundcoeff);
     path contour; 
@@ -3035,13 +2385,10 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
 	for (int i = 0; i < subsets2.length; ++i)
 	{ subset2add(ind = new int[]{}, ind2 = i); }
 
-	printfinished();
     return new smooth[]{res};
 }
-smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR)
+smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 {
-	printbeginning("Uniting an array of smooth objects...");
-	printstarted();
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
 
 	smooth[] getunion (smooth[] smsp, bool keepdata, bool round, real roundcoeff)
@@ -3066,38 +2413,24 @@ smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real rou
 	}
 
 	smooth[] res = getunion(sms, keepdata, round, roundcoeff);
-	printfinished();
 	return res;
 }
-smooth[] union (bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR ... smooth[] sms)
+smooth[] union (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return union(sms, keepdata, round, roundcoeff); }
-smooth unite (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR)
+smooth unite (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 { return union(sms, keepdata, round, roundcoeff)[0]; }
-smooth unite (bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR ... smooth[] sms)
+smooth unite (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return union(sms, keepdata, round, roundcoeff)[0]; }
 
 smooth tangentspace (smooth sm, int ind = -1, pair center = (ind == -1) ? sm.center : sm.holes[ind].center, real angle, real ratio, real size = 1, real rotate = 45, string eltlabel = "x")
 // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
 {
-	printbeginning("Building tangent space for " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + "...");
-
 	if (!inside(-1, sm.holes.length-1, ind))
-	{
-		printfailure("Could not build tangent space: index out of bounds.");
-		return nullsmooth;
-	}
+	{ abort("Could not build tangent space: index out of bounds."); }
 	if (!sm.isinside(center))
-	{
-		printfailure("Could not build tangent space: center out of bouds");
-		return nullsmooth;
-	}
+	{ abort("Could not build tangent space: center out of bouds"); }
 	if (!inside(0, 1, ratio))
-	{
-		printfailure("Could not build tangent space: ratio out of bounds.");
-		return nullsmooth;
-	}
-
-	printstarted();
+	{ abort("Could not build tangent space: ratio out of bounds."); }
 
 	pair dir = dir(angle);
     path dirpath = center -- (center + (sm.xsize()+sm.ysize()) * dir);
@@ -3122,21 +2455,19 @@ smooth tangentspace (smooth sm, int ind = -1, pair center = (ind == -1) ? sm.cen
 
     real incline = sqrt(1 - ratio * ratio);
 	smooth res = smooth(
-        contour = shift(x) * dscale(scale = incline, dir = sgn(ratio) * dir) * scale(size) * rotate(rotate) * defaultPaUS,
+        contour = shift(x) * dscale(scale = incline, dir = sgn(ratio) * dir) * scale(size) * rotate(rotate) * usquare,
         label = "T_{"+eltlabel+"}" + sm.label,
         labeldir = dscale(scale = incline, dir = sgn(ratio) * dir) * rotate(rotate) * N
 	).view(sm.viewdir);
 	sm.attach(res);
-
 	sm.addelement(element(x, eltlabel));
 
-	printfinished();
 	return res;
 }
 
 // -- From here starts the collection of the drawing functions provided by the module. -- //
 
-void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen, int mode)
+private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen, int mode)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -3160,7 +2491,7 @@ void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool
     }
 }
 
-void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bool dash, bool explain, bool shade, real scale, int mode, pen sectionpen, pen dashpen, pen shadepen)
+private void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bool dash, bool explain, bool shade, real scale, int mode, pen sectionpen, pen dashpen, pen shadepen)
 {
     int n = min(hl1.neighnumber, hl2.neighnumber);
     if (n <= 0) return;
@@ -3201,21 +2532,16 @@ void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bool dash,
     drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode);
 }
 
-void drawcartsections (picture pic, path[] g, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+private void drawcartsections (picture pic, path[] g, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
     drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
 }
 
-void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true, bool cache = currentDrDC)
+void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = (!currentDrIC ? inverse(.5*inverse(sectionpen)) : .5*sectionpen) + dashed + linewidth(sectionpen), pen shadepen = currentDrIC ? inverse(currentDrShS*inverse(smoothfill)) : currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true, bool cache = currentDrDC)
 // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
-	printbeginning("Drawing smooth object " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + " in mode " + (string)mode + "...");
 	if (!inside(0,3, mode))
-	{
-		printfailure("Invalid mode specified.");
-		return;
-	}
-	if (drag && sm.attached.length > 0) printstarted();
+	{ abort("Invalid mode specified."); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
 	currentSeMaEHR = defaultSeMaEHR*min(xsize(sm.contour), ysize(sm.contour));
@@ -3325,7 +2651,7 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
 	real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 	pen[] subsetpens = {subsetfill};
 	for (int i = 1; i < maxlayer+1; ++i)
-	{ subsetpens[i] = penscale*subsetpens[i-1]; }
+	{ subsetpens[i] = currentDrIC ? inverse(penscale*inverse(subsetpens[i-1])) : penscale*subsetpens[i-1]; }
     for (int i = 0; i < sm.subsets.length; ++i)
     {
         subset sb = sm.subsets[i];
@@ -3342,7 +2668,7 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
     {
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
-        {label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = Fill(currentSyBG)));}
+        {label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = Fill(currentExBG)));}
     }
 
 	if (drag)
@@ -3360,9 +2686,6 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
 	}
 
 	if (cache) currentdrawn.push(drawdata(sm, contourpen, smoothfill, subsetfill));
-
-	if (drag && sm.attached.length > 0) printfinished();
-	else printsuccess();
 }
 
 void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true)
@@ -3373,12 +2696,9 @@ void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentp
 	}
 }
 
-smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
+smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
 // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
-	printbeginning("Drawing the intersection of " + ((length(sm1.label) == 0) ? "[unlabeled]" : sm1.label) + " and " + ((length(sm2.label) == 0) ? "[unlabeled]" : sm2.label) + "...");
-	printstarted();
-    
 	smooth smp1 = sm1.copy().simplemove(shift = shift);
     smooth smp2 = sm2.copy().simplemove(shift = shift);
     
@@ -3395,14 +2715,10 @@ smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bo
         draw(pic, res[i], contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, mode = mode, explain = explain, dash = dash, shade = shade);
     }
 
-	printfinished();
     return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
+smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
 {
-	printbeginning("Drawing the intersection of an array of smooth objects...");
-	printstarted();
-
 	smooth[] smsp = sequence(new smooth (int i){return sms[i].copy().move(shift = shift);}, sms.length);
 	smooth[] res = intersection(smsp, keepdata, round, roundcoeff);
 
@@ -3416,22 +2732,14 @@ smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdat
         draw(pic, res[i], contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, mode = mode, explain = explain, dash = dash, shade = shade);
 	}
 
-	printfinished();
 	return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, bool keepdata = true, bool round = false, real roundcoeff = defaultSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS ... smooth[] sms)
+smooth[] drawintersect (picture pic = currentpicture, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS ... smooth[] sms)
 {
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade);
 }
 
-void overlap (picture pic=currentpicture, Label L="", path g, align align = NoAlign, pen p = currentpen, arrowbar arrow = None, arrowbar bar = None, margin margin = NoMargin, Label legend = "", marker marker = nomarker, pen fillpen = currentSyBG+linewidth(8pt))
-// Draws a path with a stripe of filled space on the background.
-{
-    draw(pic = pic, g = g, align = align, p = fillpen, margin = margin);
-    draw(pic = pic, L = L, g = g, align = align, p = p, arrow = arrow, bar = bar, margin = margin, legend = legend, marker = marker);
-}
-
-void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar arrow, bool overlap, bool fill, bool explain)
+private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar arrow, bool overlap, bool fill, bool explain)
 {
 	if (overlap)
     {
@@ -3508,7 +2816,7 @@ void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar
 			real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 			pen[] subsetpens = {smoothfill, subsetfill};
 			for (int i = 2; i < maxlayer+1; ++i)
-			{ subsetpens[i] = penscale*subsetpens[i-1]; }
+			{ subsetpens[i] = currentDrIC ? inverse(penscale*inverse(subsetpens[i-1])) : penscale*subsetpens[i-1]; }
 
 			for (int i = 0; i < maxlayer+1; ++i)
 			{
@@ -3516,7 +2824,7 @@ void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar
 				ovpaths.append(getpaths(gs, sequence(new path (int j){return sm.subsets[curlayer[j]].contour;}, curlayer.length), subsetpens[i]));
 			}
 
-			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentSyBG));
+			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentExBG));
 
 			ovpaths = sort(ovpaths, new bool(signedpath a, signedpath b){return (intersect(a.p, gs)[1] < intersect(b.p, gs)[1]);});
 
@@ -3601,12 +2909,7 @@ void drawarrow (picture pic = currentpicture, smooth sm1, smooth sm2 = sm1, int[
 		center2 = sm2.center;
 	}
 
-	printbeginning("Drawing an arrow between " + ((length(label1) == 0) ? "[unlabeled]" : label1) + " and " + ((length(label2) == 0) ? "[unlabeled]" : label2) + "...");
-	if (center1 == center2)
-	{
-		printfailure("Could not draw arrow between object and itself.");
-		return;
-	}
+	if (center1 == center2) { abort("Could not draw arrow between object and itself."); }
 
     path g = (points.length == 0) ? curvedpath(center1, center2, curve = curve) : connect(concat(new pair[]{center1}, points, new pair[]{center2}));
 	real[] intersect1 = intersect(g, g1);
@@ -3628,19 +2931,13 @@ void drawarrow (picture pic = currentpicture, smooth sm1, smooth sm2 = sm1, int[
     path gs = subpath(g, time1, time2);
 
 	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
-	printsuccess();
 }
 
 void drawarrow (picture pic = currentpicture, smooth sm1, int ind1, smooth sm2 = sm1, int ind2, real curve = 0, pair[] points = {}, Label L = "", pen p = currentpen, arrowbar arrow = Arrow(SimpleHead), bool overlap = true, bool fill = true, real margin1 = currentArM, real margin2 = currentArM, bool explain = currentDrE)
 {
 	element el1 = sm1.elements[ind1];
 	element el2 = sm2.elements[ind2];
-	printbeginning("Drawing an arrow between " + ((length(el1.label) == 0) ? "[unlabeled]" : el1.label) + " and " + ((length(el2.label) == 0) ? "[unlabeled]" : el2.label) + "...");
-	if (el1.pos == el2.pos)
-	{
-		printfailure("Could not draw arrow between object and itself.");
-		return;
-	}
+	if (el1.pos == el2.pos) { abort("Could not draw arrow between object and itself."); }
 
     path g = (points.length == 0) ? curvedpath(el1.pos, el2.pos, curve = curve) : connect(concat(new pair[]{el1.pos}, points, new pair[]{el2.pos}));
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
@@ -3667,8 +2964,6 @@ void drawarrow (picture pic = currentpicture, smooth sm, int[] ind = {}, real an
 		center = sm.center;
 	}
 
-	printbeginning("Drawing a cycle arrow for object " + ((length(label) == 0) ? "[unlabeled]" : label) + "...");
-
 	path g = (points.length == 0) ? cyclepath(center, angle, radius) : connect(concat(new pair[]{center}, points, new pair[]{center}));
 	if (reverse) g = reverse(g);
 	real[][] intersection = intersections(g, contour);
@@ -3691,132 +2986,13 @@ void drawarrow (picture pic = currentpicture, smooth sm, int[] ind = {}, real an
     path gs = subpath(g, time1, time2);
 
 	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
-	printsuccess();
 }
 
 // -- Animations -- //
 
-void clean ()
-{
-	for (int i = 0; i < currentPrFC; ++i)
-	{ system("rm _"+copychar("0", defaultAnNL - length((string)i))+(string)i + "."+currentAnIF); }
-	currentPrFC = 0;
-}
-
-void compile (int fps = defaultAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
-{
-	printbeginning("Compiling animation...");
-
-	system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+currentAnIF+" "+outprefix+"."+outformat);
-
-	if (clean) clean();
-	printsuccess();
-}
-
-picture framedpicture (picture pic)
-{
-	if (!currentFrEP) return pic;
-	picture aux;
-	aux = pic;
-	draw(aux, (-currentFrFC)--currentFrFC, invisible);
-	if (currentFrCP)
-	{ clip(aux, (-currentFrFC -- (currentFrFC.x, -currentFrFC.y) -- currentFrFC -- (-currentFrFC.x, currentFrFC.y) -- cycle)); }
-	return aux;
-}
-
-void shipnative (picture pic = currentpicture, string prefix, string format, real margin)
-{
-	picture aux = framedpicture(pic);
-	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentSyBG)), prefix = prefix, format = format);
-}
-
-void shipconvert (picture pic = currentpicture, string prefix, string format, real margin, int density = currentSyRID)
-{
-	picture aux = framedpicture(pic);
-	shipout(bbox(aux, xmargin = margin, p = invisible, filltype = Fill(p = currentSyBG)), prefix = prefix, format = "eps");
-	int width = ceil(density * 9.83);
-	if (width % 2 == 1) width += 1;
-	system("mogrify -density "+(string)density+" -resize "+(string)width+" -format "+format+" "+prefix+".eps");
-	system("rm "+prefix+".eps");
-}
-
-void produce (picture pic = currentpicture, string prefix = "output", string format = settings.outformat, real margin = currentSyM, int density = currentSyRID, bool exit = currentSyEOP, bool time = true)
-{
-	printbeginning("Producing output file " + prefix+"."+format + " ...");
-
-	if (vector(format))
-	{ shipnative(pic, prefix, format, margin); }
-	else
-	{ shipconvert(pic, prefix, format, margin, density); }
-	printsuccess();
-
-	if (exit)
-	{
-		if (time) printtime();
-		exit();
-	}
-}
-
-void animate (void prefix () = new void (){
-	printbeginning("Writing custom animation...");
-	printstarted();
-}, void update (int), int n = defaultAnFN, bool back = false, real margin = currentSyM, int density = currentSyRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = defaultAnFPS)
-{
-	prefix();
-	bool pm = currentPrPM;
-
-	real ool = 1/defaultPrML - defaultSySN;
-	real oon = 1/n;
-	real residue = 0;
-
-	bool vector = vector();
-	void ship (string prefix)
-	{
-		if (vector) { shipnative(prefix, currentAnIF, margin); }
-		else { shipconvert(prefix, currentAnIF, margin, density); }
-	}
-
-	for (int i = 0; i < n; ++i)
-	{
-		save();
-		currentPrPM = false;
-		update(i);
-		currentPrPM = pm;
-		string str1 = (string)(currentPrFC+i);
-		string str2 = (string)(currentPrFC + 2n - 1 - i);
-		ship(prefix = "_"+copychar("0", defaultAnNL - length(str1))+str1);
-		if (back) ship(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2);
-        restore();
-
-		residue += oon;
-		while (residue >= ool)
-		{
-			write("=", suffix = none);
-			residue -= ool;
-		}
-    }
-	currentPrFC += n;
-
-	write();
-
-	if (compile) compile(fps = fps);
-	printfinished();
-}
-
-void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
 // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
-	void prefix ()
-	{
-		printbeginning("Animating the movement of " + (length(sm.label) > 0 ? sm.label : "[unlabeled]") + "...");
-		if (!inside(0,3, mode))
-		{
-			printfailure("Invalid mode specified.");
-			return;
-		}
-		printstarted();
-	}	
-
     smooth smp;
     if (back) smp = sm.copy();
 	int n = back ? ceil(frames*.5) : frames;
@@ -3832,28 +3008,12 @@ void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen sm
 	}
 	if (back) sm = smp;
 
-	animate(prefix = prefix, update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
+	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentSyM, int density = currentSyRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
+void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = defaultAnFPS, bool close = currentAnC)
 // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
-	void prefix ()
-	{
-		printbeginning("Animating the revolution of " + (length(sm.label) > 0 ? sm.label : "[unlabeled]") + "...");
-		if (!inside(0,3, mode))
-		{
-			printfailure("Invalid mode specified.");
-			return;
-		}
-		if (arc && (length(viewdir1) == 0 || length(viewdir2) == 0))
-		{
-			printfailure("One of the view directions is of length zero. Cannot animate in arc mode");
-			return;
-		}
-		printstarted();
-	}	
-
     smooth smp;
     if (back) smp = sm.copy();
 	int n = back ? ceil(frames*.5) : frames;
@@ -3876,5 +3036,5 @@ void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair
 	}
 	if (back) sm = smp;
 
-	animate(prefix = prefix, update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
+	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }

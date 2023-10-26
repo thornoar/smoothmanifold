@@ -3,9 +3,9 @@ import smoothmanifold;
 settings.render = 8;
 
 size(15cm);
-setproduce(bgpen = paleyellow);
+exportparams(bgpen = paleyellow);
 
-real x = 3;
+real x = 3.5;
 real y = -1.6;
 
 for (int i = 0; i < concavepath.length; ++i)
@@ -20,4 +20,4 @@ for (int i = 0; i < convexpath.length; ++i)
 draw(shift((x,0))*unitcircle, red);
 label((x,y), "Default convex paths");
 
-produce("picture", "pdf", 2 cm);
+export("picture", "pdf", 2 cm);

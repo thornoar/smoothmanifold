@@ -2,10 +2,9 @@ import smoothmanifold;
 
 size(25 cm);
 setframe(2);
-setproduce(bgpen = paleyellow);
-
+exportparams(bgpen = paleyellow);
 defaultpen(linewidth(1.2));
-sectiondraw(linewidth(.6));
+drawparams(sectionpen = linewidth(.6));
 
 pair viewdir = dir(45);
 
@@ -25,6 +24,5 @@ void update (int i)
 	flushcache();
 }
 
-animate(update = update, n = n, fps = ceil(n/3));
-
+animate(outprefix = "animation", update = update, n = n, fps = ceil(n/3));
 exit();

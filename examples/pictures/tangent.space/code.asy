@@ -1,14 +1,14 @@
 import smoothmanifold;
 
 settings.render = 8;
-settings.outformat = "pdf";
 
 import graph;
 
 size(15 cm);
-setproduce(bgpen = paleyellow);
+exportparams(bgpen = paleyellow);
 arrowparams(.09);
-smoothdraw(dragop = .7);
+sectionparams(nl = 1);
+drawparams(dragop = .7);
 
 smooth sm = samplesmooth(1).setview(dir(-40)).setlabel(label = "M").setlabel(i(0), label = "S", labeldir = S);
 smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10, size = .7);
@@ -25,8 +25,8 @@ void draw ()
 }
 
 draw();
-produce("picture", "pdf", 1 cm, exit = false);
+export("picture", "pdf", 1 cm, exit = false);
 erase();
-smoothdraw(explain = true);
+drawparams(explain = true);
 draw();
-produce("picture (marked)", "pdf", 1 cm);
+export("picture (marked)", "pdf", 1 cm);

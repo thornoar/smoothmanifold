@@ -5,9 +5,9 @@ settings.render = 4;
 import graph;
 
 size(25cm);
-setproduce(dpi = 300, bgpen = paleyellow);
+exportparams(dpi = 300, bgpen = paleyellow);
 defaultpen(linewidth(2));
-sectiondraw(linewidth(1));
+drawparams(sectionpen = linewidth(1));
 animationparams(close = false);
 setframe(1.6, 1);
 
@@ -26,7 +26,7 @@ int frames = 30;
 
 void animate (int mode)
 {
-	smoothdraw(mode = mode);
+	drawparams(mode = mode);
 	revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, shift = xsh, back = false, frames = frames);
 	revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, shift = ysh-xsh, back = false, frames = 2*frames);
 	revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, shift = -2*ysh, back = false, frames = 2*frames);
@@ -35,8 +35,7 @@ void animate (int mode)
 	compile(fps = frames, outprefix = "animation."+mode(mode), outformat = "mp4");
 }
 
-animate(mode = strict);
+// animate(mode = strict);
 animate(mode = cartesian);
 
-printtime();
 exit();

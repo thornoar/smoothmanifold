@@ -2,9 +2,8 @@ import smoothmanifold;
 settings.render = 16;
 
 size(20 cm);
-setproduce(bgpen = paleyellow);
-smoothdraw(smoothfill = lightcyan, subsetfill = lightblue);
-sectiondraw(drawdashes = false);
+exportparams(bgpen = paleyellow);
+drawparams(smoothfill = lightcyan, subsetfill = lightblue, drawdashes = false);
 
 arrowparams(.12);
 
@@ -28,8 +27,8 @@ void draw ()
 }
 
 draw();
-produce("picture", "pdf", 1.5 cm, exit = false);
+export("picture", "pdf", 1.5 cm, exit = false);
 erase();
-smoothdraw(explain = true);
+drawparams(explain = true);
 draw();
-produce("picture (marked)", "pdf", 1.5 cm);
+export("picture (marked)", "pdf", 1.5 cm);

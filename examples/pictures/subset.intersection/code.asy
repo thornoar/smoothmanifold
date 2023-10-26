@@ -3,10 +3,9 @@ import smoothmanifold;
 settings.render = 8;
 
 size(20 cm);
-setproduce(bgpen = paleyellow);
-
+exportparams(bgpen = paleyellow);
 defaultpen(1);
-smoothdraw(minscale = .1);
+drawparams(minscale = .1);
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 
@@ -20,4 +19,4 @@ sm.addsubset(contour = concavepath[2], point = (0,0), shift = (.25,.45), scale =
 
 draw(sm, mode = plain, subsetfill = cyan);
 
-produce("picture", "pdf", 1.5 cm);
+export("picture", "pdf", 1.5 cm);

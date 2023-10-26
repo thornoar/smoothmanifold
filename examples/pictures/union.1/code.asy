@@ -3,7 +3,7 @@ import smoothmanifold;
 settings.render = 8;
 
 size(30 cm);
-setproduce(bgpen = paleyellow, margin = 1.5 cm, exit = false);
+exportparams(bgpen = paleyellow, margin = 1.5 cm, exit = false);
 
 pair viewdir = dir(40);
 
@@ -18,28 +18,27 @@ union.move(shift = (3.5,0));
 draw(sm1, explain = false, mode = plain);
 draw(sm2, explain = false, mode = plain);
 draw(union, explain = true, mode = plain);
-produce(prefix = "picture (plain mode)", format = "pdf");
+export(prefix = "picture (plain mode)", format = "pdf");
 
 erase();
 
 draw(sm1, explain = false, mode = strict);
 draw(sm2, explain = false, mode = strict);
 draw(union, explain = true, mode = strict);
-produce(prefix = "picture (strict mode)", format = "pdf");
+export(prefix = "picture (strict mode)", format = "pdf");
 
 erase();
 
 draw(sm1, explain = false, mode = cartesian);
 draw(sm2, explain = false, mode = cartesian);
 draw(union, explain = true, mode = cartesian);
-produce(prefix = "picture (cartesian mode)", format = "pdf");
+export(prefix = "picture (cartesian mode)", format = "pdf");
 
 erase();
 
 draw(sm1, explain = false, mode = free);
 draw(sm2, explain = false, mode = free);
 draw(union, explain = true, mode = free);
-produce(prefix = "picture (free mode)", format = "pdf");
+export(prefix = "picture (free mode)", format = "pdf");
 
-printtime();
 exit();

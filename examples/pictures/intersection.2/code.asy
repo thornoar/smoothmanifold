@@ -4,7 +4,7 @@ settings.render = 16;
 settings.outformat = "pdf";
 
 size(15 cm);
-setproduce(bgpen = paleyellow, margin = 1.5cm, exit = false);
+exportparams(bgpen = paleyellow, margin = 1.5cm, exit = false);
 
 pair viewdir = dir(45);
 smooth sm1 = samplesmooth(3,1).move(scale = 1.1).view(viewdir);
@@ -18,20 +18,18 @@ smooth sm3 = intersect(sm1, sm2);
 save();
 
 draw(sm3, explain = false, mode = strict);
-produce(prefix = "picture (strict mode)");
+export(prefix = "picture (strict mode)");
 restore();
 
 draw(sm3, explain = false, mode = free);
-produce(prefix = "picture (free mode)");
+export(prefix = "picture (free mode)");
 restore();
 
 draw(sm3, explain = false, mode = cartesian);
-produce(prefix = "picture (cart mode)");
+export(prefix = "picture (cart mode)");
 restore();
 
 draw(sm3, explain = false, mode = plain);
-produce(prefix = "picture (plain mode)");
-restore();
+export(prefix = "picture (plain mode)");
 
-printtime();
 exit();

@@ -2,8 +2,8 @@ import smoothmanifold;
 
 settings.render = 16;
 size(15 cm);
-setproduce(bgpen = paleyellow);
-smoothdraw(smoothfill = cyan);
+exportparams(bgpen = paleyellow);
+drawparams(smoothfill = cyan);
 
 smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);
 smooth sm2 = samplesmooth(1,1).move(shift = (.7,-.15), rotate = -20);
@@ -16,4 +16,4 @@ draw(intersection(sm2, sm3, round = true));
 draw(sm4, contourpen = mediumgrey, smoothfill = invisible, mode = plain);
 draw(intersection(sm1, sm4, round = true));
 
-produce("picture", "pdf", 1 cm);
+export("picture", "pdf", 1 cm);
