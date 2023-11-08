@@ -3,7 +3,7 @@ import smoothmanifold;
 settings.render = 16;
 
 size(25 cm);
-exportparams(bgpen = black+opacity(0), margin = 2 cm);
+exportparams(bgpen = paleyellow, margin = 2 cm);
 arrowparams(.1);
 
 pair viewdir = dir(30);

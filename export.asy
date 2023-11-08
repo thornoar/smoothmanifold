@@ -68,8 +68,15 @@ void animationparams (string informat = currentAnIF, string outprefix = currentA
 	currentAnOF = outformat;
 	currentAnC = close;
 }
-void setframe (real ymax, real ratio = 1.777777777, bool crop = true)
+void setframe (real ymax, real ratio = 1.777777777, bool crop = true, bool now = false, picture pic = currentpicture)
 {
+	if (now)
+	{
+		pair corner = (ymax*ratio, ymax);
+		dot(pic, corner, linewidth(0));
+		dot(pic, -corner, linewidth(0));
+		return;
+	}
 	currentFrEP = true;
 	currentFrFC = (ymax*ratio, ymax);
 	if (crop) currentFrCP = true;
@@ -95,7 +102,8 @@ private picture framedpicture (picture pic)
 	if (!currentFrEP) return pic;
 	picture aux;
 	aux = pic;
-	draw(aux, (-currentFrFC)--currentFrFC, invisible);
+	dot(aux, currentFrFC, invisible+linewidth(0));
+	dot(aux, -currentFrFC, invisible+linewidth(0));
 	if (currentFrCP)
 	{ clip(aux, (-currentFrFC -- (currentFrFC.x, -currentFrFC.y) -- currentFrFC -- (-currentFrFC.x, currentFrFC.y) -- cycle)); }
 	return aux;

@@ -1419,7 +1419,7 @@ struct smooth
 			{
 				subsetdelete(this.subsets, insertindex, true);
 				currentPrDP.push(sb.contour);
-				write("Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
+				write("> ! Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
 				return this;
 			}
 			if (insidepath(sb.contour, curchild.contour))
@@ -1768,7 +1768,6 @@ void flushcache () {currentdrawn = new drawdata[];}
 
 bool operator == (smooth a, smooth b)
 { return a.contour == b.contour; }
-
 
 // -- Default pre-built smooth objects -- //
 
@@ -2709,6 +2708,12 @@ void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentp
 	{
 		draw(pic = pic, sm = sms[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade, drag);
 	}
+}
+
+void phantom (picture pic = currentpicture, smooth sm)
+{
+	dot(pic, max(sm.contour), invisible);
+	dot(pic, min(sm.contour), invisible);
 }
 
 smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
