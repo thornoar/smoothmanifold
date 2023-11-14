@@ -35,7 +35,7 @@ void animate (int mode)
 	compile(fps = frames, outprefix = "animation."+mode(mode), outformat = "mp4");
 }
 
-// animate(mode = strict);
+animate(mode = strict);
 animate(mode = cartesian);
 
 exit();

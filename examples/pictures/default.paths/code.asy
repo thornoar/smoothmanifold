@@ -14,7 +14,7 @@ for (int i = 0; i < concavepath.length; ++i)
 draw(unitcircle, red);
 label((0,y), "Default concave paths");
 
-for (int i = 0; i < convexpath.length; ++i)
+for (int i = 7; i < convexpath.length; ++i)
 { draw(shift((x,0))*convexpath[i]); }
 
 draw(shift((x,0))*unitcircle, red);
