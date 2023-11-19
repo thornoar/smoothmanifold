@@ -258,7 +258,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
         pair qdi = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = -1) : dir(q, times[i][1]);
         pair qdo = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = 1) : dir(q, times[i][1]);
 
-        if (sgn(cross(qdi, pdi))*sgn(cross(pdo, qdo)) >= 0)
+        if (sgn(cross(qdi, pdi))*sgn(cross(pdo, qdo)) > 0)
         {
             times.delete(i);
             --i;

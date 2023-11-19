@@ -60,10 +60,6 @@ private path[] defaultPaCV = new path[]{ // [C]on[V]ex
 	(-1.3015,0.292664)..controls (-1.16377,1.02949) and (1.58727,0.964071)..(1.08802,-0.447604)..controls (0.699265,-1.54686) and (-1.45274,-0.516484)..cycle,
  	(-0.7747,-0.578443)..controls (-1.27059,0.149293) and (-1.30873,0.619498)..(-0.623203,0.977844)..controls (-0.168712,1.21542) and (0.994515,0.849099)..(0.943412,-0.00688622)..controls (0.860778,-1.39102) and (-0.244461,-1.35659)..cycle,
     (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
-    // (0.989525,-0.664395)..controls (-0.155497,-1.61858) and (-1.40332,0.329701)..(-0.862301,0.79162)..controls (0.346334,1.82355) and (1.39766,-0.324279)..cycle,
-	// (-0.526796,-0.526796)..controls (-1.1393,0.186507) and (-1.12456,0.700301)..(-0.636976,0.957185)..controls (0.389072,1.49775) and (1.20497,-0.0232825)..(1.06736,-0.478592)..controls (0.833233,-1.25329) and (-0.25479,-0.843562)..cycle,
-	// (-3.39835,-1.16033)..controls (-4.27727,-0.335774) and (-3.69959,0.330116)..(-3.12979,0.375299)..controls (-2.3482,0.437275) and (-1.4993,-0.851137)..(-1.8765,-1.37036)..controls (-2.18602,-1.79642) and (-2.73039,-1.78697)..cycle,
-	// (-1.82141,0.182485)..controls (-2.24147,-0.847005) and (-4.37275,0.554341)..(-3.68757,1.53218)..controls (-3.03636,2.46155) and (-1.43211,1.13658)..cycle,
 	(-0.723053,0.87455)..controls (-0.120509,1.45988) and (1.49431,0.148054)..(0.864221,-0.795359)..controls (0.400434,-1.48977) and (-1.84643,-0.216729)..cycle,
     (0.28979,-0.834028)..controls (0.093337,-0.908653) and (-1.20138,-1.95019)..(-1.15209,0.0777484)..controls (-1.10261,2.11334) and (3.02512,0.204973)..cycle,
     (1.01073,-0.409946)..controls (0.812824,-1.99319) and (-2.2123,-0.523035)..(-0.897641,0.36047)..controls (0.779873,1.48783) and (1.20823,1.17008)..cycle,
@@ -197,6 +193,11 @@ private path[] defaultPaCC = new path[]{ // [C]on[C]ave
 		..cycle
 	)
 };
+
+path randomconvex ()
+{ return defaultPaCV[rand()%defaultPaCV.length]; }
+path randomconcave ()
+{ return defaultPaCC[rand()%defaultPaCC.length]; }
 
 // -- Current values (subject to change) -- //
 
@@ -1206,6 +1207,14 @@ struct smooth
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
+	smooth addholes (hole[] holes, bool unit = true)
+	{
+		for (int i = 0; i < holes.length; ++i)
+		{ this.addhole(holes[i], unit = unit); }
+		return this;
+	}
+	smooth addholes (bool unit = true ... hole[] holes)
+	{ return this.addholes(holes, unit); }
     smooth rmhole(int ind)
     {
      	this.holes.delete(ind);
@@ -1411,7 +1420,7 @@ struct smooth
 
         return this;
     }
-	bool onlyprimary (int ind)
+	private bool onlyprimary (int ind)
 	{
 		subset s = this.subsets[ind];
 		
@@ -1427,7 +1436,7 @@ struct smooth
 
 		return res;
 	}
-	bool onlysecondary (int ind)
+	private bool onlysecondary (int ind)
 	{
 		subset s = this.subsets[ind];
 		
@@ -1640,7 +1649,7 @@ struct smooth
         return this;
     }
     bool isnull ()
-    {return this.contour == nullpath;}
+    { return this.contour == nullpath; }
 
 	void print ()
 	{
