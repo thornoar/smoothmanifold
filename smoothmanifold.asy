@@ -26,7 +26,7 @@ private real defaultSeWT = .65; // [W]idth [T]est
 real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,220,7,.8,50};
 private int defaultSeNN = 1; // [N]eigh [N]umber
 private real defaultSeNA = 25; // [N]eigh [A]ngle
-private real defaultSeMLR = .4; // [M]aximum [L]ength [R]atio
+private real defaultSeMLR = .6; // [M]aximum [L]ength [R]atio
 private real defaultSeMaEHR = .05; // [Ma]ximal [E]llipse [H]eight
 private real defaultSeMiEHR = .00005; // [Mi]nimal [E]llipse [H]eight [R]atio
 
