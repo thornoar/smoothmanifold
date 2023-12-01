@@ -217,26 +217,26 @@ private real currentSeML;
 private real currentSeMaEHR;
 
 // [Sm]ooth
-private bool currentSmIL = true; // [I]nfer [L]abels
-private bool currentSmSS = true; // [S]hift [S]ubsets
+bool currentSmIL = true; // [I]nfer [L]abels
+bool currentSmSS = true; // [S]hift [S]ubsets
 
 // [Ar]rows
-private real currentArOL = defaultArOL;
-private real currentArM = defaultArM;
+real currentArOL = defaultArOL;
+real currentArM = defaultArM;
 
 // [Dr]awing
-private pen currentDrSeP = defaultDrSeP;
-private pen currentDrExP = defaultDrExP;
-private pen currentDrElP = defaultDrElP;
-private real currentDrShS = defaultDrShS;
-private real currentDrDO = defaultDrDO;
-private real currentDrSPM = defaultDrSPM;
-private int currentDrM = 0; // [M]ode
-private bool currentDrDC = true; // [Dr]aw [C]ache
-private bool currentDrDD = true; // [D]raw [D]ashes
-private bool currentDrE = false; // [E]xplain
-private bool currentDrDS = false; // [D]raw [S]hade
-private bool currentDrIC = false; // [I]nvert [C]olors
+pen currentDrSeP = defaultDrSeP;
+pen currentDrExP = defaultDrExP;
+pen currentDrElP = defaultDrElP;
+real currentDrShS = defaultDrShS;
+real currentDrDO = defaultDrDO;
+real currentDrSPM = defaultDrSPM;
+int currentDrM = 0; // [M]ode
+bool currentDrDC = true; // [Dr]aw [C]ache
+bool currentDrDD = true; // [D]raw [D]ashes
+bool currentDrE = false; // [E]xplain
+bool currentDrDS = false; // [D]raw [S]hade
+bool currentDrIC = false; // [I]nvert [C]olors
 
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
@@ -254,7 +254,7 @@ int plain = 3;
 // -- Auxiliary utilities -- //
 
 import pathmethods;
-import export;
+// import export;
 
 // -- System functions -- //
 
@@ -286,13 +286,23 @@ private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 {
     return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
+pen inverse (pen p)
+{
+	real[] colors = colors(p);
+	if (colors.length == 1) return gray(1-colors[0]);
+	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2]);
+	return invisible;
+}
+pen nextsubsetpen (pen p, real scale)
+{ return scale * p; }
+pen dashpen (pen p)
+{ return inverse(.5*inverse(p)); }
+pen shadepen (pen p)
+{ return inverse(currentDrShS*inverse(p)); }
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = currentsection,
-                    int nn = currentSeNN,
-                    real na = currentSeNA,
-                    real nl = currentSeMLR)
+void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR)
 {
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
 	{ abort("Could not change default section parameters: invalid intries"); }
@@ -343,17 +353,6 @@ void drawparams (int mode = currentDrM,
 	currentDrDS = shade;
 	currentDrSeP = sectionpen;
 	currentDrElP = elementpen;
-}
-void invertcolors ()
-{
-	exportparams(bgpen = inverse(currentExBG));
-	defaultpen(inverse(currentpen));
-	smoothcolor = inverse(smoothcolor);
-	subsetcolor = inverse(subsetcolor);
-	currentDrIC = !currentDrIC;
-	currentDrExP = inverse(currentDrExP);
-	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
-	currentDrElP = inverse(currentDrElP);
 }
 void drawdebug () { draw(currentPrDP); }
 void defaults ()
@@ -2585,8 +2584,8 @@ void draw (picture pic = currentpicture,
            pen subsetcontourpen = contourpen,
            pen subsetfill = subsetcolor,
            pen sectionpen = currentDrSeP,
-           pen dashpen = (!currentDrIC ? inverse(.5*inverse(sectionpen)) : .5*sectionpen) + dashed + linewidth(sectionpen),
-           pen shadepen = currentDrIC ? inverse(currentDrShS*inverse(smoothfill)) : currentDrShS*smoothfill,
+           pen dashpen = dashpen(sectionpen),
+           pen shadepen = shadepen(smoothfill),
            int mode = currentDrM,
            bool explain = currentDrE,
            bool dash = currentDrDD,
@@ -2706,7 +2705,7 @@ void draw (picture pic = currentpicture,
 	real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 	pen[] subsetpens = {subsetfill};
 	for (int i = 1; i < maxlayer+1; ++i)
-	{ subsetpens[i] = currentDrIC ? inverse(penscale*inverse(subsetpens[i-1])) : penscale*subsetpens[i-1]; }
+	{ subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
     for (int i = 0; i < sm.subsets.length; ++i)
     {
         subset sb = sm.subsets[i];
@@ -2723,7 +2722,7 @@ void draw (picture pic = currentpicture,
     {
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
-        {label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = Fill(currentExBG)));}
+        { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
     }
 
 	if (drag)
@@ -2942,7 +2941,7 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
 			real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 			pen[] subsetpens = {smoothfill, subsetfill};
 			for (int i = 2; i < maxlayer+1; ++i)
-			{ subsetpens[i] = currentDrIC ? inverse(penscale*inverse(subsetpens[i-1])) : penscale*subsetpens[i-1]; }
+			{ subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
 
 			for (int i = 0; i < maxlayer+1; ++i)
 			{
@@ -2950,7 +2949,7 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
 				ovpaths.append(getpaths(gs, sequence(new path (int j){return sm.subsets[curlayer[j]].contour;}, curlayer.length), subsetpens[i]));
 			}
 
-			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentExBG));
+			// ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentExBG));
 
 			ovpaths = sort(ovpaths, new bool(signedpath a, signedpath b){return (intersect(a.p, gs)[1] < intersect(b.p, gs)[1]);});
 
@@ -3154,102 +3153,4 @@ void drawarrow (picture pic = currentpicture,
     path gs = subpath(g, time1, time2);
 
 	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
-}
-
-// -- Animations -- //
-
-void move (smooth sm,
-           int mode = currentDrM,
-           pen contourpen = currentpen,
-           pen smoothfill = smoothcolor,
-           pen subsetcontourpen = contourpen,
-           pen subsetfill = subsetcolor,
-           pen sectionpen = currentDrSeP,
-           pen dashpen = sectionpen+dashed+grey,
-           pen shadepen = currentDrShS*smoothfill,
-           pair shift = (0,0),
-           real scale = 1,
-           real rotate = 0,
-           bool keepview = false,
-           bool dash = currentDrDD,
-           bool explain = currentDrE,
-           bool shade = currentDrDS,
-           int frames = defaultAnFN,
-           bool back = true,
-           bool drag = true,
-           real margin = currentExM,
-           int density = currentExRID,
-           bool compile = false,
-           int fps = currentAnFPS,
-           bool close = currentAnC)
-// Animates the process of shifting, scaling and rotating a given smooth object. //
-{
-    smooth smp;
-    if (back) smp = sm.copy();
-	int n = back ? ceil(frames*.5) : frames;
-
-	pair stepshift = close ? shift/(n-1) : shift/n;
-	real stepscale = close ? scale^(1/(n-1)) : scale^(1/n);
-	real steprotate = close ? rotate/(n-1) : rotate/n;
-
-	void update (int i)
-	{
-		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
-        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag, cache = false);
-	}
-	if (back) sm = smp;
-
-	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
-}
-
-void revolve (smooth sm,
-              int mode = currentDrM,
-              pair viewdir1 = sm.viewdir,
-              pair viewdir2,
-              pen contourpen = currentpen,
-              pen smoothfill = smoothcolor,
-              pen subsetcontourpen = contourpen,
-              pen subsetfill = subsetcolor,
-              pen sectionpen = currentDrSeP,
-              pen dashpen = sectionpen+dashed+grey,
-              pen shadepen = currentDrShS*smoothfill,
-              bool dash = currentDrDD,
-              bool explain = currentDrE,
-              bool shade = currentDrDS,
-              pair shift = (0,0),
-              bool back = true,
-              bool arc = false,
-              bool shiftsubsets = currentSmSS,
-              bool drag = true,
-              int frames = defaultAnFN,
-              real margin = currentExM,
-              int density = currentExRID,
-              bool compile = false,
-              int fps = currentAnFPS,
-              bool close = currentAnC)
-// Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
-{
-    smooth smp;
-    if (back) smp = sm.copy();
-	int n = back ? ceil(frames*.5) : frames;
-
-	real l1 = length(viewdir1);
-	real l2 = length(viewdir2);
-	real deg1 = arc ? degrees(viewdir1) : 0;
-	real deg2 = arc ? degrees(viewdir2) : 0;
-
-	void update (int i)
-	{
-        if (i > 0)
-		{
-			real coeff = close ? (n-i-1)/(n-1) : (n-i-1)/n;
-			pair viewdir = arc ? (coeff*l1 + (1-coeff)*l2)*dir(coeff*deg1 + (1-coeff)*(deg2+360)) : (coeff*viewdir1 + (1-coeff)*viewdir2);
-			sm.view(viewdir, shiftsubsets = shiftsubsets, drag = drag);
-			sm.move(shift = shift/(n-1), keepview = true, drag = drag);
-		}
-        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag);
-	}
-	if (back) sm = smp;
-
-	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }

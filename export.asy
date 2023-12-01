@@ -27,6 +27,8 @@ private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 bool currentAnC = true; // [C]lose
 
+import smoothmanifold;
+
 private string copychar (string str, int n)
 {
 	if (n == 0) return "";
@@ -35,13 +37,17 @@ private string copychar (string str, int n)
 
 private bool native (string format = currentAnIF) {return format == "" || format == "eps" || format == "pdf";}
 
-pen inverse (pen p)
-{
-	real[] colors = colors(p);
-	if (colors.length == 1) return gray(1-colors[0]);
-	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2]);
-	return invisible;
-}
+// void invertcolors ()
+// {
+// 	exportparams(bgpen = inverse(currentExBG));
+// 	defaultpen(inverse(currentpen));
+// 	smoothcolor = inverse(smoothcolor);
+// 	subsetcolor = inverse(subsetcolor);
+// 	currentDrIC = !currentDrIC;
+// 	currentDrExP = inverse(currentDrExP);
+// 	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
+// 	currentDrElP = inverse(currentDrElP);
+// }
 
 void exportparams (int dpi = currentExRID, pen bgpen = currentExBG, real margin = currentExM, bool exit = currentExEOE)
 {
@@ -173,4 +179,102 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 	write("|");
 
 	if (compile) compile(outprefix = outprefix, outformat = outformat, fps = fps, clean = clean);
+}
+
+// -- Animations -- //
+
+void move (smooth sm,
+           int mode = currentDrM,
+           pen contourpen = currentpen,
+           pen smoothfill = smoothcolor,
+           pen subsetcontourpen = contourpen,
+           pen subsetfill = subsetcolor,
+           pen sectionpen = currentDrSeP,
+           pen dashpen = sectionpen+dashed+grey,
+           pen shadepen = currentDrShS*smoothfill,
+           pair shift = (0,0),
+           real scale = 1,
+           real rotate = 0,
+           bool keepview = false,
+           bool dash = currentDrDD,
+           bool explain = currentDrE,
+           bool shade = currentDrDS,
+           int frames = defaultAnFN,
+           bool back = true,
+           bool drag = true,
+           real margin = currentExM,
+           int density = currentExRID,
+           bool compile = false,
+           int fps = currentAnFPS,
+           bool close = currentAnC)
+// Animates the process of shifting, scaling and rotating a given smooth object. //
+{
+    smooth smp;
+    if (back) smp = sm.copy();
+	int n = back ? ceil(frames*.5) : frames;
+
+	pair stepshift = close ? shift/(n-1) : shift/n;
+	real stepscale = close ? scale^(1/(n-1)) : scale^(1/n);
+	real steprotate = close ? rotate/(n-1) : rotate/n;
+
+	void update (int i)
+	{
+		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
+        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag, cache = false);
+	}
+	if (back) sm = smp;
+
+	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
+}
+
+void revolve (smooth sm,
+              int mode = currentDrM,
+              pair viewdir1 = sm.viewdir,
+              pair viewdir2,
+              pen contourpen = currentpen,
+              pen smoothfill = smoothcolor,
+              pen subsetcontourpen = contourpen,
+              pen subsetfill = subsetcolor,
+              pen sectionpen = currentDrSeP,
+              pen dashpen = sectionpen+dashed+grey,
+              pen shadepen = currentDrShS*smoothfill,
+              bool dash = currentDrDD,
+              bool explain = currentDrE,
+              bool shade = currentDrDS,
+              pair shift = (0,0),
+              bool back = true,
+              bool arc = false,
+              bool shiftsubsets = currentSmSS,
+              bool drag = true,
+              int frames = defaultAnFN,
+              real margin = currentExM,
+              int density = currentExRID,
+              bool compile = false,
+              int fps = currentAnFPS,
+              bool close = currentAnC)
+// Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
+{
+    smooth smp;
+    if (back) smp = sm.copy();
+	int n = back ? ceil(frames*.5) : frames;
+
+	real l1 = length(viewdir1);
+	real l2 = length(viewdir2);
+	real deg1 = arc ? degrees(viewdir1) : 0;
+	real deg2 = arc ? degrees(viewdir2) : 0;
+
+	void update (int i)
+	{
+        if (i > 0)
+		{
+			real coeff = close ? (n-i-1)/(n-1) : (n-i-1)/n;
+			pair viewdir = arc ? (coeff*l1 + (1-coeff)*l2)*dir(coeff*deg1 + (1-coeff)*(deg2+360)) : (coeff*viewdir1 + (1-coeff)*viewdir2);
+			sm.view(viewdir, shiftsubsets = shiftsubsets, drag = drag);
+			sm.move(shift = shift/(n-1), keepview = true, drag = drag);
+		}
+        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag);
+	}
+	if (back) sm = smp;
+
+	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
