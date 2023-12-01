@@ -1,14 +1,21 @@
 /*
 
-This is module smoothmanifold. It is designed to construct and render high-quality Asymptote objects of topological and diff. geometrical nature.
+This is module smoothmanifold. It is designed to construct and render
+high-quality Asymptote objects of topological and diff. geometrical nature.
 
 Copyright (C) 2023 Maksimovich Roman Alekseevich. All rights reserved.
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -56,8 +63,7 @@ private path[] defaultPaCV = new path[]{ // [C]on[V]ex
 	(-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
 	(-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
 	(-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
-	// (0.306437,-0.888323)..controls (1.0502,-1.09452) and (1.50759,-0.416789)..(1.00195,0.36497)..controls (0.714645,0.809152) and (-0.251347,1.11212)..(-0.71961,0.778143)..controls (-0.93559,0.624098) and (-1.3179,0.490165)..(-1.20509,-0.1997)..controls (-1.11557,-0.747155) and (-0.389072,-0.695508)..cycle,
-    (-1.03604,0.287264)..controls (-0.602784,1.2715) and (0.871211,1.16318)..(1.08313,-0.197789)..controls (1.27896,-1.45546) and (-1.53179,-0.838962)..cycle,
+    (-1.0522,0.0600251)..controls (-0.572004,1.31702) and (1.08045,1.07692)..(1.0522,-0.176544)..controls (1.0259,-1.34403) and (-1.457,-0.999597)..cycle,
 	(-1.3015,0.292664)..controls (-1.16377,1.02949) and (1.58727,0.964071)..(1.08802,-0.447604)..controls (0.699265,-1.54686) and (-1.45274,-0.516484)..cycle,
  	(-0.7747,-0.578443)..controls (-1.27059,0.149293) and (-1.30873,0.619498)..(-0.623203,0.977844)..controls (-0.168712,1.21542) and (0.994515,0.849099)..(0.943412,-0.00688622)..controls (0.860778,-1.39102) and (-0.244461,-1.35659)..cycle,
     (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
@@ -283,7 +289,10 @@ private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR)
+void sectionparams (real[] section = currentsection,
+                    int nn = currentSeNN,
+                    real na = currentSeNA,
+                    real nl = currentSeMLR)
 {
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
 	{ abort("Could not change default section parameters: invalid intries"); }
@@ -303,7 +312,18 @@ void arrowparams (real ovlength = defaultArOL, real margin = defaultArM)
 	currentArM = margin;
 	if (ovlength > 1) write("> ! Value for arrow overlap length looks too big: the result may be ugly.");
 }
-void drawparams (int mode = currentDrM, pen smoothfill = smoothcolor, pen subsetfill = subsetcolor, real minscale = currentDrSPM, bool cache = currentDrDC, bool explain = currentDrE, pen explainpen = currentDrExP, real dragop = currentDrDO, bool drawdashes = currentDrDD, bool shade = currentDrDS, pen sectionpen = currentDrSeP, pen elementpen = currentDrElP)
+void drawparams (int mode = currentDrM,
+                 pen smoothfill = smoothcolor,
+                 pen subsetfill = subsetcolor,
+                 real minscale = currentDrSPM,
+                 bool cache = currentDrDC,
+                 bool explain = currentDrE,
+                 pen explainpen = currentDrExP,
+                 real dragop = currentDrDO,
+                 bool drawdashes = currentDrDD,
+                 bool shade = currentDrDS,
+                 pen sectionpen = currentDrSeP,
+                 pen elementpen = currentDrElP)
 {
 	if (!inside(0,3, mode))
 	{ abort("Could not set mode: invalid entry provided."); }
@@ -1116,7 +1136,12 @@ struct smooth
 
         return this;
     }
-    smooth setlabel (int[] ind = {}, string label = this.label, pair labeldir = this.labeldir, pair labelalign = defaultSyDP, bool keepalign = false)
+
+    smooth setlabel (int[] ind = {},
+                     string label = this.label,
+                     pair labeldir = this.labeldir,
+                     pair labelalign = defaultSyDP,
+                     bool keepalign = false)
     {
 		if (ind.length == 0)
 		{
@@ -1131,6 +1156,7 @@ struct smooth
     }
     smooth setlabel (int[] ind = {}, string label = this.label, real angle)
     { return this.setlabel(ind, label, dir(angle)); }
+
 	smooth addelement (element elt, bool unit = true)
 	{
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
@@ -1143,6 +1169,7 @@ struct smooth
 	}
 	smooth addelement (pair pos, string label = "", pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
+
     smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
     {
 		if (unit) holeadjust(hl, this.shift, this.scale, 0, this.center);
@@ -1204,7 +1231,13 @@ struct smooth
         this.holes.insert(i = ind, hl);
 		return this;
     }
-    smooth addhole (path contour, real[][] sections = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center(contour), bool unit = true)
+    smooth addhole (path contour,
+                    real[][] sections = {},
+                    pair shift = (0,0),
+                    real scale = 1,
+                    real rotate = 0,
+                    pair point = center(contour),
+                    bool unit = true)
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
@@ -1260,6 +1293,7 @@ struct smooth
         this.holes[ind].sections.delete(ind2);
         return this;
     }
+
 	smooth addsubset (subset sb, int[] ind = {}, bool unit = true, bool findplace = false)
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
@@ -1376,7 +1410,14 @@ struct smooth
 		if (sub) subsetget(this.subsets, ind).subsets.push(insertindex);	
 		return this;
 	}
-	smooth addsubset (int[] ind = {}, path contour, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center(contour), bool unit = true, bool findplace = false)
+	smooth addsubset (int[] ind = {},
+                      path contour,
+                      pair shift = (0,0),
+                      real scale = 1,
+                      real rotate = 0,
+                      pair point = center(contour),
+                      bool unit = true,
+                      bool findplace = false)
 	{
 		return this.addsubset(sb = subset(contour = contour, shift = shift, scale = scale, rotate = rotate, point = point), ind = ind, unit = unit, findplace = findplace);
 	}
@@ -1387,6 +1428,7 @@ struct smooth
 	}
 	smooth rmsubset (int[] ind, bool recursive = true)
 	{ return this.rmsubset(subsetgetindex(this.subsets, ind), recursive); }
+
     smooth view (pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
     {
 		this.shiftsubsets = shiftsubsets;
@@ -1411,7 +1453,13 @@ struct smooth
     }
 	smooth view (real angle, bool shiftsubsets = true, bool drag = true)
 	{ return this.view(dir(angle), shiftsubsets, drag); }
-    smooth movehole (int ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.holes[ind].center, bool movesections = false, bool keepview = false)
+    smooth movehole (int ind,
+                     pair shift = (0,0),
+                     real scale = 1,
+                     real rotate = 0,
+                     pair point = this.holes[ind].center,
+                     bool movesections = false,
+                     bool keepview = false)
     {
 		pair viewdir = this.viewdir;    
 		
@@ -1454,7 +1502,14 @@ struct smooth
 
 		return res;
 	}
-	smooth movesubset (int[] ind, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = defaultSyDP, bool movelabel = false, bool recursive = true, bool keepview = false)
+	smooth movesubset (int[] ind,
+                       pair shift = (0,0),
+                       real scale = 1,
+                       real rotate = 0,
+                       pair point = defaultSyDP,
+                       bool movelabel = false,
+                       bool recursive = true,
+                       bool keepview = false)
 	{
 		bool sub = ind.length > 1;
 		int index = subsetgetindex(this.subsets, ind);
@@ -1539,7 +1594,12 @@ struct smooth
 		abort("Could not move subset: situation too complicated: both primary and secondary subsets present.");
 		return this;
 	}
-    smooth move (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center, bool keepview = false, bool drag = true)
+    smooth move (pair shift = (0,0),
+                 real scale = 1,
+                 real rotate = 0,
+                 pair point = this.center,
+                 bool keepview = false,
+                 bool drag = true)
     {
 		if (scale <= 0)
 		{ abort("Could not move: scale value must be positive."); }
@@ -1575,7 +1635,23 @@ struct smooth
 		return this;
 	}
 
-    void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = N, pair labelalign = defaultSyDP, hole[] holes = {}, subset[] subsets = {}, real[] hratios = {}, real[] vratios = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair viewdir = (0,0), smooth[] attached = {}, bool unit = true, bool copy = false, bool shiftsubsets = currentSmSS)
+    void operator init (path contour,
+                        pair center = center(contour),
+                        string label = "",
+                        pair labeldir = N,
+                        pair labelalign = defaultSyDP,
+                        hole[] holes = {},
+                        subset[] subsets = {},
+                        real[] hratios = {},
+                        real[] vratios = {},
+                        pair shift = (0,0),
+                        real scale = 1,
+                        real rotate = 0,
+                        pair viewdir = (0,0),
+                        smooth[] attached = {},
+                        bool unit = true,
+                        bool copy = false,
+                        bool shiftsubsets = currentSmSS)
     {
 		if (copy)
         {
@@ -1677,7 +1753,7 @@ struct drawdata
 }
 
 private drawdata[] currentdrawn;
-void flushcache () {currentdrawn = new drawdata[];}
+void flushcache () { currentdrawn = new drawdata[]; }
 
 bool operator == (smooth a, smooth b)
 { return a.contour == b.contour; }
@@ -1937,12 +2013,25 @@ smooth samplesmooth (int type = 0, int num = 0)
 smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
 // an alias for the comman diagram representation of the n-dimensional Eucledian space.
 {
-    return smooth(contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle, label = "$\mathbb{R}^" + ((n == -1) ? "n" : (string)n)  + "$", labeldir = (1,1), labelalign = (-1,-1.5), hratios = new real[]{.4}, vratios = new real[]{.4}, shift = shift, scale = scale, rotate = rotate);
+    return smooth(contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
+                  label = "$\mathbb{R}^" + ((n == -1) ? "n" : (string)n)  + "$",
+                  labeldir = (1,1),
+                  labelalign = (-1,-1.5),
+                  hratios = new real[]{.4},
+                  vratios = new real[]{.4},
+                  shift = shift,
+                  scale = scale,
+                  rotate = rotate);
 }
 
 // -- Set operations with smooth objects -- //
 
-smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
+smooth[] intersection (smooth sm1,
+                       smooth sm2,
+                       bool keepdata = true,
+                       bool round = false,
+                       real roundcoeff = currentSyRR,
+                       bool addsubsets = false)
 // Constructs the intersection of two given smooth objects.
 {
 	path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
@@ -2115,7 +2204,11 @@ smooth[] intersection (smooth sm1, smooth sm2, bool keepdata = true, bool round 
 
     return res;
 }
-smooth[] intersection (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
+smooth[] intersection (smooth[] sms,
+                       bool keepdata = true,
+                       bool round = false,
+                       real roundcoeff = currentSyRR,
+                       bool addsubsets = false)
 {
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
 
@@ -2137,13 +2230,25 @@ smooth[] intersection (smooth[] sms, bool keepdata = true, bool round = false, r
 	smooth[] res = getintersection(sms, keepdata, round, roundcoeff, addsubsets);
 	return res;
 }
-smooth[] intersection (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false ... smooth[] sms)
+
+smooth[] intersection (bool keepdata = true,
+                       bool round = false,
+                       real roundcoeff = currentSyRR,
+                       bool addsubsets = false
+                       ... smooth[] sms)
 { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
-smooth intersect (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, bool addsubsets = false)
+smooth intersect (smooth sm1,
+                  smooth sm2,
+                  bool keepdata = true,
+                  bool round = false,
+                  real roundcoeff = currentSyRR,
+                  bool addsubsets = false)
 { return intersection(sm1, sm2, keepdata, round, roundcoeff)[0]; }
+
 smooth intersect (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 { return intersection(sms, keepdata, round, roundcoeff)[0]; }
+
 smooth intersect (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return intersection(sms, keepdata, round, roundcoeff)[0]; }
 
@@ -2344,12 +2449,21 @@ smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real rou
 }
 smooth[] union (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return union(sms, keepdata, round, roundcoeff); }
+
 smooth unite (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
 { return union(sms, keepdata, round, roundcoeff)[0]; }
+
 smooth unite (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return union(sms, keepdata, round, roundcoeff)[0]; }
 
-smooth tangentspace (smooth sm, int ind = -1, pair center = (ind == -1) ? sm.center : sm.holes[ind].center, real angle, real ratio, real size = 1, real rotate = 45, string eltlabel = "x")
+smooth tangentspace (smooth sm,
+                     int ind = -1,
+                     pair center = (ind == -1) ? sm.center : sm.holes[ind].center,
+                     real angle,
+                     real ratio,
+                     real size = 1,
+                     real rotate = 45,
+                     string eltlabel = "x")
 // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
 {
 	if (!inside(-1, sm.holes.length-1, ind))
@@ -2464,7 +2578,21 @@ private void drawcartsections (picture pic, path[] g, real y, bool horiz, pair v
     drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
 }
 
-void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = (!currentDrIC ? inverse(.5*inverse(sectionpen)) : .5*sectionpen) + dashed + linewidth(sectionpen), pen shadepen = currentDrIC ? inverse(currentDrShS*inverse(smoothfill)) : currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true, bool cache = currentDrDC)
+void draw (picture pic = currentpicture,
+           smooth sm,
+           pen contourpen = currentpen,
+           pen smoothfill = smoothcolor,
+           pen subsetcontourpen = contourpen,
+           pen subsetfill = subsetcolor,
+           pen sectionpen = currentDrSeP,
+           pen dashpen = (!currentDrIC ? inverse(.5*inverse(sectionpen)) : .5*sectionpen) + dashed + linewidth(sectionpen),
+           pen shadepen = currentDrIC ? inverse(currentDrShS*inverse(smoothfill)) : currentDrShS*smoothfill,
+           int mode = currentDrM,
+           bool explain = currentDrE,
+           bool dash = currentDrDD,
+           bool shade = currentDrDS,
+           bool drag = true,
+           bool cache = currentDrDC)
 // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
 	if (!inside(0,3, mode))
@@ -2615,7 +2743,20 @@ void draw (picture pic = currentpicture, smooth sm, pen contourpen = currentpen,
 	if (cache) currentdrawn.push(drawdata(sm, contourpen, smoothfill, subsetfill));
 }
 
-void draw (picture pic = currentpicture, smooth[] sms, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS, bool drag = true)
+void draw (picture pic = currentpicture,
+           smooth[] sms,
+           pen contourpen = currentpen,
+           pen smoothfill = smoothcolor,
+           pen subsetcontourpen = contourpen,
+           pen subsetfill = subsetcolor,
+           pen sectionpen = currentDrSeP,
+           pen dashpen = sectionpen+dashed+grey,
+           pen shadepen = currentDrShS*smoothfill,
+           int mode = currentDrM,
+           bool explain = currentDrE,
+           bool dash = currentDrDD,
+           bool shade = currentDrDS,
+           bool drag = true)
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
@@ -2629,7 +2770,25 @@ void phantom (picture pic = currentpicture, smooth sm)
 	dot(pic, min(sm.contour), invisible);
 }
 
-smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
+smooth[] drawintersect (picture pic = currentpicture,
+                        smooth sm1,
+                        smooth sm2,
+                        bool keepdata = true,
+                        bool round = false,
+                        real roundcoeff = currentSyRR,
+                        pair shift = (0,0),
+                        pen ghostpen = mediumgrey,
+                        pen contourpen = currentpen,
+                        pen smoothfill = smoothcolor,
+                        pen subsetcontourpen = contourpen,
+                        pen subsetfill = subsetcolor,
+                        pen sectionpen = currentDrSeP,
+                        pen dashpen = sectionpen+dashed+grey,
+                        pen shadepen = currentDrShS*smoothfill,
+                        int mode = currentDrM,
+                        bool explain = currentDrE,
+                        bool dash = currentDrDD,
+                        bool shade = currentDrDS)
 // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
 	smooth smp1 = sm1.copy().simplemove(shift = shift);
@@ -2650,7 +2809,24 @@ smooth[] drawintersect (picture pic = currentpicture, smooth sm1, smooth sm2, bo
 
     return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS)
+smooth[] drawintersect (picture pic = currentpicture,
+                        smooth[] sms,
+                        bool keepdata = true,
+                        bool round = false,
+                        real roundcoeff = currentSyRR,
+                        pair shift = (0,0),
+                        pen ghostpen = mediumgrey,
+                        pen contourpen = currentpen,
+                        pen smoothfill = smoothcolor,
+                        pen subsetcontourpen = contourpen,
+                        pen subsetfill = subsetcolor,
+                        pen sectionpen = currentDrSeP,
+                        pen dashpen = sectionpen+dashed+grey,
+                        pen shadepen = currentDrShS*smoothfill,
+                        int mode = currentDrM,
+                        bool explain = currentDrE,
+                        bool dash = currentDrDD,
+                        bool shade = currentDrDS)
 {
 	smooth[] smsp = sequence(new smooth (int i){return sms[i].copy().move(shift = shift);}, sms.length);
 	smooth[] res = intersection(smsp, keepdata, round, roundcoeff);
@@ -2667,7 +2843,24 @@ smooth[] drawintersect (picture pic = currentpicture, smooth[] sms, bool keepdat
 
 	return res;
 }
-smooth[] drawintersect (picture pic = currentpicture, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR, pair shift = (0,0), pen ghostpen = mediumgrey, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, int mode = currentDrM, bool explain = currentDrE, bool dash = currentDrDD, bool shade = currentDrDS ... smooth[] sms)
+smooth[] drawintersect (picture pic = currentpicture,
+                        bool keepdata = true,
+                        bool round = false,
+                        real roundcoeff = currentSyRR,
+                        pair shift = (0,0),
+                        pen ghostpen = mediumgrey,
+                        pen contourpen = currentpen,
+                        pen smoothfill = smoothcolor,
+                        pen subsetcontourpen = contourpen,
+                        pen subsetfill = subsetcolor,
+                        pen sectionpen = currentDrSeP,
+                        pen dashpen = sectionpen+dashed+grey,
+                        pen shadepen = currentDrShS*smoothfill,
+                        int mode = currentDrM,
+                        bool explain = currentDrE,
+                        bool dash = currentDrDD,
+                        bool shade = currentDrDS
+                        ... smooth[] sms)
 {
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade);
 }
@@ -2805,7 +2998,21 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
     draw(pic = pic, gs, p = p, arrow = arrow, L = L);
 }
 
-void drawarrow (picture pic = currentpicture, smooth sm1, smooth sm2 = sm1, int[] ind1 = {}, int[] ind2 = {}, real curve = 0, pair[] points = {}, Label L = "", pen p = currentpen, arrowbar arrow = Arrow(SimpleHead), bool overlap = true, bool fill = true, real margin1 = currentArM, real margin2 = currentArM, bool explain = currentDrE)
+void drawarrow (picture pic = currentpicture,
+                smooth sm1,
+                smooth sm2 = sm1,
+                int[] ind1 = {},
+                int[] ind2 = {},
+                real curve = 0,
+                pair[] points = {},
+                Label L = "",
+                pen p = currentpen,
+                arrowbar arrow = Arrow(SimpleHead),
+                bool overlap = true,
+                bool fill = true,
+                real margin1 = currentArM,
+                real margin2 = currentArM,
+                bool explain = currentDrE)
 // Draws an arrow between two given smooth objects, or their subsets.
 {
 	string label1;
@@ -2866,7 +3073,21 @@ void drawarrow (picture pic = currentpicture, smooth sm1, smooth sm2 = sm1, int[
 	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
 }
 
-void drawarrow (picture pic = currentpicture, smooth sm1, int ind1, smooth sm2 = sm1, int ind2, real curve = 0, pair[] points = {}, Label L = "", pen p = currentpen, arrowbar arrow = Arrow(SimpleHead), bool overlap = true, bool fill = true, real margin1 = currentArM, real margin2 = currentArM, bool explain = currentDrE)
+void drawarrow (picture pic = currentpicture,
+                smooth sm1,
+                int ind1,
+                smooth sm2 = sm1,
+                int ind2,
+                real curve = 0,
+                pair[] points = {},
+                Label L = "",
+                pen p = currentpen,
+                arrowbar arrow = Arrow(SimpleHead),
+                bool overlap = true,
+                bool fill = true,
+                real margin1 = currentArM,
+                real margin2 = currentArM,
+                bool explain = currentDrE)
 {
 	element el1 = sm1.elements[ind1];
 	element el2 = sm2.elements[ind2];
@@ -2877,7 +3098,21 @@ void drawarrow (picture pic = currentpicture, smooth sm1, int ind1, smooth sm2 =
 	arrow(pic, g, rotate(-90)*dir(g, 0), rotate(-90)*dir(g, length(g)), L, p, arrow, overlap, fill, explain);
 }
 
-void drawarrow (picture pic = currentpicture, smooth sm, int[] ind = {}, real angle, real radius = sm.scale, pair[] points = {}, Label L = "", pen p = currentpen, arrowbar arrow = Arrow(SimpleHead), bool overlap = true, bool reverse = false, bool fill = true, real margin1 = currentArM, real margin2 = currentArM, bool explain = currentDrE)
+void drawarrow (picture pic = currentpicture,
+                smooth sm,
+                int[] ind = {},
+                real angle,
+                real radius = sm.scale,
+                pair[] points = {},
+                Label L = "",
+                pen p = currentpen,
+                arrowbar arrow = Arrow(SimpleHead),
+                bool overlap = true,
+                bool reverse = false,
+                bool fill = true,
+                real margin1 = currentArM,
+                real margin2 = currentArM,
+                bool explain = currentDrE)
 {
 	string label;
 	path contour;
@@ -2923,7 +3158,30 @@ void drawarrow (picture pic = currentpicture, smooth sm, int[] ind = {}, real an
 
 // -- Animations -- //
 
-void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, pair shift = (0,0), real scale = 1, real rotate = 0, bool keepview = false, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, int frames = defaultAnFN, bool back = true, bool drag = true, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = currentAnFPS, bool close = currentAnC)
+void move (smooth sm,
+           int mode = currentDrM,
+           pen contourpen = currentpen,
+           pen smoothfill = smoothcolor,
+           pen subsetcontourpen = contourpen,
+           pen subsetfill = subsetcolor,
+           pen sectionpen = currentDrSeP,
+           pen dashpen = sectionpen+dashed+grey,
+           pen shadepen = currentDrShS*smoothfill,
+           pair shift = (0,0),
+           real scale = 1,
+           real rotate = 0,
+           bool keepview = false,
+           bool dash = currentDrDD,
+           bool explain = currentDrE,
+           bool shade = currentDrDS,
+           int frames = defaultAnFN,
+           bool back = true,
+           bool drag = true,
+           real margin = currentExM,
+           int density = currentExRID,
+           bool compile = false,
+           int fps = currentAnFPS,
+           bool close = currentAnC)
 // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
     smooth smp;
@@ -2944,7 +3202,31 @@ void move (smooth sm, int mode = currentDrM, pen contourpen = currentpen, pen sm
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-void revolve (smooth sm, int mode = currentDrM, pair viewdir1 = sm.viewdir, pair viewdir2, pen contourpen = currentpen, pen smoothfill = smoothcolor, pen subsetcontourpen = contourpen, pen subsetfill = subsetcolor, pen sectionpen = currentDrSeP, pen dashpen = sectionpen+dashed+grey, pen shadepen = currentDrShS*smoothfill, bool dash = currentDrDD, bool explain = currentDrE, bool shade = currentDrDS, pair shift = (0,0), bool back = true, bool arc = false, bool shiftsubsets = currentSmSS, bool drag = true, int frames = defaultAnFN, real margin = currentExM, int density = currentExRID, bool compile = false, int fps = currentAnFPS, bool close = currentAnC)
+void revolve (smooth sm,
+              int mode = currentDrM,
+              pair viewdir1 = sm.viewdir,
+              pair viewdir2,
+              pen contourpen = currentpen,
+              pen smoothfill = smoothcolor,
+              pen subsetcontourpen = contourpen,
+              pen subsetfill = subsetcolor,
+              pen sectionpen = currentDrSeP,
+              pen dashpen = sectionpen+dashed+grey,
+              pen shadepen = currentDrShS*smoothfill,
+              bool dash = currentDrDD,
+              bool explain = currentDrE,
+              bool shade = currentDrDS,
+              pair shift = (0,0),
+              bool back = true,
+              bool arc = false,
+              bool shiftsubsets = currentSmSS,
+              bool drag = true,
+              int frames = defaultAnFN,
+              real margin = currentExM,
+              int density = currentExRID,
+              bool compile = false,
+              int fps = currentAnFPS,
+              bool close = currentAnC)
 // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
     smooth smp;

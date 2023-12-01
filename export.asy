@@ -24,7 +24,7 @@ private pair currentFrFC = (0,0); // [F]rame [C]orner
 int currentAnFPS = 25; // [FPS]
 private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
-private string currentAnOF = "mp4"; // [O]otput [F]ormat
+private string currentAnOF = "mp4"; // [O]utput [F]ormat
 bool currentAnC = true; // [C]lose
 
 private string copychar (string str, int n)
