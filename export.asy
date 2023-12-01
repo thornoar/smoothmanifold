@@ -37,18 +37,6 @@ private string copychar (string str, int n)
 
 private bool native (string format = currentAnIF) {return format == "" || format == "eps" || format == "pdf";}
 
-// void invertcolors ()
-// {
-// 	exportparams(bgpen = inverse(currentExBG));
-// 	defaultpen(inverse(currentpen));
-// 	smoothcolor = inverse(smoothcolor);
-// 	subsetcolor = inverse(subsetcolor);
-// 	currentDrIC = !currentDrIC;
-// 	currentDrExP = inverse(currentDrExP);
-// 	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
-// 	currentDrElP = inverse(currentDrElP);
-// }
-
 void exportparams (int dpi = currentExRID, pen bgpen = currentExBG, real margin = currentExM, bool exit = currentExEOE)
 {
 	if (dpi < 10)
@@ -60,6 +48,21 @@ void exportparams (int dpi = currentExRID, pen bgpen = currentExBG, real margin 
 	currentExM = margin;
 	currentExEOE = exit;
 }
+void invertcolors ()
+{
+	currentExBG = inverse(currentExBG);
+	defaultpen(inverse(currentpen));
+	smoothcolor = inverse(smoothcolor);
+	subsetcolor = inverse(subsetcolor);
+	currentDrIC = !currentDrIC;
+	currentDrExP = inverse(currentDrExP);
+	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
+	currentDrElP = inverse(currentDrElP);
+    nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
+    dashpen = new pen (pen p) { return .5*p; };
+    shadepen = new pen (pen p) { return currentDrShS*p; };
+}
+
 void animationparams (string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
 {
 	if (find(outprefix, " ") > -1)

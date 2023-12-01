@@ -45,14 +45,14 @@ transform dscale (real scale, pair center = (0,0), pair dir)
 
 real[] a (... real[] source)
 { return source; }
-real[][] a (... real[][] source)
+real[][] da (... real[][] source)
 { return source; }
 real[][] aa (... real[] source)
 { return new real[][]{source}; }
 
 int[] i (... int[] source)
 { return source; }
-int[][] i (... int[][] source)
+int[][] di (... int[][] source)
 { return source; }
 int[][] ii (... int[] source)
 { return new int[][]{source}; }
