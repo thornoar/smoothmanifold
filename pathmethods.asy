@@ -94,6 +94,10 @@ int[] difference (int[] a, int[] b)
 	{ if (!contains(b, a[i])) res.push(a[i]); }
 	return res;
 }
+// int[] unique (int[] a)
+// {
+//     
+// }
 
 real arclength (path g, real a, real b)
 { return arclength(subpath(g, a, b)); }

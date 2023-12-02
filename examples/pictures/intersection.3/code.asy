@@ -1,4 +1,4 @@
-import smoothmanifold;
+import export;
 
 settings.render = 16;
 size(15 cm);

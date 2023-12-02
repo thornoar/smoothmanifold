@@ -1,4 +1,4 @@
-import smoothmanifold;
+import export;
 
 settings.render = 16;
 settings.outformat = "pdf";

@@ -289,14 +289,14 @@ private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 pen inverse (pen p)
 {
 	real[] colors = colors(p);
-	if (colors.length == 1) return gray(1-colors[0]);
-	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2]);
+	if (colors.length == 1) return gray(1-colors[0])+linewidth(p);
+	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2])+linewidth(p);
 	return invisible;
 }
 pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
 pen dashpen (pen p)
-{ return inverse(.5*inverse(p)); }
+{ return inverse(.5*inverse(p))+dashed; }
 pen shadepen (pen p)
 { return inverse(currentDrShS*inverse(p)); }
 
@@ -935,6 +935,36 @@ private int subsetmaxlayer (subset[] subsets, int[] range)
 	{ if (subsets[range[i]].layer > res) res = subsets[range[i]].layer; }
 	return res;
 }
+private void subsetcleanreferences (subset[] subsets)
+{
+    bool[] visited = array(subsets.length, value = false);
+
+    void clean (int i)
+    {
+        if (visited[i]) return;
+        subset cursb = subsets[i];
+        visited[i] = true;
+
+        for (int j = 0; j < cursb.subsets.length; ++j)
+        {
+            if (cursb.subsets[j] >= subsets.length)
+            {
+                cursb.subsets.delete(j);
+                j -= 1;
+                continue;
+            }
+        }
+        
+        for (int j = 0; j < cursb.subsets.length; ++j)
+        {
+            clean(cursb.subsets[j]);
+            cursb.subsets = difference(cursb.subsets, subsetgetall(subsets, subsets[cursb.subsets[j]]));
+        }
+    }
+
+    for (int i = 0; i < subsets.length; ++i)
+    { clean(i); }
+}
 
 struct smooth
 // The main class in the module. Represents the way a "smooth manifold" would be drawn on a piece of paper.
@@ -1314,46 +1344,61 @@ struct smooth
         return this;
     }
 
-	smooth addsubset (subset sb, int[] ind = {}, bool unit = true, bool findplace = false)
+	smooth addsubset (subset sb, int[] ind = i(defaultSyDN), bool unit = true)
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
 		
-		if (findplace)
+		if (ind.length > 0 && ind[0] == defaultSyDN)
 		{
-			int layer = 0;
+			int layer = -1;
 			int index = -1;
+            bool found = false;
+
+            void findindex (int i)
+            {
+                subset cursb = this.subsets[i];
+                if (cursb.layer > layer && insidepath(cursb.contour, sb.contour))
+                {
+                    index = i;
+                    layer = cursb.layer;
+                    for (int j = 0; j < cursb.subsets.length; ++j)
+                    {
+                        findindex(cursb.subsets[j]);
+                        if (found) break;
+                    }
+                    found = true;
+                }
+            }
 			for (int i = 0; i < this.subsets.length; ++i)
 			{
-				subset cursb = this.subsets[i];
-				if (cursb.layer >= layer && insidepath(cursb.contour, sb.contour))
-				{
-					index = i;
-					layer = cursb.layer;
-				}
+                if (this.subsets[i].layer == 0) findindex(i);
+                if (found) return this.addsubset(sb, i(index), false);
 			}
-
-			return this.addsubset(sb, (index == -1 ? new int[]{} : i(index)), false, false);
+            ind = new int[] {};
 		}
-		
-		sb.subsets.delete();
+        if (sb.subsets.length > 0)
+        {
+            write("> ! New subset already contains some subset indices. They will be removed.");
+            sb.subsets.delete();
+        }
 		
 		path pcontour;
 		int[] range;
-		
+		subset parent;
 		bool sub = ind.length > 0;
+
 		if (sub)
 		{
-			subset parent = subsetget(this.subsets, ind);
+			parent = subsetget(this.subsets, ind);
 			sb.layer = parent.layer + 1;
 			pcontour = parent.contour;
-			range = subsetgetall(this.subsets, parent);
-			subsetsort(this.subsets, range);
+			range = parent.subsets;
 		}
 		else
 		{
 			sb.layer = 0;
 			pcontour = this.contour;
-			range = sequence(this.subsets.length);
+			range = subsetgetlayer(this.subsets, sequence(this.subsets.length), 0);
 		}
 
 		if (!insidepath(pcontour, sb.contour))
@@ -1375,115 +1420,135 @@ struct smooth
 			}
 		}
 
-		// int insertindex = subsetinsert(this.subsets, sb);
-		// for (int k = 0; k < range.length; ++k)
-		// { if (range[k] >= insertindex) range[k] += 1; }
-
-        int insertindex = this.subsets.length;
-        this.subsets.push(sb);
-
-		for (int i = 0; i < range.length; ++i)
-		{
-			subset curchild = this.subsets[range[i]];
-			if (insidepath(curchild.contour, sb.contour))
+        for (int i = 0; i < range.length; ++i)
+        {
+			if (insidepath(this.subsets[range[i]].contour, sb.contour))
 			{
-				// subsetdelete(this.subsets, insertindex, true);
-                while (this.subsets.length > insertindex)
-                { this.subsets.delete(insertindex); }
 				currentPrDP.push(sb.contour);
 				write("> ! Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
 				return this;
 			}
-			if (insidepath(sb.contour, curchild.contour))
-			{
-				sb.subsets.push(range[i]);
-				if (sub)
-				{
-				 	subsetget(this.subsets, ind).subsets.delete(i);
-					// i -= 1;
-				}
-                range = difference(range, subsetgetall(this.subsets, curchild));
-				subsetdeepen(this.subsets, curchild);
-				continue;
-			}
-			subset[] intersection = subsetintersection(curchild, sb);
-			for (int j = 0; j < intersection.length; ++j)
-			{
-				bool waitforsubset = false;
-				for (int k = 0; k < curchild.subsets.length; ++k)
-				{
-					if (insidepath(this.subsets[curchild.subsets[k]].contour, intersection[j].contour))
-					{
-						waitforsubset = true;
-						break;
-					}
-				}
-				if (waitforsubset) continue;
-				// int intersectindex = subsetinsert(this.subsets, intersection[j]);
-				// for (int k = 0; k < range.length; ++k)
-				// { if (range[k] >= intersectindex) range[k] += 1; }
-                this.subsets.push(intersection[j]);
-				if (sb.layer - intersection[j].layer == -1) sb.subsets.push(this.subsets.length-1);
-				int[] supsetrange = subsetgetlayer(this.subsets, (sub ? subsetgetall(this.subsets, ind) : sequence(this.subsets.length)), intersection[j].layer-1);
-				for (int k = 0; k < supsetrange.length; ++k)
-				{
-					if (supsetrange[k] == insertindex) continue;
-					if (insidepath(this.subsets[supsetrange[k]].contour, intersection[j].contour))
-					{ this.subsets[supsetrange[k]].subsets.push(this.subsets.length-1); }
-				}
-			}
-		}
+        }
 
-		if (sub) subsetget(this.subsets, ind).subsets.push(insertindex);
-        // this.subsets = sort(this.subsets, new bool (subset i, subset j){return i.layer < j.layer;});
+        int insertindex = this.subsets.length;
+        int[] intersectionindices = array(this.subsets.length, value = -1);
+        this.subsets.push(sb);
+        int count = 0;
+        bool deepened = false;
+        bool terminate = false;
+
+        void intersectwith (int i)
+        {
+            if (intersectionindices[i] > -1) return;
+            if (intersectionindices[i] == -2) return;
+            subset cursb = this.subsets[i];
+
+            if (insidepath(sb.contour, cursb.contour))
+            {
+                deepened = true;
+                subsetdeepen(this.subsets, cursb);
+                for (int j = 0; j < cursb.subsets.length; ++j)
+                { intersectionindices[cursb.subsets[j]] = cursb.subsets[j]; }
+                intersectionindices[i] = i;
+                return;
+            }
+
+            subset[] intersection = subsetintersection(cursb, sb);
+            if (intersection.length > 1)
+            {
+                write("> ! Could not add subset: has disconnected intersection with existing subsets. Call `drawdebug()` in the end to adjust.");
+                this.subsets.delete(insertindex, this.subsets.length-1);
+                subsetcleanreferences(this.subsets);
+                terminate = true;
+                return;
+            }
+            if (intersection.length == 0)
+            {
+                intersectionindices[i] = -2;
+                return;
+            }
+            subset intersectsb = intersection[0];
+            for (int j = 0; j < cursb.subsets.length; ++j)
+            {
+                if (insidepath(this.subsets[cursb.subsets[j]].contour, intersectsb.contour))
+                {
+                    intersectionindices[i] = -2;
+                    return;
+                }
+            }
+            this.subsets.push(intersectsb);
+            int intersectindex = this.subsets.length-1;
+
+            bool inside = false;
+
+            for (int j = 0; j < cursb.subsets.length; ++j)
+            {
+                subset curchild = this.subsets[cursb.subsets[j]];
+                if (insidepath(curchild.contour, sb.contour))
+                {
+                    inside = true;
+                    write("yes");
+                }
+                
+                intersectwith(cursb.subsets[j]);
+                int ind = intersectionindices[cursb.subsets[j]];
+                if (ind > -1) intersectsb.subsets.push(ind);
+            }
+
+            cursb.subsets.push(intersectindex);
+            intersectionindices[i] = intersectindex;
+        }
+
+        for (int i = 0; i < range.length; ++i)
+        {
+            if (terminate) return this;
+            
+            intersectwith(range[i]);
+            int ind = intersectionindices[range[i]];
+            if (ind > -1) sb.subsets.push(ind);
+        }
+
+		if (sub) parent.subsets.push(insertindex);
+        subsetcleanreferences(this.subsets);
 		return this;
 	}
-	smooth addsubset (int[] ind = {},
+	smooth addsubset (int[] ind = i(defaultSyDN),
                       path contour,
                       pair shift = (0,0),
                       real scale = 1,
                       real rotate = 0,
                       pair point = center(contour),
-                      bool unit = true,
-                      bool findplace = false)
+                      bool unit = true)
 	{
-		return this.addsubset(sb = subset(contour = contour, shift = shift, scale = scale, rotate = rotate, point = point), ind = ind, unit = unit, findplace = findplace);
+		return this.addsubset(sb = subset(contour = contour, shift = shift, scale = scale, rotate = rotate, point = point), ind = ind, unit = unit);
 	}
-    smooth addsubsets (subset[] sbs,
-                       int[] ind = {},
-                       bool unit = true,
-                       bool findplace = false)
+    smooth addsubsets (subset[] sbs, int[] ind = i(defaultSyDN), bool unit = true)
     {
         for (int i = 0; i < sbs.length; ++i)
-        {
-            this.addsubset(sbs[i], ind, unit, findplace);
-        }
+        { this.addsubset(sbs[i], ind, unit); }
 
         return this;
     }
-    smooth addsubsets (int[] ind = {},
-                       bool unit = true,
-                       bool findplace = false
+    smooth addsubsets (int[] ind = i(defaultSyDN),
+                       bool unit = true
                        ... subset[] sbs)
-    { return this.addsubsets(sbs, ind, unit, findplace); }
-    smooth addsubsets (int[] ind = {},
+    { return this.addsubsets(sbs, ind, unit); }
+    smooth addsubsets (int[] ind = i(defaultSyDN),
                        path[] contours,
                        pair[] shifts = array(contours.length, value = (0,0)),
                        real[] scales = array(contours.length, value = 1),
                        real[] rotates = array(contours.length, value = 0),
                        pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
-                       bool unit = true,
-                       bool findplace = false)
+                       bool unit = true)
     {
         return this.addsubsets(sbs = sequence(new subset(int i){
             return subset(contour = contours[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
-        }, contours.length), ind = ind, unit = unit, findplace = findplace);
+        }, contours.length), ind = ind, unit = unit);
     }
-    smooth addsubsets (int[] ind = {},
-                       bool unit = true,
-                       bool findplace = false
+    smooth addsubsets (int[] ind = i(defaultSyDN),
+                       bool unit = true
                        ... path[] contours)
-    { return this.addsubsets(ind = ind, contours = contours, unit = unit, findplace = findplace); }
+    { return this.addsubsets(ind = ind, contours = contours, unit = unit); }
 	smooth rmsubset (int ind, bool recursive = true)
 	{
 		subsetdelete(this.subsets, ind, recursive);
@@ -1753,7 +1818,7 @@ struct smooth
             for (int i = 0; i < holes.length; ++i)
             { addhole(holes[i], unit = unit); }
             for (int i = 0; i < subsets.length; ++i)
-            { addsubset(subsets[i], unit = unit, findplace = true); }
+            { addsubset(subsets[i], unit = unit); }
 
 			this.setratios(hratios, true);
 			this.setratios(vratios, false);
@@ -1854,7 +1919,8 @@ smooth samplesmooth (int type = 0, int num = 0)
                     )
                 },
 				rotate = -90,
-                hratios = new real[]{.6, .83}
+                hratios = new real[]{.6, .83},
+                vratios = a()
             );
         }
     }
@@ -1897,16 +1963,16 @@ smooth samplesmooth (int type = 0, int num = 0)
 						scale = .5,
 						rotate = -70,
 						sections = new real[][]{
-							new real[] {defaultSyDN, defaultSyDN, 250, 10, .65, 200}
+							new real[] {-5, -1, 280, 10, .65, 200}
 						}
 					)
 				},
 				subsets = new subset[]{
 					subset(
-						contour = defaultPaCV[3],
+						contour = defaultPaCV[6],
 						scale = .45,
-						rotate = -130,
-						shift = (.5,.35)
+						rotate = 20,
+						shift = (.5,.28)
 					)
 				}
 			);
@@ -2078,7 +2144,7 @@ smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, rea
 // an alias for the comman diagram representation of the n-dimensional Eucledian space.
 {
     return smooth(contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
-                  label = "$\mathbb{R}^" + ((n == -1) ? "n" : (string)n)  + "$",
+                  label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
                   labeldir = (1,1),
                   labelalign = (-1,-1.5),
                   hratios = new real[]{.4},
@@ -2572,13 +2638,24 @@ smooth tangentspace (smooth sm,
 
 // -- From here starts the collection of the drawing functions provided by the module. -- //
 
-private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen, int mode)
+private void drawsections (picture pic,
+                           pair[][] sections,
+                           pair viewdir,
+                           bool dash,
+                           bool explain,
+                           bool shade,
+                           real scale,
+                           pen sectionpen,
+                           pen dashpen,
+                           pen shadepen,
+                           int mode,
+                           bool restrict)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
     {
 		if (sections[k].length > 4) continue;
-		// if (length(viewdir) > 0 && length(sections[k][1]-sections[k][0]) > currentSeML) continue;
+		if (restrict && length(viewdir) > 0 && length(sections[k][1]-sections[k][0]) > currentSeML) continue;
 
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir, (mode == 1));
         if (shade && section.length == 2) fill(pic = pic, section[0]--section[1]--cycle, shadepen);
@@ -2634,12 +2711,12 @@ private void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bo
     { sections = sectionparamsstrict(curhl1contour, curhl2contour, n, currentsection[4], p); }
     if (mode == 1)
     { sections = sectionparamsfree(curhl1contour, curhl2contour, p*n, p); }
-    drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode);
+    drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode, true);
 }
 
 private void drawcartsections (picture pic, path[] g, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
-    drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
+    drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1, false);
 }
 
 void draw (picture pic = currentpicture,
@@ -2720,7 +2797,7 @@ void draw (picture pic = currentpicture,
 				{
 					sections = sectionparamsfree(curhlcontour, cursmcontour, ceil(hl.sections[j][3])*ceil(hl.sections[j][5]), ceil(hl.sections[j][5]));
 				}
-				drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
+				drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode, true);
 			}
 
             if (hl.neighnumber > 0)
