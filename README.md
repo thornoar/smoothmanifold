@@ -1,3 +1,5 @@
+# WARNING: active development underway, some features may not work properly.
+
 # Module smoothmanifold
 
 ## Description
