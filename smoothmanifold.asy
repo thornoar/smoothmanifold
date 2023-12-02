@@ -610,7 +610,7 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
     return res;
 }
 
-// -- Here the module definitions start -- //
+// -- The structures of the module -- //
 
 usepackage("amssymb"); // LaTeX package for mathematical symbols
 
@@ -987,9 +987,24 @@ struct smooth
 
 	bool shiftsubsets;
 
+    // -- System methods -- //
+
     real xsize () { return xsize(this.contour); }
     real ysize () { return ysize(this.contour); }
-
+    private real getyratio (real y)
+    { return (y - ypart(min(this.contour)))/this.ysize(); }
+    private real getxratio (real x)
+    { return (x - xpart(min(this.contour)))/this.xsize(); }
+    private real getypoint (real y)
+    {
+        y = y - floor(y);
+        return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y);
+    }
+    private real getxpoint (real x)
+    {
+        x = x - floor(x);
+        return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x);
+    }
 	bool isinside (pair x)
 	{
 		if (!isinside(this.contour, x)) return false;
@@ -997,20 +1012,9 @@ struct smooth
 		{ if (isinside(this.holes[i].contour, x)) return false; }
 		return true;
 	}
-    real getyratio (real y)
-    { return (y - ypart(min(this.contour)))/this.ysize(); }
-    real getxratio (real x)
-    { return (x - xpart(min(this.contour)))/this.xsize(); }
-    real getypoint (real y)
-    {
-        y = y - floor(y);
-        return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y);
-    }
-    real getxpoint (real x)
-    {
-        x = x - floor(x);
-        return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x);
-    }
+
+    // -- User functions for manipulating smooth object -- //
+
     smooth simplemove (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center)
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
@@ -1098,6 +1102,9 @@ struct smooth
         
 		return this;
     }
+
+    // -- User functions for setting the direction of view -- //
+
     smooth dropview ()
     {
 		if (length(this.viewdir) == 0) return this;
@@ -1112,7 +1119,7 @@ struct smooth
 
         return this;
     }
-    smooth setview (pair viewdir)
+    private smooth setview (pair viewdir)
     {
 		if (viewdir == this.viewdir) return this;
 
@@ -1126,6 +1133,61 @@ struct smooth
         
 		return this;
     }
+    smooth view (pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
+    {
+		this.shiftsubsets = shiftsubsets;
+
+		bool corrected = false;
+		if (length(viewdir) > 1)
+		{
+			viewdir = unit(viewdir);
+			corrected = true;
+		}
+
+		this.dropview();
+		this.setview(viewdir);
+
+		if (drag)
+		{
+			for (int i = 0; i < this.attached.length; ++i)
+			{ this.attached[i].view(viewdir, drag = true); }
+		}
+
+        return this;
+    }
+	smooth view (real angle, bool shiftsubsets = true, bool drag = true)
+	{ return this.view(dir(angle), shiftsubsets, drag); }
+
+    // -- User function for moving smooth object with respect to view direction -- //
+
+    smooth move (pair shift = (0,0),
+                 real scale = 1,
+                 real rotate = 0,
+                 pair point = this.center,
+                 bool keepview = false,
+                 bool drag = true)
+    {
+		if (scale <= 0)
+		{ abort("Could not move: scale value must be positive."); }
+		
+		this.rotate += rotate;
+        this.scale *= scale;
+		this.shift += shift + (srap(scale, rotate, point) * this.center - this.center);
+
+		pair viewdir = this.viewdir;
+        if (!keepview) this.dropview();
+		this.simplemove(shift, scale, rotate, point);    
+		if (!keepview) this.setview(viewdir);
+
+        if (!drag) return this;
+        for (int i = 0; i < this.attached.length; ++i)
+        { this.attached[i].move(shift = shift, scale = scale, rotate = rotate, point = point, keepview = keepview, drag = true); }
+		
+        return this;
+    }
+
+    // -- User function for setting other object parameters -- //
+
     smooth setratios (real[] ratios, bool horiz)
     {
 		if (ratios.length > 0 && ratios[0] == defaultSyDN)
@@ -1161,7 +1223,6 @@ struct smooth
 
         return this;
     }
-
     smooth setlabel (int[] ind = {},
                      string label = this.label,
                      pair labeldir = this.labeldir,
@@ -1182,6 +1243,15 @@ struct smooth
     smooth setlabel (int[] ind = {}, string label = this.label, real angle)
     { return this.setlabel(ind, label, dir(angle)); }
 
+    // -- User functions for manipulating elements -- //
+
+    int getelement (string label)
+    {
+        for (int i = 0; i < this.elements.length; ++i)
+        { if (this.elements[i].label == label) return i; }
+        write("> ! Could not find element: no element with such label. Returning -1.");
+        return -1;
+    }
 	smooth addelement (element elt, bool unit = true)
 	{
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
@@ -1202,11 +1272,24 @@ struct smooth
     }
     smooth setelement (int ind, pair pos, string label = "", pair labelalign = S, bool unit = true)
     { return this.setelement(ind, element(pos, label, labelalign), unit); }
+    smooth setelement (string label, element elt, bool unit = true)
+    { return this.setelement(this.getelement(label), elt, unit); }
+    smooth setelement (string label, pair pos, string newlabel = "", pair labelalign = S, bool unit = true)
+    { return this.setelement(this.getelement(label), pos, newlabel, labelalign, unit); }
     smooth rmelement (int ind)
     {
         this.elements.delete(ind);
         return this;
     }
+    smooth movelement (int ind, pair shift)
+    {
+        this.elements[ind].pos += shift;
+        return this;
+    }
+    smooth movelement (string label, pair shift)
+    { return this.movelement(this.getelement(label), shift); }
+
+    // -- User functions for manipulating holes -- //
 
     smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
     {
@@ -1299,9 +1382,36 @@ struct smooth
             return hole(contour = contours[i], sections = sections[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
         }, contours.length), unit = unit);
     }
-    smooth rmhole(int ind)
+    smooth addholes (bool unit = true
+                     ... path[] contours)
+    { return this.addholes(contours = contours, unit = unit); }
+    smooth rmhole (int ind)
     {
      	this.holes.delete(ind);
+        return this;
+    }
+    smooth rmholes (int[] inds)
+    {
+        for (int i = 0; i < inds.length; ++i)
+        { this.holes.delete(inds[i]); }
+        return this;
+    }
+    smooth rmholes (... int[] inds)
+    { return this.rmholes(inds); }
+    smooth movehole (int ind,
+                     pair shift = (0,0),
+                     real scale = 1,
+                     real rotate = 0,
+                     pair point = this.holes[ind].center,
+                     bool movesections = false,
+                     bool keepview = false)
+    {
+		pair viewdir = this.viewdir;    
+		
+		if (!keepview) this.dropview();
+		this.holes[ind].move(shift, scale, rotate, point, movesections);
+		if (!keepview) this.setview(viewdir);
+
         return this;
     }
     smooth addholesection (int ind, real[] section = {}, bool unit = false)
@@ -1344,6 +1454,17 @@ struct smooth
         return this;
     }
 
+    // -- User functions for manipulating subsets -- //
+
+    int getsubset (string label)
+    {
+        for (int i = 0; i < this.subsets.length; ++i)
+        {
+            if (this.subsets[i].label == label) return i;
+        }
+        write("> ! Could not find subset: no subset with such label. Returning -1.");
+        return -1;
+    }
 	smooth addsubset (subset sb, int[] ind = i(defaultSyDN), bool unit = true)
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
@@ -1522,6 +1643,18 @@ struct smooth
 	{
 		return this.addsubset(sb = subset(contour = contour, shift = shift, scale = scale, rotate = rotate, point = point), ind = ind, unit = unit);
 	}
+    smooth addsubset (string label,
+                      subset sb,
+                      bool unit = true)
+    { return this.addsubset(sb, i(this.getsubset(label)), unit); }
+    smooth addsubset (string label,
+                      path contour,
+                      pair shift = (0,0),
+                      real scale = 1,
+                      real rotate = 0,
+                      pair point = center(contour),
+                      bool unit = true)
+    { return this.addsubset(i(this.getsubset(label)), contour, shift, scale, rotate, point, unit); }
     smooth addsubsets (subset[] sbs, int[] ind = i(defaultSyDN), bool unit = true)
     {
         for (int i = 0; i < sbs.length; ++i)
@@ -1549,6 +1682,25 @@ struct smooth
                        bool unit = true
                        ... path[] contours)
     { return this.addsubsets(ind = ind, contours = contours, unit = unit); }
+    smooth addsubsets (string label, subset[] sbs, bool unit)
+    { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+    smooth addsubsets (string label,
+                       bool unit = true
+                       ... subset[] sbs)
+    { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+    smooth addsubsets (string label,
+                       path[] contours,
+                       pair[] shifts = array(contours.length, value = (0,0)),
+                       real[] scales = array(contours.length, value = 1),
+                       real[] rotates = array(contours.length, value = 0),
+                       pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
+                       bool unit = true)
+    { return this.addsubsets(i(this.getsubset(label)), contours, shifts, scales, rotates, points, unit); }
+    smooth addsubsets (string label,
+                       bool unit = true
+                       ... path[] contours)
+    { return this.addsubsets(i(this.getsubset(label)), contours = contours, unit = unit); }
+
 	smooth rmsubset (int ind, bool recursive = true)
 	{
 		subsetdelete(this.subsets, ind, recursive);
@@ -1556,47 +1708,23 @@ struct smooth
 	}
 	smooth rmsubset (int[] ind, bool recursive = true)
 	{ return this.rmsubset(subsetgetindex(this.subsets, ind), recursive); }
-
-    smooth view (pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
+    smooth rmsubset (string label, bool recursive = true)
+    { return this.rmsubset(this.getsubset(label), recursive); }
+    smooth rmsubsets (int[] inds, bool recursive = true)
     {
-		this.shiftsubsets = shiftsubsets;
-
-		bool corrected = false;
-		if (length(viewdir) > 1)
-		{
-			viewdir = unit(viewdir);
-			corrected = true;
-		}
-
-		this.dropview();
-		this.setview(viewdir);
-
-		if (drag)
-		{
-			for (int i = 0; i < this.attached.length; ++i)
-			{ this.attached[i].view(viewdir, drag = true); }
-		}
-
+        for (int i = 0; i < inds.length; ++i)
+        { this.rmsubset(inds[i], recursive); }
         return this;
     }
-	smooth view (real angle, bool shiftsubsets = true, bool drag = true)
-	{ return this.view(dir(angle), shiftsubsets, drag); }
-    smooth movehole (int ind,
-                     pair shift = (0,0),
-                     real scale = 1,
-                     real rotate = 0,
-                     pair point = this.holes[ind].center,
-                     bool movesections = false,
-                     bool keepview = false)
-    {
-		pair viewdir = this.viewdir;    
-		
-		if (!keepview) this.dropview();
-		this.holes[ind].move(shift, scale, rotate, point, movesections);
-		if (!keepview) this.setview(viewdir);
+    smooth rmsubsets (bool recursive = true ... int[] inds)
+    { return this.rmsubsets(inds, recursive); }
+    smooth rmsubsets (string[] labels, bool recursive = true)
+    { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
+    smooth rmsubsets (bool recursive = true ... string[] labels)
+    { return this.rmsubsets(labels, recursive); }
 
-        return this;
-    }
+    // -- User function for moving subset globally or within containing subset -- //
+
 	private bool onlyprimary (int ind)
 	{
 		subset s = this.subsets[ind];
@@ -1722,31 +1850,27 @@ struct smooth
 		abort("Could not move subset: situation too complicated: both primary and secondary subsets present.");
 		return this;
 	}
-    smooth move (pair shift = (0,0),
-                 real scale = 1,
-                 real rotate = 0,
-                 pair point = this.center,
-                 bool keepview = false,
-                 bool drag = true)
-    {
-		if (scale <= 0)
-		{ abort("Could not move: scale value must be positive."); }
-		
-		this.rotate += rotate;
-        this.scale *= scale;
-		this.shift += shift + (srap(scale, rotate, point) * this.center - this.center);
+    smooth movesubset (int ind,
+                       pair shift = (0,0),
+                       real scale = 1,
+                       real rotate = 0,
+                       pair point = this.subsets[ind].center,
+                       bool movelabel = false,
+                       bool recursive = true,
+                       bool keepview = false)
+    { return this.movesubset(i(ind), shift, scale, rotate, point, movelabel, recursive, keepview); }
+    smooth movesubset (string label,
+                       pair shift = (0,0),
+                       real scale = 1,
+                       real rotate = 0,
+                       pair point = this.subsets[this.getsubset(label)].center,
+                       bool movelabel = false,
+                       bool recursive = true,
+                       bool keepview = false)
+    { return this.movesubset(this.getsubset(label), shift, scale, rotate, point, movelabel, recursive, keepview); }
 
-		pair viewdir = this.viewdir;
-        if (!keepview) this.dropview();
-		this.simplemove(shift, scale, rotate, point);    
-		if (!keepview) this.setview(viewdir);
+    // -- User functions for controlling relationships between smooth objects -- //
 
-        if (!drag) return this;
-        for (int i = 0; i < this.attached.length; ++i)
-        { this.attached[i].move(shift = shift, scale = scale, rotate = rotate, point = point, keepview = keepview, drag = true); }
-		
-        return this;
-    }
     smooth attach (smooth sm)
     {
         this.attached.push(sm);
@@ -1762,7 +1886,8 @@ struct smooth
 
 		return this;
 	}
-
+    
+    // Constructor
     void operator init (path contour,
                         pair center = center(contour),
                         string label = "",
