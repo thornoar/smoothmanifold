@@ -717,7 +717,7 @@ private void holeadjust (hole hl, pair shift, real scale, real rotate, pair poin
 { hl.move(shift, scale, rotate, shift(-shift) * point, false); }
 
 struct subset
-// A isintersection class representing a subset of a given object (see "smooth")
+// A structure representing a subset of a given object (see "smooth")
 {
     path contour;
     pair center;
@@ -846,7 +846,7 @@ private void subsetdelete (subset[] subsets, int ind, bool recursive)
 	}
 }
 private void subsetsort (subset[] subsets, int[] range)
-{ range = sort(range, new bool (int i, int j){return subsets[i].layer <= subsets[j].layer;}); }
+{ range = sort(range, new bool (int i, int j){return subsets[i].layer < subsets[j].layer;}); }
 
 private int subsetgetindex (subset[] subsets, int[] ind)
 {
@@ -900,8 +900,6 @@ private int[] subsetgetallnot (subset[] subsets, int[] ind)
 
 private void subsetdeepen (subset[] subsets, subset s)
 {
-    write("and here!");
-
 	s.layer += 1;
 	for (int i = 0; i < s.subsets.length; ++i)
 	{ if (s.layer == subsets[s.subsets[i]].layer) subsetdeepen(subsets, subsets[s.subsets[i]]); }
@@ -913,10 +911,7 @@ private int subsetinsertindex (subset[] subsets, int layer)
 	for (int i = subsets.length-1; i >= 0; --i)
 	{
 		if (subsets[i].layer >= layer)
-		{
-			insertindex = i;
-			break;
-		}
+		{ insertindex = i; }
 	}
 	
 	return insertindex;
@@ -1321,8 +1316,6 @@ struct smooth
 
 	smooth addsubset (subset sb, int[] ind = {}, bool unit = true, bool findplace = false)
 	{
-        write("started");
-
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
 		
 		if (findplace)
@@ -1342,8 +1335,6 @@ struct smooth
 			return this.addsubset(sb, (index == -1 ? new int[]{} : i(index)), false, false);
 		}
 		
-        write(ind);
-
 		sb.subsets.delete();
 		
 		path pcontour;
@@ -1384,34 +1375,34 @@ struct smooth
 			}
 		}
 
-		int insertindex = subsetinsert(this.subsets, sb);
-		for (int k = 0; k < range.length; ++k)
-		{ if (range[k] >= insertindex) range[k] += 1; }
+		// int insertindex = subsetinsert(this.subsets, sb);
+		// for (int k = 0; k < range.length; ++k)
+		// { if (range[k] >= insertindex) range[k] += 1; }
 
-        write("attention");
-        write(this.subsets.length);
-        write(insertindex);
+        int insertindex = this.subsets.length;
+        this.subsets.push(sb);
 
 		for (int i = 0; i < range.length; ++i)
 		{
 			subset curchild = this.subsets[range[i]];
 			if (insidepath(curchild.contour, sb.contour))
 			{
-				subsetdelete(this.subsets, insertindex, true);
+				// subsetdelete(this.subsets, insertindex, true);
+                while (this.subsets.length > insertindex)
+                { this.subsets.delete(insertindex); }
 				currentPrDP.push(sb.contour);
 				write("> ! Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
 				return this;
 			}
 			if (insidepath(sb.contour, curchild.contour))
 			{
-                write("here");
-                
 				sb.subsets.push(range[i]);
 				if (sub)
 				{
 				 	subsetget(this.subsets, ind).subsets.delete(i);
-					i -= 1;
+					// i -= 1;
 				}
+                range = difference(range, subsetgetall(this.subsets, curchild));
 				subsetdeepen(this.subsets, curchild);
 				continue;
 			}
@@ -1428,16 +1419,17 @@ struct smooth
 					}
 				}
 				if (waitforsubset) continue;
-				int intersectindex = subsetinsert(this.subsets, intersection[j]);
-				for (int k = 0; k < range.length; ++k)
-				{ if (range[k] >= intersectindex) range[k] += 1; }
-				if (sb.layer - intersection[j].layer == -1) sb.subsets.push(intersectindex);
+				// int intersectindex = subsetinsert(this.subsets, intersection[j]);
+				// for (int k = 0; k < range.length; ++k)
+				// { if (range[k] >= intersectindex) range[k] += 1; }
+                this.subsets.push(intersection[j]);
+				if (sb.layer - intersection[j].layer == -1) sb.subsets.push(this.subsets.length-1);
 				int[] supsetrange = subsetgetlayer(this.subsets, (sub ? subsetgetall(this.subsets, ind) : sequence(this.subsets.length)), intersection[j].layer-1);
 				for (int k = 0; k < supsetrange.length; ++k)
 				{
 					if (supsetrange[k] == insertindex) continue;
 					if (insidepath(this.subsets[supsetrange[k]].contour, intersection[j].contour))
-					{ this.subsets[supsetrange[k]].subsets.push(intersectindex); }
+					{ this.subsets[supsetrange[k]].subsets.push(this.subsets.length-1); }
 				}
 			}
 		}
@@ -2775,21 +2767,18 @@ void draw (picture pic = currentpicture,
     }
 
 	int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
-
-    write("---");
-
-    write(maxlayer);
 	real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
 	pen[] subsetpens = {subsetfill};
 	for (int i = 1; i < maxlayer+1; ++i)
 	{ subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
-    for (int i = 0; i < sm.subsets.length; ++i)
+    int[] orderindices = sort(sequence(sm.subsets.length), new bool (int i, int j){return sm.subsets[i].layer < sm.subsets[j].layer;});
+    for (int i = 0; i < orderindices.length; ++i)
     {
-        subset sb = sm.subsets[i];
+        subset sb = sm.subsets[orderindices[i]];
         fill(pic = pic, sb.contour, subsetpens[sb.layer]);
         label(pic = pic, position = intersection(sb.contour, sb.center, sb.labeldir), L = Label("$"+sb.label+"$", align = sb.labelalign));
 
-        if(explain) label(pic = pic, L = Label((string)i, position = sm.subsets[i].center, p = blue));
+        if(explain) label(pic = pic, L = Label((string)orderindices[i], position = sb.center, p = blue));
     }
     for (int i = 0; i < sm.subsets.length; ++i)
     { draw(pic = pic, sm.subsets[i].contour, subsetcontourpen); }
