@@ -59,7 +59,7 @@ void invertcolors ()
 	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
 	currentDrElP = inverse(currentDrElP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
-    dashpen = new pen (pen p) { return .5*p; };
+    dashpen = new pen (pen p) { return .5*p+dashed; };
     shadepen = new pen (pen p) { return currentDrShS*p; };
 }
 

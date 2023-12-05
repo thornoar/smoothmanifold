@@ -4,7 +4,8 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-drawparams(minscale = .05);
+drawparams(minscale = .03);
+invertcolors();
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 
@@ -18,6 +19,8 @@ sm.addsubset(contour = concavepath[2], point = (0,0), shift = (.25,.45), scale =
 sm.addsubset(contour = unitcircle, point = (0,0), scale = .2, shift = (.42,-.3));
 sm.addsubset(contour = unitcircle, point = (0,0), scale = .12, shift = (.4,-.33));
 
-draw(sm, mode = plain, subsetfill = lightblue, explain = true);
+write(sm.subsets[5].subsets);
+
+draw(sm, mode = plain, subsetfill = cyan, explain = true);
 
 export(prefix = "picture", format = "pdf", 1.5 cm, bgpen = paleyellow);

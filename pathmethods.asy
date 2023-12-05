@@ -43,6 +43,14 @@ transform dscale (real scale, pair center = (0,0), pair dir)
 	return rotate(degrees(dir), center) * xscale(scale) * rotate(-degrees(dir), center);
 }
 
+pair comb (pair a, pair b, real t)
+{ return t*b + (1-t)*a;}
+
+real round (real a, int places)
+{ return floor(10^places*a)*.1^places; }
+pair round (pair a, int places)
+{ return (round(a.x, places), round(a.y, places)); }
+
 real[] a (... real[] source)
 { return source; }
 real[][] da (... real[][] source)
@@ -56,9 +64,6 @@ int[][] di (... int[][] source)
 { return source; }
 int[][] ii (... int[] source)
 { return new int[][]{source}; }
-
-pair comb (pair a, pair b, real t)
-{ return t*b + (1-t)*a;}
 
 pair[] concat (pair[][] a)
 {
@@ -94,13 +99,17 @@ int[] difference (int[] a, int[] b)
 	{ if (!contains(b, a[i])) res.push(a[i]); }
 	return res;
 }
-// int[] unique (int[] a)
-// {
-//     
-// }
 
 real arclength (path g, real a, real b)
 { return arclength(subpath(g, a, b)); }
+
+real relarctime (path g, real t0, real a)
+{
+    real t0arc = arclength(g, 0, t0);
+    if (t0arc + a < 0) return -1;
+    if (t0arc + a > arclength(g)) return -2;
+    return arctime(g, t0arc+a);
+}
 
 real intersectiontime (path g, pair point, pair dir)
 // Returns the time of the intersection of `g` with a beam going from `point` in direction `dir`

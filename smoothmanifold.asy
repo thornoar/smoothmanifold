@@ -56,7 +56,7 @@ private pen defaultDrSeP = black+linewidth(.4); // [Se]ction [P]en
 private pen defaultDrElP = black+linewidth(2.5); // [E]lement [P]en
 private real defaultDrShS = .9; // [S]hade [S]cale
 private real defaultDrDO = .8; // [D]rag [O]pacity
-private real defaultDrSPM = .2; // [S]ubset [P]en [M]ultiplier;
+private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
 
 // [Pa]ths
 private path[] defaultPaCV = new path[]{ // [C]on[V]ex
@@ -1983,7 +1983,12 @@ struct smooth
 
 	void print ()
 	{
-		
+        write("--- Smooth object ---");
+        write("LABEL: " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "  |  DIRECTION: ~" + (string)round(this.labeldir, 2) + "  |  ALIGN: ~" + (string)round(this.labelalign, 2));
+        write("CENTER: ~" + (string)round(this.center, 2));
+        write("HOLES: " + (string)this.holes.length);
+
+        write("SUBSETS: " + (string)this.subsets.length);
 	}
 }
 
@@ -3017,8 +3022,8 @@ void draw (picture pic = currentpicture,
            pen subsetcontourpen = contourpen,
            pen subsetfill = subsetcolor,
            pen sectionpen = currentDrSeP,
-           pen dashpen = sectionpen+dashed+grey,
-           pen shadepen = currentDrShS*smoothfill,
+           pen dashpen = dashpen(sectionpen),
+           pen shadepen = shadepen(smoothfill),
            int mode = currentDrM,
            bool explain = currentDrE,
            bool dash = currentDrDD,
@@ -3050,8 +3055,8 @@ smooth[] drawintersect (picture pic = currentpicture,
                         pen subsetcontourpen = contourpen,
                         pen subsetfill = subsetcolor,
                         pen sectionpen = currentDrSeP,
-                        pen dashpen = sectionpen+dashed+grey,
-                        pen shadepen = currentDrShS*smoothfill,
+                        pen dashpen = dashpen(sectionpen),
+                        pen shadepen = shadepen(smoothfill),
                         int mode = currentDrM,
                         bool explain = currentDrE,
                         bool dash = currentDrDD,
@@ -3088,8 +3093,8 @@ smooth[] drawintersect (picture pic = currentpicture,
                         pen subsetcontourpen = contourpen,
                         pen subsetfill = subsetcolor,
                         pen sectionpen = currentDrSeP,
-                        pen dashpen = sectionpen+dashed+grey,
-                        pen shadepen = currentDrShS*smoothfill,
+                        pen dashpen = dashpen(sectionpen),
+                        pen shadepen = shadepen(smoothfill),
                         int mode = currentDrM,
                         bool explain = currentDrE,
                         bool dash = currentDrDD,
@@ -3121,8 +3126,8 @@ smooth[] drawintersect (picture pic = currentpicture,
                         pen subsetcontourpen = contourpen,
                         pen subsetfill = subsetcolor,
                         pen sectionpen = currentDrSeP,
-                        pen dashpen = sectionpen+dashed+grey,
-                        pen shadepen = currentDrShS*smoothfill,
+                        pen dashpen = dashpen(sectionpen),
+                        pen shadepen = shadepen(smoothfill),
                         int mode = currentDrM,
                         bool explain = currentDrE,
                         bool dash = currentDrDD,
@@ -3145,10 +3150,10 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
 
 			void operator init (path p, int sign, pen ovpen, real time)
 			{
-	 			this.p = p;
-				this.sign = sign;
-				this.ovpen = ovpen;
-				this.time = time;
+                this.p = p;
+                this.sign = sign;
+                this.ovpen = ovpen;
+                this.time = time;
 			}
 		}
         signedpath[] getpaths (path gs, path[] curpaths, pen ovpen)
@@ -3174,7 +3179,6 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
             }
             return res;
         }
-
         void filloverlap (path p1, path p2, pen ovpen1, pen ovpen2, bool fill, pen fillpen)
         {
 			if (fill)
@@ -3217,10 +3221,9 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
 				ovpaths.append(getpaths(gs, sequence(new path (int j){return sm.subsets[curlayer[j]].contour;}, curlayer.length), subsetpens[i]));
 			}
 
-			// ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), currentExBG));
+			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), smoothfill));
 
 			ovpaths = sort(ovpaths, new bool(signedpath a, signedpath b){return (intersect(a.p, gs)[1] < intersect(b.p, gs)[1]);});
-
 			int ovlevel = 0;
 			int counter = 0;
 			for (int i = 0; i < ovpaths.length; ++i)
@@ -3252,14 +3255,13 @@ private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, 
 				filloverlap(ovpaths[i].p, ovpaths[i+1].p, ovpaths[i].ovpen, ovpaths[i+1].ovpen, (fill && ovlevel == 0), smoothfill);
 				ovlevel += ovpaths[i+1].sign;
 			}
-
 		}
 
-		for (int i = 0; i < currentdrawn.length; ++i)
-		{
-			if (intersect(gs, currentdrawn[i].sm.contour).length == 0) continue;
-			drawovpaths(currentdrawn[i]);
-		}
+        for (int i = 0; i < currentdrawn.length; ++i)
+        {
+            if (intersect(gs, currentdrawn[i].sm.contour).length == 0) continue;
+            drawovpaths(currentdrawn[i]);
+        }
     }
 
     draw(pic = pic, gs, p = p, arrow = arrow, L = L);
