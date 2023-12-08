@@ -1,4 +1,4 @@
-import smoothmanifold as smooth;
+import export;
 
 settings.render = 4;
 

@@ -264,6 +264,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
     real qroundlength = roundcoeff*arclength(q);
     
 	real[][] times = intersections(p, q);
+
     for (int i = 0; i < times.length; ++i)
     {
         pair pdi = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = -1) : dir(p, times[i][0]);
@@ -271,7 +272,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
         pair qdi = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = -1) : dir(q, times[i][1]);
         pair qdo = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = 1) : dir(q, times[i][1]);
 
-        if (sgn(cross(qdi, pdi))*sgn(cross(pdo, qdo)) > 0)
+        if (sgn(cross(pdi, qdi))*sgn(cross(pdo, qdo)) <= 0)
         {
             times.delete(i);
             --i;

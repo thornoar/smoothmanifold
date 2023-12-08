@@ -1,14 +1,14 @@
-import smoothmanifold as smooth;
-
+import export;
 settings.render = 4;
 
 import graph;
 
 size(25cm);
-exportparams(dpi = 300, bgpen = paleyellow);
+exportparams(dpi = 50);
 defaultpen(linewidth(2));
-drawparams(sectionpen = linewidth(1));
-animationparams(close = false);
+drawparams(sectionpen = linewidth(1), fill = false);
+sectionparams(avoidsubsets = true);
+animationparams(informat = "jpg", outformat = "gif", close = false);
 setframe(1.6, 1);
 
 pair xsh = (.03,0);
@@ -32,7 +32,7 @@ void animate (int mode)
 	revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, shift = -2*ysh, back = false, frames = 2*frames);
 	revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, shift = -xsh+ysh, back = false, frames = 2*frames);
 	revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, shift = xsh, back = false, frames = frames);
-	compile(fps = frames, outprefix = "animation."+mode(mode), outformat = "mp4");
+	compile(fps = frames, outprefix = "animation."+mode(mode));
 }
 
 animate(mode = strict);

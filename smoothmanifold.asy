@@ -57,6 +57,10 @@ private pen defaultDrElP = black+linewidth(2.5); // [E]lement [P]en
 private real defaultDrShS = .9; // [S]hade [S]cale
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
+private arrowbar defaultDrBA = None; // [B]egin [A]rrow
+private arrowbar defaultDrEA = EndArrow(SimpleHead); // [E]nd [A]rrow
+private arrowbar defaultDrBB = None; // [B]egin [B]ar
+private arrowbar defaultDrEB = None; // [E]nd [B]ar
 
 // [Pa]ths
 private path[] defaultPaCV = new path[]{ // [C]on[V]ex
@@ -213,8 +217,10 @@ real[] currentsection = copy(defaultsection);
 private int currentSeNN = defaultSeNN;
 private real currentSeNA = defaultSeNA;
 private real currentSeMLR = defaultSeMLR;
-private real currentSeML;
-private real currentSeMaEHR;
+private real currentSeML; // [M]aximum [L]ength
+private real currentSeMaEHR; // [Ma]ximum [E]llipse [H]eight [R]atio
+private bool currentSeRL = false; // [R]estrict [L]ength
+private bool currentSeAS = false; // [A]void [S]ubsets
 
 // [Sm]ooth
 bool currentSmIL = true; // [I]nfer [L]abels
@@ -232,11 +238,19 @@ real currentDrShS = defaultDrShS;
 real currentDrDO = defaultDrDO;
 real currentDrSPM = defaultDrSPM;
 int currentDrM = 0; // [M]ode
-bool currentDrDC = true; // [Dr]aw [C]ache
 bool currentDrDD = true; // [D]raw [D]ashes
 bool currentDrE = false; // [E]xplain
 bool currentDrDS = false; // [D]raw [S]hade
 bool currentDrIC = false; // [I]nvert [C]olors
+private bool currentDrF = true; // [F]ill
+private bool currentDrDC = true; // [D]raw [C]ontour
+private bool currentDrO = false; // [O]verlap
+private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
+private bool currentDrDN = false; // [D]raw [N]ow
+private arrowbar currentDrBA = defaultDrBA;
+private arrowbar currentDrEA = defaultDrEA;
+private arrowbar currentDrBB = defaultDrBB;
+private arrowbar currentDrEB = defaultDrEB;
 
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
@@ -299,10 +313,12 @@ pen dashpen (pen p)
 { return inverse(.5*inverse(p))+dashed; }
 pen shadepen (pen p)
 { return inverse(currentDrShS*inverse(p)); }
+pen underpen (pen p)
+{ return dashpen(p); }
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR)
+void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR, bool restrictlength = currentSeRL, bool avoidsubsets = currentSeAS)
 {
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
 	{ abort("Could not change default section parameters: invalid intries"); }
@@ -313,6 +329,8 @@ void sectionparams (real[] section = currentsection, int nn = currentSeNN, real 
 	currentSeNN = nn;
 	currentSeNA = na;
 	currentSeMLR = nl;
+    currentSeRL = restrictlength;
+    currentSeAS = avoidsubsets;
 }
 void inferlabels (bool val) { currentSmIL = val; }
 void shiftsubsets (bool val) { currentSmSS = val; }
@@ -326,12 +344,15 @@ void drawparams (int mode = currentDrM,
                  pen smoothfill = smoothcolor,
                  pen subsetfill = subsetcolor,
                  real minscale = currentDrSPM,
-                 bool cache = currentDrDC,
+                 bool overlap = currentDrO,
+                 bool subsetoverlap = currentDrSCO,
+                 bool drawnow = currentDrDN,
                  bool explain = currentDrE,
                  pen explainpen = currentDrExP,
                  real dragop = currentDrDO,
-                 bool drawdashes = currentDrDD,
+                 bool dash = currentDrDD,
                  bool shade = currentDrDS,
+                 bool fill = currentDrF,
                  pen sectionpen = currentDrSeP,
                  pen elementpen = currentDrElP)
 {
@@ -345,12 +366,15 @@ void drawparams (int mode = currentDrM,
 	smoothcolor = smoothfill;
 	subsetcolor = subsetfill;
 	currentDrSPM = minscale;
-	currentDrDC = cache;
+    currentDrO = overlap;
+    currentDrSCO = subsetoverlap;
+	currentDrDN = drawnow;
 	currentDrE = explain;
 	currentDrExP = explainpen;
 	currentDrDO = dragop;
-	currentDrDD = drawdashes;
+	currentDrDD = dash;
 	currentDrDS = shade;
+    currentDrF = fill;
 	currentDrSeP = sectionpen;
 	currentDrElP = elementpen;
 }
@@ -389,7 +413,7 @@ private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
     
 	return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
-private pair[][] cartsections (path[] g, real r, bool horiz)
+private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 // Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
     pair[][] presections = cartsectionpoints(g, r, horiz);
@@ -400,8 +424,15 @@ private pair[][] cartsections (path[] g, real r, bool horiz)
 	{
 		if (sectiontoowide(presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]))
 		{ continue; }
-	
+	    
 		bool exclude = false;
+        for (int j = 0; j < avoid.length; ++j)
+        {
+            if (meet(avoid[j], (path)(presections[i][0]--presections[i+1][0])))
+            { exclude = true; }
+        }
+        if (exclude) continue;
+    
 		for (int j = 0; j < g.length; ++j)
 		{
 			if (j == presections[i][2].x || j == presections[i+1][2].x) continue;
@@ -413,9 +444,7 @@ private pair[][] cartsections (path[] g, real r, bool horiz)
 		}
 
 		if (!exclude)
-		{
-			sections.push(new pair[]{presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]});
-		}
+		{ sections.push(new pair[]{presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]}); }
 	}
 
 	return sections;
@@ -444,9 +473,9 @@ private pair ellipseparams (real l, real h, real cang1, real cang2, bool binsear
     {
         real c1 = (r1+l1)*.5;
         real c2 = (r2+l2)*.5;
-        if(!meet(line1, ellipse(c1, r2))){l1 = c1;}
+        if (!meet(line1, ellipse(c1, r2))){l1 = c1;}
         else {r1 = c1;}
-        if(!meet(line2, ellipse(r1, c2))){l2 = c2;}
+        if (!meet(line2, ellipse(r1, c2))){l2 = c2;}
         else {r2 = c2;}
     }
     
@@ -458,7 +487,6 @@ private real sectionheight (real x, real max)
 	real m2 = max/2;
 	return (x < m2) ? x : (x - m2)/(1+(2*(x-m2)/max))+m2;
 }
-
 private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir, bool free)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
@@ -472,8 +500,8 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     real h = sectionheight(length(hv), currentSeMaEHR);
 	if (h < defaultSeMiEHR*l) return new path[]{p1--p2};
 
-	if(cross(p1p2, dir1) < 0) dir1 = rotate(180)*dir1;
-    if(cross(dir2, -p1p2) < 0) dir2 = rotate(180)*dir2;
+	if (cross(p1p2, dir1) < 0) dir1 = rotate(180)*dir1;
+    if (cross(dir2, -p1p2) < 0) dir2 = rotate(180)*dir2;
     
 	real cang1 = dot(p1p2, unit(dir1));
     real cang2 = dot(unit(dir2), -p1p2);
@@ -491,7 +519,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     real tg1 = (abs(cang1) < defaultSySN) ? 0 : sqrt(1 - cang1^2)/cang1;
     real t1 = 0;
     
-	if(tg1 != 0)
+	if (tg1 != 0)
     {
         real r1 = abs(h/(tg1 * sqrt(1 + (x/h * tg1)^2)));
         real[] times1 = times(pres, r1);
@@ -502,7 +530,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     real t2 = intersect(pres, (c, 0)--(c+2*x, 0))[0];
     real tg2 = (abs(cang2) < defaultSySN) ? 0 : sqrt(1 - cang2^2)/cang2;
     
-	if(tg2 != 0)
+	if (tg2 != 0)
     {
         real r2 = l - abs(h/(tg2 * sqrt(1 + ((l-x)/h * tg2)^2)));
         real[] times2 = times(pres, r2);
@@ -545,9 +573,9 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
     real hoddstep = arclength(h)/(n + (n-1)*(1-ratio)/ratio);
     real hevenstep = hoddstep*(1-ratio)/ratio;
     real[] gtimes = new real[];
-    for(int i = 0; i < 2*n; ++i)
+    for (int i = 0; i < 2*n; ++i)
     {
-        if(i % 2 == 0)
+        if (i % 2 == 0)
         { gtimes.push(arctime(g, i*.5*(goddstep + gevenstep))); }
         else
         { gtimes.push(arctime(g, goddstep*(i+1)*.5 + gevenstep*(i-1)*.5)); }
@@ -555,7 +583,7 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
     real[] htimes = new real[];
     for (int i = 0; i < 2*n; ++i)
     {
-        if(i % 2 == 0)
+        if (i % 2 == 0)
         { htimes.push(arctime(h, i*.5*(hoddstep + hevenstep))); }
         else
         { htimes.push(arctime(h, hoddstep*(i+1)*.5 + hevenstep*(i-1)*.5)); }
@@ -574,11 +602,11 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
         pair p2 = point(h, htimes[i]);
         pair dir2 = dir(h, htimes[i]);
         pair t;
-        if(addtimes) t  = (gtimes[i], htimes[i]);
+        if (addtimes) t  = (gtimes[i], htimes[i]);
         while(gi < p-1 || hi < p-1)
         {
-            if(gi < p-1) gcurtime = arctime(g, arclength(g, 0, gcurtime)+garcstep);
-            if(hi < p-1) hcurtime = arctime(h, arclength(h, 0, hcurtime)+harcstep);
+            if (gi < p-1) gcurtime = arctime(g, arclength(g, 0, gcurtime)+garcstep);
+            if (hi < p-1) hcurtime = arctime(h, arclength(h, 0, hcurtime)+harcstep);
             pair p1new = point(g, gcurtime);
             pair dir1new = dir(g, gcurtime);
             pair p2new = point(h, hcurtime);
@@ -590,7 +618,7 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
                 {
                     p2 = p2new;
                     dir2 = dir2new;
-                    if(addtimes) t = (t.x, hcurtime);
+                    if (addtimes) t = (t.x, hcurtime);
                 }
             }
             else
@@ -600,11 +628,11 @@ private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p, 
                 {
                     p1 = p1new;
                     dir1 = dir1new;
-                    if(addtimes) t = (gcurtime, t.y);
+                    if (addtimes) t = (gcurtime, t.y);
                 }
             }
         }
-        if(addtimes) res.push(new pair[] {p2, p1, dir2, dir1, t});
+        if (addtimes) res.push(new pair[] {p2, p1, dir2, dir1, t});
         else res.push(new pair[] {p2, p1, dir2, dir1});
     }
     return res;
@@ -726,7 +754,7 @@ struct subset
     pair labelalign;
 	int layer;
 	int[] subsets;
-	bool isintersection;
+	bool isderivative;
 
     real xsize () { return xsize(this.contour); }
     real ysize () { return ysize(this.contour); }
@@ -752,7 +780,7 @@ struct subset
         return this;
     }
 
-	void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = defaultSyDP, pair labelalign = S, int layer = 0, int[] subsets = {}, bool isintersection = false, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
+	void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = defaultSyDP, pair labelalign = S, int layer = 0, int[] subsets = {}, bool isderivative = false, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
     {
         if (copy)
         {
@@ -763,7 +791,7 @@ struct subset
             this.labelalign = labelalign;
 			this.layer = layer;
 			this.subsets = subsets;
-			this.isintersection = isintersection;
+			this.isderivative = isderivative;
         }
         else
         {
@@ -774,13 +802,13 @@ struct subset
             this.labelalign = labelalign == defaultSyDP ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
 			this.layer = layer;
 			this.subsets = new int[]{};
-			this.isintersection = isintersection;
+			this.isderivative = isderivative;
         }
     }
     
 	subset copy ()
     {
-        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, copy(this.subsets), this.isintersection, copy = true);
+        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, copy(this.subsets), this.isderivative, copy = true);
     }
     subset replicate (subset s)
     { 
@@ -791,7 +819,7 @@ struct subset
         this.labelalign = s.labelalign;
 		this.layer = s.layer;
 		this.subsets = copy(s.subsets);
-		this.isintersection = s.isintersection;
+		this.isderivative = s.isderivative;
         
         return this;
     }
@@ -823,7 +851,7 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = cur
 			labeldir = rotate(-90)*unit(sb1.center - sb2.center),
 			labelalign = setlabel ? 2*(rotate(90)*unit(sb1.center - sb2.center)) : defaultSyDP,
 			layer = max(sb1.layer, sb2.layer)+1,
-			isintersection = true
+			isderivative = true
 		);
 	}, contours.length);
 }
@@ -986,6 +1014,7 @@ struct smooth
     smooth[] attached;
 
 	bool shiftsubsets;
+    bool isderivative;
 
     // -- System methods -- //
 
@@ -1392,7 +1421,8 @@ struct smooth
     }
     smooth rmholes (int[] inds)
     {
-        for (int i = 0; i < inds.length; ++i)
+        inds = sort(inds);
+        for (int i = inds.length-1; i >= 0; i -= 1)
         { this.holes.delete(inds[i]); }
         return this;
     }
@@ -1608,7 +1638,6 @@ struct smooth
                 if (insidepath(curchild.contour, sb.contour))
                 {
                     inside = true;
-                    write("yes");
                 }
                 
                 intersectwith(cursb.subsets[j]);
@@ -1732,7 +1761,7 @@ struct smooth
 		bool res = true;
 		for (int i = 0; i < s.subsets.length; ++i)
 		{
-			if (this.subsets[s.subsets[i]].isintersection)
+			if (this.subsets[s.subsets[i]].isderivative)
 			{
 				res = false;
 				break;
@@ -1748,7 +1777,7 @@ struct smooth
 		bool res = true;
 		for (int i = 0; i < s.subsets.length; ++i)
 		{
-			if (!res || !this.subsets[s.subsets[i]].isintersection)
+			if (!res || !this.subsets[s.subsets[i]].isderivative)
 			{
 				res = false;
 				break;
@@ -1774,7 +1803,7 @@ struct smooth
 		int relindex = ind.pop();
 		int[] allsubsets = subsetgetall(this.subsets, cursb);
 
-		if (cursb.isintersection) 
+		if (cursb.isderivative) 
 		{ abort("Could not move subset: subset under index "+(string)index+" is an intersection of subsets."); }
 		
 		path pcontour;
@@ -1904,7 +1933,8 @@ struct smooth
                         smooth[] attached = {},
                         bool unit = true,
                         bool copy = false,
-                        bool shiftsubsets = currentSmSS)
+                        bool shiftsubsets = currentSmSS,
+                        bool isderivative = false)
     {
 		if (copy)
         {
@@ -1923,6 +1953,7 @@ struct smooth
             this.viewdir = viewdir;
 			this.attached = attached;
 			this.shiftsubsets = shiftsubsets;
+            this.isderivative = isderivative;
         }
         else
         {
@@ -1949,6 +1980,8 @@ struct smooth
 			this.setratios(vratios, false);
 
 			this.shiftsubsets = shiftsubsets;
+            this.isderivative = isderivative;
+
 			this.setview(viewdir);
 			
 			this.attached = attached;
@@ -1994,27 +2027,30 @@ struct smooth
 
 smooth nullsmooth;
 
-struct drawdata
+private struct pathinfo
 {
-	smooth sm;
-	pen contourpen;
-	pen smoothfill;
-	pen subsetfill;
+    path[] g;
+    pen p;
+    bool under;
+    arrowbar beginarrow;
+    arrowbar endarrow;
+    arrowbar beginbar;
+    arrowbar endbar;
 
-	void operator init (smooth sm, pen contourpen, pen smoothfill, pen subsetfill)
-	{
-		this.sm = sm;
-		this.contourpen = contourpen;
-		this.smoothfill = smoothfill;
-		this.subsetfill = subsetfill;
-	}
+    void operator init (path[] g, pen p, bool under, arrowbar beginarrow = None, arrowbar endarrow = None, arrowbar beginbar = None, arrowbar endbar = None)
+    {
+        this.g = g;
+        this.p = p;
+        this.under = under;
+        this.beginarrow = beginarrow;
+        this.endarrow = endarrow;
+        this.beginbar = beginbar;
+        this.endbar = endbar;
+    }
 }
 
-private drawdata[] currentdrawn;
-void flushcache () { currentdrawn = new drawdata[]; }
-
-bool operator == (smooth a, smooth b)
-{ return a.contour == b.contour; }
+private pathinfo[] currentdrawn;
+private pathinfo[] currentsaved;
 
 // -- Default pre-built smooth objects -- //
 
@@ -2022,7 +2058,7 @@ smooth samplesmooth (int type = 0, int num = 0)
 {
     if (type == 0)
     {
-        if(num == 0)
+        if (num == 0)
         {
             return smooth(
                 contour = defaultPaCV[0],
@@ -2030,13 +2066,13 @@ smooth samplesmooth (int type = 0, int num = 0)
                 vratios = a()
             );
         }
-        if(num == 1)
+        if (num == 1)
         {
             return smooth(
                 contour = defaultPaCC[0]
             ); 
         }
-        if(num == 2)
+        if (num == 2)
         {
             return smooth(
                 contour = defaultPaCC[2],
@@ -2121,7 +2157,7 @@ smooth samplesmooth (int type = 0, int num = 0)
 			);
 		}
     }
-    if(type == 2)
+    if (type == 2)
     {
         return smooth(
             contour = defaultPaCC[4],
@@ -2150,7 +2186,7 @@ smooth samplesmooth (int type = 0, int num = 0)
             }
         );
     }
-    if(type == 3)
+    if (type == 3)
     {
         if (num == 0)
         {
@@ -2324,7 +2360,7 @@ smooth[] intersection (smooth sm1,
 
         for (int j = i+1; j < holes.length; ++j)
         {
-            if(meet(holes[i], holes[j]) && !htaken[j])
+            if (meet(holes[i], holes[j]) && !htaken[j])
             {
 				path[] holeunion = union(holes[i], holes[j], round = round, roundcoeff = roundcoeff);
                 holes[i] = holeunion[0];
@@ -2387,6 +2423,7 @@ smooth[] intersection (smooth sm1,
             label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
             labeldir = rotate(90)*unit(sm1.center - sm2.center),
 			viewdir = (sm1.viewdir + sm2.viewdir)*.5,
+            isderivative = true,
 			copy = true
         );
 
@@ -2528,7 +2565,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
 
     for (int i = 0; i < sm1.holes.length; ++i)
     {
-        if(!meet(sm1.holes[i].contour, sm2.contour)) continue;
+        if (!meet(sm1.holes[i].contour, sm2.contour)) continue;
         path[] diff = difference(sm1.holes[i].contour, sm2.contour, correct = false, round = round, roundcoeff = roundcoeff);
         holes.append(diff);
         hrefs.append(array(value = -1, diff.length));
@@ -2536,7 +2573,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
     }
     for (int i = 0; i < sm2.holes.length; ++i)
     {
-        if(!meet(sm2.holes[i].contour, sm1.contour)) continue;
+        if (!meet(sm2.holes[i].contour, sm1.contour)) continue;
         path[] diff = difference(sm2.holes[i].contour, sm1.contour, correct = false, round = round, roundcoeff = roundcoeff);
         holes.append(diff);
         hrefs.append(array(value = -1, diff.length));
@@ -2645,6 +2682,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
         contour = contour,
         label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cup "+sm2.label) : "",
         labeldir = unit(sm1.center - sm2.center),
+        isderivative = true,
 		viewdir = (sm1.viewdir + sm2.viewdir)*.5
     );
 
@@ -2778,20 +2816,20 @@ private void drawsections (picture pic,
                            pen sectionpen,
                            pen dashpen,
                            pen shadepen,
-                           int mode,
-                           bool restrict)
+                           int mode)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
     {
 		if (sections[k].length > 4) continue;
-		if (restrict && length(viewdir) > 0 && length(sections[k][1]-sections[k][0]) > currentSeML) continue;
+		if (currentSeRL && length(sections[k][1]-sections[k][0]) > currentSeML)
+        { continue; }
 
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir, (mode == 1));
-        if (shade && section.length == 2) fill(pic = pic, section[0]--section[1]--cycle, shadepen);
+        if (shade && currentDrF && section.length == 2) fill(pic = pic, section[0]--section[1]--cycle, shadepen);
 		if (section.length > 1 && dash) draw(pic, section[1], dashpen);
         draw(pic, section[0], sectionpen);
-        if(explain)
+        if (explain)
         {
             dot(pic, point(section[0], arctime(section[0], arclength(section[0])*.5)), red+1);
             dot(pic, sections[k][0], blue+1.5);
@@ -2821,32 +2859,174 @@ private void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bo
 		pair hl2finish = point(curhl2contour, length(curhl2contour));
 		pair hl1vec = defaultSmAR * scale * unit(hl1start - hl1.center);
 		pair hl2vec = defaultSmAR * scale * unit(hl2start - hl2.center);
-        draw(pic = pic, curhl1contour, lightred+(linewidth(currentpen)+.1));
-        draw(pic = pic, curhl2contour, lightred+(linewidth(currentpen)+.1));
         draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultDrExP);
         draw(pic, (hl1.center + rotate(-currentSeNA)*hl1vec)--hl1finish, yellow+defaultDrExP);
         draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultDrExP);
         draw(pic, (hl2.center + rotate(currentSeNA)*hl2vec)--hl2finish, yellow+defaultDrExP);
-        dot(pic, hl1start, green+1);
-        dot(pic, hl1finish, green+1);
-        dot(pic, hl2start, green+1);
-        dot(pic, hl2finish, green+1);
         draw(pic = pic, arc(hl1.center, hl1.center + hl1vec, hl1finish, direction = CW), blue+defaultDrExP);
         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
     }
 
-    pair[][] sections = new pair[][];
+    pair[][] sections;
 	int p = floor(currentsection[5]);
     if (mode == 0)
     { sections = sectionparamsstrict(curhl1contour, curhl2contour, n, currentsection[4], p); }
     if (mode == 1)
     { sections = sectionparamsfree(curhl1contour, curhl2contour, p*n, p); }
-    drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode, true);
+    drawsections(pic, sections, viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, mode);
 }
 
-private void drawcartsections (picture pic, path[] g, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
-    drawsections(pic, cartsections(g, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1, false);
+    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
+}
+
+private void fitpath (picture pic,
+                      bool overlap,
+                      bool changeunder,
+                      bool drawnow,
+                      path gs,
+                      Label L,
+                      pen p,
+                      arrowbar beginarrow,
+                      arrowbar endarrow,
+                      arrowbar beginbar,
+                      arrowbar endbar)
+{
+    label(pic = pic, gs, L = L, p = p);
+
+	if (!overlap)
+    {
+        int length = currentdrawn.length;
+
+		for (int i = 0; i < length; ++i)
+		{
+            path[] g = currentdrawn[i].g;
+            path[] newg;
+            path[] altg;
+            bool putunder = changeunder && cyclic(gs);
+            bool underdir = !currentdrawn[i].under;
+            bool stolenbeginarrow = putunder ? inside(gs, beginpoint(g[0])) : false;
+            bool stolenendarrow = putunder ? inside(gs, endpoint(g[g.length-1])) : false;
+
+            for (int j = 0; j < g.length; ++j)
+            {
+                real[] aligntest = intersect(g[j], gs);
+                if (aligntest.length == 0)
+                {
+                    if (putunder && inside(gs, beginpoint(g[j]))) { altg.push(g[j]); }
+                    else newg.push(g[j]);
+                    continue;
+                }
+                if (abs(cross(dir(g[j], aligntest[0]), dir(gs, aligntest[1]))) < defaultSySN) continue;
+
+                real[][] times = intersections(g[j], gs);
+
+                real[] cuttimes = new real[]{0};
+                bool[] skipped = array(2*(times.length+1), value = false);
+                bool gjcyclic = cyclic(g[j]);
+                real t1;
+                real t2;
+
+                for (int k = 0; k < times.length; ++k)
+                {
+                    pair gjdi = (times[k][0] == floor(times[k][0])) ? dir(g[j], floor(times[k][0]), sign = -1) : dir(g[j], times[k][0]);
+                    pair gjdo = (times[k][0] == floor(times[k][0])) ? dir(g[j], floor(times[k][0]), sign = 1) : dir(g[j], times[k][0]);
+                    pair gsdi = (times[k][1] == floor(times[k][1])) ? dir(gs, floor(times[k][1]), sign = -1) : dir(gs, times[k][1]);
+                    pair gsdo = (times[k][1] == floor(times[k][1])) ? dir(gs, floor(times[k][1]), sign = 1) : dir(gs, times[k][1]);
+                    if (sgn(cross(gjdi, gsdi))*sgn(cross(gjdo, gsdo)) <= 0) { continue; }
+
+                    pair gjd = unit(gjdi+gjdo);
+                    pair gsd = unit(gsdi+gsdo);
+                    
+                    real cross = cross(gjd, gsd);
+                    real sang = max(abs(cross), .2);
+                    t1 = relarctime(g[j], times[k][0], -currentArOL/sang*.5);
+                    t2 = relarctime(g[j], times[k][0], currentArOL/sang*.5);
+                    if (t1 < cuttimes[cuttimes.length-1])
+                    {
+                        cuttimes[cuttimes.length-1] = t2;
+                        if (cuttimes.length > 2) skipped[cuttimes.length-3] = true;
+                        continue;
+                    }
+                    cuttimes.push(t1);
+                    cuttimes.push(t2);
+                }
+
+                if (cuttimes[cuttimes.length-1] == -2) { cuttimes.pop(); }
+                else if (gjcyclic) { cuttimes[0] = t2; cuttimes.delete(cuttimes.length-1); }
+                else { cuttimes.push(length(g[j])); }
+
+                bool understart = putunder ? isinside(gs, point(g[j], cuttimes[0])) : false;
+                for (int k = 0; k < cuttimes.length; k += 2)
+                {
+                    ((putunder && understart) ? altg : newg).push(gjcyclic ? subcyclic(g[j], (cuttimes[k], cuttimes[k+1])) : subpath(g[j], cuttimes[k], cuttimes[k+1]));
+                    if (!skipped[k]) understart = !understart;
+                }
+            }
+
+            if (newg.length > 0)
+            {
+                currentdrawn[i] = pathinfo(
+                    g = newg,
+                    p = currentdrawn[i].p,
+                    under = currentdrawn[i].under,
+                    beginarrow = (stolenbeginarrow ? None : currentdrawn[i].beginarrow),
+                    endarrow = (stolenendarrow ? None : currentdrawn[i].endarrow),
+                    beginbar = (stolenbeginarrow ? None : currentdrawn[i].beginbar),
+                    endbar = (stolenendarrow ? None : currentdrawn[i].endbar)
+                );
+            }
+            else
+            {
+                currentdrawn.delete(i);
+                length -= 1;
+                i -= 1;
+            }
+            if (altg.length > 0)
+            {
+                currentdrawn.push(pathinfo(
+                    g = altg,
+                    p = currentdrawn[i].p,
+                    under = !currentdrawn[i].under,
+                    beginarrow = (!stolenbeginarrow ? None : currentdrawn[i].beginarrow),
+                    endarrow = (!stolenendarrow ? None : currentdrawn[i].endarrow),
+                    beginbar = (!stolenbeginarrow ? None : currentdrawn[i].beginbar),
+                    endbar = (!stolenendarrow ? None : currentdrawn[i].endbar)
+                ));
+            }
+		}
+    }
+    if (!drawnow)
+    {
+        currentdrawn.push(pathinfo(
+            g = new path[]{gs},
+            p = p,
+            under = false,
+            beginarrow = beginarrow,
+            endarrow = endarrow,
+            beginbar = beginbar,
+            endbar = endbar
+        ));
+    }
+    else
+    {
+        if (beginarrow == None && beginbar == None)
+        { draw(pic = pic, gs, p = p, arrow = endarrow, bar = endbar); return; }
+        if (endarrow == None && endbar == None)
+        { draw(pic = pic, gs, p = p, arrow = beginarrow, bar = beginbar); return; }
+        if (length(gs) <= 2)
+        {
+            draw(pic = pic, subpath(gs, 0, length(gs)*.5), p = p, arrow = beginarrow, bar = beginbar);
+            draw(pic = pic, subpath(gs, length(gs)*.5, length(gs)), p = p, arrow = beginarrow, bar = beginbar);
+        }
+        else
+        {
+            int node = ceil(length(gs)*.5);
+            draw(pic = pic, subpath(gs, 0, node), p = p, arrow = beginarrow, bar = beginbar);
+            draw(pic = pic, subpath(gs, node, length(gs)), p = p, arrow = endarrow, bar = endbar);
+        }
+    }
 }
 
 void draw (picture pic = currentpicture,
@@ -2859,26 +3039,51 @@ void draw (picture pic = currentpicture,
            pen dashpen = dashpen(sectionpen),
            pen shadepen = shadepen(smoothfill),
            int mode = currentDrM,
+           bool fill = currentDrF,
+           bool drawcontour = currentDrDC,
            bool explain = currentDrE,
            bool dash = currentDrDD,
            bool shade = currentDrDS,
+           bool avoidsubsets = currentSeAS,
            bool drag = true,
-           bool cache = currentDrDC)
+           bool overlap = currentDrO,
+           bool drawnow = currentDrDN)
 // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
+    // Configuring variables
+
 	if (!inside(0,3, mode))
 	{ abort("Invalid mode specified."); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
-	currentSeMaEHR = defaultSeMaEHR*min(xsize(sm.contour), ysize(sm.contour));
-	currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
+    currentSeMaEHR = defaultSeMaEHR*min(xsize(sm.contour), ysize(sm.contour));
+    if (currentSeRL) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
+
+    mode = (length(viewdir) == 0) ? plain : mode;
 
     path[] contour = (sm.contour ^^ sequence(new path(int i){
         return reverse(sm.holes[i].contour);
     }, sm.holes.length));
-    filldraw(pic = pic, contour, fillpen = smoothfill, drawpen = contourpen);
 
-	if(sm.label != "") label(intersection(sm.contour, sm.center, sm.labeldir), "$"+sm.label+"$", align = sm.labelalign);
+    // Filling interiors
+
+    if (fill)
+    {
+        fill(pic = pic, contour, p = smoothfill);
+        int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
+        real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
+        pen[] subsetpens = {subsetfill};
+        for (int i = 1; i < maxlayer+1; ++i)
+        { subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
+        int[] orderindices = sort(sequence(sm.subsets.length), new bool (int i, int j){return sm.subsets[i].layer < sm.subsets[j].layer;});
+        for (int i = 0; i < orderindices.length; ++i)
+        {
+            subset sb = sm.subsets[orderindices[i]];
+            fill(pic = pic, sb.contour, subsetpens[sb.layer]);
+        }
+    }
+
+    // Drawing cross sections
 
 	if (mode < 2)
     {
@@ -2904,17 +3109,9 @@ void draw (picture pic = currentpicture,
 				{
 					pair smstart = point(cursmcontour, 0);
 					pair smfinish = point(cursmcontour, length(cursmcontour));
-					pair hlstart = point(curhlcontour, 0);
-					pair hlfinish = point(curhlcontour, length(curhlcontour));
-					pair hlvec = defaultSmAR * sm.scale * unit(hlstart - hl.center);
-					draw(pic = pic, cursmcontour, lightred+(linewidth(currentpen)+.1));
-					draw(pic = pic, curhlcontour, lightred+(linewidth(currentpen)+.1));
+					pair hlvec = defaultSmAR * sm.scale * unit(smstart - hl.center);
 					draw(pic = pic, (hl.center + hlvec) -- smstart, yellow + defaultDrExP);
 					draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- smfinish, yellow + defaultDrExP);
-					dot(pic, hlstart, green+1);
-					dot(pic, hlfinish, green+1);
-					dot(pic, smstart, green+1);
-					dot(pic, smfinish, green+1);
 					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultDrExP);
 				}
 
@@ -2927,9 +3124,10 @@ void draw (picture pic = currentpicture,
 				{
 					sections = sectionparamsfree(curhlcontour, cursmcontour, ceil(hl.sections[j][3])*ceil(hl.sections[j][5]), ceil(hl.sections[j][5]));
 				}
-				drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode, true);
+				drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
 			}
-
+            
+            // Drawing sections between holes
             if (hl.neighnumber > 0)
             {   
                 for (int j = 0; j < sm.holes.length; ++j)
@@ -2960,43 +3158,36 @@ void draw (picture pic = currentpicture,
             }
         }
     }
-
     if (mode == 2)
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawcartsections(pic, contour, sm.hratios[i], true, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.hratios[i], true, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawcartsections(pic, contour, sm.vratios[i], false, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.vratios[i], false, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
         }
     }
 
-	int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
-	real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
-	pen[] subsetpens = {subsetfill};
-	for (int i = 1; i < maxlayer+1; ++i)
-	{ subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
-    int[] orderindices = sort(sequence(sm.subsets.length), new bool (int i, int j){return sm.subsets[i].layer < sm.subsets[j].layer;});
-    for (int i = 0; i < orderindices.length; ++i)
-    {
-        subset sb = sm.subsets[orderindices[i]];
-        fill(pic = pic, sb.contour, subsetpens[sb.layer]);
-        label(pic = pic, position = intersection(sb.contour, sb.center, sb.labeldir), L = Label("$"+sb.label+"$", align = sb.labelalign));
+    // Drawing the contours
 
-        if(explain) label(pic = pic, L = Label((string)orderindices[i], position = sb.center, p = blue));
-    }
-    for (int i = 0; i < sm.subsets.length; ++i)
-    { draw(pic = pic, sm.subsets[i].contour, subsetcontourpen); }
-
-    if(explain) draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));
-    if(explain)
+    if (drawcontour)
     {
-        dot(pic = pic, sm.center, red+1);
-        for (int i = 0; i < sm.holes.length; ++i)
-        { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
+        for (int i = 0; i < contour.length; ++i)
+        {
+            fitpath(pic = pic, overlap = overlap || sm.isderivative, changeunder = true, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+        }
+        for (int i = 0; i < sm.subsets.length; ++i)
+        {
+            if (!sm.subsets[i].isderivative)
+            {
+                fitpath(pic = pic, overlap = overlap || currentDrSCO, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+            }
+        }
     }
+    
+    // Drawing the attached smooth objects
 
 	if (drag)
 	{
@@ -3006,13 +3197,27 @@ void draw (picture pic = currentpicture,
 		}
 	}
 
-	for (int i = 0; i < sm.elements.length; ++i)
-	{
-		element elt = sm.elements[i];
-		dot(pic = pic, elt.pos, L = Label("$"+elt.label+"$", align = elt.labelalign), contourpen+currentDrElP);
-	}
+    // Labels and explain drawings
 
-	if (cache) currentdrawn.push(drawdata(sm, contourpen, smoothfill, subsetfill));
+    for (int i = 0; i < sm.elements.length; ++i)
+    {
+        element elt = sm.elements[i];
+        dot(pic = pic, elt.pos, L = Label("$"+elt.label+"$", align = elt.labelalign), contourpen+currentDrElP);
+    }
+	if (sm.label != "") label(intersection(sm.contour, sm.center, sm.labeldir), "$"+sm.label+"$", align = sm.labelalign);
+    for (int i = 0; i < sm.subsets.length; ++i)
+    {
+        subset sb = sm.subsets[i];
+        if (sb.label != "") label(pic = pic, position = intersection(sb.contour, sb.center, sb.labeldir), L = Label("$"+sb.label+"$", align = sb.labelalign));
+        if (explain) label(pic = pic, L = Label((string)i, position = sb.center, p = blue));
+    }
+    if (explain) draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+    if (explain)
+    {
+        dot(pic = pic, sm.center, red+1);
+        for (int i = 0; i < sm.holes.length; ++i)
+        { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
+    }
 }
 
 void draw (picture pic = currentpicture,
@@ -3025,14 +3230,19 @@ void draw (picture pic = currentpicture,
            pen dashpen = dashpen(sectionpen),
            pen shadepen = shadepen(smoothfill),
            int mode = currentDrM,
+           bool fill = currentDrF,
+           bool drawcontour = currentDrDC,
            bool explain = currentDrE,
            bool dash = currentDrDD,
            bool shade = currentDrDS,
-           bool drag = true)
+           bool avoidsubsets = currentSeAS,
+           bool drag = true,
+           bool overlap = currentDrO,
+           bool drawnow = currentDrDN)
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
-		draw(pic = pic, sm = sms[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade, drag);
+		draw(pic = pic, sm = sms[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 }
 
@@ -3058,9 +3268,14 @@ smooth[] drawintersect (picture pic = currentpicture,
                         pen dashpen = dashpen(sectionpen),
                         pen shadepen = shadepen(smoothfill),
                         int mode = currentDrM,
+                        bool fill = currentDrF,
+                        bool drawcontour = currentDrDC,
                         bool explain = currentDrE,
                         bool dash = currentDrDD,
-                        bool shade = currentDrDS)
+                        bool avoidsubsets = currentSeAS,
+                        bool shade = currentDrDS,
+                        bool overlap = currentDrO,
+                        bool drawnow = currentDrDN)
 // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
 	smooth smp1 = sm1.copy().simplemove(shift = shift);
@@ -3076,7 +3291,7 @@ smooth[] drawintersect (picture pic = currentpicture,
 
     for (int i = 0; i < res.length; ++i)
     {
-        draw(pic, res[i], contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, mode = mode, explain = explain, dash = dash, shade = shade);
+        draw(pic, res[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
     }
 
     return res;
@@ -3137,136 +3352,6 @@ smooth[] drawintersect (picture pic = currentpicture,
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, explain, dash, shade);
 }
 
-private void arrow (picture pic, path gs, pair dir1, pair dir2, Label L, pen p, arrowbar arrow, bool overlap, bool fill, bool explain)
-{
-	if (overlap)
-    {
-		struct signedpath
-		{
-			path p;
-			int sign;
-			pen ovpen;
-			real time;
-
-			void operator init (path p, int sign, pen ovpen, real time)
-			{
-                this.p = p;
-                this.sign = sign;
-                this.ovpen = ovpen;
-                this.time = time;
-			}
-		}
-        signedpath[] getpaths (path gs, path[] curpaths, pen ovpen)
-        {
-            signedpath[] res;
-            for (int j = 0; j < curpaths.length; ++j)
-            {
-                real[][] ovtimes = intersections(gs, curpaths[j]);
-                for (int i = 0; i < ovtimes.length; ++i)
-                {
-					real curveovtime = ovtimes[i][0];
-                    real ovtime = ovtimes[i][1];
-					real cross = cross(dir(gs, curveovtime), dir(curpaths[j], ovtime));
-                    int sign = sgn(cross);
-                    real sang = abs(cross);
-
-                    if(sang == 0) continue;
-
-                    real t1 = arctime(curpaths[j], arclength(curpaths[j], 0, ovtime) + sign*currentArOL/sang*.5);
-                    real t2 = arctime(curpaths[j], arclength(curpaths[j], 0, ovtime) - sign*currentArOL/sang*.5);
-                    res.push(signedpath(subpath(curpaths[j], t1, t2), sign, ovpen, ovtimes[i][0]));
-                }
-            }
-            return res;
-        }
-        void filloverlap (path p1, path p2, pen ovpen1, pen ovpen2, bool fill, pen fillpen)
-        {
-			if (fill)
-			{
-				real time1 = (ovpen1 == invisible) ? 0 : intersect(gs, p1)[0];
-				real time2 = (ovpen2 == invisible) ? length(gs) : intersect(gs, p2)[0];
-				real timem = (time1 + time2)*.5;
-				path fillpath = reverse(p1){dir(gs, time1)} .. (point(gs, timem) + currentArOL*.5* (rotate(90)*(dir(gs, timem)))){dir(gs, timem)} .. {dir(gs, time2)}p2{-dir(gs, time2)} .. (point(gs, timem) + currentArOL*.5* (rotate(-90)*(dir(gs, timem)))){-dir(gs, timem)} .. {-dir(gs, time1)}cycle;
-				fill(pic = pic, fillpath, fillpen);
-				if (explain) draw(fillpath, red+defaultDrExP);
-			}
-            draw(pic = pic, p1, linewidth(p)+.3 + ovpen1);
-            draw(pic = pic, p2, linewidth(p)+.3 + ovpen2);
-        }
-
-		void drawovpaths (drawdata di)
-		{
-			unravel di;
-
-			signedpath[] ovpaths = new signedpath[];
-
-			int[] subsetindeces = sequence(sm.subsets.length);
-			for (int i = 0; i < subsetindeces.length; ++i)
-			{
-				if (sm.subsets[subsetindeces[i]].isintersection)
-				{
-					subsetindeces.delete(i);
-					i -= 1;
-				}
-			}
-			int maxlayer = subsetmaxlayer(sm.subsets, subsetindeces);
-			real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
-			pen[] subsetpens = {smoothfill, subsetfill};
-			for (int i = 2; i < maxlayer+1; ++i)
-			{ subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
-
-			for (int i = 0; i < maxlayer+1; ++i)
-			{
-				int[] curlayer = subsetgetlayer(sm.subsets, subsetindeces, i);
-				ovpaths.append(getpaths(gs, sequence(new path (int j){return sm.subsets[curlayer[j]].contour;}, curlayer.length), subsetpens[i]));
-			}
-
-			ovpaths.append(getpaths(gs, sm.contour ^^ sequence(new path(int i){return reverse(sm.holes[i].contour);}, sm.holes.length), smoothfill));
-
-			ovpaths = sort(ovpaths, new bool(signedpath a, signedpath b){return (intersect(a.p, gs)[1] < intersect(b.p, gs)[1]);});
-			int ovlevel = 0;
-			int counter = 0;
-			for (int i = 0; i < ovpaths.length; ++i)
-			{
-				counter += ovpaths[i].sign;
-				if (counter < ovlevel) ovlevel = counter;
-			}
-			ovlevel = -ovlevel - 1;
-			counter += ovlevel;
-
-			if (ovlevel % 2 == 0)
-			{
-				pair curdir = currentArOL*.5/abs(cross(dir1, dir(gs, 0))) * dir1;
-				pair pt1 = point(gs,0) - curdir;
-				pair pt2 = point(gs,0) + curdir;
-				ovpaths.insert(0, signedpath((pt1--pt2), 0, invisible, 0));
-			}
-			if (counter % 2 == 0)
-			{
-				pair curdir = currentArOL*.5/abs(cross(dir2, dir(gs, length(gs)))) * dir2;
-				pair pt1 = point(gs,length(gs)) - curdir;
-				pair pt2 = point(gs,length(gs)) + curdir;
-				ovpaths.push(signedpath((pt1--pt2), 0, invisible, length(gs)));
-			}
-
-			for (int i = 0; i < ovpaths.length - 1; i += 2)
-			{
-				ovlevel += ovpaths[i].sign;
-				filloverlap(ovpaths[i].p, ovpaths[i+1].p, ovpaths[i].ovpen, ovpaths[i+1].ovpen, (fill && ovlevel == 0), smoothfill);
-				ovlevel += ovpaths[i+1].sign;
-			}
-		}
-
-        for (int i = 0; i < currentdrawn.length; ++i)
-        {
-            if (intersect(gs, currentdrawn[i].sm.contour).length == 0) continue;
-            drawovpaths(currentdrawn[i]);
-        }
-    }
-
-    draw(pic = pic, gs, p = p, arrow = arrow, L = L);
-}
-
 void drawarrow (picture pic = currentpicture,
                 smooth sm1,
                 smooth sm2 = sm1,
@@ -3276,12 +3361,14 @@ void drawarrow (picture pic = currentpicture,
                 pair[] points = {},
                 Label L = "",
                 pen p = currentpen,
-                arrowbar arrow = Arrow(SimpleHead),
-                bool overlap = true,
-                bool fill = true,
+                arrowbar beginarrow = currentDrBA,
+                arrowbar endarrow = currentDrEA,
+                arrowbar beginbar = currentDrBB,
+                arrowbar endbar = currentDrEB,
+                bool overlap = currentDrO,
+                bool drawnow = currentDrDN,
                 real margin1 = currentArM,
-                real margin2 = currentArM,
-                bool explain = currentDrE)
+                real margin2 = currentArM)
 // Draws an arrow between two given smooth objects, or their subsets.
 {
 	string label1;
@@ -3339,7 +3426,7 @@ void drawarrow (picture pic = currentpicture,
 	}
     path gs = subpath(g, time1, time2);
 
-	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
+	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs = gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3351,12 +3438,14 @@ void drawarrow (picture pic = currentpicture,
                 pair[] points = {},
                 Label L = "",
                 pen p = currentpen,
-                arrowbar arrow = Arrow(SimpleHead),
-                bool overlap = true,
-                bool fill = true,
+                arrowbar beginarrow = currentDrBA,
+                arrowbar endarrow = currentDrEA,
+                arrowbar beginbar = currentDrBB,
+                arrowbar endbar = currentDrEB,
+                bool overlap = currentDrO,
+                bool drawnow = currentDrDN,
                 real margin1 = currentArM,
-                real margin2 = currentArM,
-                bool explain = currentDrE)
+                real margin2 = currentArM)
 {
 	element el1 = sm1.elements[ind1];
 	element el2 = sm2.elements[ind2];
@@ -3364,7 +3453,7 @@ void drawarrow (picture pic = currentpicture,
 
     path g = (points.length == 0) ? curvedpath(el1.pos, el2.pos, curve = curve) : connect(concat(new pair[]{el1.pos}, points, new pair[]{el2.pos}));
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
-	arrow(pic, g, rotate(-90)*dir(g, 0), rotate(-90)*dir(g, length(g)), L, p, arrow, overlap, fill, explain);
+	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs = g, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3373,15 +3462,17 @@ void drawarrow (picture pic = currentpicture,
                 real angle,
                 real radius = sm.scale,
                 pair[] points = {},
+                bool reverse = false,
                 Label L = "",
                 pen p = currentpen,
-                arrowbar arrow = Arrow(SimpleHead),
-                bool overlap = true,
-                bool reverse = false,
-                bool fill = true,
+                arrowbar beginarrow = currentDrBA,
+                arrowbar endarrow = currentDrEA,
+                arrowbar beginbar = currentDrBB,
+                arrowbar endbar = currentDrEB,
+                bool overlap = currentDrO,
+                bool drawnow = currentDrDN,
                 real margin1 = currentArM,
-                real margin2 = currentArM,
-                bool explain = currentDrE)
+                real margin2 = currentArM)
 {
 	string label;
 	path contour;
@@ -3421,6 +3512,97 @@ void drawarrow (picture pic = currentpicture,
 	}
 
     path gs = subpath(g, time1, time2);
-
-	arrow(pic, gs, dir1, dir2, L, p, arrow, overlap, fill, explain);
+	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
+
+void drawcache (picture pic = currentpicture)
+{
+    void auxdraw (pathinfo pinf)
+    {
+        unravel pinf;
+
+        int startind = 0;
+        int finishind = g.length-1;
+        pen curp = under ? underpen(p) : p;
+
+        if (beginarrow == None && beginbar == None)
+        {
+            draw(pic = pic, g[g.length-1], p = curp, arrow = endarrow, bar = endbar);
+            finishind -= 1;
+        }
+        else if (endarrow == None && endbar == None)
+        {
+            draw(pic = pic, g[0], p = curp, arrow = beginarrow, bar = beginbar);
+            startind;
+        }
+        else if (g.length > 1)
+        {
+            draw(pic = pic, g[0], p = curp, arrow = beginarrow, bar = beginbar);
+            draw(pic = pic, g[g.length-1], p = curp, arrow = endarrow, bar = endbar);
+            startind += 1;
+            finishind -= 1;
+        }
+        else if (length(g[0]) < 2)
+        {
+            draw(pic = pic, subpath(g[0], 0, length(g[0])*.5), p = p, arrow = beginarrow, bar = beginbar);
+            draw(pic = pic, subpath(g[0], length(g[0])*.5, length(g[0])), p = p, arrow = beginarrow, bar = beginbar);
+            return;
+        }
+        else
+        {
+            int node = ceil(length(g[0])*.5);
+            draw(pic = pic, subpath(g[0], 0, node), p = p, arrow = beginarrow, bar = beginbar);
+            draw(pic = pic, subpath(g[0], node, length(g[0])), p = p, arrow = endarrow, bar = endbar);
+            return;
+        }
+
+        for (int j = startind; j <= finishind; ++j)
+        {
+            draw(pic = pic, g[j], p = curp);
+        }
+    }
+
+    for (int i = 0; i < currentdrawn.length; ++i)
+    {
+        auxdraw(currentdrawn[i]);
+    }
+}
+
+void savecache ()
+{
+    currentsaved = new pathinfo[];
+    for (int i = 0; i < currentdrawn.length; ++i)
+    { currentsaved.push(currentdrawn[i]); }
+}
+void restorecache ()
+{
+    currentdrawn = new pathinfo[];
+    for (int i = 0; i < currentsaved.length; ++i)
+    { currentdrawn.push(currentsaved[i]); }
+}
+void flushcache ()
+{ currentdrawn = new pathinfo[]; }
+
+// -- Redefining functions to execute `drawcache` and `flushcache` at call -- //
+
+void plainshipout (string prefix=defaultfilename, picture pic=currentpicture,
+	     orientation orientation=orientation,
+	     string format="", bool wait=false, bool view=true,
+	     string options="", string script="",
+	     light light=currentlight, projection P=currentprojection) = shipout;
+shipout = new void (string prefix=defaultfilename, picture pic=currentpicture,
+	     orientation orientation=orientation,
+	     string format="", bool wait=false, bool view=true,
+	     string options="", string script="",
+	     light light=currentlight, projection P=currentprojection)
+{
+    drawcache(pic);
+    plainshipout(prefix, pic, orientation, format, wait, view, options, script, light, P);
+};
+
+void plainerase (picture pic = currentpicture) = erase;
+erase = new void (picture pic = currentpicture)
+{
+    flushcache();
+    plainerase(pic);
+};

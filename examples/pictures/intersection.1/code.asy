@@ -3,7 +3,6 @@ settings.render = 16;
 
 size(15cm);
 exportparams(bgpen = paleyellow);
-defaultpen(darkmagenta);
 
 pair viewdir = dir(45);
 
@@ -14,11 +13,7 @@ smooth sm2 = samplesmooth(2).setlabel("N", dir(-30)).view(viewdir);
 sm2.move(shift = (1,-.2));
 
 void draw ()
-{
-	draw(sm1);
-	draw(sm2);
-	drawintersect(sm1, sm2, shift = (0, -2.5));
-}
+{ drawintersect(sm1, sm2, shift = (0, -2.5)); }
 
 draw();
 export("picture", "pdf", 1 cm, exit = false);

@@ -11,7 +11,7 @@ int defaultAnNL = 4; // [N]ame [L]ength
 // [Ex]port
 private bool currentExEOE = true; // [E]xit [O]n [E]xport
 private pen currentExFP = linewidth(0); // [F]rame [P]en
-int currentExRID = 300;
+int currentExRID = 300; // [R]asterized [I]mage [D]ensity
 pen currentExBG = white; // [B]ack[G]round
 real currentExM = 0; // [M]argin
 // [Pr]ogress
@@ -101,7 +101,8 @@ void clean ()
 void compile (int fps = currentAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
 {
 	write("> Compiling... ", suffix = none);
-	system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+currentAnIF+" "+outprefix+"."+outformat);
+    if (native(currentAnIF)) system("nohup magick convert -density "+(string)currentExRID+" -delay "+(string)(100/fps)+" -channel RGBA -colorspace RGB -alpha On ./*."+currentAnIF+" "+outprefix+"."+outformat);
+	else system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+currentAnIF+" "+outprefix+"."+outformat);
 	if (clean) clean();
 	write("Done.");
 }
@@ -118,13 +119,15 @@ private picture framedpicture (picture pic)
 	return aux;
 }
 
-void export (picture pic = currentpicture, string prefix = outname(), string format = settings.outformat, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool exit = currentExEOE, bool basic = false)
+void export (picture pic = currentpicture, string prefix = outname(), string format = settings.outformat, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool exit = currentExEOE, bool basic = false, bool drawcache = true)
 {
 	bool native = native(format);
 	settings.outformat = native ? format : "pdf";
 
+    if (drawcache) drawcache(pic);
+
 	if (basic)
-	{ shipout(pic, prefix = prefix); }
+	{ plainshipout(pic, prefix = prefix); }
 	else
 	{
 		picture aux = framedpicture(pic);
@@ -163,11 +166,16 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 	for (int i = 0; i < n; ++i)
 	{
 		save();
+        savecache();
+
 		update(i);
+
 		string str1 = (string)(currentPrFC+i);
 		string str2 = (string)(currentPrFC + 2n - 1 - i);
 		export(prefix = "_"+copychar("0", defaultAnNL - length(str1))+str1, format = currentAnIF, exit = false);
-		if (back) export(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2, format = currentAnIF, exit = false);
+		if (back) export(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2, format = currentAnIF, exit = false, drawcache = false);
+        
+        restorecache();
         restore();
 
 		residue += oon;
@@ -223,7 +231,7 @@ void move (smooth sm,
 	void update (int i)
 	{
 		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
-        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag, cache = false);
+        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag, drawnow = false);
 	}
 	if (back) sm = smp;
 

@@ -4,6 +4,7 @@ settings.render = 8;
 
 size(30 cm);
 exportparams(bgpen = paleyellow, margin = 1.5 cm, exit = false);
+drawparams(dash = false);
 
 pair viewdir = dir(40);
 

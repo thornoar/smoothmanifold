@@ -3,7 +3,7 @@ import export;
 settings.render = 16;
 size(15 cm);
 exportparams(bgpen = paleyellow);
-drawparams(smoothfill = cyan);
+drawparams(smoothfill = cyan, overlap = true, drawnow = true);
 
 smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);
 smooth sm2 = samplesmooth(1,1).move(shift = (.7,-.15), rotate = -20);

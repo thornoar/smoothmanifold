@@ -40,8 +40,9 @@ void draw ()
 }
 
 draw();
+
 export("picture", "pdf", exit = false);
 erase();
-drawparams(explain = true);
+drawparams(fill = false);
 draw();
-export("picture (marked)", "pdf");
+export("picture (hollow)", "pdf");
