@@ -1,7 +1,7 @@
 /*
 
 This is module smoothmanifold. It is designed to construct and render
-high-quality Asymptote objects of topological and diff. geometrical nature.
+high-quality Asymptote figures that display sets as 2D or 3D surfaces on the plane.
 
 Copyright (C) 2023 Maksimovich Roman Alekseevich. All rights reserved.
 
