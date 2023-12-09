@@ -153,7 +153,7 @@ void export (picture pic = currentpicture, string prefix = outname(), string for
 	if (exit) exit();
 }
 
-void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = true, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
+void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = true, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
@@ -172,8 +172,8 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 
 		string str1 = (string)(currentPrFC+i);
 		string str2 = (string)(currentPrFC + 2n - 1 - i);
-		export(prefix = "_"+copychar("0", defaultAnNL - length(str1))+str1, format = currentAnIF, exit = false);
-		if (back) export(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2, format = currentAnIF, exit = false, drawcache = false);
+		export(prefix = "_"+copychar("0", defaultAnNL - length(str1))+str1, format = informat, exit = false);
+		if (back) export(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2, format = informat, exit = false, drawcache = false);
         
         restorecache();
         restore();
