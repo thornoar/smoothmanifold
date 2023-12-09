@@ -2959,7 +2959,7 @@ private void fitpath (picture pic,
                 else { cuttimes.push(length(g[j])); }
 
                 bool understart = putunder ? isinside(gs, point(g[j], cuttimes[0])) : false;
-                for (int k = 0; k < cuttimes.length; k += 2)
+                for (int k = 0; k < cuttimes.length-1; k += 2)
                 {
                     ((putunder && understart) ? altg : newg).push(gjcyclic ? subcyclic(g[j], (cuttimes[k], cuttimes[k+1])) : subpath(g[j], cuttimes[k], cuttimes[k+1]));
                     if (!skipped[k]) understart = !understart;

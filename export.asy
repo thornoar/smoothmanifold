@@ -22,12 +22,25 @@ private bool currentFrCP = false; // [C]lip [P]icture
 private pair currentFrFC = (0,0); // [F]rame [C]orner
 // [An]imations
 int currentAnFPS = 25; // [FPS]
+private string currentAnDN = "animation/";
 private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 bool currentAnC = true; // [C]lose
 
 import smoothmanifold;
+
+void execute (string cmd)
+{
+    string filename = "cmd.sh";
+    file f = output(name = filename);
+    write(f, s = cmd);
+    clear(f);
+    close(f);
+    system("chmod +x "+filename);
+    system("./"+filename);
+    delete(filename);
+}
 
 private string copychar (string str, int n)
 {
@@ -63,8 +76,12 @@ void invertcolors ()
     shadepen = new pen (pen p) { return currentDrShS*p; };
 }
 
-void animationparams (string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
+void animationparams (string dirname = currentAnDN, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
 {
+    if (find(dirname, "/") == -1)
+    { abort("Could not apply changes: directory name must contain '/' at the end."); }
+    if (find(dirname, "/") != rfind(dirname, "/"))
+    { abort("Could not apply changes: directory name must be at depth one."); }
 	if (find(outprefix, " ") > -1)
 	{ abort("Could not apply changes: prefix should not contain spaces."); }
 	if (find("eps|jpg|png|pdf", informat) == -1)
@@ -72,6 +89,7 @@ void animationparams (string informat = currentAnIF, string outprefix = currentA
 	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", outformat) == -1)
 	{ write("> ! You have chosen an unfamiliar output format. Proceed with caution."); }
 	
+    currentAnDN = dirname;
 	currentAnIF = informat;
 	currentAnOP = outprefix;
 	currentAnOF = outformat;
@@ -91,19 +109,34 @@ void setframe (real ymax, real ratio = 1.777777777, bool crop = true, bool now =
 	if (crop) currentFrCP = true;
 }
 
-void clean ()
+int numberoffiles (string dirname)
 {
-	for (int i = 0; i < currentPrFC; ++i)
-	{ system("rm _"+copychar("0", defaultAnNL - length((string)i))+(string)i + "."+currentAnIF); }
+    execute("ls "+dirname+" -1 | wc -l > tmp_numberoffiles.txt");
+    int res = input("tmp_numberoffiles.txt");
+    delete("tmp_numberoffiles.txt");
+    if (dirname == "." || dirname == "./") res -= 1;
+    return res;
+}
+
+void clean (string informat = currentAnIF)
+{
+    int num = numberoffiles(".");
+	for (int i = 0; i < num; ++i)
+	{ delete("_"+copychar("0", defaultAnNL - length((string)i))+(string)i + "."+informat); }
 	currentPrFC = 0;
 }
 
-void compile (int fps = currentAnFPS, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true)
+void compile (int fps = currentAnFPS, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true, int density = currentExRID)
 {
 	write("> Compiling... ", suffix = none);
-    if (native(currentAnIF)) system("nohup magick convert -density "+(string)currentExRID+" -delay "+(string)(100/fps)+" -channel RGBA -colorspace RGB -alpha On ./*."+currentAnIF+" "+outprefix+"."+outformat);
-	else system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+currentAnIF+" "+outprefix+"."+outformat);
-	if (clean) clean();
+    if (outformat == "gif")
+    {
+        string args="-loop 0 -delay "+(string)(100/fps)+" -density "+(string)density+" -alpha Off -dispose Background ./*."+informat;
+        int rc=convert(args, outprefix+"."+outformat, format=outformat);
+        if(rc == 0) animate(file = outprefix+"."+outformat, format=outformat);
+    }
+	else system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+informat+" "+outprefix+"."+outformat);
+	if (clean) clean(informat);
 	write("Done.");
 }
 
@@ -189,7 +222,7 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 
 	write("|");
 
-	if (compile) compile(outprefix = outprefix, outformat = outformat, fps = fps, clean = clean);
+	if (compile) compile(informat = informat, outprefix = outprefix, outformat = outformat, fps = fps, clean = clean, density = density);
 }
 
 // -- Animations -- //
