@@ -2013,16 +2013,17 @@ struct smooth
     }
     bool isnull ()
     { return this.contour == nullpath; }
+}
 
-	void print ()
-	{
-        write("--- Smooth object ---");
-        write("LABEL: " + ((length(this.label) == 0) ? "[unlabeled]" : this.label) + "  |  DIRECTION: ~" + (string)round(this.labeldir, 2) + "  |  ALIGN: ~" + (string)round(this.labelalign, 2));
-        write("CENTER: ~" + (string)round(this.center, 2));
-        write("HOLES: " + (string)this.holes.length);
+void print (smooth sm)
+{
+    write("--- Smooth object ---");
+    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + "  |  DIRECTION: ~" + (string)round(sm.labeldir, 2) + "  |  ALIGN: ~" + (string)round(sm.labelalign, 2));
+    write("CENTER: ~" + (string)round(sm.center, 2));
+    write("VIEW: ~" + (string)round(sm.viewdir, 2));
+    write("HOLES: " + (string)sm.holes.length);
 
-        write("SUBSETS: " + (string)this.subsets.length);
-	}
+    write("SUBSETS: " + (string)sm.subsets.length);
 }
 
 smooth nullsmooth;

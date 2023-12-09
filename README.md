@@ -86,7 +86,7 @@ void operator init (path contour,
                     bool isderivative = false)
 ```
 
-The only required argument is `contour`, everything else is optional. To see examples of pre-built smooth objects, search for 'samplesmooth' in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `view`, etc. You can derive new smooth objects with `union`, `intersection` and `copy()`. Finally, `draw` your object, or draw an arrow connecting two objects. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.
+The only required argument is `contour`, everything else is optional. To see examples of pre-built smooth objects, search for 'samplesmooth' in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `view`, etc. You can derive new smooth objects with `union`, `intersection` and `copy()`. Finally, `draw` your object, or draw an arrow connecting two objects. You can `print()` your smooth objects to get parameter values in the console. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.
 
 ## Optional extensions
 
