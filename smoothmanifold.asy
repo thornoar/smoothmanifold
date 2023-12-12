@@ -22,7 +22,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // -- Default constants -- //
 
 // [Sy]stem
-private string defaultversion = "v5.0.0-beta";
+private string defaultversion = "v5.2.0-beta";
 private real defaultSySN = .000001; // [S]mall [N]umber
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it"
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
