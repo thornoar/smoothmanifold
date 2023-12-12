@@ -4,6 +4,7 @@
 // [Pr]ogress
 private int defaultPrML = 50; // [M]essage [L]ength
 // [An]imations
+private string defaultAnFLN = ".animation_input_list.txt";
 int defaultAnFN = 30; // [F]rame [N]umber
 int defaultAnNL = 4; // [N]ame [L]ength
 
@@ -14,14 +15,13 @@ private pen currentExFP = linewidth(0); // [F]rame [P]en
 int currentExRID = 300; // [R]asterized [I]mage [D]ensity
 pen currentExBG = white; // [B]ack[G]round
 real currentExM = 0; // [M]argin
-// [Pr]ogress
-private int currentPrFC = 0; // [Pr]ogress [F]rame [C]ount
 // [Fr]ame
 private bool currentFrEP = false; // [E]nclose [P]icture
 private bool currentFrCP = false; // [C]lip [P]icture
 private pair currentFrFC = (0,0); // [F]rame [C]orner
 // [An]imations
 int currentAnFPS = 25; // [FPS]
+private int currentAnCC = 0; // [C]all [C]ount
 private string currentAnDN = "animation/";
 private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
@@ -30,12 +30,11 @@ bool currentAnC = true; // [C]lose
 
 import smoothmanifold;
 
-void execute (string cmd)
+void linux (string cmd)
 {
     string filename = "cmd.sh";
     file f = output(name = filename);
     write(f, s = cmd);
-    clear(f);
     close(f);
     system("chmod +x "+filename);
     system("./"+filename);
@@ -53,9 +52,9 @@ private bool native (string format = currentAnIF) {return format == "" || format
 void exportparams (int dpi = currentExRID, pen bgpen = currentExBG, real margin = currentExM, bool exit = currentExEOE)
 {
 	if (dpi < 10)
-	{ abort("Could not apply changes: inacceptable quality."); }
+	{ halt("Could not apply changes: inacceptable quality."); }
 	if (margin < 0)
-	{ abort("Could not set margin: value must be positive."); }
+	{ halt("Could not set margin: value must be positive."); }
 	currentExRID = dpi;
 	currentExBG = bgpen;
 	currentExM = margin;
@@ -79,15 +78,15 @@ void invertcolors ()
 void animationparams (string dirname = currentAnDN, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
 {
     if (find(dirname, "/") == -1)
-    { abort("Could not apply changes: directory name must contain '/' at the end."); }
+    { halt("Could not apply changes: directory name must contain '/' at the end."); }
     if (find(dirname, "/") != rfind(dirname, "/"))
-    { abort("Could not apply changes: directory name must be at depth one."); }
+    { halt("Could not apply changes: directory name must be at depth one."); }
 	if (find(outprefix, " ") > -1)
-	{ abort("Could not apply changes: prefix should not contain spaces."); }
+	{ halt("Could not apply changes: prefix should not contain spaces."); }
 	if (find("eps|jpg|png|pdf", informat) == -1)
-	{ write("> ! You have chosen an unfamiliar input format. Proceed with caution."); }
+	{ write("> ? You have chosen an unfamiliar input format. Proceed with caution."); }
 	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", outformat) == -1)
-	{ write("> ! You have chosen an unfamiliar output format. Proceed with caution."); }
+	{ write("> ? You have chosen an unfamiliar output format. Proceed with caution."); }
 	
     currentAnDN = dirname;
 	currentAnIF = informat;
@@ -111,7 +110,7 @@ void setframe (real ymax, real ratio = 1.777777777, bool crop = true, bool now =
 
 int numberoffiles (string dirname)
 {
-    execute("ls "+dirname+" -1 | wc -l > tmp_numberoffiles.txt");
+    linux("ls "+dirname+" -1 | wc -l > tmp_numberoffiles.txt");
     int res = input("tmp_numberoffiles.txt");
     delete("tmp_numberoffiles.txt");
     if (dirname == "." || dirname == "./") res -= 1;
@@ -120,22 +119,58 @@ int numberoffiles (string dirname)
 
 void clean (string informat = currentAnIF)
 {
-    int num = numberoffiles(".");
-	for (int i = 0; i < num; ++i)
-	{ delete("_"+copychar("0", defaultAnNL - length((string)i))+(string)i + "."+informat); }
-	currentPrFC = 0;
+    file f = input(name = defaultAnFLN, check = false);
+    if (error(f)) return;
+    while (true)
+    {
+        string fname = f;
+        if (fname == "") break;
+        delete(fname);
+    }
+    close(f);
+    delete(defaultAnFLN);
 }
 
 void compile (int fps = currentAnFPS, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true, int density = currentExRID)
 {
 	write("> Compiling... ", suffix = none);
-    if (outformat == "gif")
+
+    if (native(informat))
     {
-        string args="-loop 0 -delay "+(string)(100/fps)+" -density "+(string)density+" -alpha Off -dispose Background ./*."+informat;
-        int rc=convert(args, outprefix+"."+outformat, format=outformat);
+        if (outformat != "gif")
+        {
+            halt("Could not compile: "+informat+" input format is incompatible with "+outformat+" output format. [ compile() ]");
+        }
+
+        string args="-loop 0 -delay "+(string)(100/fps)+" -density "+(string)density+" -alpha Off -dispose Background @"+defaultAnFLN;
+        int rc=convert(args, outprefix+".gif", format=outformat);
         if(rc == 0) animate(file = outprefix+"."+outformat, format=outformat);
     }
-	else system("nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i _%0"+(string)defaultAnNL+"d."+informat+" "+outprefix+"."+outformat);
+	else
+    {
+        string input = "";
+        file f = input(name = defaultAnFLN, check = false);
+        if (error(f))
+        { halt("Could not compile: input list text file not found. Try recompiling the program. [ compile() ]"); }
+        int counter = 0;
+        while (true)
+        {
+            string str = f;
+            if (str == "") break;
+            rename(str, "ffmpeg_frame_"+(string)counter+"."+informat);
+            counter += 1;
+        }
+        string cmd = "nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i ./ffmpeg_frame_%d."+informat+" "+outprefix+"."+outformat;
+        system(cmd);
+        f = input(name = defaultAnFLN, check = false);
+        for (int i = 0; i <= counter; ++i)
+        {
+            string str = f;
+            rename("ffmpeg_frame_"+(string)i+"."+informat, str);
+        }
+        close(f);
+    }
+
 	if (clean) clean(informat);
 	write("Done.");
 }
@@ -186,11 +221,15 @@ void export (picture pic = currentpicture, string prefix = outname(), string for
 	if (exit) exit();
 }
 
-void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = true, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
+void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = false, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
-	write("|", suffix = none);
+    write("|", suffix = none);
+    
+    string hash = (string)currentAnCC + (string)seconds();
+    currentAnCC += 1;
+    file f = output(name = defaultAnFLN, update = true);
 
 	real ool = 1/(defaultPrML-1) - 0.000001;
 	real oon = 1/n;
@@ -203,10 +242,11 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 
 		update(i);
 
-		string str1 = (string)(currentPrFC+i);
-		string str2 = (string)(currentPrFC + 2n - 1 - i);
-		export(prefix = "_"+copychar("0", defaultAnNL - length(str1))+str1, format = informat, exit = false);
-		if (back) export(prefix = "_"+copychar("0", defaultAnNL - length(str2))+str2, format = informat, exit = false, drawcache = false);
+		string str1 = hash+"_"+(string)(i);
+		string str2 = hash+"_"+(string)(2n - 1 - i);
+		export(prefix = str1, format = informat, exit = false);
+        write(f, s = str1+"."+informat, suffix = endl);
+		if (back) export(prefix = str2, format = informat, exit = false, drawcache = false);
         
         restorecache();
         restore();
@@ -218,7 +258,11 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 			residue -= ool;
 		}
     }
-	currentPrFC += back ? 2*n : n;
+    if (back)
+    {
+        for (int i = 0; i < n; ++i)
+        { write(f, s = hash + "_" + (string)(n+i)); }
+    }
 
 	write("|");
 

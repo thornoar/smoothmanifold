@@ -273,6 +273,13 @@ import pathmethods;
 
 // -- System functions -- //
 
+void halt (string msg)
+{
+    write();
+    write("> ! "+msg);
+    abort("");
+}
+
 private bool checksection (real[] section)
 {
 	if (section.length > 1 && section[0] == 0 && section[1] == 0)
@@ -322,9 +329,9 @@ pen underpen (pen p)
 void sectionparams (real[] section = currentsection, int nn = currentSeNN, real na = currentSeNA, real nl = currentSeMLR, bool restrictlength = currentSeRL, bool avoidsubsets = currentSeAS)
 {
 	if (!checksection(section) || nn < 0 || !inside(0, 180, na))
-	{ abort("Could not change default section parameters: invalid intries"); }
+	{ halt("Could not change default section parameters: invalid intries [ sectionparams() ]"); }
 	if (nl <= 0)
-	{ abort("Could not change default section parameters: section length value must be positive"); }
+	{ halt("Could not change default section parameters: section length value must be positive [ sectionparams() ]"); }
 	for (int i = 0; i < section.length; ++i)
 	{ if (section[i] != defaultSyDN) currentsection[i] = section[i]; }
 	currentSeNN = nn;
@@ -339,7 +346,7 @@ void arrowparams (real ovlength = defaultArOL, real margin = defaultArM)
 {
 	currentArOL = ovlength;
 	currentArM = margin;
-	if (ovlength > 1) write("> ! Value for arrow overlap length looks too big: the result may be ugly.");
+	if (ovlength > 1) write("> ? Value for arrow overlap length looks too big: the result may be ugly. [ arrowparams() ]");
 }
 void drawparams (int mode = currentDrM,
                  pen smoothfill = smoothcolor,
@@ -359,11 +366,11 @@ void drawparams (int mode = currentDrM,
                  pen elementpen = currentDrElP)
 {
 	if (!inside(0,3, mode))
-	{ abort("Could not set mode: invalid entry provided."); }
+	{ halt("Could not set mode: invalid entry provided. [ drawparams() ]"); }
 	if (!inside(0,1, minscale))
-	{ abort("Could not apply changes: subset color scale argument out of range: must be between 0 and 1."); }
+	{ halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ drawparams() ]"); }
 	if (!inside(0,1, dragop))
-	{ abort("Could not set drag opacity: entry out of bounds: must be between 0 and 1."); }
+	{ halt("Could not set drag opacity: entry out of bounds: must be between 0 and 1. [ drawparams() ]"); }
 	currentDrM = mode;
 	smoothcolor = smoothfill;
 	subsetcolor = subsetfill;
@@ -1200,7 +1207,7 @@ struct smooth
                  bool drag = true)
     {
 		if (scale <= 0)
-		{ abort("Could not move: scale value must be positive."); }
+		{ halt("Could not move: scale value must be positive. [ move() ]"); }
 		
 		this.rotate += rotate;
         this.scale *= scale;
@@ -1237,7 +1244,7 @@ struct smooth
 		for (int i = 0; i < ratios.length; ++i)
 		{
 			if (!inside(0,1, ratios[i]))
-			{ abort("Could not set ratios: all entries must lie between 0 and 1."); }
+			{ halt("Could not set ratios: all entries must lie between 0 and 1. [ setratios() ]"); }
 		}
 
 		if (horiz) this.hratios = ratios;
@@ -1251,7 +1258,7 @@ struct smooth
 		else subsetget(this.subsets, ind).setcenter(unit ? shift(this.shift)*center : center);
         
 		if (!this.isinside(this.center))
-		{ write("> ! Center out of bounds: might cause problems later."); }
+		{ write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
 
         return this;
     }
@@ -1281,7 +1288,7 @@ struct smooth
     {
         for (int i = 0; i < this.elements.length; ++i)
         { if (this.elements[i].label == label) return i; }
-        write("> ! Could not find element: no element with such label. Returning -1.");
+        write("> ? Could not find element: no element with such label. Returning -1. [ getelement() ]");
         return -1;
     }
 	smooth addelement (element elt, bool unit = true)
@@ -1289,7 +1296,7 @@ struct smooth
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
 
 		if (!this.isinside(elt.pos))
-		{ abort("Could not add element: position out of bounds."); }
+		{ halt("Could not add element: position out of bounds. [ addelement() ]"); }
 
 		this.elements.push(elt);
 		return this;
@@ -1329,7 +1336,7 @@ struct smooth
 		if (!insidepath(this.contour, hl.contour))
 		{
 			currentPrDP.push(hl.contour);
-			write("> ! Could not add hole: contour out of bounds. Call `drawdebug()` in the end to adjust.");
+			write("> ? Could not add hole: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addhole() ]");
 			return this;
 		}
 		for (int i = 0; i < this.holes.length; ++i)
@@ -1337,7 +1344,7 @@ struct smooth
 			if (!outsidepath(this.holes[i].contour, hl.contour))
 			{
 				currentPrDP.push(hl.contour);
-				write("> ! Could not add hole: contour intersecting with other holes. Call `drawdebug()` in the end to adjust.");
+				write("> ? Could not add hole: contour intersecting with other holes. Call `drawdebug()` in the end to adjust. [ addhole() ]");
 				return this;
 			}
 		}
@@ -1355,7 +1362,7 @@ struct smooth
 		if (abort)
 		{
 			currentPrDP.push(hl.contour);
-			write("> ! Could not add hole: contour intervening with subsets. Call `drawdebug()` in the end to adjust.");
+			write("> ? Could not add hole: contour intervening with subsets. Call `drawdebug()` in the end to adjust. [ addhole() ]");
 			return this;
 		}
 		else
@@ -1450,7 +1457,7 @@ struct smooth
     smooth addholesection (int ind, real[] section = {}, bool unit = false)
     {
 		if (!checksection(section))
-		{ abort("Could not add section: invalid entries."); }
+		{ halt("Could not add section: invalid entries. [ addholesection() ]"); }
 		for (int i = 0; i < section.length; ++i)
 		{ if (section[i] == defaultSyDN) section[i] = currentsection[i]; }
         while(section.length < currentsection.length)
@@ -1495,7 +1502,7 @@ struct smooth
         {
             if (this.subsets[i].label == label) return i;
         }
-        write("> ! Could not find subset: no subset with such label. Returning -1.");
+        write("> ? Could not find subset: no subset with such label. Returning -1. [ getsubset() ]");
         return -1;
     }
 	smooth addsubset (subset sb, int[] ind = i(defaultSyDN), bool unit = true)
@@ -1532,7 +1539,7 @@ struct smooth
 		}
         if (sb.subsets.length > 0)
         {
-            write("> ! New subset already contains some subset indices. They will be removed.");
+            write("> ? New subset already contains some subset indices. They will be removed. [ addsubset() ]");
             sb.subsets.delete();
         }
 		
@@ -1558,7 +1565,7 @@ struct smooth
 		if (!insidepath(pcontour, sb.contour))
 		{
 			currentPrDP.push(sb.contour);
-			write("> ! Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust.");
+			write("> ? Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
 			return this;
 		}
 		if (!sub)
@@ -1568,7 +1575,7 @@ struct smooth
 				if (meet(this.holes[i].contour, sb.contour) || isinside(this.holes[i].contour, inside(sb.contour)))
 				{
 					currentPrDP.push(sb.contour);
-					write("> ! Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust.");
+					write("> ? Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
 					return this;
 				}
 			}
@@ -1579,7 +1586,7 @@ struct smooth
 			if (insidepath(this.subsets[range[i]].contour, sb.contour))
 			{
 				currentPrDP.push(sb.contour);
-				write("> ! Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust.");
+				write("> ? Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
 				return this;
 			}
         }
@@ -1610,7 +1617,7 @@ struct smooth
             subset[] intersection = subsetintersection(cursb, sb);
             if (intersection.length > 1)
             {
-                write("> ! Could not add subset: has disconnected intersection with existing subsets. Call `drawdebug()` in the end to adjust.");
+                write("> ? Could not add subset: has disconnected intersection with existing subsets. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
                 this.subsets.delete(insertindex, this.subsets.length-1);
                 subsetcleanreferences(this.subsets);
                 terminate = true;
@@ -1807,7 +1814,7 @@ struct smooth
 		int[] allsubsets = subsetgetall(this.subsets, cursb);
 
 		if (cursb.isderivative) 
-		{ abort("Could not move subset: subset under index "+(string)index+" is an intersection of subsets."); }
+		{ halt("Could not move subset: subset under index "+(string)index+" is an intersection of subsets. [ movesubset() ]"); }
 		
 		path pcontour;
 		int[] range; 
@@ -1830,7 +1837,7 @@ struct smooth
 		if (!insidepath(pcontour, newcontour))
 		{
 			currentPrDP.push(newcontour);
-			write("> ! Could not move subset: new contour out of bounds. Call `drawdebug()` in the end to adjust.");
+			write("> ? Could not move subset: new contour out of bounds. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
 			return this;
 		}
 
@@ -1849,7 +1856,7 @@ struct smooth
 				if (meet(newcontour, this.subsets[range[i]].contour) || insidepath(newcontour, this.subsets[range[i]].contour) || insidepath(this.subsets[range[i]].contour, newcontour))
 				{
 					currentPrDP.push(newcontour);
-					write("> ! Could not move subset: new contour intersects with other subsets. Call `drawdebug()` in the end to adjust.");
+					write("> ? Could not move subset: new contour intersects with other subsets. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
 					return this;
 				}
 			}
@@ -1868,7 +1875,7 @@ struct smooth
 					if (!insidepath(newcontour, this.subsets[cursb.subsets[i]].contour))
 					{
 						currentPrDP.push(newcontour);
-						write("> ! Could not move subset: new contour makes existing subsets out-of-bounds. Call `drawdebug()` in the end to adjust.");
+						write("> ? Could not move subset: new contour makes existing subsets out-of-bounds. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
 						return this;
 					}
 				}
@@ -1879,7 +1886,7 @@ struct smooth
 			return this;
 		}
 
-		abort("Could not move subset: situation too complicated: both primary and secondary subsets present.");
+		halt("Could not move subset: situation too complicated: both primary and secondary subsets present. [ movesubset() ]");
 		return this;
 	}
     smooth movesubset (int ind,
@@ -1961,7 +1968,7 @@ struct smooth
         else
         {
 			if (scale <= 0)
-			{ abort("Could not build: scale value must be positive."); }
+			{ halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
 			this.shift = shift;
             this.scale = scale;
@@ -2339,7 +2346,7 @@ smooth[] intersection (smooth sm1,
 
     if (contours.length == 0)
 	{
-		write("> ! Smooth objects are not intersecting, so returning an empty array.");
+		write("> ? Smooth objects are not intersecting, so returning an empty array. [ intersection() ]");
 		return new smooth[];
 	}
 
@@ -2545,10 +2552,19 @@ smooth intersect (smooth sm1,
                   bool round = false,
                   real roundcoeff = currentSyRR,
                   bool addsubsets = false)
-{ return intersection(sm1, sm2, keepdata, round, roundcoeff)[0]; }
+{
+    smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff);
+    if (intersection.length == 0)
+    { halt("Could not intersect: smooth objects do not intersect. [ intersect() ]"); }
+    if (intersection.length > 1)
+    { write("> ? Smooth objects have more than one intersection. Returning only the 0-th one. [ intersect() ]"); }
+    return intersection(sm1, sm2, keepdata, round, roundcoeff)[0];
+}
 
 smooth intersect (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
-{ return intersection(sms, keepdata, round, roundcoeff)[0]; }
+{
+    return intersection(sms, keepdata, round, roundcoeff)[0];
+}
 
 smooth intersect (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
 { return intersection(sms, keepdata, round, roundcoeff)[0]; }
@@ -2769,11 +2785,11 @@ smooth tangentspace (smooth sm,
 // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
 {
 	if (!inside(-1, sm.holes.length-1, ind))
-	{ abort("Could not build tangent space: index out of bounds."); }
+	{ halt("Could not build tangent space: index out of bounds. [ tangentspace() ]"); }
 	if (!sm.isinside(center))
-	{ abort("Could not build tangent space: center out of bouds"); }
+	{ halt("Could not build tangent space: center out of bouds [ tangentspace() ]"); }
 	if (!inside(0, 1, ratio))
-	{ abort("Could not build tangent space: ratio out of bounds."); }
+	{ halt("Could not build tangent space: ratio out of bounds. [ tangentspace() ]"); }
 
 	pair dir = dir(angle);
     path dirpath = center -- (center + (sm.xsize()+sm.ysize()) * dir);
@@ -3058,7 +3074,7 @@ void draw (picture pic = currentpicture,
     // Configuring variables
 
 	if (!inside(0,3, mode))
-	{ abort("Invalid mode specified."); }
+	{ halt("Invalid mode specified. [ draw() ]"); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
     currentSeMaEHR = defaultSeMaEHR*min(xsize(sm.contour), ysize(sm.contour));
@@ -3426,7 +3442,7 @@ void drawarrow (picture pic = currentpicture,
 		center2 = sm2.center;
 	}
 
-	if (center1 == center2) { abort("Could not draw arrow between object and itself."); }
+	if (center1 == center2) { halt("Could not draw arrow between object and itself. [ drawarrow() ]"); }
 
     path g = (points.length == 0) ? curvedpath(center1, center2, curve = curve) : connect(concat(new pair[]{center1}, points, new pair[]{center2}));
 	real[] intersect1 = intersect(g, g1);
@@ -3470,7 +3486,7 @@ void drawarrow (picture pic = currentpicture,
 {
 	element el1 = sm1.elements[ind1];
 	element el2 = sm2.elements[ind2];
-	if (el1.pos == el2.pos) { abort("Could not draw arrow between object and itself."); }
+	if (el1.pos == el2.pos) { halt("Could not draw arrow between object and itself. [ drawarrow() ]"); }
 
     path g = (points.length == 0) ? curvedpath(el1.pos, el2.pos, curve = curve) : connect(concat(new pair[]{el1.pos}, points, new pair[]{el2.pos}));
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
@@ -3576,17 +3592,11 @@ void drawcache (picture pic = currentpicture)
             draw(pic = pic, subpath(g[0], node, length(g[0])), p = p, arrow = endarrow, bar = endbar);
             return;
         }
-
         for (int j = startind; j <= finishind; ++j)
-        {
-            draw(pic = pic, g[j], p = curp);
-        }
+        { draw(pic = pic, g[j], p = curp); }
     }
-
     for (int i = 0; i < currentdrawn.length; ++i)
-    {
-        auxdraw(currentdrawn[i]);
-    }
+    { auxdraw(currentdrawn[i]); }
 }
 
 void savecache ()
