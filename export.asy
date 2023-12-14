@@ -22,6 +22,7 @@ private pair currentFrFC = (0,0); // [F]rame [C]orner
 // [An]imations
 int currentAnFPS = 25; // [FPS]
 private int currentAnCC = 0; // [C]all [C]ount
+private bool currentAnPC = true; // [P]re-[C]lean
 private string currentAnDN = "animation/";
 private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
@@ -72,10 +73,15 @@ void invertcolors ()
 	currentDrElP = inverse(currentDrElP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpen = new pen (pen p) { return .5*p+dashed; };
-    shadepen = new pen (pen p) { return currentDrShS*p; };
+    shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
 }
 
-void animationparams (string dirname = currentAnDN, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool close = currentAnC)
+void animationparams (string dirname = currentAnDN,
+                      string informat = currentAnIF,
+                      string outprefix = currentAnOP,
+                      string outformat = currentAnOF,
+                      bool close = currentAnC,
+                      bool preclean = currentAnPC)
 {
     if (find(dirname, "/") == -1)
     { halt("Could not apply changes: directory name must contain '/' at the end."); }
@@ -93,6 +99,7 @@ void animationparams (string dirname = currentAnDN, string informat = currentAnI
 	currentAnOP = outprefix;
 	currentAnOF = outformat;
 	currentAnC = close;
+    currentAnPC = preclean;
 }
 void setframe (real ymax, real ratio = 1.777777777, bool crop = true, bool now = false, picture pic = currentpicture)
 {
@@ -117,7 +124,7 @@ int numberoffiles (string dirname)
     return res;
 }
 
-void clean (string informat = currentAnIF)
+void clean ()
 {
     file f = input(name = defaultAnFLN, check = false);
     if (error(f)) return;
@@ -131,7 +138,12 @@ void clean (string informat = currentAnIF)
     delete(defaultAnFLN);
 }
 
-void compile (int fps = currentAnFPS, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, bool clean = true, int density = currentExRID)
+void compile (int fps = currentAnFPS,
+              string informat = currentAnIF,
+              string outprefix = currentAnOP,
+              string outformat = currentAnOF,
+              bool clean = true,
+              int density = currentExRID)
 {
 	write("> Compiling... ", suffix = none);
 
@@ -171,7 +183,7 @@ void compile (int fps = currentAnFPS, string informat = currentAnIF, string outp
         close(f);
     }
 
-	if (clean) clean(informat);
+	if (clean) clean();
 	write("Done.");
 }
 
@@ -187,7 +199,16 @@ private picture framedpicture (picture pic)
 	return aux;
 }
 
-void export (picture pic = currentpicture, string prefix = outname(), string format = settings.outformat, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool exit = currentExEOE, bool basic = false, bool drawcache = true)
+void export (picture pic = currentpicture,
+             string prefix = outname(),
+             string format = settings.outformat,
+             pen bgpen = currentExBG,
+             real margin = currentExM,
+             pen framepen = currentExFP,
+             int density = currentExRID,
+             bool exit = currentExEOE,
+             bool basic = false,
+             bool drawcache = true)
 {
 	bool native = native(format);
 	settings.outformat = native ? format : "pdf";
@@ -221,11 +242,24 @@ void export (picture pic = currentpicture, string prefix = outname(), string for
 	if (exit) exit();
 }
 
-void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgpen = currentExBG, real margin = currentExM, pen framepen = currentExFP, int density = currentExRID, bool compile = false, string informat = currentAnIF, string outprefix = currentAnOP, string outformat = currentAnOF, int fps = currentAnFPS, bool clean = true)
+void animate (void update (int),
+              int n = defaultAnFN,
+              bool back = false,
+              pen bgpen = currentExBG,
+              real margin = currentExM,
+              pen framepen = currentExFP,
+              int density = currentExRID,
+              bool compile = false,
+              string informat = currentAnIF,
+              string outprefix = currentAnOP,
+              string outformat = currentAnOF,
+              int fps = currentAnFPS,
+              bool clean = true)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
     write("|", suffix = none);
+    if (currentAnPC && currentAnCC == 0) clean();
     
     string hash = (string)currentAnCC + (string)seconds();
     currentAnCC += 1;
@@ -272,24 +306,30 @@ void animate (void update (int), int n = defaultAnFN, bool back = false, pen bgp
 // -- Animations -- //
 
 void move (smooth sm,
-           int mode = currentDrM,
-           pen contourpen = currentpen,
-           pen smoothfill = smoothcolor,
-           pen subsetcontourpen = contourpen,
-           pen subsetfill = subsetcolor,
-           pen sectionpen = currentDrSeP,
-           pen dashpen = sectionpen+dashed+grey,
-           pen shadepen = currentDrShS*smoothfill,
            pair shift = (0,0),
            real scale = 1,
            real rotate = 0,
-           bool keepview = false,
-           bool dash = currentDrDD,
-           bool explain = currentDrE,
-           bool shade = currentDrDS,
-           int frames = defaultAnFN,
+           bool keepview = true,
+               pen contourpen = currentpen,
+               pen smoothfill = smoothcolor,
+               pen subsetcontourpen = contourpen,
+               pen subsetfill = subsetcolor,
+               pen sectionpen = currentDrSeP,
+               pen dashpen = dashpen(sectionpen),
+               pen shadepen = shadepen(smoothfill),
+               int mode = currentDrM,
+               bool fill = currentDrF,
+               bool fillsubsets = currentDrFS,
+               bool drawcontour = currentDrDC,
+               bool explain = currentDrE,
+               bool dash = currentDrDD,
+               bool shade = currentDrDS,
+               bool avoidsubsets = currentSeAS,
+               bool drag = true,
+               bool overlap = currentDrO,
+               bool drawnow = currentDrDN,
            bool back = true,
-           bool drag = true,
+           int frames = defaultAnFN,
            real margin = currentExM,
            int density = currentExRID,
            bool compile = false,
@@ -308,7 +348,7 @@ void move (smooth sm,
 	void update (int i)
 	{
 		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
-        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag, drawnow = false);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 
@@ -316,24 +356,28 @@ void move (smooth sm,
 }
 
 void revolve (smooth sm,
-              int mode = currentDrM,
               pair viewdir1 = sm.viewdir,
               pair viewdir2,
-              pen contourpen = currentpen,
-              pen smoothfill = smoothcolor,
-              pen subsetcontourpen = contourpen,
-              pen subsetfill = subsetcolor,
-              pen sectionpen = currentDrSeP,
-              pen dashpen = sectionpen+dashed+grey,
-              pen shadepen = currentDrShS*smoothfill,
-              bool dash = currentDrDD,
-              bool explain = currentDrE,
-              bool shade = currentDrDS,
-              pair shift = (0,0),
+                  pen contourpen = currentpen,
+                  pen smoothfill = smoothcolor,
+                  pen subsetcontourpen = contourpen,
+                  pen subsetfill = subsetcolor,
+                  pen sectionpen = currentDrSeP,
+                  pen dashpen = dashpen(sectionpen),
+                  pen shadepen = shadepen(smoothfill),
+                  int mode = currentDrM,
+                  bool fill = currentDrF,
+                  bool fillsubsets = currentDrFS,
+                  bool drawcontour = currentDrDC,
+                  bool explain = currentDrE,
+                  bool dash = currentDrDD,
+                  bool shade = currentDrDS,
+                  bool avoidsubsets = currentSeAS,
+                  bool drag = true,
+                  bool overlap = currentDrO,
+                  bool drawnow = currentDrDN,
               bool back = true,
               bool arc = false,
-              bool shiftsubsets = currentSmSS,
-              bool drag = true,
               int frames = defaultAnFN,
               real margin = currentExM,
               int density = currentExRID,
@@ -357,10 +401,10 @@ void revolve (smooth sm,
 		{
 			real coeff = close ? (n-i-1)/(n-1) : (n-i-1)/n;
 			pair viewdir = arc ? (coeff*l1 + (1-coeff)*l2)*dir(coeff*deg1 + (1-coeff)*(deg2+360)) : (coeff*viewdir1 + (1-coeff)*viewdir2);
-			sm.view(viewdir, shiftsubsets = shiftsubsets, drag = drag);
-			sm.move(shift = shift/(n-1), keepview = true, drag = drag);
+			sm.view(viewdir, shiftsubsets = sm.shiftsubsets, drag = drag);
+			// sm.move(shift = shift/(n-1), keepview = true, drag = drag);
 		}
-        draw(sm, mode = mode, contourpen = contourpen, smoothfill = smoothfill, subsetcontourpen = subsetcontourpen, subsetfill = subsetfill, sectionpen = sectionpen, dashpen = dashpen, shadepen = shadepen, dash = dash, explain = explain, shade = shade, drag = drag);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 

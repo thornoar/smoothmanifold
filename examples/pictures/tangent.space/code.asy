@@ -2,12 +2,10 @@ import export;
 
 settings.render = 8;
 
-import graph;
-
 size(15 cm);
 exportparams(bgpen = paleyellow);
 arrowparams(.09);
-sectionparams(nl = 1);
+sectionparams(restrictlength = false);
 drawparams(dragop = .9);
 
 smooth sm = samplesmooth(1).view(dir(-40)).setlabel(label = "M").setlabel(i(0), label = "S", labeldir = S);
@@ -15,7 +13,7 @@ smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10,
 smooth rn = rn(n = 1).move(shift = (2.5, .7), scale = .8).setlabel("\mathbb{R}^n", keepalign = true).move(scale = .9);
 rn.addsubset(contour = convexpath[9], shift = (.4,-.2), scale = .4);
 
-void draw ()
+void mydraw ()
 {
 	draw(sm, mode = strict, overlap = true);
 	draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = cartesian);
@@ -24,9 +22,9 @@ void draw ()
 	drawarrow(sm, rn, i(0), i(0), curve = .3, margin1 = .07, margin2 = .1, L = Label("$f$"));
 }
 
-draw();
+mydraw();
 export("picture", "pdf", 1 cm, exit = false);
 erase();
 drawparams(explain = true);
-draw();
+mydraw();
 export("picture (marked)", "pdf", 1 cm);

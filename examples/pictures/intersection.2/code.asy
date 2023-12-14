@@ -21,11 +21,13 @@ draw(sm3, explain = false, mode = strict);
 export(prefix = "picture (strict mode)");
 flushcache();
 restore();
+save();
 
 draw(sm3, explain = false, mode = free);
 export(prefix = "picture (free mode)");
 flushcache();
 restore();
+save();
 
 draw(sm3, explain = false, mode = cartesian);
 export(prefix = "picture (cart mode)");

@@ -10,12 +10,12 @@ smooth sm3 = samplesmooth(2).move(shift = (3.3, -.3), rotate = 10);
 
 smooth union = unite(sm1, sm2, sm3, round = true).view(dir(75));
 
-void draw ()
+void mydraw ()
 { draw(union); }
 
-draw();
+mydraw();
 export("picture", "pdf", 1 cm, exit = false);
 erase();
 drawparams(explain = true);
-draw();
+mydraw();
 export("picture (marked)", "pdf", 1 cm);

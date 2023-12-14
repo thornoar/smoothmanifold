@@ -22,5 +22,5 @@ void update (int i)
 	drawarrow(sm2, sm1, i(0), i(0), curve = .4);
 }
 
-animate(outprefix = "animation", outformat = "mp4", update = update, n = n, fps = ceil(n/3));
+animate(outprefix = "animation", outformat = "mp4", update = update, n = n, fps = ceil(n/3), compile = true);
 exit();

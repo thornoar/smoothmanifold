@@ -4,8 +4,7 @@ settings.render = 16;
 size(20 cm);
 exportparams(bgpen = paleyellow);
 drawparams(smoothfill = lightcyan, subsetfill = lightblue, dash = false);
-
-arrowparams(.12);
+arrowparams(ovlength = .2);
 
 pair viewdir = dir(-50);
 
@@ -15,7 +14,7 @@ sm1.setlabel(i(1), "V", labeldir = dir(70));
 sm1.setlabel(i(0,0), "U \cap V", angle = 110);
 smooth sm2 = samplesmooth(0,2).move(shift = (4,-.2), scale = 1.2).setlabel(i(0), "W", E+3*N).view(viewdir);
 
-void draw ()
+void mydraw ()
 {
 	draw(sm1);
 	draw(sm2, mode = cartesian);
@@ -26,9 +25,9 @@ void draw ()
 	drawarrow(sm2, angle = 95, radius = 1.1);
 }
 
-draw();
+mydraw();
 export("picture", "pdf", 1.5 cm, exit = false);
 erase();
 drawparams(fill = false);
-draw();
+mydraw();
 export("picture (hollow)", "pdf", 1.5 cm);

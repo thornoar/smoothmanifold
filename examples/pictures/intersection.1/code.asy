@@ -3,6 +3,7 @@ settings.render = 16;
 
 size(15cm);
 exportparams(bgpen = paleyellow);
+drawparams(drawnow = true);
 
 pair viewdir = dir(45);
 
@@ -12,12 +13,12 @@ sm1.subsets.delete();
 smooth sm2 = samplesmooth(2).setlabel("N", dir(-30)).view(viewdir);
 sm2.move(shift = (1,-.2));
 
-void draw ()
+void mydraw ()
 { drawintersect(sm1, sm2, shift = (0, -2.5)); }
 
-draw();
+mydraw();
 export("picture", "pdf", 1 cm, exit = false);
 erase();
 drawparams(explain = true);
-draw();
+mydraw();
 export("picture (marked)", "pdf", 1 cm);

@@ -25,7 +25,7 @@ sm2.setlabel("N", labeldir = dir(-30));
 sm2.setlabel(i(0), label = "V", labeldir = dir(150));
 sm2.view(viewdir, false);
 
-void draw ()
+void mydraw ()
 {
 	draw(sm1);
 	draw(sm2, shade = true);
@@ -39,10 +39,10 @@ void draw ()
 	drawarrow(sm1, angle = 70, radius = .9, L = Label("$\mathrm{id}_M$", align = Relative(W)));
 }
 
-draw();
+mydraw();
 
 export("picture", "pdf", exit = false);
 erase();
 drawparams(fill = false);
-draw();
+mydraw();
 export("picture (hollow)", "pdf");

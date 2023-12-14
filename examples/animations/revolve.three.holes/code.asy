@@ -6,7 +6,7 @@ import graph;
 size(25cm);
 exportparams(dpi = 50);
 defaultpen(linewidth(2));
-drawparams(sectionpen = linewidth(1), fill = false);
+drawparams(sectionpen = linewidth(1));
 sectionparams(avoidsubsets = true);
 animationparams(informat = "jpg", outformat = "gif", close = false);
 setframe(1.6, 1);
