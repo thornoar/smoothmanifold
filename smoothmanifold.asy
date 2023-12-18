@@ -2830,10 +2830,6 @@ private void drawsections (picture pic,
     }
 }
 
-// private void drawholesections (picture pic, hole hl1, hole hl2, pair viewdir, bool dash, bool explain, bool shade, real scale, int mode, pen sectionpen, pen dashpen, pen shadepen)
-// {
-// }
-
 private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
@@ -2846,12 +2842,12 @@ private void fitpath (picture pic,
                       path gs,
                       Label L,
                       pen p,
-                      arrowbar beginarrow,
-                      arrowbar endarrow,
-                      arrowbar beginbar,
-                      arrowbar endbar)
+                      arrowbar beginarrow = None,
+                      arrowbar endarrow = None,
+                      arrowbar beginbar = None,
+                      arrowbar endbar = None)
 {
-    label(pic = pic, gs, L = L, p = p);
+    if (length(L.s) > 0) label(pic = pic, gs, L = L, p = p);
 
 	if (!overlap)
     {
@@ -3021,23 +3017,13 @@ void draw (picture pic = currentpicture,
         return reverse(sm.holes[i].contour);
     }, sm.holes.length));
 
-    // Filling main interior
+    // Filling and drawing main contour
     if (fill) fill(pic = pic, contour, p = smoothfill);
-
-    // Drawing the contours
-
     if (drawcontour)
     {
         for (int i = 0; i < contour.length; ++i)
         {
             fitpath(pic = pic, overlap = overlap || sm.isderivative, changeunder = true, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
-        }
-        for (int i = 0; i < sm.subsets.length; ++i)
-        {
-            if (!sm.subsets[i].isderivative)
-            {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
-            }
         }
     }
 
@@ -3160,7 +3146,7 @@ void draw (picture pic = currentpicture,
         }
     }
 
-    // Filling subset interiors
+    // Filling and drawing subsets
 
     if (fill || fillsubsets)
     {
@@ -3174,6 +3160,16 @@ void draw (picture pic = currentpicture,
         {
             subset sb = sm.subsets[orderindices[i]];
             fill(pic = pic, sb.contour, subsetpens[sb.layer]);
+        }
+    }
+    if (drawcontour)
+    {
+        for (int i = 0; i < sm.subsets.length; ++i)
+        {
+            if (!sm.subsets[i].isderivative)
+            {
+                fitpath(pic = pic, overlap = overlap || currentDrSCO, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+            }
         }
     }
     
