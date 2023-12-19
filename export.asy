@@ -69,8 +69,6 @@ void invertcolors ()
 	subsetcolor = inverse(subsetcolor);
 	currentDrIC = !currentDrIC;
 	currentDrExP = inverse(currentDrExP);
-	currentDrSeP = currentDrSeP+inverse(currentDrSeP);
-	currentDrElP = inverse(currentDrElP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpen = new pen (pen p) { return .5*p+dashed; };
     shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
@@ -314,9 +312,10 @@ void move (smooth sm,
                pen smoothfill = smoothcolor,
                pen subsetcontourpen = contourpen,
                pen subsetfill = subsetcolor,
-               pen sectionpen = currentDrSeP,
+               pen sectionpen = sectionpen(contourpen),
                pen dashpen = dashpen(sectionpen),
                pen shadepen = shadepen(smoothfill),
+               pen elementpen = elementpen(contourpen),
                int mode = currentDrM,
                bool fill = currentDrF,
                bool fillsubsets = currentDrFS,
@@ -348,7 +347,7 @@ void move (smooth sm,
 	void update (int i)
 	{
 		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
-		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 
@@ -362,9 +361,10 @@ void revolve (smooth sm,
                   pen smoothfill = smoothcolor,
                   pen subsetcontourpen = contourpen,
                   pen subsetfill = subsetcolor,
-                  pen sectionpen = currentDrSeP,
+                  pen sectionpen = sectionpen(contourpen),
                   pen dashpen = dashpen(sectionpen),
                   pen shadepen = shadepen(smoothfill),
+                  pen elementpen = elementpen(contourpen),
                   int mode = currentDrM,
                   bool fill = currentDrF,
                   bool fillsubsets = currentDrFS,
@@ -404,7 +404,7 @@ void revolve (smooth sm,
 			sm.view(viewdir, shiftsubsets = sm.shiftsubsets, drag = drag);
 			// sm.move(shift = shift/(n-1), keepview = true, drag = drag);
 		}
-		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 

@@ -30,7 +30,7 @@ int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
 
 // [Se]ction
 private real defaultSeWT = .65; // [W]idth [T]est
-real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,220,7,.7,10};
+real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7,.5,40};
 private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
 private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle]
 private real defaultSeP = -1; // [P]recision
@@ -53,8 +53,8 @@ private real defaultArM = defaultArOL*.7; // [M]argin (see "arrow")
 
 // [Dr]awing
 private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
-private pen defaultDrSeP = black+linewidth(.4); // [Se]ction [P]en
-private pen defaultDrElP = black+linewidth(2.5); // [E]lement [P]en
+private real defaultDrSePS = .8; // [Se]ction [P]en
+private real defaultDrElPW = 3.0; // [E]lement [P]en
 private real defaultDrShS = .85; // [S]hade [S]cale
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
@@ -232,9 +232,9 @@ real currentArOL = defaultArOL;
 real currentArM = defaultArM;
 
 // [Dr]awing
-pen currentDrSeP = defaultDrSeP;
+real currentDrSePS = defaultDrSePS;
+real currentDrElPW = defaultDrElPW;
 pen currentDrExP = defaultDrExP;
-pen currentDrElP = defaultDrElP;
 real currentDrShS = defaultDrShS;
 real currentDrDO = defaultDrDO;
 real currentDrSPM = defaultDrSPM;
@@ -316,12 +316,16 @@ pen inverse (pen p)
 	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2])+linewidth(p);
 	return invisible;
 }
+pen sectionpen (pen p)
+{ return p+linewidth(currentDrSePS*linewidth(p)); }
 pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
 pen dashpen (pen p)
 { return inverse(.5*inverse(p))+dashed; }
 pen shadepen (pen p)
 { return currentDrShS*p; }
+pen elementpen (pen p)
+{ return p + linewidth(currentDrElPW); }
 pen underpen (pen p)
 { return dashpen(p); }
 
@@ -364,8 +368,8 @@ void drawparams (int mode = currentDrM,
                  bool shade = currentDrDS,
                  bool fill = currentDrF,
                  bool fillsubsets = currentDrFS,
-                 pen sectionpen = currentDrSeP,
-                 pen elementpen = currentDrElP)
+                 real sectionpenscale = currentDrSePS,
+                 real elementwidth = currentDrElPW)
 {
 	if (!inside(0,3, mode))
 	{ halt("Could not set mode: invalid entry provided. [ drawparams() ]"); }
@@ -387,8 +391,8 @@ void drawparams (int mode = currentDrM,
 	currentDrDS = shade;
     currentDrF = fill;
     currentDrFS = fillsubsets;
-	currentDrSeP = sectionpen;
-	currentDrElP = elementpen;
+	currentDrSePS = sectionpenscale;
+	currentDrElPW = elementwidth;
 }
 void drawdebug () { draw(currentPrDP); }
 void defaults ()
@@ -399,9 +403,9 @@ void defaults ()
 	currentSeMLR = defaultSeMLR;
 	currentArOL = defaultArOL;
 	currentArM = defaultArM;
-	currentDrSeP = defaultDrSeP;
+	currentDrSePS = defaultDrSePS;
 	currentDrExP = defaultDrExP;
-	currentDrElP = defaultDrElP;
+	currentDrElPW = defaultDrElPW;
 	currentDrShS = defaultDrShS;
 	currentDrDO = defaultDrDO;
 	currentDrSPM = defaultDrSPM;
@@ -2989,9 +2993,10 @@ void draw (picture pic = currentpicture,
            pen smoothfill = smoothcolor,
            pen subsetcontourpen = contourpen,
            pen subsetfill = subsetcolor,
-           pen sectionpen = currentDrSeP,
+           pen sectionpen = sectionpen(contourpen),
            pen dashpen = dashpen(sectionpen),
            pen shadepen = shadepen(smoothfill),
+           pen elementpen = elementpen(contourpen),
            int mode = currentDrM,
            bool fill = currentDrF,
            bool fillsubsets = currentDrFS,
@@ -3188,7 +3193,7 @@ void draw (picture pic = currentpicture,
     for (int i = 0; i < sm.elements.length; ++i)
     {
         element elt = sm.elements[i];
-        dot(pic = pic, elt.pos, L = Label("$"+elt.label+"$", align = elt.labelalign), currentDrElP);
+        dot(pic = pic, elt.pos, L = Label("$"+elt.label+"$", align = elt.labelalign), elementpen);
     }
 	if (sm.label != "") label(intersection(sm.contour, sm.center, sm.labeldir), "$"+sm.label+"$", align = sm.labelalign);
     for (int i = 0; i < sm.subsets.length; ++i)
@@ -3212,9 +3217,10 @@ void draw (picture pic = currentpicture,
            pen smoothfill = smoothcolor,
            pen subsetcontourpen = contourpen,
            pen subsetfill = subsetcolor,
-           pen sectionpen = currentDrSeP,
+           pen sectionpen = sectionpen(contourpen),
            pen dashpen = dashpen(sectionpen),
            pen shadepen = shadepen(smoothfill),
+           pen elementpen = elementpen(contourpen),
            int mode = currentDrM,
            bool fill = currentDrF,
            bool fillsubsets = currentDrFS,
@@ -3229,7 +3235,7 @@ void draw (picture pic = currentpicture,
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
-		draw(pic = pic, sm = sms[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+		draw(pic = pic, sm = sms[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 }
 
@@ -3238,9 +3244,10 @@ void draw (picture pic = currentpicture,
            pen smoothfill = smoothcolor,
            pen subsetcontourpen = contourpen,
            pen subsetfill = subsetcolor,
-           pen sectionpen = currentDrSeP,
+           pen sectionpen = sectionpen(contourpen),
            pen dashpen = dashpen(sectionpen),
            pen shadepen = shadepen(smoothfill),
+           pen elementpen = elementpen(contourpen),
            int mode = currentDrM,
            bool fill = currentDrF,
            bool fillsubsets = currentDrFS,
@@ -3254,7 +3261,7 @@ void draw (picture pic = currentpicture,
            bool drawnow = currentDrDN
            ... smooth[] sms)
 {
-    draw(pic, sms, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+    draw(pic, sms, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 }
 
 void phantom (picture pic = currentpicture, smooth sm)
@@ -3270,24 +3277,25 @@ smooth[] drawintersect (picture pic = currentpicture,
                         bool round = false,
                         real roundcoeff = currentSyRR,
                         pair shift = (0,0),
-                        pen ghostpen = mediumgrey,
-                        pen contourpen = currentpen,
-                        pen smoothfill = smoothcolor,
-                        pen subsetcontourpen = contourpen,
-                        pen subsetfill = subsetcolor,
-                        pen sectionpen = currentDrSeP,
-                        pen dashpen = dashpen(sectionpen),
-                        pen shadepen = shadepen(smoothfill),
-                        int mode = currentDrM,
-                        bool fill = currentDrF,
-                        bool fillsubsets = currentDrFS,
-                        bool drawcontour = currentDrDC,
-                        bool explain = currentDrE,
-                        bool dash = currentDrDD,
-                        bool avoidsubsets = currentSeAS,
-                        bool shade = currentDrDS,
-                        bool overlap = currentDrO,
-                        bool drawnow = currentDrDN)
+                            pen contourpen = currentpen,
+                            pen smoothfill = smoothcolor,
+                            pen subsetcontourpen = contourpen,
+                            pen subsetfill = subsetcolor,
+                            pen sectionpen = sectionpen(contourpen),
+                            pen dashpen = dashpen(sectionpen),
+                            pen shadepen = shadepen(smoothfill),
+                            pen elementpen = elementpen(contourpen),
+                            int mode = currentDrM,
+                            bool fill = currentDrF,
+                            bool fillsubsets = currentDrFS,
+                            bool drawcontour = currentDrDC,
+                            bool explain = currentDrE,
+                            bool dash = currentDrDD,
+                            bool avoidsubsets = currentSeAS,
+                            bool shade = currentDrDS,
+                            bool overlap = currentDrO,
+                            bool drawnow = currentDrDN,
+                        pen ghostpen = dashpen(contourpen))
 // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
 	smooth smp1 = sm1.copy().simplemove(shift = shift);
@@ -3303,7 +3311,7 @@ smooth[] drawintersect (picture pic = currentpicture,
 
     for (int i = 0; i < res.length; ++i)
     {
-        draw(pic, res[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
+        draw(pic, res[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
     }
 
     return res;
@@ -3314,24 +3322,25 @@ smooth[] drawintersect (picture pic = currentpicture,
                         bool round = false,
                         real roundcoeff = currentSyRR,
                         pair shift = (0,0),
-                        pen ghostpen = mediumgrey,
-                        pen contourpen = currentpen,
-                        pen smoothfill = smoothcolor,
-                        pen subsetcontourpen = contourpen,
-                        pen subsetfill = subsetcolor,
-                        pen sectionpen = currentDrSeP,
-                        pen dashpen = dashpen(sectionpen),
-                        pen shadepen = shadepen(smoothfill),
-                        int mode = currentDrM,
-                        bool fill = currentDrF,
-                        bool fillsubsets = currentDrFS,
-                        bool drawcontour = currentDrDC,
-                        bool explain = currentDrE,
-                        bool dash = currentDrDD,
-                        bool avoidsubsets = currentSeAS,
-                        bool shade = currentDrDS,
-                        bool overlap = currentDrO,
-                        bool drawnow = currentDrDN)
+                            pen contourpen = currentpen,
+                            pen smoothfill = smoothcolor,
+                            pen subsetcontourpen = contourpen,
+                            pen subsetfill = subsetcolor,
+                            pen sectionpen = sectionpen(contourpen),
+                            pen dashpen = dashpen(sectionpen),
+                            pen shadepen = shadepen(smoothfill),
+                            pen elementpen = elementpen(contourpen),
+                            int mode = currentDrM,
+                            bool fill = currentDrF,
+                            bool fillsubsets = currentDrFS,
+                            bool drawcontour = currentDrDC,
+                            bool explain = currentDrE,
+                            bool dash = currentDrDD,
+                            bool avoidsubsets = currentSeAS,
+                            bool shade = currentDrDS,
+                            bool overlap = currentDrO,
+                            bool drawnow = currentDrDN,
+                        pen ghostpen = dashpen(contourpen))
 {
 	smooth[] smsp = sequence(new smooth (int i){return sms[i].copy().move(shift = shift);}, sms.length);
 	smooth[] res = intersection(smsp, keepdata, round, roundcoeff);
@@ -3343,7 +3352,7 @@ smooth[] drawintersect (picture pic = currentpicture,
 	}
 	for (int i = 0; i < res.length; ++i)
 	{
-        draw(pic, res[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
+        draw(pic, res[i], contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
 	}
 
 	return res;
@@ -3353,24 +3362,25 @@ smooth[] drawintersect (picture pic = currentpicture,
                         bool round = false,
                         real roundcoeff = currentSyRR,
                         pair shift = (0,0),
-                        pen ghostpen = mediumgrey,
-                        pen contourpen = currentpen,
-                        pen smoothfill = smoothcolor,
-                        pen subsetcontourpen = contourpen,
-                        pen subsetfill = subsetcolor,
-                        pen sectionpen = currentDrSeP,
-                        pen dashpen = dashpen(sectionpen),
-                        pen shadepen = shadepen(smoothfill),
-                        int mode = currentDrM,
-                        bool fill = currentDrF,
-                        bool fillsubsets = currentDrFS,
-                        bool drawcontour = currentDrDC,
-                        bool explain = currentDrE,
-                        bool dash = currentDrDD,
-                        bool avoidsubsets = currentSeAS,
-                        bool shade = currentDrDS,
-                        bool overlap = currentDrO,
-                        bool drawnow = currentDrDN
+                            pen contourpen = currentpen,
+                            pen smoothfill = smoothcolor,
+                            pen subsetcontourpen = contourpen,
+                            pen subsetfill = subsetcolor,
+                            pen sectionpen = sectionpen(contourpen),
+                            pen dashpen = dashpen(sectionpen),
+                            pen shadepen = shadepen(smoothfill),
+                            pen elementpen = elementpen(contourpen),
+                            int mode = currentDrM,
+                            bool fill = currentDrF,
+                            bool fillsubsets = currentDrFS,
+                            bool drawcontour = currentDrDC,
+                            bool explain = currentDrE,
+                            bool dash = currentDrDD,
+                            bool avoidsubsets = currentSeAS,
+                            bool shade = currentDrDS,
+                            bool overlap = currentDrO,
+                            bool drawnow = currentDrDN,
+                        pen ghostpen = dashpen(contourpen)
                         ... smooth[] sms)
 {
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);

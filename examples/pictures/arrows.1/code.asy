@@ -28,7 +28,7 @@ sm2.view(viewdir, false);
 void mydraw ()
 {
 	draw(sm1);
-	draw(sm2, shade = true);
+	draw(sm2, shade = true, dash = false);
 
 	drawarrow(sm1, sm2, curve = -.15, L = Label("$f$", align = Relative(W)));
 	drawarrow(sm1, sm2, ind1 = i(0), ind2 = i(0), curve = .34, L = Label("$f_U$", position = Relative(.4)));
