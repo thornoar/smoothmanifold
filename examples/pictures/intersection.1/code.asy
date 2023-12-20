@@ -3,7 +3,7 @@ settings.render = 16;
 
 size(15cm);
 exportparams(bgpen = paleyellow);
-drawparams(drawnow = true);
+// drawparams(drawnow = true);
 
 pair viewdir = dir(45);
 

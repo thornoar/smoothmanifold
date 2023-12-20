@@ -22,18 +22,20 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // -- Default constants -- //
 
 // [Sy]stem
-private string defaultversion = "v5.3.0-beta";
-private real defaultSySN = .000001; // [S]mall [N]umber
+private string defaultversion = "v5.5.0-beta";
+private real defaultSySN = .0001; // [S]mall [N]umber
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it"
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
 int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
 
 // [Se]ction
 private real defaultSeWT = .65; // [W]idth [T]est
-real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7,.5,40};
+real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7};
+private real defaultSeF = .4; // [F]reedom
+private int defaultSeP = 20; // [P]recision
 private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
 private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle]
-private real defaultSeP = -1; // [P]recision
+private real defaultSeEP = -1; // [E]llipse [P]recision
 private real defaultSeMLR = .6; // [M]aximum [L]ength [R]atio
 private real defaultSeMaEHR = .05; // [Ma]ximal [E]llipse [H]eight
 private real defaultSeMiEHR = .00005; // [Mi]nimal [E]llipse [H]eight [R]atio
@@ -214,13 +216,15 @@ path randomconcave ()
 // -- Current values (subject to change) -- //
 
 // [Se]ction
-real[] currentsection = copy(defaultsection);
-int currentSeIHSN = defaultSeIHSN;
-real currentIHSA = defaultSeIHSA;
-real currentSeP = defaultSeP;
-real currentSeMLR = defaultSeMLR;
-real currentSeML; // [M]aximum [L]ength
-bool currentSeRL = false; // [R]estrict [L]ength
+private real[] currentsection = copy(defaultsection);
+private real currentSeF = defaultSeF;
+private int currentSeP = defaultSeP;
+private int currentSeIHSN = defaultSeIHSN;
+private real currentIHSA = defaultSeIHSA;
+private real currentSeEP = defaultSeEP;
+private real currentSeMLR = defaultSeMLR;
+private real currentSeML; // [M]aximum [L]ength
+private bool currentSeRL = false; // [R]estrict [L]ength
 bool currentSeAS = false; // [A]void [S]ubsets
 
 // [Sm]ooth
@@ -262,10 +266,10 @@ pen smoothcolor = lightgrey;
 pen subsetcolor = grey;
 path[] convexpath = copy(defaultPaCV);
 path[] concavepath = copy(defaultPaCC);
-int strict = 0;
-int free = 1;
-int cartesian = 2;
-int plain = 3;
+// int strict = 0;
+int free = 0;
+int cartesian = 1;
+int plain = 2;
 
 // -- Auxiliary utilities -- //
 
@@ -281,17 +285,13 @@ void halt (string msg)
     abort("");
 }
 
-private bool checksection (real[] section)
+bool checksection (real[] section)
 {
 	if (section.length > 1 && section[0] == 0 && section[1] == 0)
 	{ return false; }
-	if (section.length > 2 && section[1] != defaultSyDN && !inside(0, 360, section[2]))
+	if (section.length > 2 && section[2] != defaultSyDN && !inside(0, 360, section[2]))
 	{ return false; }
-	if (section.length > 3 && section[2] != defaultSyDN && section[3] <= 0)
-	{ return false; }
-	if (section.length > 4 && section[3] != defaultSyDN && !inside(0, 1, section[4]))
-	{ return false; }
-	if (section.length > 5 && section[5] != defaultSyDN && section[5] <= 0)
+	if (section.length > 3 && section[3] != defaultSyDN && section[3] <= 0)
 	{ return false; }
 	return true;
 }
@@ -303,8 +303,8 @@ string mode (int md)
 	if (md == 3) return "plain";
 	return "";
 }
-private real sectionsymmetryvalue (pair p1, pair p2, pair dir1, pair dir2)
-{ return abs(dot(unit(dir2), unit(p1-p2))-dot(unit(p2-p1), unit(dir1))); }
+private real sectionsymmetryvalue (pair p1p2, pair dir1, pair dir2)
+{ return abs(dot(dir2, p1p2)+dot(p1p2, dir1)); }
 private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 {
     return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
@@ -321,7 +321,7 @@ pen sectionpen (pen p)
 pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
 pen dashpen (pen p)
-{ return inverse(.5*inverse(p))+dashed; }
+{ return inverse(.3*inverse(p))+dashed; }
 pen shadepen (pen p)
 { return currentDrShS*p; }
 pen elementpen (pen p)
@@ -331,17 +331,27 @@ pen underpen (pen p)
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = currentsection, int interholenumber = currentSeIHSN, real interholeangle = currentIHSA, real precision = currentSeP, real maxlength = currentSeMLR, bool restrictlength = currentSeRL, bool avoidsubsets = currentSeAS)
+void sectionparams (real[] section = currentsection,
+                    real freedom = currentSeF,
+                    int precision = currentSeP,
+                    int interholenumber = currentSeIHSN,
+                    real interholeangle = currentIHSA,
+                    real ellipseprecision = currentSeEP,
+                    real maxlength = currentSeMLR,
+                    bool restrictlength = currentSeRL,
+                    bool avoidsubsets = currentSeAS)
 {
-	if (!checksection(section) || interholenumber < 0 || !inside(0, 180, interholeangle))
+	if (!checksection(section) || !inside(0,1,freedom) || precision <= 0 || interholenumber < 0 || !inside(0, 180, interholeangle))
 	{ halt("Could not change default section parameters: invalid intries [ sectionparams() ]"); }
 	if (maxlength <= 0)
 	{ halt("Could not change default section parameters: section length value must be positive [ sectionparams() ]"); }
 	for (int i = 0; i < section.length; ++i)
 	{ if (section[i] != defaultSyDN) currentsection[i] = section[i]; }
+    currentSeF = freedom;
+    currentSeP = precision;
 	currentSeIHSN = interholenumber;
 	currentIHSA = interholeangle;
-    currentSeP = precision;
+    currentSeEP = ellipseprecision;
 	currentSeMLR = maxlength;
     currentSeRL = restrictlength;
     currentSeAS = avoidsubsets;
@@ -371,7 +381,7 @@ void drawparams (int mode = currentDrM,
                  real sectionpenscale = currentDrSePS,
                  real elementwidth = currentDrElPW)
 {
-	if (!inside(0,3, mode))
+	if (!inside(0,2, mode))
 	{ halt("Could not set mode: invalid entry provided. [ drawparams() ]"); }
 	if (!inside(0,1, minscale))
 	{ halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ drawparams() ]"); }
@@ -490,7 +500,7 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
     path line1 = (-dir1p) -- (dir1p);
     path line2 = ((l,0) - dir2p) -- ((l,0) + dir2p);
 
-    if (currentSeP <= 0)
+    if (currentSeEP <= 0)
     {
         real reciprocal1 = 1/lsang1;
         real reciprocal2 = 1/lsang2;
@@ -507,7 +517,7 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
         path ellipse (real d1, real d2)
         { return ellipse(((d1 + l-d2)*.5, 0), (l-d1-d2)*.5, h); }
 
-        while (l1-r1 >= currentSeP || l2-r2 >= currentSeP)
+        while (l1-r1 >= currentSeEP || l2-r2 >= currentSeEP)
         {
             real c1 = (r1+l1)*.5;
             real c2 = (r2+l2)*.5;
@@ -541,94 +551,88 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
     
 	return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
-private pair[][] sectionparamsfree (path g, path h, int p, int step)
-// Searches for potential section positions between two given paths in the way that first comes to mind. Has its benefits and limitations.
-{
-    pair[][] res = new pair[][];
-    real arc = arclength(g);
-    real[] gtimes = sequence(new real (int i){return arctime(g, arc*i/p);}, p);
-	real suitableeps = defaultSySN*5000;
 
-	for (int i = 0; i < gtimes.length; ++i)
-    {
-        pair p1 = point(g, gtimes[i]);
-        pair dir1 = dir(g, gtimes[i]);
-        real htime = intersectiontime(h, p1, rotate(90)*dir1);
-        if (htime != -1)
-        {
-            pair p2 = point(h, htime);
-            pair dir2 = dir(h, htime);
-            if (sectionsymmetryvalue(p1, p2, dir1, dir2) < suitableeps)
-            {
-                res.push(new pair[] {p2, p1, dir2, dir1});
-                i += step;
-            }
-        }
-    }
-    return res;
-}
-private pair[][] sectionparamsstrict (path g, path h, int n, real ratio, int p)
+private pair[][] sectionparams (path g, path h, int n, real r, int p)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
-    real goddstep = arclength(g)/(n + (n-1)*(1 - ratio)/ratio);
-    real gevenstep = goddstep*(1-ratio)/ratio;
-    real hoddstep = arclength(h)/(n + (n-1)*(1-ratio)/ratio);
-    real hevenstep = hoddstep*(1-ratio)/ratio;
-    real[] gtimes = new real[];
-    for (int i = 0; i < 2*n; i+=2)
+    real rp = r/(1-r);
+    real gy = arclength(g)/(n*rp + n - 1);
+    real gx = rp*gy;
+    real hy = arclength(h)/(n*rp + n - 1);
+    real hx = rp*hy;
+
+    real[] gtimes;
+    for (int i = 0; i < n; ++i)
     {
-        gtimes.push(arctime(g, i*.5*(goddstep + gevenstep)));
-        gtimes.push(arctime(g, goddstep*(i+2)*.5 + gevenstep*(i)*.5));
+        gtimes.push(arctime(g, i*(gx+gy)));
+        gtimes.push(arctime(g, i*(gx+gy)+gx));
     }
-    real[] htimes = new real[];
-    for (int i = 0; i < 2*n; i+=2)
+    real[] htimes;
+    for (int i = 0; i < n; ++i)
     {
-        htimes.push(arctime(h, i*.5*(hoddstep + hevenstep)));
-        htimes.push(arctime(h, hoddstep*(i+2)*.5 + hevenstep*(i)*.5));
+        htimes.push(arctime(h, i*(hx+hy)));
+        htimes.push(arctime(h, i*(hx+hy)+hx));
     }
-    pair[][] res = new pair[][];
+    
+    pair[] pres;
+
     for (int i = 0; i < 2*n; i += 2)
     {
+        real curgtime = gtimes[i];
+        real curhtime = htimes[i];
+        real optgtime = curgtime;
+        real opthtime = curhtime;
+        real gtimestep = (gtimes[i+1]-gtimes[i])/p;
+        real htimestep = (htimes[i+1]-htimes[i])/p;
+
         int gi = 0;
         int hi = 0;
-        real garcstep = arclength(g, gtimes[i], gtimes[i+1])/p;
-        real harcstep = arclength(h, htimes[i], htimes[i+1])/p;
-        real gcurtime = gtimes[i];
-        real hcurtime = htimes[i];
-        pair p1 = point(g, gtimes[i]);
-        pair dir1 = dir(g, gtimes[i]);
-        pair p2 = point(h, htimes[i]);
-        pair dir2 = dir(h, htimes[i]);
-        while(gi < p-1 || hi < p-1)
+        real minval = sectionsymmetryvalue(point(g, curgtime)-point(h, curhtime), dir(g, curgtime), dir(h, curhtime));
+        
+        while (true)
         {
-            if (gi < p-1) gcurtime = arctime(g, arclength(g, 0, gcurtime)+garcstep);
-            if (hi < p-1) hcurtime = arctime(h, arclength(h, 0, hcurtime)+harcstep);
-            pair p1new = point(g, gcurtime);
-            pair dir1new = dir(g, gcurtime);
-            pair p2new = point(h, hcurtime);
-            pair dir2new = dir(h, hcurtime);
-            if ((sectionsymmetryvalue(p1, p2new, dir1new, dir2new) < sectionsymmetryvalue(p1new, p2, dir1new, dir2) && hi < p-1) || gi == p-1)
+            bool changed = false;
+            real val;
+
+            if (gi < p && (val = sectionsymmetryvalue(point(g, curgtime+gtimestep)-point(h, curhtime), dir(g, curgtime+gtimestep), dir(h, curhtime))) < minval)
             {
-                hi += 1;
-                if (sectionsymmetryvalue(p1, p2new, dir1, dir2new) < sectionsymmetryvalue(p1, p2, dir1, dir2))
-                {
-                    p2 = p2new;
-                    dir2 = dir2new;
-                }
-            }
-            else
-            {
+                curgtime += gtimestep;
+                minval = val;
                 gi += 1;
-                if (sectionsymmetryvalue(p1new, p2, dir1new, dir2) < sectionsymmetryvalue(p1, p2, dir1, dir2))
-                {
-                    p1 = p1new;
-                    dir1 = dir1new;
-                }
+                changed = true;
+                optgtime = curgtime;
+                opthtime = curhtime;
+                continue;
+            }
+            else if (hi == p) break;
+
+            if (hi < p && (val = sectionsymmetryvalue(point(g, curgtime)-point(h, curhtime+htimestep), dir(g, curgtime), dir(h, curhtime+htimestep))) < minval)
+            {
+                curhtime += htimestep;
+                minval = val;
+                hi += 1;
+                changed = true;
+                opthtime = curhtime;
+                optgtime = curgtime;
+                continue;
+            }
+            else if (gi == p) break;
+
+            if (!changed)
+            {
+                curgtime += gtimestep;
+                gi += 1;
+                curhtime += htimestep;
+                hi += 1;
             }
         }
-        res.push(new pair[] {p2, p1, dir2, dir1});
+
+        pres.push((optgtime, opthtime));
     }
-    return res;
+
+    return sequence(new pair[] (int i) {
+        return new pair[]{point(h, pres[i].y), point(g, pres[i].x), dir(h, pres[i].y), dir(g, pres[i].x)};
+    }, pres.length);
 }
 
 // -- The structures of the module -- //
@@ -686,7 +690,7 @@ struct hole
             for (int i = 0; i < sections.length; ++i)
             {
                 real[] arr = sections[i];
-                while(arr.length < currentsection.length) {arr.push(currentsection[arr.length]);}
+                while (arr.length < currentsection.length) {arr.push(currentsection[arr.length]);}
                 this.sections.push(arr);
             }
         }
@@ -1363,8 +1367,6 @@ struct smooth
 			}
             if (hl.sections[i][2] == defaultSyDN || hl.sections[i][2] <= 0) hl.sections[i][2] = currentsection[2];
             if (hl.sections[i][3] == defaultSyDN || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = currentsection[3];
-            if (hl.sections[i][4] == defaultSyDN || hl.sections[i][4] <= 0 || hl.sections[i][4] > 1) hl.sections[i][4] = currentsection[4];
-            if (hl.sections[i][5] == defaultSyDN || hl.sections[i][5] <= 0 || hl.sections[i][5] != ceil(hl.sections[i][5])) hl.sections[i][5] = currentsection[5];
         }
 
         this.holes.insert(i = ind, hl);
@@ -1433,13 +1435,16 @@ struct smooth
 
         return this;
     }
-    smooth addholesection (int ind, real[] section = {}, bool unit = false)
+    smooth addsection (int ind, real[] section = {}, bool unit = false)
     {
-		if (!checksection(section))
-		{ halt("Could not add section: invalid entries. [ addholesection() ]"); }
-		for (int i = 0; i < section.length; ++i)
+        if (!checksection(section))
+        {
+            write("> ? Could not add hole section: invalid entries. [ addsection() ]");
+            return this;
+        }
+		for (int i = 2; i < section.length; ++i)
 		{ if (section[i] == defaultSyDN) section[i] = currentsection[i]; }
-        while(section.length < currentsection.length)
+        while (section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
 		pair holedir = (this.holes[ind].center == this.center) ? (-1,0) : unit(this.holes[ind].center - this.center);
 		if (section[0] == defaultSyDN || section[1] == defaultSyDN)
@@ -1451,23 +1456,23 @@ struct smooth
         this.holes[ind].sections.push(section);
         return this;
     }
-    smooth setholesection (int ind, int ind2 = 0, real[] section = {}, bool unit = false)
+    smooth setsection (int ind, int ind2 = 0, real[] section = {}, bool unit = false)
     {
-        this.holes[ind].sections.delete(ind2);
-        while(section.length < currentsection.length)
+        while (section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
-		pair holedir = (this.holes[ind].center == this.center) ? (-1,0) : unit(this.holes[ind].center - this.center);
-		if (section[0] == defaultSyDN || section[1] == defaultSyDN)
-		{
-			section[0] = holedir.x;
-			section[1] = holedir.y;
-		}
-		if (!checksection(section)) return this;
+        if (!checksection(section))
+        {
+            write("> ? Could not set hole section: invalid entries. [ setsection() ]");
+            return this;
+        }
+        real[] cursection = this.holes[ind].sections[ind2];
+        int len = min(section.length, cursection.length);
+        for (int i = 0; i < len; ++i)
+        { if (section[i] != defaultSyDN) cursection[i] = section[i]; }
 
-        this.holes[ind].sections.insert(i = ind2, section);
         return this;
     }
-    smooth rmholesection (int ind, int ind2 = 0)
+    smooth rmsection (int ind, int ind2 = 0)
     {
         this.holes[ind].sections.delete(ind2);
         return this;
@@ -2039,7 +2044,7 @@ private struct pathinfo
     }
 }
 
-private pathinfo[] currentdrawn;
+pathinfo[] currentdrawn;
 private pathinfo[] currentsaved;
 
 // -- Default pre-built smooth objects -- //
@@ -2621,7 +2626,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
                     dirang += ang*.5;
                     num = ceil((real)num*.5);
                 }
-                trueholes[i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num, section[4], section[5]};
+                trueholes[i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num};
             }
         }
     }
@@ -2662,7 +2667,7 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
                     num = ceil((real)num*.5);
                 }
                 
-                trueholes[sm1.holes.length+i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num, section[4], section[5]};
+                trueholes[sm1.holes.length+i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num};
             }
         }
     }
@@ -2841,6 +2846,7 @@ private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool
 
 private void fitpath (picture pic,
                       bool overlap,
+                      bool consume,
                       bool changeunder,
                       bool drawnow,
                       path gs,
@@ -2866,7 +2872,7 @@ private void fitpath (picture pic,
             bool underdir = !currentdrawn[i].under;
             bool stolenbeginarrow = putunder ? inside(gs, beginpoint(g[0])) : false;
             bool stolenendarrow = putunder ? inside(gs, endpoint(g[g.length-1])) : false;
-
+    
             for (int j = 0; j < g.length; ++j)
             {
                 real[] aligntest = intersect(g[j], gs);
@@ -2876,7 +2882,7 @@ private void fitpath (picture pic,
                     else newg.push(g[j]);
                     continue;
                 }
-                if (abs(cross(dir(g[j], aligntest[0]), dir(gs, aligntest[1]))) < defaultSySN) continue;
+                if (abs(cross(dir(g[j], aligntest[0]), dir(gs, aligntest[1]))) < realEpsilon) continue;
 
                 real[][] times = intersections(g[j], gs);
 
@@ -2918,6 +2924,7 @@ private void fitpath (picture pic,
                 bool understart = putunder ? isinside(gs, point(g[j], cuttimes[0])) : false;
                 for (int k = 0; k < cuttimes.length-1; k += 2)
                 {
+                    if (consume && putunder && understart) { understart = !understart; continue; }
                     ((putunder && understart) ? altg : newg).push(gjcyclic ? subcyclic(g[j], (cuttimes[k], cuttimes[k+1])) : subpath(g[j], cuttimes[k], cuttimes[k+1]));
                     if (!skipped[k]) understart = !understart;
                 }
@@ -3012,7 +3019,7 @@ void draw (picture pic = currentpicture,
 {
     // Configuring variables
 
-	if (!inside(0,3, mode))
+	if (!inside(0,2, mode))
 	{ halt("Invalid mode specified. [ draw() ]"); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
@@ -3028,13 +3035,13 @@ void draw (picture pic = currentpicture,
     {
         for (int i = 0; i < contour.length; ++i)
         {
-            fitpath(pic = pic, overlap = overlap || sm.isderivative, changeunder = true, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+            fitpath(pic = pic, overlap = overlap || sm.isderivative, consume = false, changeunder = true, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
         }
     }
 
     // Drawing cross sections
 
-	if (mode < 2)
+	if (mode == free)
     {
         bool[][] holeconnected = new bool[sm.holes.length][sm.holes.length];
 
@@ -3064,16 +3071,7 @@ void draw (picture pic = currentpicture,
 					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultDrExP);
 				}
 
-				pair[][] sections = new pair[][];
-				if (mode == 0)
-				{
-					sections = sectionparamsstrict(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), hl.sections[j][4], ceil(hl.sections[j][5]));
-				}
-				if (mode == 1)
-				{
-					sections = sectionparamsfree(curhlcontour, cursmcontour, ceil(hl.sections[j][3])*ceil(hl.sections[j][5]), ceil(hl.sections[j][5]));
-				}
-				drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
+				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
 			}
             
             // Drawing sections between holes
@@ -3123,15 +3121,7 @@ void draw (picture pic = currentpicture,
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
                     }
 
-                    pair[][] sections;
-                    int p = floor(currentsection[5]);
-                    if (mode == 0)
-                    { sections = sectionparamsstrict(curhl1contour, curhl2contour, currentSeIHSN, currentsection[4], p); }
-                    if (mode == 1)
-                    { sections = sectionparamsfree(curhl1contour, curhl2contour, p*currentSeIHSN, p); }
-                    drawsections(pic, sections, viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
-
-                    // drawholesections(pic, hl, sm.holes[j], viewdir, dash, explain, shade, sm.scale, mode, sectionpen, dashpen, shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -3139,7 +3129,7 @@ void draw (picture pic = currentpicture,
             }
         }
     }
-    if (mode == 2)
+    if (mode == cartesian)
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
@@ -3173,7 +3163,7 @@ void draw (picture pic = currentpicture,
         {
             if (!sm.subsets[i].isderivative)
             {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+                fitpath(pic = pic, overlap = overlap || currentDrSCO, consume = true, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
             }
         }
     }
@@ -3306,8 +3296,8 @@ smooth[] drawintersect (picture pic = currentpicture,
     smp1.subsets.delete();
     smp2.subsets.delete();
 
-    draw(pic, smp1, contourpen = ghostpen, smoothfill = invisible, mode = 3);
-    draw(pic, smp2, contourpen = ghostpen, smoothfill = invisible, mode = 3);
+    draw(pic, smp1, contourpen = ghostpen, smoothfill = invisible, mode = plain);
+    draw(pic, smp2, contourpen = ghostpen, smoothfill = invisible, mode = plain);
 
     for (int i = 0; i < res.length; ++i)
     {
@@ -3460,7 +3450,7 @@ void drawarrow (picture pic = currentpicture,
 	}
     path gs = subpath(g, time1, time2);
 
-	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs = gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs = gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3487,7 +3477,7 @@ void drawarrow (picture pic = currentpicture,
 
     path g = (points.length == 0) ? curvedpath(el1.pos, el2.pos, curve = curve) : connect(concat(new pair[]{el1.pos}, points, new pair[]{el2.pos}));
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
-	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs = g, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs = g, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3546,7 +3536,7 @@ void drawarrow (picture pic = currentpicture,
 	}
 
     path gs = subpath(g, time1, time2);
-	fitpath(pic, overlap = overlap, changeunder = false, drawnow = drawnow, gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawcache (picture pic = currentpicture)

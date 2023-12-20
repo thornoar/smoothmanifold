@@ -8,10 +8,11 @@
 
 - The module includes a dependency sub-module `pathmethods.asy` --- a collection of useful path functions essential for the main module, such as `path[] union (...)`, `path[] intersection (...)`, `pair center (...)` and more. In summary, cyclic paths in this sub-module are viewed as boundaries of areas on the plane, and its functions have to do with manipulating those areas. `pathmethods` can be very useful outside of `smoothmanifold` as well.
 
-- The module `smoothmanifold` itself features three most important custom structures:
+- The module `smoothmanifold` itself features four most important custom structures:
     * `smooth` --- the main structure of the module. It has a `contour`, a `label`, and potentially multiple `holes` and `subsets`. It also stores a parameter `viewdir`, which is responsible for the illusion of three-dimensional rotation. It does not, however, need to be three-dimensional --- a `viewdir` of (0,0) will make it a regular flat area on the plane.
     * `hole` --- an area 'cut out of' a smooth object. Has a `contour` and different `section` parameters, which define the circular cross sections rendered on call of the `draw` function.
     * `subset` --- an area placed inside a smooth object.  Has its own `subset`s, a `contour` and a `label`. If you add two intersecting subsets to a smooth object, they will automatically intersect and produce a third subset. This way, `smoothmanifold` creates a tree of subsets where the user can easily navigate to any sub-subset by specifying an index sequence. See *examples/pictures/subset.intersection/* for detail.
+    * `element` --- a point residing inside a smooth object or its subsets, representing an 'element of the set'. Has a `label`.
 
 All paths that constitute these custom objects are meant to go __clockwise__, because that is the way they are usually drawn on paper and the way most people usually imagine a cyclic path. But don't worry --- even if you lose track of the orientation of your cyclic path, the constructor will correct it for you.
 
@@ -26,11 +27,13 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
                pen smoothfill = smoothcolor,
                pen subsetcontourpen = contourpen,
                pen subsetfill = subsetcolor,
-               pen sectionpen = currentDrSeP,
+               pen sectionpen = sectionpen(contourpen),
                pen dashpen = dashpen(sectionpen),
                pen shadepen = shadepen(smoothfill),
+               pen elementpen = elementpen(contourpen),
                int mode = currentDrM,
                bool fill = currentDrF,
+               bool fillsubsets = currentDrFS,
                bool drawcontour = currentDrDC,
                bool explain = currentDrE,
                bool dash = currentDrDD,
@@ -41,9 +44,9 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
                bool drawnow = currentDrDN)
     ```
 
-    With this function one can render a `smooth` object with different `pens` and other parameters. The illusion of volume can be created by multiple "cross sections" inside the figure. There are four cross section modes: `plain` (no sections, a plain 2D picture), `free` (searches for cross sections in most suitable locations, but provides little control of their positioning), `cartesian` (renders only vertical and horizontal ("Cartesian") cross sections), and `strict` (similar to `free`, but uses a different searching algorithm, giving total control over technical aspects). Each mode has its use cases (see *examples/pictures/three.holes/*). The `explain` parameter can be used to hide or show auxiliary information about the object on the picture. It is beneficial for debugging. It can be controlled whether the interior or the contour of the smooth object are to be drawn.
+    With this function one can render a `smooth` object with different `pens` and other parameters. The illusion of volume can be created by multiple "cross sections" inside the figure. There are three cross section modes: `plain` (no sections, a plain 2D picture), `free` (searches for cross section positions that are most symmetric, the level of position freedom can be adjusted), and `cartesian` (renders only vertical and horizontal ("Cartesian") cross sections). Each mode has its use cases (see *examples/pictures/two.holes/*). The `explain` parameter can be used to hide or show auxiliary information about the object on the picture. It is beneficial for debugging. It can be controlled whether the interior or the contour of the smooth object are drawn.
 
-    Furthermore, an arrow can be drawn between two `smooth` objects of their subsets (see *examples/pictures/arrows.1*) with the routine `void drawarrow (...)`. The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection.1*).
+    Further, an arrow can be drawn between two `smooth` objects or their subsets or their elements (see *examples/pictures/arrows.1*) with the routine `void drawarrow (...)`. The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection.1*).
 
     `smoothmanifold` uses a system of deferred drawing. All paths that constitute the contours of smooth objects, holes and subsets, as well as arrows, are not immediately rendered, but rather remembered to be drawn at shipout time. This allows these paths to be changes 'after being drawn'. For example, an arrow drawn across a smooth object leaves gaps in the object's contour where it passes, and this is achieved by redefining the 'already drawn' contour paths. Or, when a smooth object covers another object, the contour of the latter will be 'redrawn' with a dashed pen, indicating that it is not visible. The `shipout` function is redefined in the module to automatically draw all cached paths, so there is no user input needed. As far as I know, this feature of deferred drawing is unique across Asymptote modules.
 
@@ -96,7 +99,7 @@ The extension `export.asy` is dependent on and integrated with `smoothmanifold`,
 
 ## Optional dependencies
 
-As mentioned before, there is some third-party software needed for the correct work of the `export` extension. This includes ImageMagick's `mogrify` utility and `pdf2svg` for image format conversion, as well as FFmpeg for compiling animations. They do not, however, impact the functionality of the main module itself in any way.
+As mentioned before, there is some third-party software needed for the correct work of the `export` extension. This includes ImageMagick's `mogrify` utility and `pdf2svg` for image format conversion, as well as FFmpeg for compiling animations. They do not, however, impact the functionality of the main module in any way.
 
 ## Contact
 

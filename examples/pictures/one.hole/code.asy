@@ -13,10 +13,6 @@ draw(sm, explain = true, dash = true, mode = plain, sectionpen = linewidth(.5));
 export(prefix = "picture (plain mode)");
 erase();
 
-draw(sm, explain = true, dash = true, mode = strict, sectionpen = linewidth(.5));
-export(prefix = "picture (strict mode)");
-erase();
-
 draw(sm, explain = true, dash = true, mode = cartesian, sectionpen = linewidth(.5));
 export(prefix = "picture (cartesian mode)");
 erase();

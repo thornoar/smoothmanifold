@@ -137,7 +137,7 @@ pair intersection (path g, pair point, pair dir)
 { return point(g, intersectiontime(g, point, dir)); }
 
 path reorient (path g, real time)
-{ return subpath(g, time, length(g))--subpath(g, 0, time)--cycle; }
+{ return subpath(g, time, length(g)) & subpath(g, 0, time) & cycle; }
 
 path turn (path g, pair point, pair dir)
 { return reorient(g, intersectiontime(g, point, dir)); }
@@ -145,7 +145,7 @@ path turn (path g, pair point, pair dir)
 path subcyclic (path p, pair t)
 {
     if (t.x <= t.y) return subpath(p, t.x, t.y);
-    return subpath(p, t.x, length(p))--subpath(p, 0, t.y);
+    return (subpath(p, t.x, length(p)) & subpath(p, 0, t.y));
 }
 
 bool clockwise (path p)
@@ -253,7 +253,8 @@ pair operator cast (gauss g)
 
 path connect (path p, path q)
 // Connects `p` and `q` smoothly.
-{ return p -- (point(p, length(p)){dir(p, length(p))} .. {dir(q, 0)}point(q, 0)) -- q; }
+// { return p -- (point(p, length(p)){dir(p, length(p))} .. {dir(q, 0)}point(q, 0)) -- q; }
+{ return p{dir(p, length(p))}..{dir(q,0)}q; }
 
 path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 // A general way to "combine" two paths based on their intersection points.
@@ -314,7 +315,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
             { nextstarts.insert(i = 0, ((curind.x+1)%n, qinds[(curind.x+1)%n])); }
         }
         path addpath = subcyclic(pway ? p : q, (times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]));
-        if (!round || curpath == nullpath) curpath = curpath -- addpath;
+        if (!round || curpath == nullpath) curpath = curpath & addpath;
         else
         {
             path subcurpath = subpath(curpath, 0, arctime(curpath, arclength(curpath) - curarc));
@@ -324,12 +325,13 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
         if (newind == start)
         {
             path finpath;
-            if (!round) finpath = curpath--cycle;
+            if (!round) finpath = curpath&cycle;
             else
             {
                 real begin = arctime(curpath, curarc);
                 real end = arctime(curpath, arclength(curpath)-curarc);
-                finpath = subpath(curpath, begin, end)--(point(curpath, end){dir(curpath, end)}..{dir(curpath, begin)}point(curpath, begin))--cycle;
+                // finpath = subpath(curpath, begin, end)--(point(curpath, end){dir(curpath, end)}..{dir(curpath, begin)}point(curpath, begin))--cycle;
+                finpath = subpath(curpath, begin, end){dir(curpath, end)}..{dir(curpath, begin)}cycle;
             }
             res.push(finpath);
             curpath = nullpath;
@@ -433,7 +435,7 @@ path[] intersection (path p, path q, path[] holes, bool correct = true, bool rou
     
 	return res;
 }
-path[] operator & (path p, path q)
+path[] operator ^ (path p, path q)
 { return intersection(p, q); }
 
 path[] union (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)

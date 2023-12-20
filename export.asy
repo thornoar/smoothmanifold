@@ -64,13 +64,13 @@ void exportparams (int dpi = currentExRID, pen bgpen = currentExBG, real margin 
 void invertcolors ()
 {
 	currentExBG = inverse(currentExBG);
-	defaultpen(inverse(currentpen));
+	currentpen = inverse(currentpen);
 	smoothcolor = inverse(smoothcolor);
 	subsetcolor = inverse(subsetcolor);
 	currentDrIC = !currentDrIC;
 	currentDrExP = inverse(currentDrExP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
-    dashpen = new pen (pen p) { return .5*p+dashed; };
+    dashpen = new pen (pen p) { return .3*p+dashed; };
     shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
 }
 

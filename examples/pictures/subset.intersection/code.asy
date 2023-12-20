@@ -4,8 +4,7 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-drawparams(minscale = .03, subsetoverlap = true);
-// invertcolors();
+drawparams(minscale = .2, subsetoverlap = false);
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 

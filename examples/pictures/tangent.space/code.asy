@@ -15,7 +15,7 @@ rn.addsubset(contour = convexpath[9], shift = (.4,-.2), scale = .4);
 
 void mydraw ()
 {
-	draw(sm, mode = strict, overlap = true);
+	draw(sm, mode = free, overlap = true);
 	draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = cartesian);
 
 	drawarrow(ts, rn, endarrow = Arrow(SimpleHead), beginarrow = BeginArrow(SimpleHead), curve = -.2, L = Label("$\cong$", align = Relative(W)));

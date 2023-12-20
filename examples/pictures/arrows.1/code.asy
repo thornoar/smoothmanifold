@@ -6,7 +6,7 @@ size(25 cm);
 exportparams(bgpen = paleyellow, margin = 2 cm);
 arrowparams(.1);
 
-pair viewdir = dir(30);
+pair viewdir = dir(25);
 
 smooth sm1 = samplesmooth(3,0).move(rotate = -50);
 sm1.setlabel("M", labeldir = dir(100));
