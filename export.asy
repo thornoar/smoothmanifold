@@ -213,13 +213,13 @@ void export (picture pic = currentpicture,
 
     if (drawcache) drawcache(pic);
 
-	if (basic)
-	{ plainshipout(pic, prefix = prefix); }
-	else
-	{
-		picture aux = framedpicture(pic);
-		shipout(bbox(aux, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), prefix = prefix);
-	}
+    if (basic)
+    { plainshipout(pic, prefix = prefix); }
+    else
+    {
+        picture aux = framedpicture(pic);
+        shipout(bbox(aux, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), prefix = prefix);
+    }
 	if (native)
 	{
 		if (exit) exit();
