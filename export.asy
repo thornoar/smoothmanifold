@@ -69,7 +69,7 @@ void invertcolors ()
 	currentDrIC = !currentDrIC;
 	currentDrExP = inverse(currentDrExP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
-    dashpen = new pen (pen p) { return .3*p+dashed; };
+    // dashpen = new pen (pen p) { return .3*p+dashed; };
     shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
 }
 
@@ -128,6 +128,14 @@ private picture framedpicture (picture pic)
 	return aux;
 }
 
+bool exists (string filename)
+{
+    file f = input(filename, check = false);
+    bool res = !error(f);
+    close(f);
+    return res;
+}
+
 void export (string prefix = currentExP,
              picture pic = currentpicture,
              orientation orientation = orientation,
@@ -150,51 +158,37 @@ void export (string prefix = currentExP,
 	bool native = native(format);
 	settings.outformat = native ? format : "pdf";
 
-    void localshipout (picture pic1)
+    picture pic1 = restore ? pic.copy() : pic;
+
+    void localshipout (string prefix1)
     {
         if (simple && margin == 0 && bgpen == currentExBG && framepen == currentExFP)
-        { plainshipout(prefix, pic1, orientation, wait, view, options, script, light, P); }
+        { plainshipout(prefix=prefix1, pic1, orientation, wait, view, options, script, light, P); }
         else
         {
             picture aux = framedpicture(pic1);
-            shipout(prefix, bbox(aux, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), wait, view, options, script, light, P);
+            shipout(prefix=prefix1, bbox(aux, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), wait, view, options, script, light, P);
         }
     }
 
-    if (drawdeferred)
+    if (drawdeferred) drawdeferred(pic1, flush = !restore);
+    if (native) localshipout(prefix);
+    else
     {
-        if (restore)
+        string tempprefix = "export_temp";
+        localshipout(tempprefix);
+        if (format == "svg")
         {
-            picture picp = pic.copy();
-            drawdeferred(picp, false);
-            localshipout(picp);
+            system("pdf2svg "+tempprefix+".pdf"+" "+prefix+".svg");
+            delete(tempprefix+".pdf");
         }
         else
         {
-            drawdeferred(pic, true);
-            localshipout(pic);
+            system("convert -density "+(string)density+" "+tempprefix+".pdf "+prefix+"."+format);
+            delete(tempprefix+".pdf");
         }
     }
-    else localshipout(pic);
-
-	if (native)
-	{
-		if (exit) exit();
-		return;
-	}
-
-	if (format == "svg")
-	{
-		system("pdf2svg "+prefix+".pdf"+" "+prefix+".svg");
-		delete(prefix+".pdf");
-	}
-	else
-	{
-		system("mogrify -density "+(string)density+" -format "+format+" "+prefix+".pdf");
-		delete(prefix+".pdf");
-	}
-
-	if (exit) exit();
+    if (exit) exit();
 }
 
 int numberoffiles (string dirname)
@@ -308,9 +302,9 @@ void animate (void update (int),
 
 		string str1 = hash+"_"+(string)(i);
 		string str2 = hash+"_"+(string)(2n - 1 - i);
-		export(prefix = str1, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false);
+		export(prefix = str1, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false, density = density);
         write(f, s = str1+"."+informat, suffix = endl);
-		if (back) export(prefix = str2, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false);
+		if (back) export(prefix = str2, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false, density = density);
         
         restore();
 
@@ -447,7 +441,6 @@ void revolve (smooth sm,
 			real coeff = close ? (n-i-1)/(n-1) : (n-i-1)/n;
 			pair viewdir = arc ? (coeff*l1 + (1-coeff)*l2)*dir(coeff*deg1 + (1-coeff)*(deg2+360)) : (coeff*viewdir1 + (1-coeff)*viewdir2);
 			sm.view(viewdir, shiftsubsets = sm.shiftsubsets, drag = drag);
-			// sm.move(shift = shift/(n-1), keepview = true, drag = drag);
 		}
 		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
@@ -456,11 +449,11 @@ void revolve (smooth sm,
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-// shipout = new void (string prefix=outname(), picture pic=currentpicture,
-// 	     orientation orientation=orientation,
-// 	     string format=settings.outformat, bool wait=false, bool view=true,
-// 	     string options="", string script="",
-// 	     light light=currentlight, projection P=currentprojection)
-// {
-//     export(prefix, pic, orientation, format, wait, view, options, script, light, P);
-// };
+shipout = new void (string prefix=outname(), picture pic=currentpicture,
+	     orientation orientation=orientation,
+	     string format=settings.outformat, bool wait=false, bool view=true,
+	     string options="", string script="",
+	     light light=currentlight, projection P=currentprojection)
+{
+    export(prefix, pic, orientation, format, wait, view, options, script, light, P);
+};

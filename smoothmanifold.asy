@@ -55,9 +55,11 @@ private real defaultArM = defaultArOL*.7; // [M]argin (see "arrow")
 private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor
 private pen defaultDrSbC = grey; // [S]u[b]set [C]olor
 private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
-private real defaultDrSePS = .8; // [Se]ction [P]en
+private real defaultDrSePS = .8; // [Se]ction [P]en [S]cale
 private real defaultDrElPW = 3.0; // [E]lement [P]en
 private real defaultDrShS = .85; // [S]hade [S]cale
+private real defaultDrDPS = .4; // [D]ash [P]en [S]cale
+private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
 private arrowbar defaultDrBA = None; // [B]egin [A]rrow
@@ -240,9 +242,13 @@ real currentDrSePS = defaultDrSePS;
 real currentDrElPW = defaultDrElPW;
 pen currentDrExP = defaultDrExP;
 real currentDrShS = defaultDrShS;
+real currentDrDPS = defaultDrDPS;
+real currentDrDPO = defaultDrDPO;
 real currentDrDO = defaultDrDO;
 real currentDrSPM = defaultDrSPM;
+pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
 int currentDrM = 0; // [M]ode
+bool currentDrUO = true; // [U]se [O]pacity
 bool currentDrDD = true; // [D]raw [D]ashes
 bool currentDrE = false; // [E]xplain
 bool currentDrDS = false; // [D]raw [S]hade
@@ -316,11 +322,21 @@ pen inverse (pen p)
 	return invisible;
 }
 pen sectionpen (pen p)
-{ return p+linewidth(currentDrSePS*linewidth(p)); }
+{
+    if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
+    else return currentDrSeOP;
+}
 pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
+pen dashpenscale (pen p)
+{ return inverse(currentDrDPS*inverse(p))+dashed; }
+pen dashpenopacity (pen p)
+{ return p+dashed+opacity(currentDrDPO); }
 pen dashpen (pen p)
-{ return inverse(.3*inverse(p))+dashed; }
+{
+    if (currentDrUO) return dashpenopacity(p);
+    else return dashpenscale(p);
+}
 pen shadepen (pen p)
 { return currentDrShS*p; }
 pen elementpen (pen p)
@@ -374,10 +390,14 @@ void drawparams (int mode = currentDrM,
                  pen explainpen = currentDrExP,
                  real dragop = currentDrDO,
                  bool dash = currentDrDD,
+                 bool useopacity = currentDrUO,
+                 real dashscale = currentDrDPS,
+                 real dashop = currentDrDPO,
                  bool shade = currentDrDS,
                  bool fill = currentDrF,
                  bool fillsubsets = currentDrFS,
                  real sectionpenscale = currentDrSePS,
+                 pen sectionpen = currentDrSeOP,
                  real elementwidth = currentDrElPW)
 {
 	if (!inside(0,2, mode))
@@ -397,10 +417,14 @@ void drawparams (int mode = currentDrM,
 	currentDrExP = explainpen;
 	currentDrDO = dragop;
 	currentDrDD = dash;
+    currentDrUO = useopacity;
+    currentDrDPS = dashscale;
+    currentDrDPO = dashop;
 	currentDrDS = shade;
     currentDrF = fill;
     currentDrFS = fillsubsets;
 	currentDrSePS = sectionpenscale;
+    currentDrSeOP = sectionpen;
 	currentDrElPW = elementwidth;
 }
 void drawdebug () { draw(currentPrDP); }
@@ -416,8 +440,14 @@ void defaults ()
 	currentDrExP = defaultDrExP;
 	currentDrElPW = defaultDrElPW;
 	currentDrShS = defaultDrShS;
+    currentDrDPS = defaultDrDPS;
+    currentDrDPO = defaultDrDPO;
 	currentDrDO = defaultDrDO;
 	currentDrSPM = defaultDrSPM;
+    currentDrBA = defaultDrBA;
+    currentDrEA = defaultDrEA;
+    currentDrBB = defaultDrBB;
+    currentDrEB = defaultDrEB;
 }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
@@ -551,7 +581,7 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 	return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
 
-private pair[][] sectionparams (path g, path h, int n, real r, int p)
+pair[][] sectionparams (path g, path h, int n, real r, int p)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
     pair[] pres;
@@ -2861,8 +2891,7 @@ private void drawsections (picture pic,
                            real scale,
                            pen sectionpen,
                            pen dashpen,
-                           pen shadepen,
-                           int mode)
+                           pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -2889,13 +2918,12 @@ private void drawsections (picture pic,
 
 private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 {
-    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen, 1);
+    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen);
 }
 
 private void fitpath (picture pic,
                       bool overlap,
-                      bool consume,
-                      bool changeunder,
+                      int undermode,
                       bool drawnow,
                       path gs,
                       Label L,
@@ -2918,17 +2946,16 @@ private void fitpath (picture pic,
             path[] g = curdp[i].g;
             path[] newg;
             path[] altg;
-            // bool changeunder = changeunder && cyclic(gs);
-            // bool underdir = !curdp[i].under;
-            bool stolenbeginarrow = changeunder ? inside(gs, beginpoint(g[0])) : false;
-            bool stolenendarrow = changeunder ? inside(gs, endpoint(g[g.length-1])) : false;
+            if (!cyclic(gs)) undermode = 2;
+            bool stolenbeginarrow = undermode == 3 ? inside(gs, beginpoint(g[0])) : false;
+            bool stolenendarrow = undermode == 3 ? inside(gs, endpoint(g[g.length-1])) : false;
     
             for (int j = 0; j < g.length; ++j)
             {
                 real[] aligntest = intersect(g[j], gs);
                 if (aligntest.length == 0)
                 {
-                    if (changeunder && inside(gs, beginpoint(g[j]))) { altg.push(g[j]); }
+                    if (undermode < 2 && inside(gs, beginpoint(g[j]))) { altg.push(g[j]); }
                     else newg.push(g[j]);
                     continue;
                 }
@@ -2941,6 +2968,8 @@ private void fitpath (picture pic,
                 bool gjcyclic = cyclic(g[j]);
                 real t1;
                 real t2;
+                real t3 = -1;
+                real t4 = -1;
 
                 for (int k = 0; k < times.length; ++k)
                 {
@@ -2954,29 +2983,35 @@ private void fitpath (picture pic,
                     pair gsd = unit(gsdi+gsdo);
                     
                     real cross = cross(gjd, gsd);
-                    real sang = max(abs(cross), .2);
+                    real sang = max(abs(cross), .3);
                     t1 = relarctime(g[j], times[k][0], -currentArOL/sang*.5);
                     t2 = relarctime(g[j], times[k][0], currentArOL/sang*.5);
                     if (t1 < cuttimes[cuttimes.length-1])
                     {
                         cuttimes[cuttimes.length-1] = t2;
                         if (cuttimes.length > 2) skipped[cuttimes.length-3] = true;
+                        if (gjcyclic && t1 < 0 && t3 < 0) t3 = abs(t1);
                         continue;
                     }
                     cuttimes.push(t1);
                     cuttimes.push(t2);
                 }
+                if (t3 >= 0) cuttimes.push(t3);
+                if (gjcyclic && (t2 < 0 || cuttimes.length % 2 == 1))
+                {   
+                    if (t3 < 0) cuttimes[0] = abs(t2);
+                    cuttimes.pop();
+                }
+                else if (cuttimes.length % 2 == 1) { cuttimes.push(length(g[j])); }
 
-                if (cuttimes[cuttimes.length-1] == -2) { cuttimes.pop(); }
-                else if (gjcyclic) { cuttimes[0] = t2; cuttimes.delete(cuttimes.length-1); }
-                else { cuttimes.push(length(g[j])); }
-
-                bool understart = changeunder ? isinside(gs, point(g[j], cuttimes[0])) : false;
+                bool below = undermode != 2 ? isinside(gs, point(g[j], cuttimes[0])) : false;
                 for (int k = 0; k < cuttimes.length-1; k += 2)
                 {
-                    if (consume && curdp[i].under && understart) { understart = !understart; continue; }
-                    ((changeunder && understart) ? altg : newg).push(gjcyclic ? subcyclic(g[j], (cuttimes[k], cuttimes[k+1])) : subpath(g[j], cuttimes[k], cuttimes[k+1]));
-                    if (!skipped[k]) understart = !understart;
+                    if (undermode < 3 || !curdp[i].under || !below)
+                    {
+                        ((undermode < 2 && below) ? altg : newg).push(gjcyclic ? subcyclic(g[j], (cuttimes[k], cuttimes[k+1])) : subpath(g[j], cuttimes[k], cuttimes[k+1]));
+                    }
+                    if (!skipped[k]) below = !below;
                 }
             }
 
@@ -3003,7 +3038,7 @@ private void fitpath (picture pic,
                 curdp.push(deferredPath(
                     g = altg,
                     p = curdp[i].p,
-                    under = !curdp[i].under,
+                    under = (undermode == 0) ? true : !curdp[i].under,
                     beginarrow = (!stolenbeginarrow ? None : curdp[i].beginarrow),
                     endarrow = (!stolenendarrow ? None : curdp[i].endarrow),
                     beginbar = (!stolenbeginarrow ? None : curdp[i].beginbar),
@@ -3045,13 +3080,25 @@ private void fitpath (picture pic,
 }
 void fitpath (picture pic = currentpicture,
               path g,
+              int undermode = 2,
               Label L = "",
               pen p = currentpen,
               arrowbar beginarrow = None,
               arrowbar endarrow = None,
               arrowbar beginbar = None,
               arrowbar endbar = None)
-{ fitpath(pic, false, false, false, false, g, L, p, beginarrow, endarrow, beginbar, endbar); }
+{ fitpath(pic, false, undermode, false, g, L, p, beginarrow, endarrow, beginbar, endbar); }
+
+void fillfitpath (picture pic = currentpicture,
+              path g,
+              Label L = "",
+              pen drawpen = currentpen,
+              pen fillpen = currentpen,
+              bool consume = false)
+{
+    fill(pic, g, fillpen);
+    fitpath(pic, false, 0, false, g, L, drawpen);
+}
 
 void draw (picture pic = currentpicture,
            smooth sm,
@@ -3094,7 +3141,7 @@ void draw (picture pic = currentpicture,
     {
         for (int i = 0; i < contour.length; ++i)
         {
-            fitpath(pic = pic, overlap = overlap || sm.isderivative, consume = false, changeunder = true, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+            fitpath(pic = pic, overlap = overlap || sm.isderivative, undermode = 1, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
         }
     }
 
@@ -3130,7 +3177,7 @@ void draw (picture pic = currentpicture,
 					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultDrExP);
 				}
 
-				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
+				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
 			}
             
             // Drawing sections between holes
@@ -3180,7 +3227,7 @@ void draw (picture pic = currentpicture,
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen, mode);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -3222,7 +3269,7 @@ void draw (picture pic = currentpicture,
         {
             if (!sm.subsets[i].isderivative)
             {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO, consume = true, changeunder = false, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
+                fitpath(pic = pic, overlap = overlap || currentDrSCO, undermode = 3, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, beginarrow = None, endarrow = None, beginbar = None, endbar = None);
             }
         }
     }
@@ -3509,7 +3556,7 @@ void drawarrow (picture pic = currentpicture,
 	}
     path gs = subpath(g, time1, time2);
 
-	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs = gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, undermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3536,7 +3583,7 @@ void drawarrow (picture pic = currentpicture,
 
     path g = (points.length == 0) ? curvedpath(el1.pos, el2.pos, curve = curve) : connect(concat(new pair[]{el1.pos}, points, new pair[]{el2.pos}));
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
-	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs = g, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, undermode = 2, drawnow = drawnow, gs = g, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawarrow (picture pic = currentpicture,
@@ -3595,7 +3642,7 @@ void drawarrow (picture pic = currentpicture,
 	}
 
     path gs = subpath(g, time1, time2);
-	fitpath(pic, overlap = overlap, consume = false, changeunder = false, drawnow = drawnow, gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
+	fitpath(pic, overlap = overlap, undermode = 2, drawnow = drawnow, gs, L = L, p = p, beginarrow, endarrow, beginbar, endbar);
 }
 
 void drawdeferred (picture pic = currentpicture, bool flush = true)

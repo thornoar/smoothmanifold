@@ -5,7 +5,7 @@ settings.render = 4;
 // import graph;
 
 size(25cm);
-exportparams(dpi = 250);
+exportparams(dpi = 200);
 setframe(bgpen = paleyellow, ymax = 2.2, ratio = 1);
 animationparams(close = false);
 currentpen = linewidth(2.2);
@@ -22,7 +22,7 @@ void animate (int mode)
 	move(sm = sm, n = n, shift = shift, back = false);
 	move(sm = sm, n = n, shift = -shift, scale = 1.2, rotate = 100, back = false);
 	move(sm = sm, n = n, scale = 1/1.2, rotate = -100, back = false);
-	compile(fps = n, outprefix = "animation."+mode(mode), outformat = "mp4");
+	compile(fps = n, outprefix = "animation."+mode(mode), outformat = "mp4", exit = false);
 }
 
 animate(mode = free);

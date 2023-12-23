@@ -13,6 +13,14 @@ void roundcoeff (real val = defaultSyRR)
 	currentSyRR = val;
 }
 
+real mod (real a, real b)
+{
+    if (b < 0) return -1;
+    while (a < 0) a += b;
+    while (a > b) a -= b;
+    return a;
+}
+
 pair center (path p, int n = 10, bool arc = true)
 {
     pair sum = (0,0);
@@ -106,8 +114,7 @@ real arclength (path g, real a, real b)
 real relarctime (path g, real t0, real a)
 {
     real t0arc = arclength(g, 0, t0);
-    if (t0arc + a < 0) return -1;
-    if (t0arc + a > arclength(g)) return -2;
+    if (t0arc + a < 0 || t0arc + a > arclength(g)) return -arctime(g, mod(t0arc + a, arclength(g)));
     return arctime(g, t0arc+a);
 }
 

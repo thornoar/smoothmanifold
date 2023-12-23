@@ -17,4 +17,4 @@ void update (int i)
     draw(sm2, plain);
 }
 
-animate(update, n = n, fps = 30, outprefix = "animation", compile = true, exit = true);
+animate(update, n = n, fps = 30, outprefix = "animation", compile = true, exit = true, density = 100);
