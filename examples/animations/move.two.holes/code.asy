@@ -2,32 +2,30 @@ import export;
 
 settings.render = 4;
 
-import graph;
+// import graph;
 
 size(25cm);
-exportparams(dpi = 250, bgpen = paleyellow);
-
-setframe(2.2, 1);
+exportparams(dpi = 250);
+setframe(bgpen = paleyellow, ymax = 2.2, ratio = 1);
 animationparams(close = false);
-
-defaultpen(linewidth(2.2));
-drawparams(sectionpen = linewidth(1.1));
+currentpen = linewidth(2.2);
+drawparams(sectionpenscale = .5);
 
 pair shift = (.8,.6);
 pair viewdir = dir(-45);
 smooth sm = samplesmooth(2).view(viewdir);
-int frames = 30;
+int n = 30;
 
 void animate (int mode)
 {
 	drawparams(mode = mode);
-	move(sm = sm, shift = shift, frames = frames, back = false);
-	move(sm = sm, shift = -shift, scale = 1.2, rotate = 100, frames = frames, back = false);
-	move(sm = sm, scale = 1/1.2, rotate = -100, frames = frames, back = false);
-	compile(fps = frames, outprefix = "animation."+mode(mode), outformat = "mp4");
+	move(sm = sm, n = n, shift = shift, back = false);
+	move(sm = sm, n = n, shift = -shift, scale = 1.2, rotate = 100, back = false);
+	move(sm = sm, n = n, scale = 1/1.2, rotate = -100, back = false);
+	compile(fps = n, outprefix = "animation."+mode(mode), outformat = "mp4");
 }
 
-animate(mode = strict);
+animate(mode = free);
 animate(mode = cartesian);
 
 exit();

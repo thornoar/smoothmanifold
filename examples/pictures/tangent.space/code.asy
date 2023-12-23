@@ -3,7 +3,7 @@ import export;
 settings.render = 8;
 
 size(15 cm);
-exportparams(bgpen = paleyellow);
+setframe(bgpen = paleyellow);
 arrowparams(.09);
 sectionparams(restrictlength = false);
 drawparams(dragop = .9);

@@ -2,7 +2,7 @@ import export;
 
 settings.render = 16;
 size(15 cm);
-exportparams(bgpen = paleyellow);
+setframe(bgpen = paleyellow);
 drawparams(smoothfill = cyan, mode = plain, drawnow = true);
 
 smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);

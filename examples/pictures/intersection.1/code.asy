@@ -2,8 +2,7 @@ import export;
 settings.render = 16;
 
 size(15cm);
-exportparams(bgpen = paleyellow);
-// drawparams(drawnow = true);
+setframe(bgpen = paleyellow);
 
 pair viewdir = dir(45);
 

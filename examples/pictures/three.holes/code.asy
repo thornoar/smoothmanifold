@@ -3,7 +3,8 @@ import export;
 settings.render = 8;
 
 size(10cm);
-exportparams(bgpen = paleyellow, margin = 1 cm, exit = false);
+setframe(bgpen = paleyellow, margin = 1 cm);
+exportparams(exit = false);
 
 smooth sm = samplesmooth(3).view(dir(-35));
 

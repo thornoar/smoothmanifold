@@ -2,7 +2,7 @@ import export;
 settings.render = 16;
 
 size(20 cm);
-exportparams(bgpen = paleyellow);
+setframe(bgpen = paleyellow);
 drawparams(smoothfill = lightcyan, subsetfill = lightblue, dash = false);
 arrowparams(ovlength = .2);
 

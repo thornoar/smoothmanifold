@@ -3,7 +3,7 @@ import export;
 settings.render = 8;
 
 size(15cm);
-exportparams(bgpen = paleyellow);
+setframe(bgpen = paleyellow);
 
 real x = 3.5;
 real y = -1.6;

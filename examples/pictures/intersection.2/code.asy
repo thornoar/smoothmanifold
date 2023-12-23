@@ -4,8 +4,9 @@ settings.render = 16;
 settings.outformat = "pdf";
 
 size(15 cm);
-exportparams(bgpen = paleyellow, margin = 1.5cm, exit = false);
-// sectionparams(ratio = .8);
+setframe(bgpen = paleyellow, margin = 1.5cm);
+exportparams(exit = false);
+sectionparams(freedom = .8);
 
 pair viewdir = dir(45);
 smooth sm1 = samplesmooth(3,1).move(scale = 1.1).view(viewdir);
@@ -19,13 +20,11 @@ sm3.setsection(1, 0, a(-2,4,240,dn));
 sm3.setsection(0, 0, a(dn,dn,220,dn));
 
 save();
-
 draw(sm3, explain = false, mode = free);
 export(prefix = "picture (free mode)");
-flushcache();
 restore();
-save();
 
+save();
 draw(sm3, explain = false, mode = plain);
 export(prefix = "picture (plain mode)");
 

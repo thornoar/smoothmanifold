@@ -4,7 +4,8 @@ settings.render = 8;
 settings.outformat = "pdf";
 
 size(10cm);
-exportparams(bgpen = paleyellow, exit = false, margin = 1 cm);
+setframe(bgpen = paleyellow, margin = 1 cm);
+exportparams(exit = false);
 sectionparams(avoidsubsets = true);
 
 smooth sm = samplesmooth(1).view(dir(-40));
