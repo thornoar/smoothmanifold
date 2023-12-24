@@ -4,12 +4,9 @@ settings.render = 4;
 import graph;
 
 size(25cm);
-exportparams(dpi = 50);
-defaultpen(linewidth(2));
-drawparams(sectionpenscale = .5);
-sectionparams(avoidsubsets = true);
-animationparams(informat = "jpg", outformat = "gif", close = false);
-setframe(ymax = 1.6, 1);
+expar(dpi = 50, informat = "jpg", outformat = "gif", close = false, ymax = 1.6, ratio = 1, clip = false);
+smpar(sectionpenscale = .5, scavoidsubsets = true, shiftsubsets = true);
+defaultpen(linewidth(1.2));
 
 pair viewdir0 = (0,0);
 pair viewdir1 = dir(0);
@@ -21,18 +18,9 @@ smooth sm = samplesmooth(3).move(shift = (-.15,0));
 
 int n = 30;
 
-void animate (int mode)
-{
-	drawparams(mode = mode);
-	revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, back = false, n = n);
-	revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, back = false, n = 2*n);
-	revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, back = false, n = 2*n);
-	revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, back = false, n = 2*n);
-	revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, back = false, n = n);
-	compile(fps = n, outprefix = "animation."+mode(mode), exit = false);
-}
-
-animate(mode = free);
-animate(mode = cartesian);
-
-exit();
+revolve(sm = sm, viewdir1 = viewdir0, viewdir2 = viewdir1, back = false, n = n);
+revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, back = false, n = 2*n);
+revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, back = false, n = 2*n);
+revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, back = false, n = 2*n);
+revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, back = false, n = n);
+compile(fps = n, outprefix = "animation", exit = false);

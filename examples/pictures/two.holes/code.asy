@@ -3,8 +3,7 @@ import export;
 settings.render = 8;
 
 size(10 cm);
-setframe(bgpen = paleyellow, margin = 1 cm);
-exportparams(exit = false);
+expar(bgpen = paleyellow, margin = 1 cm);
 
 pair viewdir = dir(-35);
 smooth sm = samplesmooth(2).view(viewdir);
@@ -19,5 +18,3 @@ erase();
 
 draw(sm, explain = true, dash = true, mode = free, sectionpen = linewidth(.5));
 export(prefix = "picture (free mode)", format = "pdf");
-
-exit();

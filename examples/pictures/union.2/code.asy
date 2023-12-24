@@ -2,8 +2,8 @@ import export;
 settings.render = 16;
 
 size(20 cm);
-setframe(bgpen = paleyellow);
-drawparams(explain = true);
+expar(bgpen = paleyellow);
+smpar(explain = true);
 
 smooth sm1 = samplesmooth(3).move(rotate = 60);
 smooth sm2 = samplesmooth(3,1).move(shift = (1.7,0), rotate = -90);

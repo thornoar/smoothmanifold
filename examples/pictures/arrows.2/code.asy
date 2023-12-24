@@ -2,9 +2,8 @@ import export;
 settings.render = 16;
 
 size(20 cm);
-setframe(bgpen = paleyellow);
-drawparams(smoothfill = lightcyan, subsetfill = lightblue, dash = false);
-arrowparams(ovlength = .2);
+expar(bgpen = paleyellow);
+smpar(smoothfill = lightcyan, subsetfill = lightblue, dash = false, gaplength = .15);
 
 pair viewdir = dir(-50);
 
@@ -28,6 +27,6 @@ void mydraw ()
 mydraw();
 export("picture", "pdf", 1.5 cm, exit = false);
 erase();
-drawparams(fill = false);
+smpar(fill = false);
 mydraw();
 export("picture (hollow)", "pdf", 1.5 cm);

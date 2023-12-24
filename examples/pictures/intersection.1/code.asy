@@ -2,7 +2,7 @@ import export;
 settings.render = 16;
 
 size(15cm);
-setframe(bgpen = paleyellow);
+expar(bgpen = paleyellow);
 
 pair viewdir = dir(45);
 
@@ -18,6 +18,6 @@ void mydraw ()
 mydraw();
 export("picture", "pdf", 1 cm, exit = false);
 erase();
-drawparams(explain = true);
+smpar(explain = true);
 mydraw();
 export("picture (marked)", "pdf", 1 cm);

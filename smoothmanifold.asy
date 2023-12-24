@@ -35,7 +35,7 @@ private int defaultSeP = 20; // [P]recision
 private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
 private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle]
 private real defaultSeEP = -1; // [E]llipse [P]recision
-private real defaultSeMLR = .6; // [M]aximum [L]ength [R]atio
+private real defaultSeMLR = -1; // [M]aximum [L]ength [R]atio
 private real defaultSeMiEHR = .0005; // [Mi]nimal [E]llipse [H]eight [R]atio
 
 // [Sm]ooth
@@ -47,11 +47,8 @@ private real defaultSmCEM = .07; // [C]art [E]dge [M]argin
 private real defaultSmCSD = .1; // [C]art [S]tep [D]istance
 private real defaultSmSVS = .7; // [S]ubset [V]iew [S]hift
 
-// [Ar]rows
-private real defaultArOL = .065; // [O]verlap [L]ength (see "arrow")
-private real defaultArM = defaultArOL*.7; // [M]argin (see "arrow")
-
 // [Dr]awing
+private real defaultDrGL = .065; // [G]ap [L]ength
 private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor
 private pen defaultDrSbC = grey; // [S]u[b]set [C]olor
 private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
@@ -66,6 +63,9 @@ private arrowbar defaultDrBA = None; // [B]egin [A]rrow
 private arrowbar defaultDrEA = EndArrow(SimpleHead); // [E]nd [A]rrow
 private arrowbar defaultDrBB = None; // [B]egin [B]ar
 private arrowbar defaultDrEB = None; // [E]nd [B]ar
+
+// [Ar]rows
+private real defaultArM = defaultDrGL*.7; // [M]argin (see "arrow")
 
 // [Pa]ths
 private path[] defaultPaCV = new path[]{ // [C]on[V]ex
@@ -220,24 +220,19 @@ path randomconcave ()
 // [Se]ction
 private real[] currentsection = copy(defaultsection);
 private real currentSeF = defaultSeF;
-private int currentSeP = defaultSeP;
 private int currentSeIHSN = defaultSeIHSN;
 private real currentIHSA = defaultSeIHSA;
 private real currentSeEP = defaultSeEP;
 private real currentSeMLR = defaultSeMLR;
 private real currentSeML; // [M]aximum [L]ength
-private bool currentSeRL = false; // [R]estrict [L]ength
 bool currentSeAS = false; // [A]void [S]ubsets
 
 // [Sm]ooth
 bool currentSmIL = true; // [I]nfer [L]abels
-bool currentSmSS = true; // [S]hift [S]ubsets
-
-// [Ar]rows
-real currentArOL = defaultArOL;
-real currentArM = defaultArM;
+bool currentSmSS = false; // [S]hift [S]ubsets
 
 // [Dr]awing
+real currentDrGL = defaultDrGL;
 real currentDrSePS = defaultDrSePS;
 real currentDrElPW = defaultDrElPW;
 pen currentDrExP = defaultDrExP;
@@ -263,6 +258,9 @@ private arrowbar currentDrBA = defaultDrBA;
 private arrowbar currentDrEA = defaultDrEA;
 private arrowbar currentDrBB = defaultDrBB;
 private arrowbar currentDrEB = defaultDrEB;
+
+// [Ar]rows
+real currentArM = defaultArM;
 
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
@@ -346,66 +344,55 @@ pen underpen (pen p)
 
 // -- User setting functions -- //
 
-void sectionparams (real[] section = currentsection,
-                    real freedom = currentSeF,
-                    int precision = currentSeP,
-                    int interholenumber = currentSeIHSN,
-                    real interholeangle = currentIHSA,
-                    real ellipseprecision = currentSeEP,
-                    real maxlength = currentSeMLR,
-                    bool restrictlength = currentSeRL,
-                    bool avoidsubsets = currentSeAS)
+void smpar (real[] section = currentsection,
+          real scfreedom = currentSeF,
+          int scholenumber = currentSeIHSN,
+          real scholeangle = currentIHSA,
+          real scprecision = currentSeEP,
+          real scmaxlength = currentSeMLR,
+          bool scavoidsubsets = currentSeAS,
+              int mode = currentDrM,
+              pen smoothfill = smoothcolor,
+              pen subsetfill = subsetcolor,
+              real minscale = currentDrSPM,
+              bool overlap = currentDrO,
+              bool subsetoverlap = currentDrSCO,
+              bool drawnow = currentDrDN,
+              bool explain = currentDrE,
+              pen explainpen = currentDrExP,
+              real dragop = currentDrDO,
+              bool dash = currentDrDD,
+              bool useopacity = currentDrUO,
+              real dashscale = currentDrDPS,
+              real dashop = currentDrDPO,
+              bool shade = currentDrDS,
+              bool fill = currentDrF,
+              bool fillsubsets = currentDrFS,
+              real sectionpenscale = currentDrSePS,
+              pen sectionpen = currentDrSeOP,
+              real elementwidth = currentDrElPW,
+              bool inferlabels = currentSmIL,
+              bool shiftsubsets = currentSmSS,
+              real gaplength = currentDrGL,
+              real arrowmargin = currentArM)
 {
-	if (!checksection(section) || freedom >= 1 || precision <= 0 || interholenumber < 0 || !inside(0, 180, interholeangle))
-	{ halt("Could not change default section parameters: invalid intries [ sectionparams() ]"); }
-	if (maxlength <= 0)
-	{ halt("Could not change default section parameters: section length value must be positive [ sectionparams() ]"); }
+	if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
+	{ halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
 	for (int i = 0; i < section.length; ++i)
 	{ if (section[i] != defaultSyDN) currentsection[i] = section[i]; }
-    currentSeF = freedom;
-    currentSeP = precision;
-	currentSeIHSN = interholenumber;
-	currentIHSA = interholeangle;
-    currentSeEP = ellipseprecision;
-	currentSeMLR = maxlength;
-    currentSeRL = restrictlength;
-    currentSeAS = avoidsubsets;
-}
-void inferlabels (bool val) { currentSmIL = val; }
-void shiftsubsets (bool val) { currentSmSS = val; }
-void arrowparams (real ovlength = defaultArOL, real margin = defaultArM)
-{
-	currentArOL = ovlength;
-	currentArM = margin;
-	if (ovlength > 1) write("> ? Value for arrow overlap length looks too big: the result may be ugly. [ arrowparams() ]");
-}
-void drawparams (int mode = currentDrM,
-                 pen smoothfill = smoothcolor,
-                 pen subsetfill = subsetcolor,
-                 real minscale = currentDrSPM,
-                 bool overlap = currentDrO,
-                 bool subsetoverlap = currentDrSCO,
-                 bool drawnow = currentDrDN,
-                 bool explain = currentDrE,
-                 pen explainpen = currentDrExP,
-                 real dragop = currentDrDO,
-                 bool dash = currentDrDD,
-                 bool useopacity = currentDrUO,
-                 real dashscale = currentDrDPS,
-                 real dashop = currentDrDPO,
-                 bool shade = currentDrDS,
-                 bool fill = currentDrF,
-                 bool fillsubsets = currentDrFS,
-                 real sectionpenscale = currentDrSePS,
-                 pen sectionpen = currentDrSeOP,
-                 real elementwidth = currentDrElPW)
-{
 	if (!inside(0,2, mode))
-	{ halt("Could not set mode: invalid entry provided. [ drawparams() ]"); }
+	{ halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
 	if (!inside(0,1, minscale))
-	{ halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ drawparams() ]"); }
+	{ halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
 	if (!inside(0,1, dragop))
-	{ halt("Could not set drag opacity: entry out of bounds: must be between 0 and 1. [ drawparams() ]"); }
+	{ halt("Could not set drag opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
+
+    currentSeF = scfreedom;
+	currentSeIHSN = scholenumber;
+	currentIHSA = scholeangle;
+    currentSeEP = scprecision;
+	currentSeMLR = scmaxlength;
+    currentSeAS = scavoidsubsets;
 	currentDrM = mode;
 	smoothcolor = smoothfill;
 	subsetcolor = subsetfill;
@@ -426,15 +413,20 @@ void drawparams (int mode = currentDrM,
 	currentDrSePS = sectionpenscale;
     currentDrSeOP = sectionpen;
 	currentDrElPW = elementwidth;
+    currentSmIL = inferlabels;
+    currentSmSS = shiftsubsets;
+	currentDrGL = gaplength;
+	currentArM = arrowmargin;
+
+	if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
 }
-void drawdebug () { draw(currentPrDP); }
 void defaults ()
 {
 	currentsection = copy(defaultsection);
 	currentSeIHSN = defaultSeIHSN;
 	currentIHSA = defaultSeIHSA;
 	currentSeMLR = defaultSeMLR;
-	currentArOL = defaultArOL;
+	currentDrGL = defaultDrGL;
 	currentArM = defaultArM;
 	currentDrSePS = defaultDrSePS;
 	currentDrExP = defaultDrExP;
@@ -1365,7 +1357,7 @@ struct smooth
 		if (!insidepath(this.contour, hl.contour))
 		{
 			currentPrDP.push(hl.contour);
-			write("> ? Could not add hole: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addhole() ]");
+			write("> ? Could not add hole: contour out of bounds. It will be drawn in red on the final picture. [ addhole() ]");
 			return this;
 		}
 		for (int i = 0; i < this.holes.length; ++i)
@@ -1373,7 +1365,7 @@ struct smooth
 			if (!outsidepath(this.holes[i].contour, hl.contour))
 			{
 				currentPrDP.push(hl.contour);
-				write("> ? Could not add hole: contour intersecting with other holes. Call `drawdebug()` in the end to adjust. [ addhole() ]");
+				write("> ? Could not add hole: contour intersecting with other holes. It will be drawn in red on the final picture. [ addhole() ]");
 				return this;
 			}
 		}
@@ -1391,7 +1383,7 @@ struct smooth
 		if (abort)
 		{
 			currentPrDP.push(hl.contour);
-			write("> ? Could not add hole: contour intervening with subsets. Call `drawdebug()` in the end to adjust. [ addhole() ]");
+			write("> ? Could not add hole: contour intervening with subsets. It will be drawn in red on the final picture. [ addhole() ]");
 			return this;
 		}
 		else
@@ -1595,7 +1587,7 @@ struct smooth
 		if (!insidepath(pcontour, sb.contour))
 		{
 			currentPrDP.push(sb.contour);
-			write("> ? Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
+			write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
 			return this;
 		}
 		if (!sub)
@@ -1605,7 +1597,7 @@ struct smooth
 				if (meet(this.holes[i].contour, sb.contour) || isinside(this.holes[i].contour, inside(sb.contour)))
 				{
 					currentPrDP.push(sb.contour);
-					write("> ? Could not add subset: contour out of bounds. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
+					write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
 					return this;
 				}
 			}
@@ -1616,7 +1608,7 @@ struct smooth
 			if (insidepath(this.subsets[range[i]].contour, sb.contour))
 			{
 				currentPrDP.push(sb.contour);
-				write("> ? Could not add subset: contour is contained in another subset unlisted in `ind`. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
+				write("> ? Could not add subset: contour is contained in another subset unlisted in `ind`. It will be drawn in red on the final picture. [ addsubset() ]");
 				return this;
 			}
         }
@@ -1647,7 +1639,7 @@ struct smooth
             subset[] intersection = subsetintersection(cursb, sb);
             if (intersection.length > 1)
             {
-                write("> ? Could not add subset: has disconnected intersection with existing subsets. Call `drawdebug()` in the end to adjust. [ addsubset() ]");
+                write("> ? Could not add subset: has disconnected intersection with existing subsets. It will be drawn in red on the final picture. [ addsubset() ]");
                 this.subsets.delete(insertindex, this.subsets.length-1);
                 subsetcleanreferences(this.subsets);
                 terminate = true;
@@ -1873,7 +1865,7 @@ struct smooth
 		if (!insidepath(pcontour, newcontour))
 		{
 			currentPrDP.push(newcontour);
-			write("> ? Could not move subset: new contour out of bounds. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
+			write("> ? Could not move subset: new contour out of bounds. It will be drawn in red on the final picture. [ movesubset() ]");
 			return this;
 		}
 
@@ -1892,7 +1884,7 @@ struct smooth
 				if (meet(newcontour, this.subsets[range[i]].contour) || insidepath(newcontour, this.subsets[range[i]].contour) || insidepath(this.subsets[range[i]].contour, newcontour))
 				{
 					currentPrDP.push(newcontour);
-					write("> ? Could not move subset: new contour intersects with other subsets. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
+					write("> ? Could not move subset: new contour intersects with other subsets. It will be drawn in red on the final picture. [ movesubset() ]");
 					return this;
 				}
 			}
@@ -1911,7 +1903,7 @@ struct smooth
 					if (!insidepath(newcontour, this.subsets[cursb.subsets[i]].contour))
 					{
 						currentPrDP.push(newcontour);
-						write("> ? Could not move subset: new contour makes existing subsets out-of-bounds. Call `drawdebug()` in the end to adjust. [ movesubset() ]");
+						write("> ? Could not move subset: new contour makes existing subsets out-of-bounds. It will be drawn in red on the final picture. [ movesubset() ]");
 						return this;
 					}
 				}
@@ -2897,7 +2889,7 @@ private void drawsections (picture pic,
     for (int k = 0; k < sections.length; ++k)
     {
 		if (sections[k].length > 4) continue;
-		if (currentSeRL && length(sections[k][1]-sections[k][0]) > currentSeML)
+		if (currentSeMLR > 0 && length(sections[k][1]-sections[k][0]) > currentSeML)
         { continue; }
 
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir);
@@ -2984,8 +2976,8 @@ private void fitpath (picture pic,
                     
                     real cross = cross(gjd, gsd);
                     real sang = max(abs(cross), .3);
-                    t1 = relarctime(g[j], times[k][0], -currentArOL/sang*.5);
-                    t2 = relarctime(g[j], times[k][0], currentArOL/sang*.5);
+                    t1 = relarctime(g[j], times[k][0], -currentDrGL/sang*.5);
+                    t2 = relarctime(g[j], times[k][0], currentDrGL/sang*.5);
                     if (t1 < cuttimes[cuttimes.length-1])
                     {
                         cuttimes[cuttimes.length-1] = t2;
@@ -3129,7 +3121,7 @@ void draw (picture pic = currentpicture,
 	{ halt("Invalid mode specified. [ draw() ]"); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
-    if (currentSeRL) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
+    if (currentSeMLR > 0) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] contour = (sm.contour ^^ sequence(new path(int i){
         return reverse(sm.holes[i].contour);
@@ -3177,9 +3169,9 @@ void draw (picture pic = currentpicture,
 					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultDrExP);
 				}
 
-				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
 			}
-            
+
             // Drawing sections between holes
             if (currentSeIHSN > 0)
             {   
@@ -3227,7 +3219,7 @@ void draw (picture pic = currentpicture,
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, currentSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, defaultSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -3701,18 +3693,19 @@ void flushdeferred (picture pic = currentpicture)
 // -- Redefining functions to execute `drawdeferred` and `flushdeferred` at call -- //
 
 void plainshipout (string prefix=defaultfilename, picture pic=currentpicture,
-	     orientation orientation=orientation,
+	     orientation orntn=orientation,
 	     string format="", bool wait=false, bool view=true,
 	     string options="", string script="",
-	     light light=currentlight, projection P=currentprojection) = shipout;
+	     light lt=currentlight, projection P=currentprojection) = shipout;
 shipout = new void (string prefix=defaultfilename, picture pic=currentpicture,
-	     orientation orientation=orientation,
+	     orientation orntn=orientation,
 	     string format="", bool wait=false, bool view=true,
 	     string options="", string script="",
-	     light light=currentlight, projection P=currentprojection)
+	     light lt=currentlight, projection P=currentprojection)
 {
     drawdeferred(pic = pic, flush = false);
-    plainshipout(prefix, pic, orientation, format, wait, view, options, script, light, P);
+    draw(pic = pic, currentPrDP, red+1);
+    plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
 
 void plainerase (picture pic = currentpicture) = erase;

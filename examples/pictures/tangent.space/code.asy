@@ -3,10 +3,8 @@ import export;
 settings.render = 8;
 
 size(15 cm);
-setframe(bgpen = paleyellow);
-arrowparams(.09);
-sectionparams(restrictlength = false);
-drawparams(dragop = .9);
+expar(bgpen = paleyellow);
+smpar(gaplength = .09, dragop = .9);
 
 smooth sm = samplesmooth(1).view(dir(-40)).setlabel(label = "M").setlabel(i(0), label = "S", labeldir = S);
 smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10, size = .7);
@@ -23,8 +21,8 @@ void mydraw ()
 }
 
 mydraw();
-export("picture", "pdf", 1 cm, exit = false);
+export("picture", "pdf", 1 cm);
 erase();
-drawparams(explain = true);
+smpar(explain = true);
 mydraw();
 export("picture (marked)", "pdf", 1 cm);

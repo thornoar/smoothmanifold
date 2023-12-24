@@ -1,11 +1,9 @@
 import export;
 
 size(25 cm);
-setframe(bgpen = paleyellow, ymax = 2);
+expar(bgpen = paleyellow, ymax = 2, clip = false, informat = "jpg");
 defaultpen(linewidth(1.2));
-animationparams(informat = "jpg");
-drawparams(sectionpenscale = .5);
-arrowparams(ovlength = .15);
+smpar(sectionpenscale = .5, gaplength = .15);
 
 smooth sm1 = samplesmooth(3).move(shift = (-1.7,.1), scale = 1.2);
 smooth sm2 = samplesmooth(1,0).move(shift = (1.9,.1), scale = .9);

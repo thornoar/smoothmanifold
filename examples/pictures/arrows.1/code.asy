@@ -3,8 +3,8 @@ import export;
 settings.render = 16;
 
 size(25 cm);
-setframe(bgpen = paleyellow, margin = 2 cm);
-arrowparams(.1);
+expar(bgpen = paleyellow, margin = 2 cm);
+smpar(gaplength = .1, shiftsubsets = true);
 
 pair viewdir = dir(25);
 
@@ -43,6 +43,6 @@ mydraw();
 
 export("picture", "pdf", exit = false);
 erase();
-drawparams(fill = false);
+smpar(fill = false);
 mydraw();
 export("picture (hollow)", "pdf");

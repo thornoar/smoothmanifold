@@ -7,13 +7,14 @@ private string defaultAnFLN = ".animation_input_list.txt";
 // -- Changeables -- //
 // [Ex]port
 private string currentExP = outname(); // [P]refix
-private bool currentExEOE = true; // [E]xit [O]n [E]xport
+private bool currentExEOE = false; // [E]xit [O]n [E]xport
 private int currentExRID = 300; // [R]asterized [I]mage [D]ensity
 private pen currentExBG = white; // [B]ack[G]round
 private pen currentExFP = nullpen; // [F]rame [P]en
 private real currentExM = 0; // [M]argin
-private bool currentExS = true; // [S]imple
+// private bool currentExS = false; // [S]imple
 private bool currentExR = false; // [R]estore
+private bool currentExE = false; // [E]xported
 // [Fr]ame
 private bool currentFrEP = false; // [E]nclose [P]icture
 private bool currentFrCP = false; // [C]lip [P]icture
@@ -27,7 +28,6 @@ private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 private bool currentAnC = true; // [C]lose
-private bool currentAnE = false; // [E]xit
 
 import smoothmanifold;
 
@@ -50,37 +50,26 @@ private string copychar (string str, int n)
 
 private bool native (string format = currentAnIF) {return format == "" || format == "eps" || format == "pdf";}
 
-void exportparams (string prefix = currentExP, string format = settings.outformat, int dpi = currentExRID, bool exit = currentExEOE, bool restore = currentExR)
+void expar (string prefix = currentExP,
+            string format = settings.outformat,
+            int dpi = currentExRID,
+            bool exit = currentExEOE,
+            bool restore = currentExR,
+                string dirname = currentAnDN,
+                string informat = currentAnIF,
+                string outprefix = currentAnOP,
+                string outformat = currentAnOF,
+                bool close = currentAnC,
+                bool preclean = currentAnPC,
+                    real ymax = -1,
+                    real ratio = 1.777777777,
+                    bool clip = currentFrCP,
+                    pen bgpen = currentExBG,
+                    pen framepen = currentExFP,
+                    real margin = currentExM)
 {
 	if (dpi < 10)
 	{ halt("Could not apply changes: inacceptable quality."); }
-    currentExP = prefix;
-    settings.outformat = format;
-	currentExRID = dpi;
-	currentExEOE = exit;
-    currentExR = restore;
-}
-void invertcolors ()
-{
-	currentExBG = inverse(currentExBG);
-	currentpen = inverse(currentpen);
-	smoothcolor = inverse(smoothcolor);
-	subsetcolor = inverse(subsetcolor);
-	currentDrIC = !currentDrIC;
-	currentDrExP = inverse(currentDrExP);
-    nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
-    // dashpen = new pen (pen p) { return .3*p+dashed; };
-    shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
-}
-
-void animationparams (string dirname = currentAnDN,
-                      string informat = currentAnIF,
-                      string outprefix = currentAnOP,
-                      string outformat = currentAnOF,
-                      bool close = currentAnC,
-                      bool exit = currentAnE,
-                      bool preclean = currentAnPC)
-{
     if (find(dirname, "/") == -1)
     { halt("Could not apply changes: directory name must contain '/' at the end."); }
     if (find(dirname, "/") != rfind(dirname, "/"))
@@ -91,41 +80,53 @@ void animationparams (string dirname = currentAnDN,
 	{ write("> ? You have chosen an unfamiliar input format. Proceed with caution."); }
 	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", outformat) == -1)
 	{ write("> ? You have chosen an unfamiliar output format. Proceed with caution."); }
+	if (margin < 0)
+	{ halt("Could not set margin: value must be positive."); }
+
+    currentExP = prefix;
+    settings.outformat = format; currentDrUO = native(format);
+	currentExRID = dpi;
+	currentExEOE = exit;
+    currentExR = restore;
 	
     currentAnDN = dirname;
 	currentAnIF = informat;
 	currentAnOP = outprefix;
 	currentAnOF = outformat;
 	currentAnC = close;
-    currentAnE = exit;
+    currentExEOE = exit;
     currentAnPC = preclean;
-}
-void setframe (real ymax = -1, real ratio = 1.777777777, bool crop = true, pen bgpen = currentExBG, pen framepen = currentExFP, real margin = currentExM)
-{
-	if (margin < 0)
-	{ halt("Could not set margin: value must be positive."); }
+
+    // if (margin > 0 || bgpen != currentExBG || framepen != currentExFP) currentExS = false;
+    currentExM = margin;
 	currentExBG = bgpen;
     currentExFP = framepen;
-	currentExM = margin;
     if (ymax > 0)
     {
         currentFrEP = true;
         currentFrFC = (ymax*ratio, ymax);
-        if (crop) currentFrCP = true;
+        currentFrCP = clip;
     }
-    currentExS = false;
 }
 
-private picture framedpicture (picture pic)
+void invertcolors ()
 {
-	if (!currentFrEP) return pic;
-	picture aux;
-	aux = pic;
-	dot(aux, currentFrFC, invisible+linewidth(0));
-	dot(aux, -currentFrFC, invisible+linewidth(0));
-	if (currentFrCP)
-	{ clip(aux, (-currentFrFC -- (currentFrFC.x, -currentFrFC.y) -- currentFrFC -- (-currentFrFC.x, currentFrFC.y) -- cycle)); }
-	return aux;
+	currentExBG = inverse(currentExBG);
+	currentpen = inverse(currentpen);
+	smoothcolor = inverse(smoothcolor);
+	subsetcolor = inverse(subsetcolor);
+	currentDrIC = !currentDrIC;
+	currentDrExP = inverse(currentDrExP);
+    nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
+    dashpenscale = new pen (pen p) { return .3*p+dashed; };
+    shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
+}
+
+private void framepicture (picture pic)
+{
+    dot(pic, -currentFrFC, linewidth(0)+invisible);
+    dot(pic, currentFrFC, linewidth(0)+invisible);
+    if (currentFrCP) clip(pic, (-currentFrFC -- (currentFrFC.x, -currentFrFC.y) -- currentFrFC -- (-currentFrFC.x, currentFrFC.y) -- cycle));
 }
 
 bool exists (string filename)
@@ -151,27 +152,28 @@ void export (string prefix = currentExP,
                  pen framepen = currentExFP,
                  int density = currentExRID,
                  bool exit = currentExEOE,
-                 bool simple = currentExS,
+                 bool simple = false,
                  bool drawdeferred = true,
                  bool restore = currentExR)
 {
 	bool native = native(format);
 	settings.outformat = native ? format : "pdf";
+    restore = restore || currentFrEP;
 
     picture pic1 = restore ? pic.copy() : pic;
 
     void localshipout (string prefix1)
     {
-        if (simple && margin == 0 && bgpen == currentExBG && framepen == currentExFP)
+        if ((simple || (margin == 0 && bgpen == white && framepen == nullpen)))
         { plainshipout(prefix=prefix1, pic1, orientation, wait, view, options, script, light, P); }
         else
         {
-            picture aux = framedpicture(pic1);
-            shipout(prefix=prefix1, bbox(aux, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), wait, view, options, script, light, P);
+            shipout(prefix=prefix1, bbox(pic1, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), wait, view, options, script, light, P);
         }
     }
 
     if (drawdeferred) drawdeferred(pic1, flush = !restore);
+	if (currentFrEP) framepicture(pic1);
     if (native) localshipout(prefix);
     else
     {
@@ -184,11 +186,13 @@ void export (string prefix = currentExP,
         }
         else
         {
-            system("convert -density "+(string)density+" "+tempprefix+".pdf "+prefix+"."+format);
+            // system("convert -density "+(string)density+" "+tempprefix+".pdf "+prefix+"."+format);
+            convert(args = "-density "+(string)density+" "+tempprefix+".pdf", file = prefix+"."+format, format = format);
             delete(tempprefix+".pdf");
         }
     }
     if (exit) exit();
+    currentExE = true;
 }
 
 int numberoffiles (string dirname)
@@ -278,12 +282,13 @@ void animate (void update (int),
               string outformat = currentAnOF,
               int fps = currentAnFPS,
               bool clean = true,
-              bool exit = currentAnE)
+              bool exit = currentExEOE)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
     write("|", suffix = none);
     if (currentAnPC && currentAnCC == 0) clean();
+    if (!native(informat)) currentDrUO = false;
     
     string hash = (string)currentAnCC + (string)seconds();
     currentAnCC += 1;
@@ -455,5 +460,5 @@ shipout = new void (string prefix=outname(), picture pic=currentpicture,
 	     string options="", string script="",
 	     light light=currentlight, projection P=currentprojection)
 {
-    export(prefix, pic, orientation, format, wait, view, options, script, light, P);
+    if (!currentExE) export(prefix, pic, orientation, format, wait, view, options, script, light, P);
 };

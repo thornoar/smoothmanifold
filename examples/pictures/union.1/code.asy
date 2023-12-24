@@ -3,9 +3,8 @@ import export;
 settings.render = 8;
 
 size(30 cm);
-setframe(bgpen = paleyellow, margin = 1.5 cm);
-exportparams(exit = false);
-drawparams(dash = false);
+expar(bgpen = paleyellow, margin = 1.5 cm);
+smpar(dash = false);
 
 pair viewdir = dir(40);
 
@@ -35,5 +34,3 @@ draw(sm1, explain = false, mode = free);
 draw(sm2, explain = false, mode = free);
 draw(union, explain = true, mode = free);
 export(prefix = "picture (free mode)", format = "pdf");
-
-exit();

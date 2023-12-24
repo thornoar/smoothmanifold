@@ -4,9 +4,8 @@ settings.render = 16;
 settings.outformat = "pdf";
 
 size(15 cm);
-setframe(bgpen = paleyellow, margin = 1.5cm);
-exportparams(exit = false);
-sectionparams(freedom = .8);
+expar(bgpen = paleyellow, margin = 1.5cm, exit = false);
+smpar(scfreedom = .8);
 
 pair viewdir = dir(45);
 smooth sm1 = samplesmooth(3,1).move(scale = 1.1).view(viewdir);
