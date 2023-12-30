@@ -3,7 +3,7 @@ settings.render = 16;
 
 size(20 cm);
 expar(bgpen = paleyellow);
-smpar(smoothfill = lightcyan, subsetfill = lightblue, dash = false, gaplength = .15);
+smpar(smoothfill = lightcyan, subsetfill = lightblue, dash = false, gaplength = .15, arrowmargin = .12);
 
 pair viewdir = dir(-50);
 

@@ -16,7 +16,7 @@ void mydraw ()
 	draw(sm, mode = free, overlap = true);
 	draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = cartesian);
 
-	drawarrow(ts, rn, endarrow = Arrow(SimpleHead), beginarrow = BeginArrow(SimpleHead), curve = -.2, L = Label("$\cong$", align = Relative(W)));
+	drawarrow(ts, rn, endarrow = true, beginarrow = true, curve = -.2, L = Label("$\cong$", align = Relative(W)));
 	drawarrow(sm, rn, i(0), i(0), curve = .3, margin1 = .07, margin2 = .1, L = Label("$f$"));
 }
 

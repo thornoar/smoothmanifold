@@ -4,7 +4,7 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-smpar(minscale = .15, subsetoverlap = false);
+smpar(minscale = .05, subsetoverlap = false, gaplength = .03, smoothfill = lightgreen, subsetfill = cyan);
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 
@@ -18,6 +18,6 @@ sm.addsubset(contour = concavepath[2], point = (0,0), shift = (.25,.45), scale =
 sm.addsubset(contour = unitcircle, point = (0,0), scale = .2, shift = (.42,-.3));
 sm.addsubset(contour = unitcircle, point = (0,0), scale = .12, shift = (.4,-.33));
 
-draw(sm, mode = plain, subsetfill = cyan);
+draw(sm, mode = plain);
 
-export(prefix = "picture", format = "pdf", margin = .5cm, bgpen = paleyellow);
+export(prefix = "picture", format = "pdf", margin = 1cm, bgpen = paleyellow);
