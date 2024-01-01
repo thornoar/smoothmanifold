@@ -38,8 +38,8 @@ transform srap (real scale, real rotate, pair point)
 bool inside (real a, real b, real c)
 { return (a <= c && c <= b); }
 
-bool isinside (path p, pair x)
-{ return windingnumber(p, x) == windingnumber(p, inside(p)); }
+// bool isinside (path p, pair x)
+// { return windingnumber(p, x) == windingnumber(p, inside(p)); }
 
 bool insidepath (path p, path q)
 // Checks if q is completely inside p (the direction of p does not matter). Shorthand for inside(p, q) == 1
@@ -114,7 +114,7 @@ real arclength (path g, real a, real b)
 real relarctime (path g, real t0, real a)
 {
     real t0arc = arclength(g, 0, t0);
-    if (t0arc + a < 0 || t0arc + a > arclength(g)) return -arctime(g, mod(t0arc + a, arclength(g)));
+    if (t0arc + a < 0 || t0arc + a > arclength(g)) { return -arctime(g, mod(t0arc + a, arclength(g))); }
     return arctime(g, t0arc+a);
 }
 
@@ -260,7 +260,6 @@ pair operator cast (gauss g)
 
 path connect (path p, path q)
 // Connects `p` and `q` smoothly.
-// { return p -- (point(p, length(p)){dir(p, length(p))} .. {dir(q, 0)}point(q, 0)) -- q; }
 { return p{dir(p, length(p))}..{dir(q,0)}q; }
 
 path[] combination (path p, path q, int mode, bool round, real roundcoeff)
@@ -337,7 +336,6 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
             {
                 real begin = arctime(curpath, curarc);
                 real end = arctime(curpath, arclength(curpath)-curarc);
-                // finpath = subpath(curpath, begin, end)--(point(curpath, end){dir(curpath, end)}..{dir(curpath, begin)}point(curpath, begin))--cycle;
                 finpath = subpath(curpath, begin, end){dir(curpath, end)}..{dir(curpath, begin)}cycle;
             }
             res.push(finpath);

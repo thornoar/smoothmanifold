@@ -7,14 +7,14 @@ private string defaultAnFLN = ".animation_input_list.txt";
 // -- Changeables -- //
 // [Ex]port
 private string currentExP = outname(); // [P]refix
-private bool currentExEOE = false; // [E]xit [O]n [E]xport
+private bool currentExEOE = true; // [E]xit [O]n [E]xport
 private int currentExRID = 300; // [R]asterized [I]mage [D]ensity
 private pen currentExBG = white; // [B]ack[G]round
 private pen currentExFP = nullpen; // [F]rame [P]en
 private real currentExM = 0; // [M]argin
 // private bool currentExS = false; // [S]imple
 private bool currentExR = false; // [R]estore
-private bool currentExE = false; // [E]xported
+private bool currentExEF = false; // [E]xit [F]lag
 // [Fr]ame
 private bool currentFrEP = false; // [E]nclose [P]icture
 private bool currentFrCP = false; // [C]lip [P]icture
@@ -66,7 +66,8 @@ void expar (string prefix = currentExP,
                     bool clip = currentFrCP,
                     pen bgpen = currentExBG,
                     pen framepen = currentExFP,
-                    real margin = currentExM)
+                    real margin = currentExM,
+                    pair size = (dn,dn))
 {
 	if (dpi < 10)
 	{ halt("Could not apply changes: inacceptable quality."); }
@@ -99,6 +100,7 @@ void expar (string prefix = currentExP,
 
     // if (margin > 0 || bgpen != currentExBG || framepen != currentExFP) currentExS = false;
     currentExM = margin;
+    if (size.x >= 0 && size.y >= 0) size(size.x, size.y);
 	currentExBG = bgpen;
     currentExFP = framepen;
     if (ymax > 0)
@@ -186,13 +188,12 @@ void export (string prefix = currentExP,
         }
         else
         {
-            // system("convert -density "+(string)density+" "+tempprefix+".pdf "+prefix+"."+format);
             convert(args = "-density "+(string)density+" "+tempprefix+".pdf", file = prefix+"."+format, format = format);
             delete(tempprefix+".pdf");
         }
     }
-    if (exit) exit();
-    currentExE = true;
+    // if (exit) exit();
+    if (exit) currentExEF = true;
 }
 
 int numberoffiles (string dirname)
@@ -460,5 +461,6 @@ shipout = new void (string prefix=outname(), picture pic=currentpicture,
 	     string options="", string script="",
 	     light light=currentlight, projection P=currentprojection)
 {
-    if (!currentExE) export(prefix, pic, orientation, format, wait, view, options, script, light, P);
+    if (!currentExEF) export(prefix, pic, orientation, format, wait, view, options, script, light, P);
+    // else write("Exit flag is true -- will not shipout picture");
 };
