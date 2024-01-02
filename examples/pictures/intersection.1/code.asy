@@ -16,8 +16,4 @@ void mydraw ()
 { drawintersect(sm1, sm2, shift = (0, -2.5)); }
 
 mydraw();
-export("picture", "pdf", 1 cm, exit = false);
-erase();
-smpar(explain = true);
-mydraw();
-export("picture (marked)", "pdf", 1 cm);
+export("picture", "pdf", 1 cm);

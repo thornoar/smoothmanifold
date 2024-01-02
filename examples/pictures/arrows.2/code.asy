@@ -3,7 +3,7 @@ settings.render = 16;
 
 size(20 cm);
 expar(bgpen = paleyellow);
-smpar(smoothfill = lightcyan, subsetfill = lightblue, dash = false, gaplength = .15, arrowmargin = .12);
+smpar(fill = false, dash = false, gaplength = .15, arrowmargin = .12);
 
 pair viewdir = dir(-50);
 
@@ -25,8 +25,4 @@ void mydraw ()
 }
 
 mydraw();
-export("picture", "pdf", 1.5 cm, exit = false);
-erase();
-smpar(fill = false);
-mydraw();
-export("picture (hollow)", "pdf", 1.5 cm);
+export("picture", "pdf", 1.5 cm);

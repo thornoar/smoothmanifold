@@ -16,21 +16,7 @@ union.setlabel(labeldir = dir(110));
 union.addsection(0, a(1, -.15, 40, 1));
 union.move(shift = (3.5,0));
 
-draw(sm1, explain = false, mode = plain);
-draw(sm2, explain = false, mode = plain);
-draw(union, explain = true, mode = plain);
-export(prefix = "picture (plain mode)", format = "pdf");
-
-erase();
-
-draw(sm1, explain = false, mode = cartesian);
-draw(sm2, explain = false, mode = cartesian);
-draw(union, explain = true, mode = cartesian);
-export(prefix = "picture (cartesian mode)", format = "pdf");
-
-erase();
-
 draw(sm1, explain = false, mode = free);
 draw(sm2, explain = false, mode = free);
 draw(union, explain = true, mode = free);
-export(prefix = "picture (free mode)", format = "pdf");
+export(prefix = "picture", format = "pdf");

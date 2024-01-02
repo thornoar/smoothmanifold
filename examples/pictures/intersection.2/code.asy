@@ -4,7 +4,7 @@ settings.render = 16;
 settings.outformat = "pdf";
 
 size(15 cm);
-expar(bgpen = paleyellow, margin = 1.5cm, exit = false);
+expar(bgpen = paleyellow, margin = 1.5cm);
 smpar(scfreedom = .8);
 
 pair viewdir = dir(45);
@@ -18,13 +18,5 @@ smooth sm3 = intersect(sm1, sm2);
 sm3.setsection(1, 0, a(-2,4,240,dn));
 sm3.setsection(0, 0, a(dn,dn,220,dn));
 
-save();
 draw(sm3, explain = false, mode = free);
-export(prefix = "picture (free mode)");
-restore();
-
-save();
-draw(sm3, explain = false, mode = plain);
-export(prefix = "picture (plain mode)");
-
-exit();
+export(prefix = "picture");

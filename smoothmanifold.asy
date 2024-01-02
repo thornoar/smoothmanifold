@@ -2898,7 +2898,8 @@ private void fitpath (picture pic,
             bool res = curunder;
             if (inside && covermode < 2)
             {
-                if (covermode == 0) { res = true; }
+                if (covermode == 1) { res = true; }
+                else if (covermode == -1) { res = false; }
                 else { res = !res; }
             }
             return res;
@@ -2986,14 +2987,12 @@ private void fitpath (picture pic,
                 }
             }
 
-            // if (inside(gs, beginpoint(g[0])))
-            // if (inside(gs, endpoint(g[g.length-1])))
-            if (abs(beginpoint(newg[0]) - beginpoint(g[0])) > defaultSySN)
+            if (abs(beginpoint(newg[0]) - beginpoint(g[0])) > currentDrGL)
             {
                 curdp[i].beginarrow = false;
                 curdp[i].beginbar = false;
             }
-            if (abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > defaultSySN)
+            if (abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > currentDrGL)
             {
                 curdp[i].endarrow = false;
                 curdp[i].endbar = false;
@@ -3160,7 +3159,7 @@ void draw (picture pic = currentpicture,
     {
         for (int i = 0; i < contour.length; ++i)
         {
-            fitpath(pic = pic, overlap = overlap || sm.isderivative, covermode = 1, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+            fitpath(pic = pic, overlap = overlap || sm.isderivative, covermode = 0, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
         }
     }
 
@@ -3288,7 +3287,7 @@ void draw (picture pic = currentpicture,
         {
             if (!sm.subsets[i].isderivative)
             {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO, covermode = 3, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, overlap = overlap || currentDrSCO, covermode = 2, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
     }
@@ -3420,7 +3419,8 @@ smooth[] drawintersect (picture pic = currentpicture,
 
     smp1.subsets.delete();
     smp2.subsets.delete();
-
+    smp1.label = "";
+    smp2.label = "";
     draw(pic, smp1, contourpen = ghostpen, smoothfill = invisible, mode = plain);
     draw(pic, smp2, contourpen = ghostpen, smoothfill = invisible, mode = plain);
 
@@ -3718,6 +3718,7 @@ void drawdeferred (picture pic = currentpicture, bool flush = true)
             else if (endbar) truebar = EndBar(barsize);
             else truebar = None;
             draw(pic = pic, g[0], p = under[0] ? underp : p, arrow = truearrow, bar = truebar);
+            return;
         }
 
         for (int j = startind; j <= finishind; ++j)

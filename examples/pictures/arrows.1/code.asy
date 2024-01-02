@@ -2,7 +2,7 @@ import export;
 settings.render = 16;
 size(25 cm);
 
-smpar(gaplength = .1, shiftsubsets = true);
+smpar(gaplength = .1, shiftsubsets = true, fill = true);
 expar(bgpen = paleyellow, margin = 2 cm);
 
 pair viewdir = dir(25);
@@ -41,7 +41,3 @@ void mydraw ()
 mydraw();
 
 export("picture", "pdf");
-erase();
-smpar(fill = false);
-mydraw();
-export("picture (hollow)", "pdf");
