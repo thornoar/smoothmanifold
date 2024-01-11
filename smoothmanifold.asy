@@ -1013,8 +1013,7 @@ private void subsetcleanreferences (subset[] subsets)
         }
     }
 
-    for (int i = 0; i < subsets.length; ++i)
-    { clean(i); }
+    for (int i = 0; i < subsets.length; ++i) { clean(i); }
 }
 
 struct smooth
