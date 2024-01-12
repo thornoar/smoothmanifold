@@ -2889,7 +2889,6 @@ private void fitpath (picture pic,
 
 	if (!overlap)
     {
-        int length = curdp.length;
         bool gscyclic = cyclic(gs);
 
         bool under (bool inside, bool curunder)
@@ -2904,7 +2903,7 @@ private void fitpath (picture pic,
             return res;
         }
 
-		for (int i = 0; i < length; ++i)
+		for (int i = 0; i < curdp.length; ++i)
 		{
             path[] g = curdp[i].g;
             path[] newg;
@@ -2986,19 +2985,26 @@ private void fitpath (picture pic,
                 }
             }
 
-            if (abs(beginpoint(newg[0]) - beginpoint(g[0])) > currentDrGL)
+            if (newg.length > 0 || newunder.length > 0)
             {
-                curdp[i].beginarrow = false;
-                curdp[i].beginbar = false;
+                if (newg.length > 0 && abs(beginpoint(newg[0]) - beginpoint(g[0])) > currentDrGL)
+                {
+                    curdp[i].beginarrow = false;
+                    curdp[i].beginbar = false;
+                }
+                if (newg.length > 0 && abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > currentDrGL)
+                {
+                    curdp[i].endarrow = false;
+                    curdp[i].endbar = false;
+                }
+                curdp[i].g = newg;
+                curdp[i].under = newunder;
             }
-            if (abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > currentDrGL)
+            else
             {
-                curdp[i].endarrow = false;
-                curdp[i].endbar = false;
+                curdp.delete(i);
+                i -= 1;
             }
-
-            curdp[i].g = newg;
-            curdp[i].under = newunder;
 		}
     }
     if (!drawnow)
