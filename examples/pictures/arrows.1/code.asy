@@ -9,7 +9,7 @@ pair viewdir = dir(25);
 
 smooth sm1 = samplesmooth(3,0).move(rotate = -50);
 sm1.setlabel("M", labeldir = dir(100));
-sm1.setlabel(ind = i(0), label = "U", labeldir = dir(180));
+sm1.setlabel(indexpath = i(0), label = "U", labeldir = dir(180));
 sm1.view(viewdir);
 
 smooth sm2 = samplesmooth(1).move(shift = (4,0), rotate = 90);
@@ -17,9 +17,9 @@ smooth sm2 = samplesmooth(1).move(shift = (4,0), rotate = 90);
 sm2.rmsubset(i(0));
 sm2.addsubset(contour = convexpath[4], shift = (.55,.8), scale = .26, rotate = -20);
 sm2.addsubset(contour = concavepath[2], shift = (0,.15), scale = .49, rotate = 150).setlabel(i(1), "W", labeldir = dir(-110));
-sm2.addsubset(ind = i(1), contour = convexpath[2], shift = (-.25,.4), scale = .25, rotate = 0);
-sm2.addsubset(ind = i(1), contour = convexpath[1], shift = (.45,.17), scale = .17, rotate = -20);
-sm2.movesubset(ind = i(1), recursive = true, rotate = -10);
+sm2.addsubset(indexpath = i(1), contour = convexpath[2], shift = (-.25,.4), scale = .25, rotate = 0);
+sm2.addsubset(indexpath = i(1), contour = convexpath[1], shift = (.45,.17), scale = .17, rotate = -20);
+sm2.movesubset(indexpath = i(1), recursive = true, rotate = -10);
 sm2.setlabel("N", labeldir = dir(-30));
 sm2.setlabel(i(0), label = "V", labeldir = dir(150));
 sm2.view(viewdir, false);

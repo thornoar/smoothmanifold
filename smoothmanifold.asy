@@ -878,40 +878,40 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = cur
 		);
 	}, contours.length);
 }
-private void subsetdelete (subset[] subsets, int ind, bool recursive)
+private void subsetdelete (subset[] subsets, int index, bool recursive)
 {
-	subset cursb = subsets[ind];
+	subset cursb = subsets[index];
 	if (recursive)
 	{
 		for (int i = 0; i < cursb.subsets.length; ++i)
 		{ subsetdelete(subsets, cursb.subsets[i], recursive); }
 	}
-	subsets.delete(ind);
+	subsets.delete(index);
 	for (int i = 0; i < subsets.length; ++i)
 	{
 		for (int j = 0; j < subsets[i].subsets.length; ++j)
 		{
-			if (subsets[i].subsets[j] == ind) subsets[i].subsets.delete(j);
-			if (subsets[i].subsets[j] > ind) subsets[i].subsets[j] -= 1;
+			if (subsets[i].subsets[j] == index) subsets[i].subsets.delete(j);
+			if (subsets[i].subsets[j] > index) subsets[i].subsets[j] -= 1;
 		}
 	}
 }
 private void subsetsort (subset[] subsets, int[] range)
 { range = sort(range, new bool (int i, int j){return subsets[i].layer < subsets[j].layer;}); }
 
-private int subsetgetindex (subset[] subsets, int[] ind)
+private int subsetgetindex (subset[] subsets, int[] indexpath)
 {
-	int res = ind[0];
-	for (int i = 1; i < ind.length; ++i)
-	{ res = subsets[res].subsets[ind[i]]; }
+	int res = indexpath[0];
+	for (int i = 1; i < indexpath.length; ++i)
+	{ res = subsets[res].subsets[indexpath[i]]; }
 	return res;
 }
-private int subsetgetindex (subset[] subsets ... int[] ind)
-{ return subsetgetindex(subsets, ind); } // try to change later
-private subset subsetget (subset[] subsets, int[] ind)
-{ return subsets[subsetgetindex(subsets, ind)]; }
-private subset subsetget (subset[] subsets ... int[] ind)
-{ return subsets[subsetgetindex(subsets, ind)]; }
+private int subsetgetindex (subset[] subsets ... int[] indexpath)
+{ return subsetgetindex(subsets, indexpath); } // try to change later
+private subset subsetget (subset[] subsets, int[] indexpath)
+{ return subsets[subsetgetindex(subsets, indexpath)]; }
+private subset subsetget (subset[] subsets ... int[] indexpath)
+{ return subsets[subsetgetindex(subsets, indexpath)]; }
 
 private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 {
@@ -937,17 +937,17 @@ private int[] subsetgetall (subset[] subsets, subset s)
 	{ if (wanted[i]) res.push(i); }
 	return res;
 }
-private int[] subsetgetall (subset[] subsets, int ind)
-{ return subsetgetall(subsets, subsets[ind]); }
-private int[] subsetgetall (subset[] subsets, int[] ind)
-{ return subsetgetall(subsets, subsetget(subsets, ind)); }
+private int[] subsetgetall (subset[] subsets, int index)
+{ return subsetgetall(subsets, subsets[index]); }
+private int[] subsetgetall (subset[] subsets, int[] indexpath)
+{ return subsetgetall(subsets, subsetget(subsets, indexpath)); }
 
 private int[] subsetgetallnot (subset[] subsets, subset s)
 { return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
-private int[] subsetgetallnot (subset[] subsets, int ind)
-{ return difference(sequence(subsets.length), subsetgetall(subsets, ind)); }
-private int[] subsetgetallnot (subset[] subsets, int[] ind)
-{ return difference(sequence(subsets.length), subsetgetall(subsets, ind)); }
+private int[] subsetgetallnot (subset[] subsets, int index)
+{ return difference(sequence(subsets.length), subsetgetall(subsets, index)); }
+private int[] subsetgetallnot (subset[] subsets, int[] indexpath)
+{ return difference(sequence(subsets.length), subsetgetall(subsets, indexpath)); }
 
 private void subsetdeepen (subset[] subsets, subset s)
 {
@@ -1265,35 +1265,35 @@ struct smooth
         
         return this;
     }
-    smooth setcenter (int[] ind = {}, pair center = center(this.contour), bool unit = true)
+    smooth setcenter (int[] indexpath = {}, pair center = center(this.contour), bool unit = true)
     {
-		if (ind.length == 0) this.center = unit ? shift(this.shift)*center : center;
-		else subsetget(this.subsets, ind).setcenter(unit ? shift(this.shift)*center : center);
+		if (indexpath.length == 0) this.center = unit ? shift(this.shift)*center : center;
+		else subsetget(this.subsets, indexpath).setcenter(unit ? shift(this.shift)*center : center);
         
 		if (!this.inside(this.center))
 		{ write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
 
         return this;
     }
-    smooth setlabel (int[] ind = {},
+    smooth setlabel (int[] indexpath = {},
                      string label = this.label,
                      pair labeldir = this.labeldir,
                      pair labelalign = defaultSyDP,
                      bool keepalign = false)
     {
-		if (ind.length == 0)
+		if (indexpath.length == 0)
 		{
 			this.label = label;
 			this.labeldir = labeldir == defaultSyDP ? this.labeldir : labeldir;
 			this.labelalign = keepalign ? this.labelalign : (labelalign == defaultSyDP) ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
 		}
 		else
-		{ subsetget(this.subsets, ind).setlabel(label, labeldir, labelalign, keepalign); }
+		{ subsetget(this.subsets, indexpath).setlabel(label, labeldir, labelalign, keepalign); }
 
         return this;
     }
-    smooth setlabel (int[] ind = {}, string label = this.label, real angle)
-    { return this.setlabel(ind, label, dir(angle)); }
+    smooth setlabel (int[] indexpath = {}, string label = this.label, real angle)
+    { return this.setlabel(indexpath, label, dir(angle)); }
 
     // -- User functions for manipulating elements -- //
 
@@ -1322,20 +1322,20 @@ struct smooth
         this.elements[ind] = elt;
         return this;
     }
-    smooth setelement (int ind, pair pos, string label = "", pair labelalign = S, bool unit = true)
-    { return this.setelement(ind, element(pos, label, labelalign), unit); }
+    smooth setelement (int index, pair pos, string label = "", pair labelalign = S, bool unit = true)
+    { return this.setelement(index, element(pos, label, labelalign), unit); }
     smooth setelement (string label, element elt, bool unit = true)
     { return this.setelement(this.getelement(label), elt, unit); }
     smooth setelement (string label, pair pos, string newlabel = "", pair labelalign = S, bool unit = true)
     { return this.setelement(this.getelement(label), pos, newlabel, labelalign, unit); }
-    smooth rmelement (int ind)
+    smooth rmelement (int index)
     {
-        this.elements.delete(ind);
+        this.elements.delete(index);
         return this;
     }
-    smooth movelement (int ind, pair shift)
+    smooth movelement (int index, pair shift)
     {
-        this.elements[ind].pos += shift;
+        this.elements[index].pos += shift;
         return this;
     }
     smooth movelement (string label, pair shift)
@@ -1343,7 +1343,7 @@ struct smooth
 
     // -- User functions for manipulating holes -- //
 
-    smooth addhole (hole hl, int ind = this.holes.length, bool unit = true)
+    smooth addhole (hole hl, int index = this.holes.length, bool unit = true)
     {
 		if (unit) holeadjust(hl, this.shift, this.scale, 0, this.center);
 		if (!insidepath(this.contour, hl.contour))
@@ -1399,7 +1399,7 @@ struct smooth
             if (hl.sections[i][3] == defaultSyDN || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = currentsection[3];
         }
 
-        this.holes.insert(i = ind, hl);
+        this.holes.insert(i = index, hl);
 		return this;
     }
     smooth addhole (path contour,
@@ -1435,37 +1435,37 @@ struct smooth
     smooth addholes (bool unit = true
                      ... path[] contours)
     { return this.addholes(contours = contours, unit = unit); }
-    smooth rmhole (int ind)
+    smooth rmhole (int index)
     {
-     	this.holes.delete(ind);
+     	this.holes.delete(index);
         return this;
     }
-    smooth rmholes (int[] inds)
+    smooth rmholes (int[] indices)
     {
-        inds = sort(inds);
-        for (int i = inds.length-1; i >= 0; i -= 1)
-        { this.holes.delete(inds[i]); }
+        indices = sort(indices);
+        for (int i = indices.length-1; i >= 0; i -= 1)
+        { this.holes.delete(indices[i]); }
         return this;
     }
-    smooth rmholes (... int[] inds)
-    { return this.rmholes(inds); }
-    smooth movehole (int ind,
+    smooth rmholes (... int[] indices)
+    { return this.rmholes(indices); }
+    smooth movehole (int index,
                      pair shift = (0,0),
                      real scale = 1,
                      real rotate = 0,
-                     pair point = this.holes[ind].center,
+                     pair point = this.holes[index].center,
                      bool movesections = false,
                      bool keepview = false)
     {
 		pair viewdir = this.viewdir;    
 		
 		if (!keepview) this.dropview();
-		this.holes[ind].move(shift, scale, rotate, point, movesections);
+		this.holes[index].move(shift, scale, rotate, point, movesections);
 		if (!keepview) this.setview(viewdir);
 
         return this;
     }
-    smooth addsection (int ind, real[] section = {}, bool unit = false)
+    smooth addsection (int index, real[] section = {}, bool unit = false)
     {
         if (!checksection(section))
         {
@@ -1476,17 +1476,17 @@ struct smooth
 		{ if (section[i] == defaultSyDN) section[i] = currentsection[i]; }
         while (section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
-		pair holedir = (this.holes[ind].center == this.center) ? (-1,0) : unit(this.holes[ind].center - this.center);
+		pair holedir = (this.holes[index].center == this.center) ? (-1,0) : unit(this.holes[index].center - this.center);
 		if (section[0] == defaultSyDN || section[1] == defaultSyDN)
 		{
 			section[0] = holedir.x;
 			section[1] = holedir.y;
 		}
 
-        this.holes[ind].sections.push(section);
+        this.holes[index].sections.push(section);
         return this;
     }
-    smooth setsection (int ind, int ind2 = 0, real[] section = {}, bool unit = false)
+    smooth setsection (int index, int ind2 = 0, real[] section = {}, bool unit = false)
     {
         while (section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
@@ -1495,16 +1495,16 @@ struct smooth
             write("> ? Could not set hole section: invalid entries. [ setsection() ]");
             return this;
         }
-        real[] cursection = this.holes[ind].sections[ind2];
+        real[] cursection = this.holes[index].sections[ind2];
         int len = min(section.length, cursection.length);
         for (int i = 0; i < len; ++i)
         { if (section[i] != defaultSyDN) cursection[i] = section[i]; }
 
         return this;
     }
-    smooth rmsection (int ind, int ind2 = 0)
+    smooth rmsection (int index, int ind2 = 0)
     {
-        this.holes[ind].sections.delete(ind2);
+        this.holes[index].sections.delete(ind2);
         return this;
     }
 
@@ -1519,11 +1519,11 @@ struct smooth
         write("> ? Could not find subset: no subset with such label. Returning -1. [ getsubset() ]");
         return -1;
     }
-	smooth addsubset (subset sb, int[] ind = i(defaultSyDN), bool unit = true)
+	smooth addsubset (subset sb, int[] indexpath = i(defaultSyDN), bool unit = true)
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
 		
-		if (ind.length > 0 && ind[0] == defaultSyDN)
+		if (indexpath.length > 0 && indexpath[0] == defaultSyDN)
 		{
 			int layer = -1;
 			int index = -1;
@@ -1549,7 +1549,7 @@ struct smooth
                 if (this.subsets[i].layer == 0) findindex(i);
                 if (found) return this.addsubset(sb, i(index), false);
 			}
-            ind = new int[] {};
+            indexpath = new int[] {};
 		}
         if (sb.subsets.length > 0)
         {
@@ -1560,11 +1560,11 @@ struct smooth
 		path pcontour;
 		int[] range;
 		subset parent;
-		bool sub = ind.length > 0;
+		bool sub = indexpath.length > 0;
 
 		if (sub)
 		{
-			parent = subsetget(this.subsets, ind);
+			parent = subsetget(this.subsets, indexpath);
 			sb.layer = parent.layer + 1;
 			pcontour = parent.contour;
 			range = parent.subsets;
@@ -1600,7 +1600,7 @@ struct smooth
 			if (insidepath(this.subsets[range[i]].contour, sb.contour))
 			{
 				currentPrDP.push(sb.contour);
-				write("> ? Could not add subset: contour is contained in another subset unlisted in `ind`. It will be drawn in red on the final picture. [ addsubset() ]");
+				write("> ? Could not add subset: contour is contained in another subset unlisted in `indexpath`. It will be drawn in red on the final picture. [ addsubset() ]");
 				return this;
 			}
         }
@@ -1665,8 +1665,8 @@ struct smooth
                 }
                 
                 intersectwith(cursb.subsets[j]);
-                int ind = intersectionindices[cursb.subsets[j]];
-                if (ind > -1) intersectsb.subsets.push(ind);
+                int index = intersectionindices[cursb.subsets[j]];
+                if (index > -1) intersectsb.subsets.push(index);
             }
 
             cursb.subsets.push(intersectindex);
@@ -1678,15 +1678,15 @@ struct smooth
             if (terminate) return this;
             
             intersectwith(range[i]);
-            int ind = intersectionindices[range[i]];
-            if (ind > -1) sb.subsets.push(ind);
+            int index = intersectionindices[range[i]];
+            if (index > -1) sb.subsets.push(index);
         }
 
 		if (sub) parent.subsets.push(insertindex);
         subsetcleanreferences(this.subsets);
 		return this;
 	}
-	smooth addsubset (int[] ind = i(defaultSyDN),
+	smooth addsubset (int[] indexpath = i(defaultSyDN),
                       path contour,
                       pair shift = (0,0),
                       real scale = 1,
@@ -1697,7 +1697,7 @@ struct smooth
                       pair labelalign = S,
                       bool unit = true)
 	{
-		return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), ind = ind, unit = unit);
+		return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit);
 	}
     smooth addsubset (string destlabel,
                       subset sb,
@@ -1714,18 +1714,18 @@ struct smooth
                       pair labelalign = S,
                       bool unit = true)
     { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
-    smooth addsubsets (subset[] sbs, int[] ind = i(defaultSyDN), bool unit = true)
+    smooth addsubsets (subset[] sbs, int[] indexpath = i(defaultSyDN), bool unit = true)
     {
         for (int i = 0; i < sbs.length; ++i)
-        { this.addsubset(sbs[i], ind, unit); }
+        { this.addsubset(sbs[i], indexpath, unit); }
 
         return this;
     }
-    smooth addsubsets (int[] ind = i(defaultSyDN),
+    smooth addsubsets (int[] indexpath = i(defaultSyDN),
                        bool unit = true
                        ... subset[] sbs)
-    { return this.addsubsets(sbs, ind, unit); }
-    smooth addsubsets (int[] ind = i(defaultSyDN),
+    { return this.addsubsets(sbs, indexpath, unit); }
+    smooth addsubsets (int[] indexpath = i(defaultSyDN),
                        path[] contours,
                        pair[] shifts = array(contours.length, value = (0,0)),
                        real[] scales = array(contours.length, value = 1),
@@ -1735,12 +1735,12 @@ struct smooth
     {
         return this.addsubsets(sbs = sequence(new subset(int i){
             return subset(contour = contours[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
-        }, contours.length), ind = ind, unit = unit);
+        }, contours.length), indexpath = indexpath, unit = unit);
     }
-    smooth addsubsets (int[] ind = i(defaultSyDN),
+    smooth addsubsets (int[] indexpath = i(defaultSyDN),
                        bool unit = true
                        ... path[] contours)
-    { return this.addsubsets(ind = ind, contours = contours, unit = unit); }
+    { return this.addsubsets(indexpath = indexpath, contours = contours, unit = unit); }
     smooth addsubsets (string label, subset[] sbs, bool unit)
     { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
     smooth addsubsets (string label,
@@ -1760,23 +1760,23 @@ struct smooth
                        ... path[] contours)
     { return this.addsubsets(i(this.getsubset(label)), contours = contours, unit = unit); }
 
-	smooth rmsubset (int ind, bool recursive = true)
+	smooth rmsubset (int index, bool recursive = true)
 	{
-		subsetdelete(this.subsets, ind, recursive);
+		subsetdelete(this.subsets, index, recursive);
 		return this;
 	}
-	smooth rmsubset (int[] ind, bool recursive = true)
-	{ return this.rmsubset(subsetgetindex(this.subsets, ind), recursive); }
+	smooth rmsubset (int[] indexpath, bool recursive = true)
+	{ return this.rmsubset(subsetgetindex(this.subsets, indexpath), recursive); }
     smooth rmsubset (string label, bool recursive = true)
     { return this.rmsubset(this.getsubset(label), recursive); }
-    smooth rmsubsets (int[] inds, bool recursive = true)
+    smooth rmsubsets (int[] indices, bool recursive = true)
     {
-        for (int i = 0; i < inds.length; ++i)
-        { this.rmsubset(inds[i], recursive); }
+        for (int i = 0; i < indices.length; ++i)
+        { this.rmsubset(indices[i], recursive); }
         return this;
     }
-    smooth rmsubsets (bool recursive = true ... int[] inds)
-    { return this.rmsubsets(inds, recursive); }
+    smooth rmsubsets (bool recursive = true ... int[] indices)
+    { return this.rmsubsets(indices, recursive); }
     smooth rmsubsets (string[] labels, bool recursive = true)
     { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
     smooth rmsubsets (bool recursive = true ... string[] labels)
@@ -1784,9 +1784,9 @@ struct smooth
 
     // -- User function for moving subset globally or within containing subset -- //
 
-	private bool onlyprimary (int ind)
+	private bool onlyprimary (int index)
 	{
-		subset s = this.subsets[ind];
+		subset s = this.subsets[index];
 		
 		bool res = true;
 		for (int i = 0; i < s.subsets.length; ++i)
@@ -1800,9 +1800,9 @@ struct smooth
 
 		return res;
 	}
-	private bool onlysecondary (int ind)
+	private bool onlysecondary (int index)
 	{
-		subset s = this.subsets[ind];
+		subset s = this.subsets[index];
 		
 		bool res = true;
 		for (int i = 0; i < s.subsets.length; ++i)
@@ -1817,7 +1817,7 @@ struct smooth
 
 		return res;
 	}
-	smooth movesubset (int[] ind,
+	smooth movesubset (int[] indexpath,
                        pair shift = (0,0),
                        real scale = 1,
                        real rotate = 0,
@@ -1826,11 +1826,11 @@ struct smooth
                        bool recursive = true,
                        bool keepview = false)
 	{
-		bool sub = ind.length > 1;
-		int index = subsetgetindex(this.subsets, ind);
+		bool sub = indexpath.length > 1;
+		int index = subsetgetindex(this.subsets, indexpath);
 		subset cursb = this.subsets[index];
 		point = (point == defaultSyDP) ? cursb.center : point;
-		int relindex = ind.pop();
+		int relindex = indexpath.pop();
 		int[] allsubsets = subsetgetall(this.subsets, cursb);
 
 		if (cursb.isderivative) 
@@ -1840,7 +1840,7 @@ struct smooth
 		int[] range; 
 		if (sub)
 		{
-			subset parent = subsetget(this.subsets, ind);
+			subset parent = subsetget(this.subsets, indexpath);
 			pcontour = parent.contour;
 			range = parent.subsets;
 			range.delete(relindex);
