@@ -2,7 +2,7 @@
 
 ## Description
 
-`smoothmanifold` is an [Asymptote](https://asymptote.sourceforge.io/) programming language library (module) that allows one to quickly and easily create and render high-quality diagrams in set-theoretical mathematics, that is, set theory, topology, differential geometry, etc.
+An [Asymptote](https://asymptote.sourceforge.io/) programming language library (module) that allows one to quickly and easily create and render high-quality diagrams in set-theoretical mathematics, that is, set theory, topology, differential geometry, etc.
 
 Specifically the functionality focuses on set theory diagrams (sets, subsets, maps, elements) and differential geometry diagrams (smooth manifolds, tangent spaces, $\mathbb{R}^n$). The style of the figures is based on how they would be drawn in a textbook or in lecture notes. Three-dimensional objects (referred to as 'smooth objects') can be drawn, that resemble smooth manifolds in $\mathbb{R}^3$: spheres, tori, planes and other surfaces. However, most importantly, `smoothmanifold` does __not__ depend on the module `three` to render three-dimensional objects. They all are, in fact, completely flat, but made __look__ three-dimensional by imitating perspective and cross sections. This means that smooth objects enjoy all the benefits of vector graphics, which is one of Asymptote's selling points and which works (almost) only in 2D.
 
