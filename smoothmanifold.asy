@@ -275,6 +275,8 @@ int free = 0;
 int cartesian = 1;
 int plain = 2;
 int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
+arrowbar simple = Arrow(SimpleHead);
+arrowbar simples = Arrows(SimpleHead);
 
 // -- Auxiliary utilities -- //
 
@@ -346,36 +348,36 @@ pen underpen (pen p)
 // -- User setting functions -- //
 
 void smpar (real[] section = currentsection,
-          real scfreedom = currentSeF,
-          int scholenumber = currentSeIHSN,
-          real scholeangle = currentIHSA,
-          real scprecision = currentSeEP,
-          real scmaxlength = currentSeMLR,
-          bool scavoidsubsets = currentSeAS,
-              int mode = currentDrM,
-              pen smoothfill = smoothcolor,
-              pen subsetfill = subsetcolor,
-              real minscale = currentDrSPM,
-              bool overlap = currentDrO,
-              bool subsetoverlap = currentDrSCO,
-              bool drawnow = currentDrDN,
-              bool explain = currentDrE,
-              pen explainpen = currentDrExP,
-              real dragop = currentDrDO,
-              bool dash = currentDrDD,
-              bool useopacity = currentDrUO,
-              real dashscale = currentDrDPS,
-              real dashop = currentDrDPO,
-              bool shade = currentDrDS,
-              bool fill = currentDrF,
-              bool fillsubsets = currentDrFS,
-              real sectionpenscale = currentDrSePS,
-              pen sectionpen = currentDrSeOP,
-              real elementwidth = currentDrElPW,
-              bool inferlabels = currentSmIL,
-              bool shiftsubsets = currentSmSS,
-              real gaplength = currentDrGL,
-              real arrowmargin = currentArM)
+            real scfreedom = currentSeF,
+            int scholenumber = currentSeIHSN,
+            real scholeangle = currentIHSA,
+            real scprecision = currentSeEP,
+            real scmaxlength = currentSeMLR,
+            bool scavoidsubsets = currentSeAS,
+                int mode = currentDrM,
+                pen smoothfill = smoothcolor,
+                pen subsetfill = subsetcolor,
+                real minscale = currentDrSPM,
+                bool overlap = currentDrO,
+                bool subsetoverlap = currentDrSCO,
+                bool drawnow = currentDrDN,
+                bool explain = currentDrE,
+                pen explainpen = currentDrExP,
+                real dragop = currentDrDO,
+                bool dash = currentDrDD,
+                bool useopacity = currentDrUO,
+                real dashscale = currentDrDPS,
+                real dashop = currentDrDPO,
+                bool shade = currentDrDS,
+                bool fill = currentDrF,
+                bool fillsubsets = currentDrFS,
+                real sectionpenscale = currentDrSePS,
+                pen sectionpen = currentDrSeOP,
+                real elementwidth = currentDrElPW,
+                bool inferlabels = currentSmIL,
+                bool shiftsubsets = currentSmSS,
+                real gaplength = currentDrGL,
+                real arrowmargin = currentArM)
 {
 	if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
 	{ halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
