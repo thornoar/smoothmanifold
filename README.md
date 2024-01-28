@@ -66,7 +66,7 @@ Download the `smoothmanifold.asy`, `pathmethods.asy`, and (optionally) `export.a
 import smoothmanifold;
 ```
 
-Make sure that the files are visible for Asymptote to import. You can specify the import directory by assigning the `settings.dir` variable in your `config.asy` file. For details of search paths refer to the official documentation.
+Make sure that the files are visible for Asymptote to import. You can specify the import directory by assigning the `settings.dir` variable in your `config.asy` file. For details of search paths refer to the official [documentation](https://asymptote.sourceforge.io/doc/Search-paths.html).
 
 You can clone this git repository to receive regular updates.
 
