@@ -3,7 +3,7 @@
 This is module smoothmanifold. It is designed to construct and render
 high-quality Asymptote figures that display sets as 2D or 3D surfaces on the plane.
 
-Copyright (C) 2023 Maksimovich Roman Alekseevich. All rights reserved.
+Copyright (C) 2024 Maksimovich Roman Alekseevich. All rights reserved.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
