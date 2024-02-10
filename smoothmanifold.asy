@@ -712,20 +712,23 @@ struct hole
     path contour;
     pair center;
     real[][] sections;
+    int scnumber;
 
-    void operator init (path contour, pair center = center(contour), real[][] sections = {}, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
+    void operator init (path contour, pair center = center(contour), real[][] sections = {}, int scnumber = currentSeIHSN, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
     {
         if (copy)
         {
             this.contour = contour;
             this.center = center;
             this.sections = sections;
+            this.scnumber = scnumber;
         }
         else
         {
             path pseudocontour = shift(shift)*srap(scale, rotate, point)*contour;
             this.contour = (!clockwise(pseudocontour)) ? reverse(pseudocontour) : pseudocontour;
             this.center = shift(shift)*center;
+            this.scnumber = scnumber;
             this.sections = new real[][];
             for (int i = 0; i < sections.length; ++i)
             {
@@ -2291,7 +2294,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                     hole(
                         contour = defaultPaCV[5],
                         sections = new real[][]{
-                            new real[]{3,-1, 140, 7}
+                            new real[]{3,0, 160, 7}
                         },
                         shift = (.57,-.13),
                         scale = .37,
@@ -2300,16 +2303,16 @@ smooth samplesmooth (int type = 0, int num = 0)
                     hole(
                         contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
                         sections = new real[][]{
-                            new real[]{0,1,130,6}
+                            new real[]{0,1,190,6}
                         },
+                        scnumber = -1,
                         shift = (-.12,.7),
                         scale = .25
                     ),
                     hole(
-                        // contour = defaultPaCC[6],
                         contour = defaultPaCV[6],
                         sections = new real[][]{
-                            new real[]{-3,-1, 150, 6}
+                            new real[]{-3,-2, 190, 6}
                         },
                         shift = (-.35,-.43),
                         scale = .32,
@@ -3260,7 +3263,7 @@ void draw (picture pic = currentpicture,
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, currentSeIHSN, currentSeF, defaultSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, min(currentSeIHSN, abs(min(hl1.scnumber, hl2.scnumber))), currentSeF, defaultSeP), viewdir, dash, explain, shade, sm.scale, sectionpen, dashpen, shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
