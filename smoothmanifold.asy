@@ -1285,8 +1285,11 @@ struct smooth
         return this;
     }
 
-	smooth view (real angle, bool shiftsubsets = this.shiftsubsets, bool drag = true)
-	{ return this.view(dir(angle), shiftsubsets, drag); }
+	smooth view (
+        real angle,
+		bool shiftsubsets = this.shiftsubsets,
+		bool drag = true
+    ) { return this.view(dir(angle), shiftsubsets, drag); }
 
     // -- User function for moving smooth object with respect to view direction -- //
 
@@ -1786,14 +1789,12 @@ struct smooth
         pair labeldir = defaultSyDP,
         pair labelalign = S,
         bool unit = true
-    )
-	{ return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit); }
+    ) { return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit); }
     smooth addsubset (
         string destlabel,
 		subset sb,
 		bool unit = true
-    )
-    { return this.addsubset(sb, i(this.getsubset(destlabel)), unit); }
+    ) { return this.addsubset(sb, i(this.getsubset(destlabel)), unit); }
     smooth addsubset (
         string destlabel,
         path contour,
@@ -1805,8 +1806,7 @@ struct smooth
         pair labeldir = defaultSyDP,
         pair labelalign = S,
         bool unit = true
-    )
-    { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
+    ) { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
     smooth addsubsets (subset[] sbs, int[] indexpath = i(defaultSyDN), bool unit = true)
     {
         for (int i = 0; i < sbs.length; ++i)
@@ -1818,8 +1818,7 @@ struct smooth
         int[] indexpath = i(defaultSyDN),
 		bool unit = true
         ... subset[] sbs
-    )
-    { return this.addsubsets(sbs, indexpath, unit); }
+    ) { return this.addsubsets(sbs, indexpath, unit); }
     smooth addsubsets (
         int[] indexpath = i(defaultSyDN),
         path[] contours,
@@ -1838,20 +1837,17 @@ struct smooth
         int[] indexpath = i(defaultSyDN),
         bool unit = true
         ... path[] contours
-    )
-    { return this.addsubsets(indexpath = indexpath, contours = contours, unit = unit); }
+    ) { return this.addsubsets(indexpath = indexpath, contours = contours, unit = unit); }
     smooth addsubsets (
         string label,
 		subset[] sbs,
 		bool unit
-    )
-    { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+    ) { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
     smooth addsubsets (
         string label,
         bool unit = true
         ... subset[] sbs
-    )
-    { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+    ) { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
     smooth addsubsets (
         string label,
         path[] contours,
@@ -1860,14 +1856,12 @@ struct smooth
         real[] rotates = array(contours.length, value = 0),
         pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
         bool unit = true
-    )
-    { return this.addsubsets(i(this.getsubset(label)), contours, shifts, scales, rotates, points, unit); }
+    ) { return this.addsubsets(i(this.getsubset(label)), contours, shifts, scales, rotates, points, unit); }
     smooth addsubsets (
         string label,
         bool unit = true
         ... path[] contours
-    )
-    { return this.addsubsets(i(this.getsubset(label)), contours = contours, unit = unit); }
+    ) { return this.addsubsets(i(this.getsubset(label)), contours = contours, unit = unit); }
 
 	smooth rmsubset (
         int index,
@@ -1880,13 +1874,11 @@ struct smooth
 	smooth rmsubset (
         int[] indexpath,
 		bool recursive = true
-    )
-	{ return this.rmsubset(subsetgetindex(this.subsets, indexpath), recursive); }
+    ) { return this.rmsubset(subsetgetindex(this.subsets, indexpath), recursive); }
     smooth rmsubset (
         string label,
 		bool recursive = true
-    )
-    { return this.rmsubset(this.getsubset(label), recursive); }
+    ) { return this.rmsubset(this.getsubset(label), recursive); }
     smooth rmsubsets (
         int[] indices,
 		bool recursive = true
@@ -1899,18 +1891,15 @@ struct smooth
     smooth rmsubsets (
         bool recursive = true
         ... int[] indices
-    )
-    { return this.rmsubsets(indices, recursive); }
+    ) { return this.rmsubsets(indices, recursive); }
     smooth rmsubsets (
         string[] labels,
 		bool recursive = true
-    )
-    { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
+    ) { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
     smooth rmsubsets (
         bool recursive = true
         ... string[] labels
-    )
-    { return this.rmsubsets(labels, recursive); }
+    ) { return this.rmsubsets(labels, recursive); }
 
     // -- User function for moving subset globally or within containing subset -- //
 
@@ -1930,6 +1919,7 @@ struct smooth
 
 		return res;
 	}
+
 	private bool onlysecondary (int index)
 	{
 		subset s = this.subsets[index];
@@ -1947,6 +1937,7 @@ struct smooth
 
 		return res;
 	}
+
 	smooth movesubset (
         int[] indexpath,
         pair shift = (0,0),
@@ -2041,6 +2032,7 @@ struct smooth
 		halt("Could not move subset: situation too complicated: both primary and secondary subsets present. [ movesubset() ]");
 		return this;
 	}
+
     smooth movesubset (
         int ind,
         pair shift = (0,0),
@@ -2050,8 +2042,8 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool keepview = false
-    )
-    { return this.movesubset(i(ind), shift, scale, rotate, point, movelabel, recursive, keepview); }
+    ) { return this.movesubset(i(ind), shift, scale, rotate, point, movelabel, recursive, keepview); }
+
     smooth movesubset (
         string label,
         pair shift = (0,0),
@@ -2061,8 +2053,7 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool keepview = false
-    )
-    { return this.movesubset(this.getsubset(label), shift, scale, rotate, point, movelabel, recursive, keepview); }
+    ) { return this.movesubset(this.getsubset(label), shift, scale, rotate, point, movelabel, recursive, keepview); }
 
     // -- User functions for controlling relationships between smooth objects -- //
 
@@ -2071,6 +2062,7 @@ struct smooth
         this.attached.push(sm);
         return this;
     }
+
 	smooth fit (
         int[] ind = {},
 		picture pic = currentpicture,
