@@ -1043,6 +1043,13 @@ struct smooth
 
     // -- System methods -- //
 
+	bool inside (pair x)
+	{
+		if (!inside(this.contour, x)) return false;
+		for (int i = 0; i < this.holes.length; ++i)
+		{ if (inside(this.holes[i].contour, x)) return false; }
+		return true;
+	}
     real xsize () { return xsize(this.contour); }
     real ysize () { return ysize(this.contour); }
     private real getyratio (real y)
@@ -1059,13 +1066,6 @@ struct smooth
         x = x - floor(x);
         return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x);
     }
-	bool inside (pair x)
-	{
-		if (!inside(this.contour, x)) return false;
-		for (int i = 0; i < this.holes.length; ++i)
-		{ if (inside(this.holes[i].contour, x)) return false; }
-		return true;
-	}
 
     // -- User functions for manipulating smooth object -- //
 
