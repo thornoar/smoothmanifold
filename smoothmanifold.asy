@@ -2045,7 +2045,7 @@ struct smooth
         this.scale = sm.scale;
         this.rotate = sm.rotate;
         this.viewdir = sm.viewdir;
-		this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
+        this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
 
         return this;
     }
