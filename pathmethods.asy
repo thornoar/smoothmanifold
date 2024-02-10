@@ -59,11 +59,11 @@ real round (real a, int places)
 pair round (pair a, int places)
 { return (round(a.x, places), round(a.y, places)); }
 
-real[] a (... real[] source)
+real[] r (... real[] source)
 { return source; }
-real[][] da (... real[][] source)
+real[][] dr (... real[][] source)
 { return source; }
-real[][] aa (... real[] source)
+real[][] rr (... real[] source)
 { return new real[][]{source}; }
 
 int[] i (... int[] source)

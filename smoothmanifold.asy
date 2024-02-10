@@ -53,17 +53,17 @@ private real defaultDrGL = .065; // [G]ap [L]ength
 private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor
 private pen defaultDrSbC = grey; // [S]u[b]set [C]olor
 private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
-private real defaultDrSePS = .8; // [Se]ction [P]en [S]cale
+private real defaultDrSePS = .6; // [Se]ction [P]en [S]cale
 private real defaultDrElPW = 3.0; // [E]lement [P]en
 private real defaultDrShS = .85; // [S]hade [S]cale
 private real defaultDrDPS = .4; // [D]ash [P]en [S]cale
 private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
-private arrowbar defaultDrBA = None; // [B]egin [A]rrow
-private arrowbar defaultDrEA = EndArrow(SimpleHead); // [E]nd [A]rrow
-private arrowbar defaultDrBB = None; // [B]egin [B]ar
-private arrowbar defaultDrEB = None; // [E]nd [B]ar
+// private arrowbar defaultDrBA = None; // [B]egin [A]rrow
+// private arrowbar defaultDrEA = EndArrow(SimpleHead); // [E]nd [A]rrow
+// private arrowbar defaultDrBB = None; // [B]egin [B]ar
+// private arrowbar defaultDrEB = None; // [E]nd [B]ar
 
 // [Ar]rows
 private real defaultArM = defaultDrGL*.7; // [M]argin (see "arrow")
@@ -255,10 +255,10 @@ bool currentDrDC = true; // [D]raw [C]ontour
 bool currentDrO = false; // [O]verlap
 bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 bool currentDrDN = false; // [D]raw [N]ow
-private arrowbar currentDrBA = defaultDrBA;
-private arrowbar currentDrEA = defaultDrEA;
-private arrowbar currentDrBB = defaultDrBB;
-private arrowbar currentDrEB = defaultDrEB;
+// private arrowbar currentDrBA = defaultDrBA;
+// private arrowbar currentDrEA = defaultDrEA;
+// private arrowbar currentDrBB = defaultDrBB;
+// private arrowbar currentDrEB = defaultDrEB;
 
 // [Ar]rows
 real currentArM = defaultArM;
@@ -439,10 +439,10 @@ void defaults ()
     currentDrDPO = defaultDrDPO;
 	currentDrDO = defaultDrDO;
 	currentDrSPM = defaultDrSPM;
-    currentDrBA = defaultDrBA;
-    currentDrEA = defaultDrEA;
-    currentDrBB = defaultDrBB;
-    currentDrEB = defaultDrEB;
+    // currentDrBA = defaultDrBA;
+    // currentDrEA = defaultDrEA;
+    // currentDrBB = defaultDrBB;
+    // currentDrEB = defaultDrEB;
 }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
@@ -1956,8 +1956,8 @@ struct smooth
                         pair labelalign = defaultSyDP,
                         hole[] holes = {},
                         subset[] subsets = {},
-                        real[] hratios = a(defaultSyDN),
-                        real[] vratios = a(defaultSyDN),
+                        real[] hratios = r(defaultSyDN),
+                        real[] vratios = r(defaultSyDN),
                         pair shift = (0,0),
                         real scale = 1,
                         real rotate = 0,
@@ -2126,7 +2126,7 @@ smooth samplesmooth (int type = 0, int num = 0)
             return smooth(
                 contour = defaultPaCV[0],
                 hratios = new real[] {.5},
-                vratios = a(),
+                vratios = r(),
                 distort = false
             );
         }
@@ -2150,7 +2150,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                 },
 				rotate = -90,
                 hratios = new real[]{.6, .83},
-                vratios = a()
+                vratios = r()
             );
         }
     }
@@ -2164,7 +2164,7 @@ smooth samplesmooth (int type = 0, int num = 0)
                 holes = new hole[]{
                     hole(
                         contour = defaultPaCV[2],
-                        sections = aa(defaultSyDN, defaultSyDN, 260, defaultSyDN, .35, defaultSyDN),
+                        sections = rr(defaultSyDN, defaultSyDN, 260, defaultSyDN, .35, defaultSyDN),
                         shift = (-.65, .25),
                         scale = .5
                     )
@@ -2210,7 +2210,7 @@ smooth samplesmooth (int type = 0, int num = 0)
 			return smooth(
 				contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
 				holes = new hole[]{
-					hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = aa(-4,2,200,7))
+					hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4,2,200,7))
 				},
 				subsets = new subset[]{
 					subset(contour = defaultPaCC[3], shift = (-.3,-.35), rotate = -50),
@@ -2255,20 +2255,20 @@ smooth samplesmooth (int type = 0, int num = 0)
                 holes = new hole[]{
                     hole(
                         contour = defaultPaCV[4],
-                        sections = aa(),
+                        sections = rr(),
                         scale = .75,
                         shift = (2.5,.1),
 						rotate = 5
                     ),
                     hole(
                         contour = defaultPaCV[6],
-                        sections = aa(),
+                        sections = rr(),
                         scale = .75,
                         shift = (-1.1,-2.1)
                     ),
                     hole(
                         contour = defaultPaCV[5],
-                        sections = aa(),
+                        sections = rr(),
                         scale = .80,
                         shift = (-1,1.8),
 						rotate = -20
@@ -2283,81 +2283,89 @@ smooth samplesmooth (int type = 0, int num = 0)
                 }
             ).simplemove(scale = .35);
         }
-
-        return smooth(
-            contour = defaultPaCC[5],
-            holes = new hole[]{
-                hole(
-                    contour = defaultPaCV[5],
-                    sections = new real[][]{
-                        new real[]{3,-1, 140, 7}
-                    },
-                    shift = (.55,-.15),
-                    scale = .37,
-                    rotate = -90
-                ),
-                hole(
-                    contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
-                    sections = new real[][]{
-                        new real[]{0,1,130,6}
-                    },
-                    shift = (-.1,.7),
-                    scale = .25
-                ),
-                hole(
-                    contour = defaultPaCC[6],
-                    sections = new real[][]{
-                        new real[]{-3,-1, 150, 6}
-                    },
-                    shift = (-.27,-.43),
-                    scale = .39,
-                    rotate = -15
-                )
-            }
-        );
+        if (num == 1)
+        {
+            return smooth(
+                contour = defaultPaCC[5],
+                holes = new hole[]{
+                    hole(
+                        contour = defaultPaCV[5],
+                        sections = new real[][]{
+                            new real[]{3,-1, 140, 7}
+                        },
+                        shift = (.57,-.13),
+                        scale = .37,
+                        rotate = 90
+                    ),
+                    hole(
+                        contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
+                        sections = new real[][]{
+                            new real[]{0,1,130,6}
+                        },
+                        shift = (-.12,.7),
+                        scale = .25
+                    ),
+                    hole(
+                        // contour = defaultPaCC[6],
+                        contour = defaultPaCV[6],
+                        sections = new real[][]{
+                            new real[]{-3,-1, 150, 6}
+                        },
+                        shift = (-.35,-.43),
+                        scale = .32,
+                        rotate = 75
+                    )
+                }
+            );
+        }
     }
 
 	if (type == 5)
 	{
-		return smooth(
-			contour = wavypath(1.05,2,1.1,2,1.15,2,1.1,2),
-			holes = new hole[]{
-				hole(
-					contour = convexpath[4],
-					shift = (-.83,-.85),
-					scale = .4,
-					rotate = 60,
-					sections = aa()
-				),
-				hole(
-					contour = convexpath[1],
-					shift = (.9,-.8),
-					scale = .38,
-					rotate = -10,
-					sections = aa()
-				),
-				hole(
-					contour = convexpath[10],
-					shift = (-.9,.92),
-					scale = .35,
-					rotate = 15,
-					sections = aa()
-				),
-				hole(
-					contour = convexpath[3],
-					shift = (.9,.9),
-					scale = .34,
-					rotate = 70,
-					sections = aa()
-				),
-				hole(
-					contour = convexpath[2],
-					shift = (-.05,.05),
-					scale = .56
-				)
-			}
-		);
+        if (num == 0)
+        {
+            return smooth(
+                contour = wavypath(1.05,2,1.1,2,1.15,2,1.1,2),
+                holes = new hole[]{
+                    hole(
+                        contour = convexpath[4],
+                        shift = (-.83,-.85),
+                        scale = .4,
+                        rotate = 60,
+                        sections = rr()
+                    ),
+                    hole(
+                        contour = convexpath[1],
+                        shift = (.9,-.8),
+                        scale = .38,
+                        rotate = -10,
+                        sections = rr()
+                    ),
+                    hole(
+                        contour = convexpath[10],
+                        shift = (-.9,.92),
+                        scale = .35,
+                        rotate = 15,
+                        sections = rr()
+                    ),
+                    hole(
+                        contour = convexpath[3],
+                        shift = (.9,.9),
+                        scale = .34,
+                        rotate = 70,
+                        sections = rr()
+                    ),
+                    hole(
+                        contour = convexpath[2],
+                        shift = (-.05,.05),
+                        scale = .56
+                    )
+                }
+            );
+        }
 	}
+
+    halt("Invalid input. [samplesmooth()]");
 
     return smooth(ucircle);
 }

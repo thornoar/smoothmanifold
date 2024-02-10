@@ -9,7 +9,7 @@ private string defaultAnFLN = ".animation_input_list.txt";
 private string currentExP = outname(); // [P]refix
 private bool currentExEOE = true; // [E]xit [O]n [E]xport
 private int currentExRID = 300; // [R]asterized [I]mage [D]ensity
-private pen currentExBG = white; // [B]ack[G]round
+private pen currentExBG = nullpen; // [B]ack[G]round
 private pen currentExFP = nullpen; // [F]rame [P]en
 private real currentExM = 0; // [M]argin
 // private bool currentExS = false; // [S]imple
@@ -170,7 +170,7 @@ void export (string prefix = currentExP,
         { plainshipout(prefix=prefix1, pic1, orientation, wait, view, options, script, light, P); }
         else
         {
-            shipout(prefix=prefix1, bbox(pic1, xmargin = margin, p = framepen, filltype = Fill(p = bgpen)), wait, view, options, script, light, P);
+            shipout(prefix=prefix1, bbox(pic1, xmargin = margin, p = framepen, filltype = bgpen == nullpen ? NoFill : Fill(p = bgpen)), wait, view, options, script, light, P);
         }
     }
 

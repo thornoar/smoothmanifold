@@ -4,6 +4,7 @@ size(25 cm);
 
 smpar(gaplength = .1, shiftsubsets = true, fill = true);
 expar(bgpen = paleyellow, margin = 2 cm);
+invertcolors();
 
 pair viewdir = dir(25);
 
