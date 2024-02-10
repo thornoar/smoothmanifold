@@ -31,6 +31,7 @@ private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
 private real defaultSeSN = 5.0e-4; // [S]mall [N]umber
 private real defaultSeWT = .65; // [W]idth [T]est
 real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7};
+
 private real defaultSeF = .3; // [F]reedom
 private int defaultSeP = 20; // [P]recision
 private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
@@ -60,10 +61,6 @@ private real defaultDrDPS = .4; // [D]ash [P]en [S]cale
 private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity
 private real defaultDrDO = .8; // [D]rag [O]pacity
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
-// private arrowbar defaultDrBA = None; // [B]egin [A]rrow
-// private arrowbar defaultDrEA = EndArrow(SimpleHead); // [E]nd [A]rrow
-// private arrowbar defaultDrBB = None; // [B]egin [B]ar
-// private arrowbar defaultDrEB = None; // [E]nd [B]ar
 
 // [Ar]rows
 private real defaultArM = defaultDrGL*.7; // [M]argin (see "arrow")
@@ -85,6 +82,7 @@ private path[] defaultPaCV = new path[]{ // [C]on[V]ex
     (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle,
 	(-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
+
 private path[] defaultPaCC = new path[]{ // [C]on[C]ave
 	(
 		(-0.9,0).. controls
@@ -213,6 +211,7 @@ private path[] defaultPaCC = new path[]{ // [C]on[C]ave
 
 path randomconvex ()
 { return defaultPaCV[rand()%defaultPaCV.length]; }
+
 path randomconcave ()
 { return defaultPaCC[rand()%defaultPaCC.length]; }
 
@@ -255,10 +254,6 @@ bool currentDrDC = true; // [D]raw [C]ontour
 bool currentDrO = false; // [O]verlap
 bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 bool currentDrDN = false; // [D]raw [N]ow
-// private arrowbar currentDrBA = defaultDrBA;
-// private arrowbar currentDrEA = defaultDrEA;
-// private arrowbar currentDrBB = defaultDrBB;
-// private arrowbar currentDrEB = defaultDrEB;
 
 // [Ar]rows
 real currentArM = defaultArM;
@@ -302,6 +297,7 @@ bool checksection (real[] section)
 	{ return false; }
 	return true;
 }
+
 string mode (int md)
 {
 	if (md == 0) return "free";
@@ -309,12 +305,15 @@ string mode (int md)
 	if (md == 2) return "plain";
 	return "";
 }
+
 private real sectionsymmetryvalue (pair p1p2, pair dir1, pair dir2)
 { return abs(dot(dir2, p1p2)+dot(p1p2, dir1)); }
+
 private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 {
     return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
+
 pen inverse (pen p)
 {
 	real[] colors = colors(p);
@@ -322,62 +321,72 @@ pen inverse (pen p)
 	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2])+linewidth(p);
 	return invisible;
 }
+
 pen sectionpen (pen p)
 {
     if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
     else return currentDrSeOP;
 }
+
 pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
+
 pen dashpenscale (pen p)
 { return inverse(currentDrDPS*inverse(p))+dashed; }
+
 pen dashpenopacity (pen p)
 { return p+dashed+opacity(currentDrDPO); }
+
 pen dashpen (pen p)
 {
     if (currentDrUO) return dashpenopacity(p);
     else return dashpenscale(p);
 }
+
 pen shadepen (pen p)
 { return currentDrShS*p; }
+
 pen elementpen (pen p)
 { return p + linewidth(currentDrElPW); }
+
 pen underpen (pen p)
 { return dashpen(p); }
 
 // -- User setting functions -- //
 
-void smpar (real[] section = currentsection,
-            real scfreedom = currentSeF,
-            int scholenumber = currentSeIHSN,
-            real scholeangle = currentIHSA,
-            real scprecision = currentSeEP,
-            real scmaxlength = currentSeMLR,
-            bool scavoidsubsets = currentSeAS,
-                int mode = currentDrM,
-                pen smoothfill = smoothcolor,
-                pen subsetfill = subsetcolor,
-                real minscale = currentDrSPM,
-                bool overlap = currentDrO,
-                bool subsetoverlap = currentDrSCO,
-                bool drawnow = currentDrDN,
-                bool explain = currentDrE,
-                pen explainpen = currentDrExP,
-                real dragop = currentDrDO,
-                bool dash = currentDrDD,
-                bool useopacity = currentDrUO,
-                real dashscale = currentDrDPS,
-                real dashop = currentDrDPO,
-                bool shade = currentDrDS,
-                bool fill = currentDrF,
-                bool fillsubsets = currentDrFS,
-                real sectionpenscale = currentDrSePS,
-                pen sectionpen = currentDrSeOP,
-                real elementwidth = currentDrElPW,
-                bool inferlabels = currentSmIL,
-                bool shiftsubsets = currentSmSS,
-                real gaplength = currentDrGL,
-                real arrowmargin = currentArM)
+void smpar (
+    real[] section = currentsection,
+    real scfreedom = currentSeF,
+    int scholenumber = currentSeIHSN,
+    real scholeangle = currentIHSA,
+    real scprecision = currentSeEP,
+    real scmaxlength = currentSeMLR,
+    bool scavoidsubsets = currentSeAS,
+        int mode = currentDrM,
+        pen smoothfill = smoothcolor,
+        pen subsetfill = subsetcolor,
+        real minscale = currentDrSPM,
+        bool overlap = currentDrO,
+        bool subsetoverlap = currentDrSCO,
+        bool drawnow = currentDrDN,
+        bool explain = currentDrE,
+        pen explainpen = currentDrExP,
+        real dragop = currentDrDO,
+        bool dash = currentDrDD,
+        bool useopacity = currentDrUO,
+        real dashscale = currentDrDPS,
+        real dashop = currentDrDPO,
+        bool shade = currentDrDS,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        real sectionpenscale = currentDrSePS,
+        pen sectionpen = currentDrSeOP,
+        real elementwidth = currentDrElPW,
+        bool inferlabels = currentSmIL,
+        bool shiftsubsets = currentSmSS,
+        real gaplength = currentDrGL,
+        real arrowmargin = currentArM
+)
 {
 	if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
 	{ halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
@@ -423,6 +432,7 @@ void smpar (real[] section = currentsection,
 
 	if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
 }
+
 void defaults ()
 {
 	currentsection = copy(defaultsection);
@@ -439,10 +449,6 @@ void defaults ()
     currentDrDPO = defaultDrDPO;
 	currentDrDO = defaultDrDO;
 	currentDrSPM = defaultDrSPM;
-    // currentDrBA = defaultDrBA;
-    // currentDrEA = defaultDrEA;
-    // currentDrBB = defaultDrBB;
-    // currentDrEB = defaultDrEB;
 }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
@@ -463,6 +469,7 @@ private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
     
 	return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
+
 private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 // Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
@@ -499,6 +506,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 
 	return sections;
 }
+
 path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
@@ -698,6 +706,7 @@ struct element
 
 pair operator cast (element elt)
 { return elt.pos; }
+
 element operator cast (pair a)
 { return element(a); }
 
@@ -714,7 +723,17 @@ struct hole
     real[][] sections;
     int scnumber;
 
-    void operator init (path contour, pair center = center(contour), real[][] sections = {}, int scnumber = currentSeIHSN, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
+    void operator init (
+        path contour,
+		pair center = center(contour),
+		real[][] sections = {},
+		int scnumber = currentSeIHSN,
+		pair shift = (0,0),
+		real scale = 1,
+		real rotate = 0,
+		pair point = center,
+		bool copy = false
+    )
     {
         if (copy)
         {
@@ -738,7 +757,13 @@ struct hole
             }
         }
     }
-    hole move (pair shift, real scale, real rotate, pair point = this.center, bool movesections = false)
+    hole move (
+        pair shift,
+		real scale,
+		real rotate,
+		pair point = this.center,
+		bool movesections = false
+    )
     {
         this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*srap(scale, rotate, point)*this.center;
@@ -793,6 +818,7 @@ struct subset
 
 	subset setcenter (pair center = center(this.contour))
 	{ this.center = center; return this; }
+
     subset setlabel (string label = this.label, pair labeldir = this.labeldir, pair labelalign = defaultSyDP, bool keepalign = false)
     {
 		this.label = label;
@@ -801,9 +827,17 @@ struct subset
 
         return this;
     }
+
     subset setlabel (string label = this.label, real angle)
     { return this.setlabel(label, dir(angle)); }
-    subset move (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center, bool movelabel = false)
+
+    subset move (
+        pair shift = (0,0),
+		real scale = 1,
+		real rotate = 0,
+		pair point = this.center,
+		bool movelabel = false
+    )
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
 		this.center = shift(shift)*srap(scale, rotate, point)*this.center;
@@ -812,7 +846,21 @@ struct subset
         return this;
     }
 
-	void operator init (path contour, pair center = center(contour), string label = "", pair labeldir = defaultSyDP, pair labelalign = S, int layer = 0, int[] subsets = {}, bool isderivative = false, pair shift = (0,0), real scale = 1, real rotate = 0, pair point = center, bool copy = false)
+	void operator init (
+        path contour,
+		pair center = center(contour),
+		string label = "",
+		pair labeldir = defaultSyDP,
+		pair labelalign = S,
+		int layer = 0,
+		int[] subsets = {},
+		bool isderivative = false,
+		pair shift = (0,0),
+		real scale = 1,
+		real rotate = 0,
+		pair point = center,
+		bool copy = false
+    )
     {
         if (copy)
         {
@@ -842,6 +890,7 @@ struct subset
     {
         return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, copy(this.subsets), this.isderivative, copy = true);
     }
+
     subset replicate (subset s)
     { 
         this.contour = s.contour;
@@ -883,6 +932,7 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = cur
 		);
 	}, contours.length);
 }
+
 private void subsetdelete (subset[] subsets, int index, bool recursive)
 {
 	subset cursb = subsets[index];
@@ -901,6 +951,7 @@ private void subsetdelete (subset[] subsets, int index, bool recursive)
 		}
 	}
 }
+
 private void subsetsort (subset[] subsets, int[] range)
 { range = sort(range, new bool (int i, int j){return subsets[i].layer < subsets[j].layer;}); }
 
@@ -911,10 +962,13 @@ private int subsetgetindex (subset[] subsets, int[] indexpath)
 	{ res = subsets[res].subsets[indexpath[i]]; }
 	return res;
 }
+
 private int subsetgetindex (subset[] subsets ... int[] indexpath)
 { return subsetgetindex(subsets, indexpath); } // try to change later
+
 private subset subsetget (subset[] subsets, int[] indexpath)
 { return subsets[subsetgetindex(subsets, indexpath)]; }
+
 private subset subsetget (subset[] subsets ... int[] indexpath)
 { return subsets[subsetgetindex(subsets, indexpath)]; }
 
@@ -925,6 +979,7 @@ private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 	{ if (subsets[range[i]].layer == layer) res.push(range[i]); }
 	return res;
 }
+
 private int[] subsetgetall (subset[] subsets, subset s)
 {
 	bool[] wanted = array(subsets.length, false);
@@ -942,15 +997,19 @@ private int[] subsetgetall (subset[] subsets, subset s)
 	{ if (wanted[i]) res.push(i); }
 	return res;
 }
+
 private int[] subsetgetall (subset[] subsets, int index)
 { return subsetgetall(subsets, subsets[index]); }
+
 private int[] subsetgetall (subset[] subsets, int[] indexpath)
 { return subsetgetall(subsets, subsetget(subsets, indexpath)); }
 
 private int[] subsetgetallnot (subset[] subsets, subset s)
 { return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
+
 private int[] subsetgetallnot (subset[] subsets, int index)
 { return difference(sequence(subsets.length), subsetgetall(subsets, index)); }
+
 private int[] subsetgetallnot (subset[] subsets, int[] indexpath)
 { return difference(sequence(subsets.length), subsetgetall(subsets, indexpath)); }
 
@@ -972,6 +1031,7 @@ private int subsetinsertindex (subset[] subsets, int layer)
 	
 	return insertindex;
 }
+
 private int subsetinsert (subset[] subsets, subset s)
 {
 	int ind = subsetinsertindex(subsets, s.layer);
@@ -984,6 +1044,7 @@ private int subsetinsert (subset[] subsets, subset s)
 
 	return ind;
 }
+
 private int subsetmaxlayer (subset[] subsets, int[] range)
 {
 	int res = -1;
@@ -991,6 +1052,7 @@ private int subsetmaxlayer (subset[] subsets, int[] range)
 	{ if (subsets[range[i]].layer > res) res = subsets[range[i]].layer; }
 	return res;
 }
+
 private void subsetcleanreferences (subset[] subsets)
 {
     bool[] visited = array(subsets.length, value = false);
@@ -1053,17 +1115,22 @@ struct smooth
 		{ if (inside(this.holes[i].contour, x)) return false; }
 		return true;
 	}
+
     real xsize () { return xsize(this.contour); }
     real ysize () { return ysize(this.contour); }
+
     private real getyratio (real y)
     { return (y - ypart(min(this.contour)))/this.ysize(); }
+
     private real getxratio (real x)
     { return (x - xpart(min(this.contour)))/this.xsize(); }
+
     private real getypoint (real y)
     {
         y = y - floor(y);
         return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y);
     }
+
     private real getxpoint (real x)
     {
         x = x - floor(x);
@@ -1086,6 +1153,7 @@ struct smooth
 
         return this;
     }
+
     smooth xscale (real s)
     {
         pair center = this.center;
@@ -1117,6 +1185,7 @@ struct smooth
 
         return this;
     }
+
     smooth yscale (real s)
     {
         pair center = this.center;
@@ -1148,6 +1217,7 @@ struct smooth
 
         return this;
     }
+
     smooth dirscale (real s, pair dir)
     {
         if (length(dir) == 0) return this;
@@ -1176,6 +1246,7 @@ struct smooth
 
         return this;
     }
+
     private smooth setview (pair viewdir)
     {
 		if (viewdir == this.viewdir) return this;
@@ -1190,6 +1261,7 @@ struct smooth
         
 		return this;
     }
+
     smooth view (explicit pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
     {
 		this.shiftsubsets = shiftsubsets;
@@ -1212,6 +1284,7 @@ struct smooth
 
         return this;
     }
+
 	smooth view (real angle, bool shiftsubsets = this.shiftsubsets, bool drag = true)
 	{ return this.view(dir(angle), shiftsubsets, drag); }
 
@@ -1270,6 +1343,7 @@ struct smooth
         
         return this;
     }
+
     smooth setcenter (int[] indexpath = {}, pair center = center(this.contour), bool unit = true)
     {
 		if (indexpath.length == 0) this.center = unit ? shift(this.shift)*center : center;
@@ -1280,6 +1354,7 @@ struct smooth
 
         return this;
     }
+
     smooth setlabel (int[] indexpath = {},
                      string label = this.label,
                      pair labeldir = this.labeldir,
@@ -1297,6 +1372,7 @@ struct smooth
 
         return this;
     }
+
     smooth setlabel (int[] indexpath = {}, string label = this.label, real angle)
     { return this.setlabel(indexpath, label, dir(angle)); }
 
@@ -1309,6 +1385,7 @@ struct smooth
         write("> ? Could not find element: no element with such label. Returning -1. [ getelement() ]");
         return -1;
     }
+
 	smooth addelement (element elt, bool unit = true)
 	{
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
@@ -1319,6 +1396,7 @@ struct smooth
 		this.elements.push(elt);
 		return this;
 	}
+
 	smooth addelement (pair pos, string label = "", pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
     smooth setelement (int ind, element elt, bool unit = true)
@@ -1407,13 +1485,15 @@ struct smooth
         this.holes.insert(i = index, hl);
 		return this;
     }
-    smooth addhole (path contour,
-                    real[][] sections = {},
-                    pair shift = (0,0),
-                    real scale = 1,
-                    real rotate = 0,
-                    pair point = center(contour),
-                    bool unit = true)
+    smooth addhole (
+        path contour,
+        real[][] sections = {},
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = center(contour),
+        bool unit = true
+    )
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
@@ -1425,13 +1505,15 @@ struct smooth
 	}
 	smooth addholes (bool unit = true ... hole[] holes)
 	{ return this.addholes(holes, unit); }
-    smooth addholes (path[] contours,
-                     real[][][] sections = {},
-                     pair[] shifts = array(contours.length, value = (0,0)),
-                     real[] scales = array(contours.length, value = 1),
-                     real[] rotates = array(contours.length, value = 0),
-                     pair[] points = sequence(new pair(int i){return center(contours[i]);}, contours.length),
-                     bool unit = true)
+    smooth addholes (
+        path[] contours,
+        real[][][] sections = {},
+        pair[] shifts = array(contours.length, value = (0,0)),
+        real[] scales = array(contours.length, value = 1),
+        real[] rotates = array(contours.length, value = 0),
+        pair[] points = sequence(new pair(int i){return center(contours[i]);}, contours.length),
+        bool unit = true
+    )
     {
         return this.addholes(holes = sequence(new hole (int i){
             return hole(contour = contours[i], sections = sections[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
@@ -1454,13 +1536,15 @@ struct smooth
     }
     smooth rmholes (... int[] indices)
     { return this.rmholes(indices); }
-    smooth movehole (int index,
-                     pair shift = (0,0),
-                     real scale = 1,
-                     real rotate = 0,
-                     pair point = this.holes[index].center,
-                     bool movesections = false,
-                     bool keepview = false)
+    smooth movehole (
+        int index,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = this.holes[index].center,
+        bool movesections = false,
+        bool keepview = false
+    )
     {
 		pair viewdir = this.viewdir;    
 		
@@ -1691,33 +1775,37 @@ struct smooth
         subsetcleanreferences(this.subsets);
 		return this;
 	}
-	smooth addsubset (int[] indexpath = i(defaultSyDN),
-                      path contour,
-                      pair shift = (0,0),
-                      real scale = 1,
-                      real rotate = 0,
-                      pair point = center(contour),
-                      string label = "",
-                      pair labeldir = defaultSyDP,
-                      pair labelalign = S,
-                      bool unit = true)
-	{
-		return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit);
-	}
-    smooth addsubset (string destlabel,
-                      subset sb,
-                      bool unit = true)
+	smooth addsubset (
+        int[] indexpath = i(defaultSyDN),
+        path contour,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = center(contour),
+        string label = "",
+        pair labeldir = defaultSyDP,
+        pair labelalign = S,
+        bool unit = true
+    )
+	{ return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit); }
+    smooth addsubset (
+        string destlabel,
+		subset sb,
+		bool unit = true
+    )
     { return this.addsubset(sb, i(this.getsubset(destlabel)), unit); }
-    smooth addsubset (string destlabel,
-                      path contour,
-                      pair shift = (0,0),
-                      real scale = 1,
-                      real rotate = 0,
-                      pair point = center(contour),
-                      string label = "",
-                      pair labeldir = defaultSyDP,
-                      pair labelalign = S,
-                      bool unit = true)
+    smooth addsubset (
+        string destlabel,
+        path contour,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = center(contour),
+        string label = "",
+        pair labeldir = defaultSyDP,
+        pair labelalign = S,
+        bool unit = true
+    )
     { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
     smooth addsubsets (subset[] sbs, int[] indexpath = i(defaultSyDN), bool unit = true)
     {
@@ -1726,65 +1814,102 @@ struct smooth
 
         return this;
     }
-    smooth addsubsets (int[] indexpath = i(defaultSyDN),
-                       bool unit = true
-                       ... subset[] sbs)
+    smooth addsubsets (
+        int[] indexpath = i(defaultSyDN),
+		bool unit = true
+        ... subset[] sbs
+    )
     { return this.addsubsets(sbs, indexpath, unit); }
-    smooth addsubsets (int[] indexpath = i(defaultSyDN),
-                       path[] contours,
-                       pair[] shifts = array(contours.length, value = (0,0)),
-                       real[] scales = array(contours.length, value = 1),
-                       real[] rotates = array(contours.length, value = 0),
-                       pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
-                       bool unit = true)
+    smooth addsubsets (
+        int[] indexpath = i(defaultSyDN),
+        path[] contours,
+        pair[] shifts = array(contours.length, value = (0,0)),
+        real[] scales = array(contours.length, value = 1),
+        real[] rotates = array(contours.length, value = 0),
+        pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
+        bool unit = true
+    )
     {
         return this.addsubsets(sbs = sequence(new subset(int i){
             return subset(contour = contours[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
         }, contours.length), indexpath = indexpath, unit = unit);
     }
-    smooth addsubsets (int[] indexpath = i(defaultSyDN),
-                       bool unit = true
-                       ... path[] contours)
+    smooth addsubsets (
+        int[] indexpath = i(defaultSyDN),
+        bool unit = true
+        ... path[] contours
+    )
     { return this.addsubsets(indexpath = indexpath, contours = contours, unit = unit); }
-    smooth addsubsets (string label, subset[] sbs, bool unit)
+    smooth addsubsets (
+        string label,
+		subset[] sbs,
+		bool unit
+    )
     { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
-    smooth addsubsets (string label,
-                       bool unit = true
-                       ... subset[] sbs)
+    smooth addsubsets (
+        string label,
+        bool unit = true
+        ... subset[] sbs
+    )
     { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
-    smooth addsubsets (string label,
-                       path[] contours,
-                       pair[] shifts = array(contours.length, value = (0,0)),
-                       real[] scales = array(contours.length, value = 1),
-                       real[] rotates = array(contours.length, value = 0),
-                       pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
-                       bool unit = true)
+    smooth addsubsets (
+        string label,
+        path[] contours,
+        pair[] shifts = array(contours.length, value = (0,0)),
+        real[] scales = array(contours.length, value = 1),
+        real[] rotates = array(contours.length, value = 0),
+        pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
+        bool unit = true
+    )
     { return this.addsubsets(i(this.getsubset(label)), contours, shifts, scales, rotates, points, unit); }
-    smooth addsubsets (string label,
-                       bool unit = true
-                       ... path[] contours)
+    smooth addsubsets (
+        string label,
+        bool unit = true
+        ... path[] contours
+    )
     { return this.addsubsets(i(this.getsubset(label)), contours = contours, unit = unit); }
 
-	smooth rmsubset (int index, bool recursive = true)
+	smooth rmsubset (
+        int index,
+		bool recursive = true
+    )
 	{
 		subsetdelete(this.subsets, index, recursive);
 		return this;
 	}
-	smooth rmsubset (int[] indexpath, bool recursive = true)
+	smooth rmsubset (
+        int[] indexpath,
+		bool recursive = true
+    )
 	{ return this.rmsubset(subsetgetindex(this.subsets, indexpath), recursive); }
-    smooth rmsubset (string label, bool recursive = true)
+    smooth rmsubset (
+        string label,
+		bool recursive = true
+    )
     { return this.rmsubset(this.getsubset(label), recursive); }
-    smooth rmsubsets (int[] indices, bool recursive = true)
+    smooth rmsubsets (
+        int[] indices,
+		bool recursive = true
+    )
     {
         for (int i = 0; i < indices.length; ++i)
         { this.rmsubset(indices[i], recursive); }
         return this;
     }
-    smooth rmsubsets (bool recursive = true ... int[] indices)
+    smooth rmsubsets (
+        bool recursive = true
+        ... int[] indices
+    )
     { return this.rmsubsets(indices, recursive); }
-    smooth rmsubsets (string[] labels, bool recursive = true)
+    smooth rmsubsets (
+        string[] labels,
+		bool recursive = true
+    )
     { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
-    smooth rmsubsets (bool recursive = true ... string[] labels)
+    smooth rmsubsets (
+        bool recursive = true
+        ... string[] labels
+    )
     { return this.rmsubsets(labels, recursive); }
 
     // -- User function for moving subset globally or within containing subset -- //
@@ -1822,14 +1947,16 @@ struct smooth
 
 		return res;
 	}
-	smooth movesubset (int[] indexpath,
-                       pair shift = (0,0),
-                       real scale = 1,
-                       real rotate = 0,
-                       pair point = defaultSyDP,
-                       bool movelabel = false,
-                       bool recursive = true,
-                       bool keepview = false)
+	smooth movesubset (
+        int[] indexpath,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = defaultSyDP,
+        bool movelabel = false,
+        bool recursive = true,
+        bool keepview = false
+    )
 	{
 		bool sub = indexpath.length > 1;
 		int index = subsetgetindex(this.subsets, indexpath);
@@ -1914,23 +2041,27 @@ struct smooth
 		halt("Could not move subset: situation too complicated: both primary and secondary subsets present. [ movesubset() ]");
 		return this;
 	}
-    smooth movesubset (int ind,
-                       pair shift = (0,0),
-                       real scale = 1,
-                       real rotate = 0,
-                       pair point = this.subsets[ind].center,
-                       bool movelabel = false,
-                       bool recursive = true,
-                       bool keepview = false)
+    smooth movesubset (
+        int ind,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = this.subsets[ind].center,
+        bool movelabel = false,
+        bool recursive = true,
+        bool keepview = false
+    )
     { return this.movesubset(i(ind), shift, scale, rotate, point, movelabel, recursive, keepview); }
-    smooth movesubset (string label,
-                       pair shift = (0,0),
-                       real scale = 1,
-                       real rotate = 0,
-                       pair point = this.subsets[this.getsubset(label)].center,
-                       bool movelabel = false,
-                       bool recursive = true,
-                       bool keepview = false)
+    smooth movesubset (
+        string label,
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = this.subsets[this.getsubset(label)].center,
+        bool movelabel = false,
+        bool recursive = true,
+        bool keepview = false
+    )
     { return this.movesubset(this.getsubset(label), shift, scale, rotate, point, movelabel, recursive, keepview); }
 
     // -- User functions for controlling relationships between smooth objects -- //
@@ -1940,7 +2071,12 @@ struct smooth
         this.attached.push(sm);
         return this;
     }
-	smooth fit (int[] ind = {}, picture pic = currentpicture, picture addpic, pair shift = (0,0))
+	smooth fit (
+        int[] ind = {},
+		picture pic = currentpicture,
+		picture addpic,
+		pair shift = (0,0)
+    )
 	{
 		path contour = (ind.length == 0) ? this.contour : subsetget(this.subsets, ind).contour;
 		pair center = (ind.length == 0) ? this.center : subsetget(this.subsets, ind).center;
@@ -1952,25 +2088,27 @@ struct smooth
 	}
     
     // Constructor
-    void operator init (path contour,
-                        pair center = center(contour),
-                        string label = "",
-                        pair labeldir = N,
-                        pair labelalign = defaultSyDP,
-                        hole[] holes = {},
-                        subset[] subsets = {},
-                        real[] hratios = r(defaultSyDN),
-                        real[] vratios = r(defaultSyDN),
-                        pair shift = (0,0),
-                        real scale = 1,
-                        real rotate = 0,
-                        pair viewdir = (0,0),
-                        bool distort = true,
-                        smooth[] attached = {},
-                        bool unit = true,
-                        bool copy = false,
-                        bool shiftsubsets = currentSmSS,
-                        bool isderivative = false)
+    void operator init (
+        path contour,
+        pair center = center(contour),
+        string label = "",
+        pair labeldir = N,
+        pair labelalign = defaultSyDP,
+        hole[] holes = {},
+        subset[] subsets = {},
+        real[] hratios = r(defaultSyDN),
+        real[] vratios = r(defaultSyDN),
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair viewdir = (0,0),
+        bool distort = true,
+        smooth[] attached = {},
+        bool unit = true,
+        bool copy = false,
+        bool shiftsubsets = currentSmSS,
+        bool isderivative = false
+    )
     {
 		if (copy)
         {
@@ -2028,7 +2166,23 @@ struct smooth
 
     smooth copy ()
     {
-        return smooth(this.contour, this.center, this.label, this.labeldir, this.labelalign, holecopy(this.holes), subsetcopy(this.subsets), this.hratios, this.vratios, this.shift, this.scale, this.rotate, this.viewdir, this.attached, copy = true);
+        return smooth(
+            this.contour,
+            this.center,
+            this.label,
+            this.labeldir,
+            this.labelalign,
+            holecopy(this.holes),
+            subsetcopy(this.subsets),
+            this.hratios,
+            this.vratios,
+            this.shift,
+            this.scale,
+            this.rotate,
+            this.viewdir,
+            this.attached,
+            copy = true
+        );
     }
     smooth replicate (smooth sm)
     {
@@ -2067,7 +2221,6 @@ private struct deferredPath
     path[] g;
     pen p;
     bool[] under;
-    // bool under;
 
     arrowhead arrow;
     bool beginarrow;
@@ -2373,28 +2526,38 @@ smooth samplesmooth (int type = 0, int num = 0)
     return smooth(ucircle);
 }
 
-smooth rn (int n, pair labeldir = (1,1), pair shift = (0,0), real scale = 1, real rotate = 0)
+smooth rn (
+    int n,
+    pair labeldir = (1,1),
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0
+)
 // an alias for the comman diagram representation of the n-dimensional Eucledian space.
 {
-    return smooth(contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
-                  label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
-                  labeldir = (1,1),
-                  labelalign = (-1,-1.5),
-                  hratios = new real[]{.4},
-                  vratios = new real[]{.4},
-                  shift = shift,
-                  scale = scale,
-                  rotate = rotate);
+    return smooth(
+        contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
+        label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
+        labeldir = (1,1),
+        labelalign = (-1,-1.5),
+        hratios = new real[]{.4},
+        vratios = new real[]{.4},
+        shift = shift,
+        scale = scale,
+        rotate = rotate
+    );
 }
 
 // -- Set operations with smooth objects -- //
 
-smooth[] intersection (smooth sm1,
-                       smooth sm2,
-                       bool keepdata = true,
-                       bool round = false,
-                       real roundcoeff = currentSyRR,
-                       bool addsubsets = false)
+smooth[] intersection (
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    bool addsubsets = false
+)
 // Constructs the intersection of two given smooth objects.
 {
 	path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
@@ -2568,11 +2731,14 @@ smooth[] intersection (smooth sm1,
 
     return res;
 }
-smooth[] intersection (smooth[] sms,
-                       bool keepdata = true,
-                       bool round = false,
-                       real roundcoeff = currentSyRR,
-                       bool addsubsets = false)
+
+smooth[] intersection (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    bool addsubsets = false
+)
 {
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
 
@@ -2595,19 +2761,22 @@ smooth[] intersection (smooth[] sms,
 	return res;
 }
 
-smooth[] intersection (bool keepdata = true,
-                       bool round = false,
-                       real roundcoeff = currentSyRR,
-                       bool addsubsets = false
-                       ... smooth[] sms)
-{ return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
+smooth[] intersection (
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    bool addsubsets = false
+    ... smooth[] sms
+) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
-smooth intersect (smooth sm1,
-                  smooth sm2,
-                  bool keepdata = true,
-                  bool round = false,
-                  real roundcoeff = currentSyRR,
-                  bool addsubsets = false)
+smooth intersect (
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    bool addsubsets = false
+)
 {
     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff);
     if (intersection.length == 0)
@@ -2617,15 +2786,26 @@ smooth intersect (smooth sm1,
     return intersection(sm1, sm2, keepdata, round, roundcoeff)[0];
 }
 
-smooth intersect (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
-{
-    return intersection(sms, keepdata, round, roundcoeff)[0];
-}
+smooth intersect (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR
+) { return intersection(sms, keepdata, round, roundcoeff)[0]; }
 
-smooth intersect (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
-{ return intersection(sms, keepdata, round, roundcoeff)[0]; }
+smooth intersect (
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR ... smooth[] sms
+) { return intersection(sms, keepdata, round, roundcoeff)[0]; }
 
-smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
+smooth[] union (
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR
+)
 // Constructs the union of two given smooth objects. //
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
@@ -2793,7 +2973,13 @@ smooth[] union (smooth sm1, smooth sm2, bool keepdata = true, bool round = false
 
     return new smooth[]{res};
 }
-smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
+
+smooth[] union (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR
+)
 {
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
 
@@ -2821,24 +3007,36 @@ smooth[] union (smooth[] sms, bool keepdata = true, bool round = false, real rou
 	smooth[] res = getunion(sms, keepdata, round, roundcoeff);
 	return res;
 }
-smooth[] union (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
-{ return union(sms, keepdata, round, roundcoeff); }
 
-smooth unite (smooth[] sms, bool keepdata = true, bool round = false, real roundcoeff = currentSyRR)
-{ return union(sms, keepdata, round, roundcoeff)[0]; }
+smooth[] union (
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR ... smooth[] sms
+) { return union(sms, keepdata, round, roundcoeff); }
 
-smooth unite (bool keepdata = true, bool round = false, real roundcoeff = currentSyRR ... smooth[] sms)
-{ return union(sms, keepdata, round, roundcoeff)[0]; }
+smooth unite (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR
+) { return union(sms, keepdata, round, roundcoeff)[0]; }
 
-smooth tangentspace (smooth sm,
-                     int ind = -1,
-                     pair center = (ind == -1) ? sm.center : sm.holes[ind].center,
-                     real angle,
-                     real ratio,
-                     real size = 1,
-                     real rotate = 45,
-                     string eltlabel = "x")
-// Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
+smooth unite (
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR ... smooth[] sms
+) { return union(sms, keepdata, round, roundcoeff)[0]; }
+
+smooth tangentspace (
+    smooth sm,
+    int ind = -1,
+    pair center = (ind == -1) ? sm.center : sm.holes[ind].center,
+    real angle,
+    real ratio,
+    real size = 1,
+    real rotate = 45,
+    string eltlabel = "x"
+) // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
 {
 	if (!inside(-1, sm.holes.length-1, ind))
 	{ halt("Could not build tangent space: index out of bounds. [ tangentspace() ]"); }
@@ -2882,19 +3080,21 @@ smooth tangentspace (smooth sm,
 
 // -- From here starts the collection of the drawing functions provided by the module. -- //
 
-private void fitpath (picture pic,
-                      bool overlap,
-                      int covermode,
-                      bool drawnow,
-                      path gs,
-                      Label L,
-                      pen p,
-                      arrowhead arrow,
-                      bool beginarrow,
-                      bool endarrow,
-                      real barsize,
-                      bool beginbar,
-                      bool endbar)
+private void fitpath (
+    picture pic,
+    bool overlap,
+    int covermode,
+    bool drawnow,
+    path gs,
+    Label L,
+    pen p,
+    arrowhead arrow,
+    bool beginarrow,
+    bool endarrow,
+    real barsize,
+    bool beginbar,
+    bool endbar
+)
 {
     if (length(L.s) > 0) label(pic = pic, gs, L = L, p = p);
     
@@ -3049,65 +3249,76 @@ private void fitpath (picture pic,
         draw(pic = pic, gs, p = p, arrow = truearrow, bar = truebar);
     }
 }
-void fitpath (picture pic = currentpicture,
-              path g,
-              int covermode = 2,
-              Label L = "",
-              pen p = currentpen,
-              bool drawnow = false,
-              arrowhead arrow = SimpleHead,
-              bool beginarrow = false,
-              bool endarrow = false,
-              real barsize = 0,
-              bool beginbar = false,
-              bool endbar = false)
-{ fitpath(pic, false, covermode, drawnow, g, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar); }
-void fitpath (picture pic = currentpicture,
-              path[] g,
-              int covermode = 2,
-              Label L = "",
-              pen p = currentpen,
-              bool drawnow = false)
+
+void fitpath (
+    picture pic = currentpicture,
+    path g,
+    int covermode = 2,
+    Label L = "",
+    pen p = currentpen,
+    bool drawnow = false,
+    arrowhead arrow = SimpleHead,
+    bool beginarrow = false,
+    bool endarrow = false,
+    real barsize = 0,
+    bool beginbar = false,
+    bool endbar = false
+) { fitpath(pic, false, covermode, drawnow, g, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar); }
+
+void fitpath (
+    picture pic = currentpicture,
+    path[] g,
+    int covermode = 2,
+    Label L = "",
+    pen p = currentpen,
+    bool drawnow = false
+)
 {
     for (int i = 0; i < g.length; ++i)
     { fitpath(pic, false, covermode, drawnow, g[i], L, p, null, false, false, 0, false, false); }
 }
 
-void fillfitpath (picture pic = currentpicture,
-              path g,
-              int covermode = 0,
-              Label L = "",
-              pen drawpen = currentpen,
-              pen fillpen = currentpen,
-              bool drawnow = false)
+void fillfitpath (
+    picture pic = currentpicture,
+    path g,
+    int covermode = 0,
+    Label L = "",
+    pen drawpen = currentpen,
+    pen fillpen = currentpen,
+    bool drawnow = false
+)
 {
     fill(pic, g, fillpen);
     fitpath(pic, false, covermode, drawnow, g, L, drawpen, null, false, false, 0, false, false);
 }
-void fillfitpath (picture pic = currentpicture,
-              path[] g,
-              int covermode = 0,
-              Label L = "",
-              pen drawpen = currentpen,
-              pen fillpen = currentpen,
-              bool drawnow = false)
+
+void fillfitpath (
+    picture pic = currentpicture,
+    path[] g,
+    int covermode = 0,
+    Label L = "",
+    pen drawpen = currentpen,
+    pen fillpen = currentpen,
+    bool drawnow = false
+)
 {
     fill(pic, g, fillpen);
     for (int i = 0; i < g.length; ++i)
     { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
 }
 
-private void drawsections (picture pic,
-                           pair[][] sections,
-                           pair viewdir,
-                           bool dash,
-                           bool explain,
-                           bool shade,
-                           real scale,
-                           pen sectionpen,
-                           pen dashpen,
-                           pen shadepen)
-// Renders the circular sections, given an array of control points.
+private void drawsections (
+    picture pic,
+    pair[][] sections,
+    pair viewdir,
+    bool dash,
+    bool explain,
+    bool shade,
+    real scale,
+    pen sectionpen,
+    pen dashpen,
+    pen shadepen
+) // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
     {
@@ -3136,28 +3347,29 @@ private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, explain, shade, scale, sectionpen, dashpen, shadepen);
 }
 
-void draw (picture pic = currentpicture,
-           smooth sm,
-           pen contourpen = currentpen,
-           pen smoothfill = smoothcolor,
-           pen subsetcontourpen = contourpen,
-           pen subsetfill = subsetcolor,
-           pen sectionpen = sectionpen(contourpen),
-           pen dashpen = dashpen(sectionpen),
-           pen shadepen = shadepen(smoothfill),
-           pen elementpen = elementpen(contourpen),
-           int mode = currentDrM,
-           bool fill = currentDrF,
-           bool fillsubsets = currentDrFS,
-           bool drawcontour = currentDrDC,
-           bool explain = currentDrE,
-           bool dash = currentDrDD,
-           bool shade = currentDrDS,
-           bool avoidsubsets = currentSeAS,
-           bool drag = true,
-           bool overlap = currentDrO,
-           bool drawnow = currentDrDN)
-// The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
+void draw (
+    picture pic = currentpicture,
+    smooth sm,
+    pen contourpen = currentpen,
+    pen smoothfill = smoothcolor,
+    pen subsetcontourpen = contourpen,
+    pen subsetfill = subsetcolor,
+    pen sectionpen = sectionpen(contourpen),
+    pen dashpen = dashpen(sectionpen),
+    pen shadepen = shadepen(smoothfill),
+    pen elementpen = elementpen(contourpen),
+    int mode = currentDrM,
+    bool fill = currentDrF,
+    bool fillsubsets = currentDrFS,
+    bool drawcontour = currentDrDC,
+    bool explain = currentDrE,
+    bool dash = currentDrDD,
+    bool shade = currentDrDS,
+    bool avoidsubsets = currentSeAS,
+    bool drag = true,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN
+) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `explain` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
     // Configuring variables
 
@@ -3343,27 +3555,28 @@ void draw (picture pic = currentpicture,
     }
 }
 
-void draw (picture pic = currentpicture,
-           smooth[] sms,
-           pen contourpen = currentpen,
-           pen smoothfill = smoothcolor,
-           pen subsetcontourpen = contourpen,
-           pen subsetfill = subsetcolor,
-           pen sectionpen = sectionpen(contourpen),
-           pen dashpen = dashpen(sectionpen),
-           pen shadepen = shadepen(smoothfill),
-           pen elementpen = elementpen(contourpen),
-           int mode = currentDrM,
-           bool fill = currentDrF,
-           bool fillsubsets = currentDrFS,
-           bool drawcontour = currentDrDC,
-           bool explain = currentDrE,
-           bool dash = currentDrDD,
-           bool shade = currentDrDS,
-           bool avoidsubsets = currentSeAS,
-           bool drag = true,
-           bool overlap = currentDrO,
-           bool drawnow = currentDrDN)
+void draw (
+    picture pic = currentpicture,
+    smooth[] sms,
+    pen contourpen = currentpen,
+    pen smoothfill = smoothcolor,
+    pen subsetcontourpen = contourpen,
+    pen subsetfill = subsetcolor,
+    pen sectionpen = sectionpen(contourpen),
+    pen dashpen = dashpen(sectionpen),
+    pen shadepen = shadepen(smoothfill),
+    pen elementpen = elementpen(contourpen),
+    int mode = currentDrM,
+    bool fill = currentDrF,
+    bool fillsubsets = currentDrFS,
+    bool drawcontour = currentDrDC,
+    bool explain = currentDrE,
+    bool dash = currentDrDD,
+    bool shade = currentDrDS,
+    bool avoidsubsets = currentSeAS,
+    bool drag = true,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN)
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
@@ -3371,27 +3584,29 @@ void draw (picture pic = currentpicture,
 	}
 }
 
-void draw (picture pic = currentpicture,
-           pen contourpen = currentpen,
-           pen smoothfill = smoothcolor,
-           pen subsetcontourpen = contourpen,
-           pen subsetfill = subsetcolor,
-           pen sectionpen = sectionpen(contourpen),
-           pen dashpen = dashpen(sectionpen),
-           pen shadepen = shadepen(smoothfill),
-           pen elementpen = elementpen(contourpen),
-           int mode = currentDrM,
-           bool fill = currentDrF,
-           bool fillsubsets = currentDrFS,
-           bool drawcontour = currentDrDC,
-           bool explain = currentDrE,
-           bool dash = currentDrDD,
-           bool shade = currentDrDS,
-           bool avoidsubsets = currentSeAS,
-           bool drag = true,
-           bool overlap = currentDrO,
-           bool drawnow = currentDrDN
-           ... smooth[] sms)
+void draw (
+    picture pic = currentpicture,
+    pen contourpen = currentpen,
+    pen smoothfill = smoothcolor,
+    pen subsetcontourpen = contourpen,
+    pen subsetfill = subsetcolor,
+    pen sectionpen = sectionpen(contourpen),
+    pen dashpen = dashpen(sectionpen),
+    pen shadepen = shadepen(smoothfill),
+    pen elementpen = elementpen(contourpen),
+    int mode = currentDrM,
+    bool fill = currentDrF,
+    bool fillsubsets = currentDrFS,
+    bool drawcontour = currentDrDC,
+    bool explain = currentDrE,
+    bool dash = currentDrDD,
+    bool shade = currentDrDS,
+    bool avoidsubsets = currentSeAS,
+    bool drag = true,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN
+    ... smooth[] sms
+)
 {
     draw(pic, sms, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 }
@@ -3402,33 +3617,34 @@ void phantom (picture pic = currentpicture, smooth sm)
 	dot(pic, min(sm.contour), invisible);
 }
 
-smooth[] drawintersect (picture pic = currentpicture,
-                        smooth sm1,
-                        smooth sm2,
-                        bool keepdata = true,
-                        bool round = false,
-                        real roundcoeff = currentSyRR,
-                        pair shift = (0,0),
-                            pen contourpen = currentpen,
-                            pen smoothfill = smoothcolor,
-                            pen subsetcontourpen = contourpen,
-                            pen subsetfill = subsetcolor,
-                            pen sectionpen = sectionpen(contourpen),
-                            pen dashpen = dashpen(sectionpen),
-                            pen shadepen = shadepen(smoothfill),
-                            pen elementpen = elementpen(contourpen),
-                            int mode = currentDrM,
-                            bool fill = currentDrF,
-                            bool fillsubsets = currentDrFS,
-                            bool drawcontour = currentDrDC,
-                            bool explain = currentDrE,
-                            bool dash = currentDrDD,
-                            bool avoidsubsets = currentSeAS,
-                            bool shade = currentDrDS,
-                            bool overlap = currentDrO,
-                            bool drawnow = currentDrDN,
-                        pen ghostpen = dashpen(contourpen))
-// Draws the intersection of two smooth objects, as well as their dim contours for comparison
+smooth[] drawintersect (
+    picture pic = currentpicture,
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    pair shift = (0,0),
+        pen contourpen = currentpen,
+        pen smoothfill = smoothcolor,
+        pen subsetcontourpen = contourpen,
+        pen subsetfill = subsetcolor,
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
+        pen shadepen = shadepen(smoothfill),
+        pen elementpen = elementpen(contourpen),
+        int mode = currentDrM,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        bool drawcontour = currentDrDC,
+        bool explain = currentDrE,
+        bool dash = currentDrDD,
+        bool avoidsubsets = currentSeAS,
+        bool shade = currentDrDS,
+        bool overlap = currentDrO,
+        bool drawnow = currentDrDN,
+    pen ghostpen = dashpen(contourpen)
+) // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
 	smooth smp1 = sm1.copy().simplemove(shift = shift);
     smooth smp2 = sm2.copy().simplemove(shift = shift);
@@ -3449,31 +3665,34 @@ smooth[] drawintersect (picture pic = currentpicture,
 
     return res;
 }
-smooth[] drawintersect (picture pic = currentpicture,
-                        smooth[] sms,
-                        bool keepdata = true,
-                        bool round = false,
-                        real roundcoeff = currentSyRR,
-                        pair shift = (0,0),
-                            pen contourpen = currentpen,
-                            pen smoothfill = smoothcolor,
-                            pen subsetcontourpen = contourpen,
-                            pen subsetfill = subsetcolor,
-                            pen sectionpen = sectionpen(contourpen),
-                            pen dashpen = dashpen(sectionpen),
-                            pen shadepen = shadepen(smoothfill),
-                            pen elementpen = elementpen(contourpen),
-                            int mode = currentDrM,
-                            bool fill = currentDrF,
-                            bool fillsubsets = currentDrFS,
-                            bool drawcontour = currentDrDC,
-                            bool explain = currentDrE,
-                            bool dash = currentDrDD,
-                            bool avoidsubsets = currentSeAS,
-                            bool shade = currentDrDS,
-                            bool overlap = currentDrO,
-                            bool drawnow = currentDrDN,
-                        pen ghostpen = dashpen(contourpen))
+
+smooth[] drawintersect (
+    picture pic = currentpicture,
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    pair shift = (0,0),
+        pen contourpen = currentpen,
+        pen smoothfill = smoothcolor,
+        pen subsetcontourpen = contourpen,
+        pen subsetfill = subsetcolor,
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
+        pen shadepen = shadepen(smoothfill),
+        pen elementpen = elementpen(contourpen),
+        int mode = currentDrM,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        bool drawcontour = currentDrDC,
+        bool explain = currentDrE,
+        bool dash = currentDrDD,
+        bool avoidsubsets = currentSeAS,
+        bool shade = currentDrDS,
+        bool overlap = currentDrO,
+        bool drawnow = currentDrDN,
+    pen ghostpen = dashpen(contourpen)
+)
 {
 	smooth[] smsp = sequence(new smooth (int i){return sms[i].copy().move(shift = shift);}, sms.length);
 	smooth[] res = intersection(smsp, keepdata, round, roundcoeff);
@@ -3490,55 +3709,59 @@ smooth[] drawintersect (picture pic = currentpicture,
 
 	return res;
 }
-smooth[] drawintersect (picture pic = currentpicture,
-                        bool keepdata = true,
-                        bool round = false,
-                        real roundcoeff = currentSyRR,
-                        pair shift = (0,0),
-                            pen contourpen = currentpen,
-                            pen smoothfill = smoothcolor,
-                            pen subsetcontourpen = contourpen,
-                            pen subsetfill = subsetcolor,
-                            pen sectionpen = sectionpen(contourpen),
-                            pen dashpen = dashpen(sectionpen),
-                            pen shadepen = shadepen(smoothfill),
-                            pen elementpen = elementpen(contourpen),
-                            int mode = currentDrM,
-                            bool fill = currentDrF,
-                            bool fillsubsets = currentDrFS,
-                            bool drawcontour = currentDrDC,
-                            bool explain = currentDrE,
-                            bool dash = currentDrDD,
-                            bool avoidsubsets = currentSeAS,
-                            bool shade = currentDrDS,
-                            bool overlap = currentDrO,
-                            bool drawnow = currentDrDN,
-                        pen ghostpen = dashpen(contourpen)
-                        ... smooth[] sms)
+
+smooth[] drawintersect (
+    picture pic = currentpicture,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = currentSyRR,
+    pair shift = (0,0),
+        pen contourpen = currentpen,
+        pen smoothfill = smoothcolor,
+        pen subsetcontourpen = contourpen,
+        pen subsetfill = subsetcolor,
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
+        pen shadepen = shadepen(smoothfill),
+        pen elementpen = elementpen(contourpen),
+        int mode = currentDrM,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        bool drawcontour = currentDrDC,
+        bool explain = currentDrE,
+        bool dash = currentDrDD,
+        bool avoidsubsets = currentSeAS,
+        bool shade = currentDrDS,
+        bool overlap = currentDrO,
+        bool drawnow = currentDrDN,
+    pen ghostpen = dashpen(contourpen)
+    ... smooth[] sms
+)
 {
 	return drawintersect(pic, sms, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, explain, dash, avoidsubsets, shade, overlap, drawnow);
 }
 
-void drawarrow (picture pic = currentpicture,
-                smooth sm1,
-                smooth sm2 = sm1,
-                int[] ind1 = {},
-                int[] ind2 = {},
-                real curve = 0,
-                pair[] points = {},
-                Label L = "",
-                pen p = currentpen,
-                arrowhead arrow = SimpleHead,
-                bool beginarrow = false,
-                bool endarrow = true,
-                real barsize = 0,
-                bool beginbar = false,
-                bool endbar = false,
-                bool overlap = currentDrO,
-                bool drawnow = currentDrDN,
-                real margin1 = currentArM,
-                real margin2 = currentArM)
-// Draws an arrow between two given smooth objects, or their subsets.
+void drawarrow (
+    picture pic = currentpicture,
+    smooth sm1,
+    smooth sm2 = sm1,
+    int[] ind1 = {},
+    int[] ind2 = {},
+    real curve = 0,
+    pair[] points = {},
+    Label L = "",
+    pen p = currentpen,
+    arrowhead arrow = SimpleHead,
+    bool beginarrow = false,
+    bool endarrow = true,
+    real barsize = 0,
+    bool beginbar = false,
+    bool endbar = false,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN,
+    real margin1 = currentArM,
+    real margin2 = currentArM
+) // Draws an arrow between two given smooth objects, or their subsets.
 {
 	string label1;
 	string label2;
@@ -3598,25 +3821,27 @@ void drawarrow (picture pic = currentpicture,
 	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
 
-void drawarrow (picture pic = currentpicture,
-                smooth sm1,
-                int ind1,
-                smooth sm2 = sm1,
-                int ind2,
-                real curve = 0,
-                pair[] points = {},
-                Label L = "",
-                pen p = currentpen,
-                arrowhead arrow = SimpleHead,
-                bool beginarrow = false,
-                bool endarrow = true,
-                real barsize = 0,
-                bool beginbar = false,
-                bool endbar = false,
-                bool overlap = currentDrO,
-                bool drawnow = currentDrDN,
-                real margin1 = currentArM,
-                real margin2 = currentArM)
+void drawarrow (
+    picture pic = currentpicture,
+    smooth sm1,
+    int ind1,
+    smooth sm2 = sm1,
+    int ind2,
+    real curve = 0,
+    pair[] points = {},
+    Label L = "",
+    pen p = currentpen,
+    arrowhead arrow = SimpleHead,
+    bool beginarrow = false,
+    bool endarrow = true,
+    real barsize = 0,
+    bool beginbar = false,
+    bool endbar = false,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN,
+    real margin1 = currentArM,
+    real margin2 = currentArM
+)
 {
 	element el1 = sm1.elements[ind1];
 	element el2 = sm2.elements[ind2];
@@ -3627,25 +3852,27 @@ void drawarrow (picture pic = currentpicture,
 	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = g, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
 
-void drawarrow (picture pic = currentpicture,
-                smooth sm,
-                int[] ind = {},
-                real angle,
-                real radius = sm.scale,
-                pair[] points = {},
-                bool reverse = false,
-                Label L = "",
-                pen p = currentpen,
-                arrowhead arrow = SimpleHead,
-                bool beginarrow = false,
-                bool endarrow = true,
-                real barsize = 0,
-                bool beginbar = false,
-                bool endbar = false,
-                bool overlap = currentDrO,
-                bool drawnow = currentDrDN,
-                real margin1 = currentArM,
-                real margin2 = currentArM)
+void drawarrow (
+    picture pic = currentpicture,
+    smooth sm,
+    int[] ind = {},
+    real angle,
+    real radius = sm.scale,
+    pair[] points = {},
+    bool reverse = false,
+    Label L = "",
+    pen p = currentpen,
+    arrowhead arrow = SimpleHead,
+    bool beginarrow = false,
+    bool endarrow = true,
+    real barsize = 0,
+    bool beginbar = false,
+    bool endbar = false,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN,
+    real margin1 = currentArM,
+    real margin2 = currentArM
+)
 {
 	string label;
 	path contour;
@@ -3752,16 +3979,30 @@ void flushdeferred (picture pic = currentpicture)
 
 // -- Redefining functions to execute `drawdeferred` and `flushdeferred` at call -- //
 
-void plainshipout (string prefix=defaultfilename, picture pic=currentpicture,
-	     orientation orntn=orientation,
-	     string format="", bool wait=false, bool view=true,
-	     string options="", string script="",
-	     light lt=currentlight, projection P=currentprojection) = shipout;
-shipout = new void (string prefix=defaultfilename, picture pic=currentpicture,
-	     orientation orntn=orientation,
-	     string format="", bool wait=false, bool view=true,
-	     string options="", string script="",
-	     light lt=currentlight, projection P=currentprojection)
+void plainshipout (
+    string prefix=defaultfilename,
+    picture pic=currentpicture,
+    orientation orntn=orientation,
+    string format="",
+    bool wait=false,
+    bool view=true,
+    string options="",
+    string script="",
+    light lt=currentlight,
+    projection P=currentprojection
+) = shipout;
+shipout = new void (
+    string prefix=defaultfilename,
+    picture pic=currentpicture,
+    orientation orntn=orientation,
+    string format="",
+    bool wait=false,
+    bool view=true,
+    string options="",
+    string script="",
+    light lt=currentlight,
+    projection P=currentprojection
+)
 {
     drawdeferred(pic = pic, flush = false);
     draw(pic = pic, currentPrDP, red+1);
@@ -3780,11 +4021,13 @@ add = new void (picture dest, picture src, bool group=true, filltype filltype=No
     drawdeferred(src);
     dest.add(src, group, filltype, above);
 };
+
 add = new void (picture src, bool group=true, filltype filltype=NoFill, bool above=true)
 {
     drawdeferred(src);
     currentpicture.add(src, group, filltype, above);
 };
+
 add = new void (picture dest, picture src, pair position, bool group=true, filltype filltype=NoFill, bool above=true)
 {
     drawdeferred(src);
@@ -3792,6 +4035,7 @@ add = new void (picture dest, picture src, pair position, bool group=true, fillt
 };
 
 picture plainapply (transform t, picture p) { return t*p; }
+
 picture operator * (transform t, picture p)
 {
     picture q = plainapply(t,p);
@@ -3806,6 +4050,7 @@ picture operator * (transform t, picture p)
 }
 
 void plainsave () { save(); }
+
 void save ()
 {
     deferredPath[] curdp = extractdeferredpaths(currentpicture, false);
@@ -3814,6 +4059,7 @@ void save ()
 };
 
 void plainrestore () { restore(); }
+
 void restore ()
 {
     int ind = extractdeferredindex(currentpicture);
