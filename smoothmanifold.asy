@@ -3535,7 +3535,7 @@ void draw (
                     hole hl2 = sm.holes[j];
 
                     pair hl1times = range(hl1.contour, hl1.center, hl2.center-hl1.center, currentIHSA);
-                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, currentIHSA, orientation = -1);
+                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, currentIHSA, -1);
                     path curhl1contour = subcyclic(hl1.contour, hl1times);
                     path curhl2contour = subcyclic(reverse(hl2.contour), hl2times);
 

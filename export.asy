@@ -48,26 +48,29 @@ private string copychar (string str, int n)
 	return copychar(str, n-1) + str;
 }
 
-private bool native (string format = currentAnIF) {return format == "" || format == "eps" || format == "pdf";}
+private bool native (string format = currentAnIF)
+{return format == "" || format == "eps" || format == "pdf";}
 
-void expar (string prefix = currentExP,
-            string format = settings.outformat,
-            int dpi = currentExRID,
-            bool exit = currentExEOE,
-            bool restore = currentExR,
-                string dirname = currentAnDN,
-                string informat = currentAnIF,
-                string outprefix = currentAnOP,
-                string outformat = currentAnOF,
-                bool close = currentAnC,
-                bool preclean = currentAnPC,
-                    real ymax = -1,
-                    real ratio = 1.777777777,
-                    bool clip = currentFrCP,
-                    pen bgpen = currentExBG,
-                    pen framepen = currentExFP,
-                    real margin = currentExM,
-                    pair size = (dn,dn))
+void expar (
+    string prefix = currentExP,
+    string format = settings.outformat,
+    int dpi = currentExRID,
+    bool exit = currentExEOE,
+    bool restore = currentExR,
+        string dirname = currentAnDN,
+        string informat = currentAnIF,
+        string outprefix = currentAnOP,
+        string outformat = currentAnOF,
+        bool close = currentAnC,
+        bool preclean = currentAnPC,
+            real ymax = -1,
+            real ratio = 1.777777777,
+            bool clip = currentFrCP,
+            pen bgpen = currentExBG,
+            pen framepen = currentExFP,
+            real margin = currentExM,
+            pair size = (dn,dn)
+)
 {
 	if (dpi < 10)
 	{ halt("Could not apply changes: inacceptable quality."); }
@@ -139,24 +142,26 @@ bool exists (string filename)
     return res;
 }
 
-void export (string prefix = currentExP,
-             picture pic = currentpicture,
-             orientation orientation = orientation,
-             string format = settings.outformat,
-             bool wait = false,
-             bool view = true,
-             string options = "",
-             string script = "",
-             light light = currentlight,
-             projection P = currentprojection,
-                 pen bgpen = currentExBG,
-                 real margin = currentExM,
-                 pen framepen = currentExFP,
-                 int density = currentExRID,
-                 bool exit = currentExEOE,
-                 bool simple = false,
-                 bool drawdeferred = true,
-                 bool restore = currentExR)
+void export (
+    string prefix = currentExP,
+    picture pic = currentpicture,
+    orientation orientation = orientation,
+    string format = settings.outformat,
+    bool wait = false,
+    bool view = true,
+    string options = "",
+    string script = "",
+    light light = currentlight,
+    projection P = currentprojection,
+        pen bgpen = currentExBG,
+        real margin = currentExM,
+        pen framepen = currentExFP,
+        int density = currentExRID,
+        bool exit = currentExEOE,
+        bool simple = false,
+        bool drawdeferred = true,
+        bool restore = currentExR
+)
 {
 	bool native = native(format);
 	settings.outformat = native ? format : "pdf";
@@ -219,13 +224,15 @@ void clean ()
     delete(defaultAnFLN);
 }
 
-void compile (int fps = currentAnFPS,
-              string informat = currentAnIF,
-              string outprefix = currentAnOP,
-              string outformat = currentAnOF,
-              bool clean = true,
-              bool exit = true,
-              int density = currentExRID)
+void compile (
+    int fps = currentAnFPS,
+    string informat = currentAnIF,
+    string outprefix = currentAnOP,
+    string outformat = currentAnOF,
+    bool clean = true,
+    bool exit = true,
+    int density = currentExRID
+)
 {
 	write("> Compiling... ", suffix = none);
 
@@ -270,20 +277,22 @@ void compile (int fps = currentAnFPS,
     if (exit) exit();
 }
 
-void animate (void update (int),
-              int n,
-              bool back = false,
-                  pen bgpen = currentExBG,
-                  real margin = currentExM,
-                  pen framepen = currentExFP,
-              int density = currentExRID,
-              bool compile = false,
-              string informat = currentAnIF,
-              string outprefix = currentAnOP,
-              string outformat = currentAnOF,
-              int fps = currentAnFPS,
-              bool clean = true,
-              bool exit = currentExEOE)
+void animate (
+    void update (int),
+    int n,
+    bool back = false,
+        pen bgpen = currentExBG,
+        real margin = currentExM,
+        pen framepen = currentExFP,
+    int density = currentExRID,
+    bool compile = false,
+    string informat = currentAnIF,
+    string outprefix = currentAnOP,
+    string outformat = currentAnOF,
+    int fps = currentAnFPS,
+    bool clean = true,
+    bool exit = currentExEOE
+)
 {
 	string s = "> Writing animation...";
 	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
@@ -333,11 +342,13 @@ void animate (void update (int),
 	if (compile) compile(informat = informat, outprefix = outprefix, outformat = outformat, fps = fps, clean = clean, exit = exit, density = density);
 }
 
-void addframe (picture pic = currentpicture,
-               string informat = currentAnIF,
-                   pen bgpen = currentExBG,
-                   real margin = currentExM,
-                   pen framepen = currentExFP)
+void addframe (
+    picture pic = currentpicture,
+    string informat = currentAnIF,
+        pen bgpen = currentExBG,
+        real margin = currentExM,
+        pen framepen = currentExFP
+)
 {
     string hash = (string)currentAnCC + (string)seconds();
     currentAnCC += 1;
@@ -350,38 +361,39 @@ void addframe (picture pic = currentpicture,
 
 // -- Animations -- //
 
-void move (smooth sm,
-           int n,
-           pair shift = (0,0),
-           real scale = 1,
-           real rotate = 0,
-           bool keepview = true,
-               pen contourpen = currentpen,
-               pen smoothfill = smoothcolor,
-               pen subsetcontourpen = contourpen,
-               pen subsetfill = subsetcolor,
-               pen sectionpen = sectionpen(contourpen),
-               pen dashpen = dashpen(sectionpen),
-               pen shadepen = shadepen(smoothfill),
-               pen elementpen = elementpen(contourpen),
-               int mode = currentDrM,
-               bool fill = currentDrF,
-               bool fillsubsets = currentDrFS,
-               bool drawcontour = currentDrDC,
-               bool explain = currentDrE,
-               bool dash = currentDrDD,
-               bool shade = currentDrDS,
-               bool avoidsubsets = currentSeAS,
-               bool drag = true,
-               bool overlap = currentDrO,
-               bool drawnow = currentDrDN,
-           bool back = true,
-           real margin = currentExM,
-           int density = currentExRID,
-           bool compile = false,
-           int fps = currentAnFPS,
-           bool close = currentAnC)
-// Animates the process of shifting, scaling and rotating a given smooth object. //
+void move (
+    smooth sm,
+    int n,
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    bool keepview = true,
+        pen contourpen = currentpen,
+        pen smoothfill = smoothcolor,
+        pen subsetcontourpen = contourpen,
+        pen subsetfill = subsetcolor,
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
+        pen shadepen = shadepen(smoothfill),
+        pen elementpen = elementpen(contourpen),
+        int mode = currentDrM,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        bool drawcontour = currentDrDC,
+        bool explain = currentDrE,
+        bool dash = currentDrDD,
+        bool shade = currentDrDS,
+        bool avoidsubsets = currentSeAS,
+        bool drag = true,
+        bool overlap = currentDrO,
+        bool drawnow = currentDrDN,
+    bool back = true,
+    real margin = currentExM,
+    int density = currentExRID,
+    bool compile = false,
+    int fps = currentAnFPS,
+    bool close = currentAnC
+) // Animates the process of shifting, scaling and rotating a given smooth object. //
 {
     smooth smp;
     if (back) smp = sm.copy();
@@ -400,37 +412,38 @@ void move (smooth sm,
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-void revolve (smooth sm,
-              int n,
-              pair viewdir1 = sm.viewdir,
-              pair viewdir2,
-                  pen contourpen = currentpen,
-                  pen smoothfill = smoothcolor,
-                  pen subsetcontourpen = contourpen,
-                  pen subsetfill = subsetcolor,
-                  pen sectionpen = sectionpen(contourpen),
-                  pen dashpen = dashpen(sectionpen),
-                  pen shadepen = shadepen(smoothfill),
-                  pen elementpen = elementpen(contourpen),
-                  int mode = currentDrM,
-                  bool fill = currentDrF,
-                  bool fillsubsets = currentDrFS,
-                  bool drawcontour = currentDrDC,
-                  bool explain = currentDrE,
-                  bool dash = currentDrDD,
-                  bool shade = currentDrDS,
-                  bool avoidsubsets = currentSeAS,
-                  bool drag = true,
-                  bool overlap = currentDrO,
-                  bool drawnow = currentDrDN,
-              bool back = true,
-              bool arc = false,
-              real margin = currentExM,
-              int density = currentExRID,
-              bool compile = false,
-              int fps = currentAnFPS,
-              bool close = currentAnC)
-// Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
+void revolve (
+    smooth sm,
+    int n,
+    pair viewdir1 = sm.viewdir,
+    pair viewdir2,
+        pen contourpen = currentpen,
+        pen smoothfill = smoothcolor,
+        pen subsetcontourpen = contourpen,
+        pen subsetfill = subsetcolor,
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
+        pen shadepen = shadepen(smoothfill),
+        pen elementpen = elementpen(contourpen),
+        int mode = currentDrM,
+        bool fill = currentDrF,
+        bool fillsubsets = currentDrFS,
+        bool drawcontour = currentDrDC,
+        bool explain = currentDrE,
+        bool dash = currentDrDD,
+        bool shade = currentDrDS,
+        bool avoidsubsets = currentSeAS,
+        bool drag = true,
+        bool overlap = currentDrO,
+        bool drawnow = currentDrDN,
+    bool back = true,
+    bool arc = false,
+    real margin = currentExM,
+    int density = currentExRID,
+    bool compile = false,
+    int fps = currentAnFPS,
+    bool close = currentAnC
+) // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
     smooth smp;
     if (back) smp = sm.copy();
@@ -455,11 +468,18 @@ void revolve (smooth sm,
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
 
-shipout = new void (string prefix=outname(), picture pic=currentpicture,
-	     orientation orientation=orientation,
-	     string format=settings.outformat, bool wait=false, bool view=true,
-	     string options="", string script="",
-	     light light=currentlight, projection P=currentprojection)
+shipout = new void (
+    string prefix=outname(),
+	picture pic=currentpicture,
+    orientation orientation=orientation,
+    string format=settings.outformat,
+	bool wait=false,
+	bool view=true,
+    string options="",
+	string script="",
+    light light=currentlight,
+	projection P=currentprojection
+)
 {
     if (!currentExEF) export(prefix, pic, orientation, format, wait, view, options, script, light, P);
     // else write("Exit flag is true -- will not shipout picture");

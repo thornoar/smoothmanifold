@@ -6,7 +6,9 @@ path usquare = defaultPaUS;
 private real defaultSyRR = .03; // [R]ounded [P]ath [R]atio
 real currentSyRR = defaultSyRR;
 
-void roundcoeff (real val = defaultSyRR)
+void roundcoeff (
+    real val = defaultSyRR
+)
 {
 	if (val > .5)
 	{ abort("Number provided for the rounding coefficient is too big. Values below 0.1 are ideal."); }
@@ -21,7 +23,11 @@ real mod (real a, real b)
     return a;
 }
 
-pair center (path p, int n = 10, bool arc = true)
+pair center (
+    path p,
+	int n = 10,
+	bool arc = true
+)
 {
     pair sum = (0,0);
     for (int i = 0; i < n; ++i)
@@ -32,20 +38,21 @@ pair center (path p, int n = 10, bool arc = true)
 }
 
 transform srap (real scale, real rotate, pair point)
-{ return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
 // [S]cale [R]otate [A]round [P]oint
+{ return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
 
 bool inside (real a, real b, real c)
 { return (a <= c && c <= b); }
-
-// bool isinside (path p, pair x)
-// { return windingnumber(p, x) == windingnumber(p, inside(p)); }
 
 bool insidepath (path p, path q)
 // Checks if q is completely inside p (the direction of p does not matter). Shorthand for inside(p, q) == 1
 { return (inside(p, srap(scale = .99, rotate = 0, point = center(p))*q) == 1); }
 
-transform dscale (real scale, pair center = (0,0), pair dir) 
+transform dscale (
+    real scale,
+	pair center = (0,0),
+	pair dir
+) // scale in given direction
 {
 	if (length(dir) == 0) return identity;
 	return rotate(degrees(dir), center) * xscale(scale) * rotate(-degrees(dir), center);
@@ -168,8 +175,12 @@ bool meet (path p, path[] q)
     return false;
 }
 
-path ellipsepath (pair a, pair b, real curve = 0, bool abs = false)
-// Returns half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
+path ellipsepath (
+    pair a,
+	pair b,
+	real curve = 0,
+	bool abs = false
+) // Returns half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
 {
     if (!abs) curve = curve*length(b-a);
     pair mid = (a+b)*.5;
@@ -177,8 +188,12 @@ path ellipsepath (pair a, pair b, real curve = 0, bool abs = false)
     return subpath(e, 0, reltime(e, .5));
 }
 
-path curvedpath (pair a, pair b, real curve = 0, bool abs = false)
-// Constucts a curved path between two points.
+path curvedpath (
+    pair a,
+	pair b,
+	real curve = 0,
+	bool abs = false
+) // Constucts a curved path between two points.
 {
     if (abs) curve = curve/length(b-a);
     pair mid = (a+b)*.5;
@@ -188,9 +203,9 @@ path curvedpath (pair a, pair b, real curve = 0, bool abs = false)
 path cyclepath (pair a, real angle, real radius)
 { return shift(a)*rotate(angle)*scale(radius)*shift(1,0)*rotate(180)*reverse(unitcircle); }
 
-pair range (path g, pair center, pair dir, real ang, real orientation = 1)
+pair range (path g, pair center, pair dir, real ang, real orient = 1)
 {
-    return (intersectiontime(g, center, rotate(orientation*ang*.5)*dir), intersectiontime(g, center, rotate(-orientation*ang*.5)*dir));
+    return (intersectiontime(g, center, rotate(orient*ang*.5)*dir), intersectiontime(g, center, rotate(-orient*ang*.5)*dir));
 }
 
 bool outsidepath (path p, path q)
@@ -234,6 +249,7 @@ path wavypath (real[] nums)
     
 	return getpath(points)..cycle;
 }
+
 path wavypath (... real[] nums)
 { return wavypath(nums = nums); }
 
@@ -255,6 +271,7 @@ bool operator == (gauss a, gauss b)
 
 gauss operator cast (pair p)
 { return gauss(floor(p.x), floor(p.y)); }
+
 pair operator cast (gauss g)
 { return (g.x, g.y); }
 
@@ -356,7 +373,13 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
     return res;
 }
 
-path[] difference (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+path[] difference (
+    path p,
+	path q,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -372,7 +395,14 @@ path[] difference (path p, path q, bool correct = true, bool round = false, real
 
     return combination(p, reverse(q), mode = -1, round = round, roundcoeff = roundcoeff);
 }
-path[] difference (path[] paths, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+
+path[] difference (
+    path[] paths,
+	path q,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -383,12 +413,20 @@ path[] difference (path[] paths, path q, bool correct = true, bool round = false
 
     return concat(sequence(new path[] (int i){return difference(paths[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, paths.length));
 }
+
 path[] operator - (path p, path q)
 { return difference(p, q); }
+
 path[] operator - (path[] p, path q)
 { return difference(p, q); }
 
-path[] intersection (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+path[] intersection (
+    path p,
+	path q,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -404,7 +442,13 @@ path[] intersection (path p, path q, bool correct = true, bool round = false, re
 
     return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
 }
-path[] intersection (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+
+path[] intersection (
+    path[] paths,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -422,8 +466,10 @@ path[] intersection (path[] paths, bool correct = true, bool round = false, real
     
 	return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
 }
+
 path[] intersection (bool correct = true, bool round = false, real roundcoeff = defaultSyRR ... path[] paths)
 {return intersection(paths, correct, round, roundcoeff);}
+
 path[] intersection (path p, path q, path[] holes, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
 {
     if (correct)
@@ -440,10 +486,17 @@ path[] intersection (path p, path q, path[] holes, bool correct = true, bool rou
     
 	return res;
 }
+
 path[] operator ^ (path p, path q)
 { return intersection(p, q); }
 
-path[] union (path p, path q, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+path[] union (
+    path p,
+	path q,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -459,7 +512,13 @@ path[] union (path p, path q, bool correct = true, bool round = false, real roun
     
 	return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
 }
-path[] union (path[] paths, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+
+path[] union (
+    path[] paths,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -486,8 +545,14 @@ path[] union (path[] paths, bool correct = true, bool round = false, real roundc
     
 	return paths;
 }
-path[] union (bool correct = true, bool round = false, real roundcoeff = defaultSyRR ... path[] paths)
-{return union(paths, correct, round, roundcoeff);}
+
+path[] union (
+    bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+    ... path[] paths
+) { return union(paths, correct, round, roundcoeff); }
+
 path[] operator | (path p, path q)
 { return union(p, q); }
 
