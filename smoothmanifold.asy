@@ -276,7 +276,6 @@ arrowbar simples = Arrows(SimpleHead);
 // -- Auxiliary utilities -- //
 
 import pathmethods;
-// import export;
 
 // -- System functions -- //
 
@@ -757,6 +756,7 @@ struct hole
             }
         }
     }
+
     hole move (
         pair shift,
 		real scale,
@@ -777,8 +777,10 @@ struct hole
         
 		return this;
     }
+
     hole copy ()
     { return hole(this.contour, this.center, copy(this.sections), copy = true); }
+
     hole replicate (hole h)
     { 
         this.contour = h.contour;
@@ -816,10 +818,16 @@ struct subset
     real xsize () { return xsize(this.contour); }
     real ysize () { return ysize(this.contour); }
 
-	subset setcenter (pair center = center(this.contour))
-	{ this.center = center; return this; }
+	subset setcenter (
+        pair center = center(this.contour)
+    ) { this.center = center; return this; }
 
-    subset setlabel (string label = this.label, pair labeldir = this.labeldir, pair labelalign = defaultSyDP, bool keepalign = false)
+    subset setlabel (
+        string label = this.label,
+		pair labeldir = this.labeldir,
+		pair labelalign = defaultSyDP,
+		bool keepalign = false
+    )
     {
 		this.label = label;
 		this.labeldir = labeldir;
@@ -828,8 +836,10 @@ struct subset
         return this;
     }
 
-    subset setlabel (string label = this.label, real angle)
-    { return this.setlabel(label, dir(angle)); }
+    subset setlabel (
+        string label = this.label,
+		real angle
+    ) { return this.setlabel(label, dir(angle)); }
 
     subset move (
         pair shift = (0,0),
@@ -906,8 +916,7 @@ struct subset
     }
 }
 
-bool operator == (subset a, subset b)
-{ return a.contour == b.contour; }
+bool operator == (subset a, subset b) { return a.contour == b.contour; }
 
 subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i){return subsets[i].copy();}, subsets.length); }
@@ -964,7 +973,7 @@ private int subsetgetindex (subset[] subsets, int[] indexpath)
 }
 
 private int subsetgetindex (subset[] subsets ... int[] indexpath)
-{ return subsetgetindex(subsets, indexpath); } // try to change later
+{ return subsetgetindex(subsets, indexpath); }
 
 private subset subsetget (subset[] subsets, int[] indexpath)
 { return subsets[subsetgetindex(subsets, indexpath)]; }
@@ -1126,20 +1135,19 @@ struct smooth
     { return (x - xpart(min(this.contour)))/this.xsize(); }
 
     private real getypoint (real y)
-    {
-        y = y - floor(y);
-        return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y);
-    }
+    { y = y - floor(y); return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y); }
 
     private real getxpoint (real x)
-    {
-        x = x - floor(x);
-        return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x);
-    }
+    { x = x - floor(x); return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x); }
 
-    // -- User functions for manipulating smooth object -- //
+    // -- Methods for scaling smooth object -- //
 
-    smooth simplemove (pair shift = (0,0), real scale = 1, real rotate = 0, pair point = this.center)
+    smooth simplemove (
+        pair shift = (0,0),
+		real scale = 1,
+		real rotate = 0,
+		pair point = this.center
+    )
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*rotate(rotate, point)*this.center;
@@ -1154,7 +1162,7 @@ struct smooth
         return this;
     }
 
-    smooth xscale (real s)
+    private smooth xscale (real s)
     {
         pair center = this.center;
         this.simplemove(shift = -center);
@@ -1186,7 +1194,7 @@ struct smooth
         return this;
     }
 
-    smooth yscale (real s)
+    private smooth yscale (real s)
     {
         pair center = this.center;
         this.simplemove(shift = -center);
@@ -1230,7 +1238,7 @@ struct smooth
 		return this;
     }
 
-    // -- User functions for setting the direction of view -- //
+    // -- Methods for setting the direction of view -- //
 
     smooth dropview ()
     {
@@ -1262,7 +1270,11 @@ struct smooth
 		return this;
     }
 
-    smooth view (explicit pair viewdir, bool shiftsubsets = this.shiftsubsets, bool drag = true)
+    smooth view (
+        explicit pair viewdir,
+		bool shiftsubsets = this.shiftsubsets,
+		bool drag = true
+    )
     {
 		this.shiftsubsets = shiftsubsets;
 
@@ -1291,14 +1303,16 @@ struct smooth
 		bool drag = true
     ) { return this.view(dir(angle), shiftsubsets, drag); }
 
-    // -- User function for moving smooth object with respect to view direction -- //
+    // -- Methods for moving smooth object with respect to view direction -- //
 
-    smooth move (pair shift = (0,0),
-                 real scale = 1,
-                 real rotate = 0,
-                 pair point = this.center,
-                 bool keepview = false,
-                 bool drag = true)
+    smooth move (
+        pair shift = (0,0),
+        real scale = 1,
+        real rotate = 0,
+        pair point = this.center,
+        bool keepview = false,
+        bool drag = true
+    )
     {
 		if (scale <= 0)
 		{ halt("Could not move: scale value must be positive. [ move() ]"); }
@@ -1319,7 +1333,7 @@ struct smooth
         return this;
     }
 
-    // -- User function for setting other object parameters -- //
+    // -- Methods for setting other object parameters -- //
 
     smooth setratios (real[] ratios, bool horiz)
     {
@@ -1347,7 +1361,11 @@ struct smooth
         return this;
     }
 
-    smooth setcenter (int[] indexpath = {}, pair center = center(this.contour), bool unit = true)
+    smooth setcenter (
+        int[] indexpath = {},
+		pair center = center(this.contour),
+		bool unit = true
+    )
     {
 		if (indexpath.length == 0) this.center = unit ? shift(this.shift)*center : center;
 		else subsetget(this.subsets, indexpath).setcenter(unit ? shift(this.shift)*center : center);
@@ -1358,11 +1376,13 @@ struct smooth
         return this;
     }
 
-    smooth setlabel (int[] indexpath = {},
-                     string label = this.label,
-                     pair labeldir = this.labeldir,
-                     pair labelalign = defaultSyDP,
-                     bool keepalign = false)
+    smooth setlabel (
+        int[] indexpath = {},
+        string label = this.label,
+        pair labeldir = this.labeldir,
+        pair labelalign = defaultSyDP,
+        bool keepalign = false
+    )
     {
 		if (indexpath.length == 0)
 		{
@@ -1376,10 +1396,14 @@ struct smooth
         return this;
     }
 
-    smooth setlabel (int[] indexpath = {}, string label = this.label, real angle)
+    smooth setlabel (
+        int[] indexpath = {},
+		string label = this.label,
+		real angle
+    )
     { return this.setlabel(indexpath, label, dir(angle)); }
 
-    // -- User functions for manipulating elements -- //
+    // -- Methods for manipulating elements -- //
 
     int getelement (string label)
     {
@@ -1389,7 +1413,10 @@ struct smooth
         return -1;
     }
 
-	smooth addelement (element elt, bool unit = true)
+	smooth addelement (
+        element elt,
+		bool unit = true
+    )
 	{
 		if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
 
@@ -1400,23 +1427,48 @@ struct smooth
 		return this;
 	}
 
-	smooth addelement (pair pos, string label = "", pair labelalign = S, bool unit = true)
+	smooth addelement (
+        pair pos,
+		string label = "",
+		pair labelalign = S,
+		bool unit = true
+    )
 	{ return this.addelement(element(pos, label, labelalign), unit); }
 
-    smooth setelement (int ind, element elt, bool unit = true)
+    smooth setelement (
+        int ind,
+		element elt,
+		bool unit = true
+    )
     {
         if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
         this.elements[ind] = elt;
         return this;
     }
 
-    smooth setelement (int index, pair pos, string label = "", pair labelalign = S, bool unit = true)
+    smooth setelement (
+        int index,
+		pair pos,
+		string label = "",
+		pair labelalign = S,
+		bool unit = true
+    )
     { return this.setelement(index, element(pos, label, labelalign), unit); }
 
-    smooth setelement (string label, element elt, bool unit = true)
+    smooth setelement (
+        string label,
+		element elt,
+		bool unit = true
+    )
     { return this.setelement(this.getelement(label), elt, unit); }
 
-    smooth setelement (string label, pair pos, string newlabel = "", pair labelalign = S, bool unit = true)
+    smooth setelement (
+        string label,
+		pair pos,
+		string newlabel = "",
+		pair labelalign = S,
+		bool unit = true
+    )
     { return this.setelement(this.getelement(label), pos, newlabel, labelalign, unit); }
 
     smooth rmelement (int index)
@@ -1434,9 +1486,13 @@ struct smooth
     smooth movelement (string label, pair shift)
     { return this.movelement(this.getelement(label), shift); }
 
-    // -- User functions for manipulating holes -- //
+    // -- Methods for manipulating holes -- //
 
-    smooth addhole (hole hl, int index = this.holes.length, bool unit = true)
+    smooth addhole (
+        hole hl,
+		int index = this.holes.length,
+		bool unit = true
+    )
     {
 		if (unit) holeadjust(hl, this.shift, this.scale, 0, this.center);
 		if (!insidepath(this.contour, hl.contour))
@@ -1509,14 +1565,20 @@ struct smooth
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
 
-	smooth addholes (hole[] holes, bool unit = true)
+	smooth addholes (
+        hole[] holes,
+		bool unit = true
+    )
 	{
 		for (int i = 0; i < holes.length; ++i)
 		{ this.addhole(holes[i], unit = unit); }
 		return this;
 	}
 
-	smooth addholes (bool unit = true ... hole[] holes)
+	smooth addholes (
+        bool unit = true
+        ... hole[] holes
+    )
 	{ return this.addholes(holes, unit); }
 
     smooth addholes (
@@ -1537,14 +1599,10 @@ struct smooth
     smooth addholes (
         bool unit = true
         ... path[] contours
-    )
-    { return this.addholes(contours = contours, unit = unit); }
+    ) { return this.addholes(contours = contours, unit = unit); }
 
     smooth rmhole (int index)
-    {
-     	this.holes.delete(index);
-        return this;
-    }
+    { this.holes.delete(index); return this; }
 
     smooth rmholes (int[] indices)
     {
@@ -1554,7 +1612,8 @@ struct smooth
         return this;
     }
 
-    smooth rmholes (... int[] indices) { return this.rmholes(indices); }
+    smooth rmholes (... int[] indices)
+    { return this.rmholes(indices); }
 
     smooth movehole (
         int index,
@@ -1623,13 +1682,12 @@ struct smooth
         return this;
     }
 
-    smooth rmsection (int index, int ind2 = 0)
-    {
-        this.holes[index].sections.delete(ind2);
-        return this;
-    }
+    smooth rmsection (
+        int index,
+		int ind2 = 0
+    ) { this.holes[index].sections.delete(ind2); return this; }
 
-    // -- User functions for manipulating subsets -- //
+    // -- Methods for manipulating subsets -- //
 
     int getsubset (string label)
     {
@@ -1641,7 +1699,11 @@ struct smooth
         return -1;
     }
 
-	smooth addsubset (subset sb, int[] indexpath = i(defaultSyDN), bool unit = true)
+	smooth addsubset (
+        subset sb,
+		int[] indexpath = i(defaultSyDN),
+		bool unit = true
+    )
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
 		
@@ -1844,7 +1906,11 @@ struct smooth
         bool unit = true
     ) { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
 
-    smooth addsubsets (subset[] sbs, int[] indexpath = i(defaultSyDN), bool unit = true)
+    smooth addsubsets (
+        subset[] sbs,
+		int[] indexpath = i(defaultSyDN),
+		bool unit = true
+    )
     {
         for (int i = 0; i < sbs.length; ++i)
         { this.addsubset(sbs[i], indexpath, unit); }
@@ -1890,6 +1956,7 @@ struct smooth
         bool unit = true
         ... subset[] sbs
     ) { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+
     smooth addsubsets (
         string label,
         path[] contours,
@@ -1899,6 +1966,7 @@ struct smooth
         pair[] points = sequence(new pair (int i){return center(contours[i]);}, contours.length),
         bool unit = true
     ) { return this.addsubsets(i(this.getsubset(label)), contours, shifts, scales, rotates, points, unit); }
+
     smooth addsubsets (
         string label,
         bool unit = true
@@ -1908,19 +1976,18 @@ struct smooth
 	smooth rmsubset (
         int index,
 		bool recursive = true
-    )
-	{
-		subsetdelete(this.subsets, index, recursive);
-		return this;
-	}
+    ) { subsetdelete(this.subsets, index, recursive); return this; }
+
 	smooth rmsubset (
         int[] indexpath,
 		bool recursive = true
     ) { return this.rmsubset(subsetgetindex(this.subsets, indexpath), recursive); }
+
     smooth rmsubset (
         string label,
 		bool recursive = true
     ) { return this.rmsubset(this.getsubset(label), recursive); }
+
     smooth rmsubsets (
         int[] indices,
 		bool recursive = true
@@ -1930,20 +1997,23 @@ struct smooth
         { this.rmsubset(indices[i], recursive); }
         return this;
     }
+
     smooth rmsubsets (
         bool recursive = true
         ... int[] indices
     ) { return this.rmsubsets(indices, recursive); }
+
     smooth rmsubsets (
         string[] labels,
 		bool recursive = true
     ) { return this.rmsubsets(sequence(new int (int i){return this.getsubset(labels[i]);}, labels.length), recursive); }
+
     smooth rmsubsets (
         bool recursive = true
         ... string[] labels
     ) { return this.rmsubsets(labels, recursive); }
 
-    // -- User function for moving subset globally or within containing subset -- //
+    // -- Methods for moving subset globally or within containing subset -- //
 
 	private bool onlyprimary (int index)
 	{
@@ -2097,13 +2167,10 @@ struct smooth
         bool keepview = false
     ) { return this.movesubset(this.getsubset(label), shift, scale, rotate, point, movelabel, recursive, keepview); }
 
-    // -- User functions for controlling relationships between smooth objects -- //
+    // -- Methods for controlling relationships between smooth objects -- //
 
     smooth attach (smooth sm)
-    {
-        this.attached.push(sm);
-        return this;
-    }
+    { this.attached.push(sm); return this; }
 
 	smooth fit (
         int[] ind = {},
@@ -2307,7 +2374,7 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
 
 // -- Default pre-built smooth objects -- //
 
-smooth samplesmooth (int type = 0, int num = 0)
+smooth samplesmooth (int type, int num)
 {
     if (type == 0)
     {
@@ -2566,8 +2633,7 @@ smooth rn (
     pair shift = (0,0),
     real scale = 1,
     real rotate = 0
-)
-// an alias for the comman diagram representation of the n-dimensional Eucledian space.
+) // An alias for the common diagram representation of the n-dimensional Eucledian space.
 {
     return smooth(
         contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
@@ -2591,8 +2657,7 @@ smooth[] intersection (
     bool round = false,
     real roundcoeff = currentSyRR,
     bool addsubsets = false
-)
-// Constructs the intersection of two given smooth objects.
+) // Constructs the intersection of two given smooth objects.
 {
 	path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
     int initialsize = contours.length;
@@ -2810,13 +2875,13 @@ smooth intersect (
     bool round = false,
     real roundcoeff = currentSyRR,
     bool addsubsets = false
-)
+) // an alternative to `intersection` that only returns one smooth object.
 {
     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff);
     if (intersection.length == 0)
     { halt("Could not intersect: smooth objects do not intersect. [ intersect() ]"); }
     if (intersection.length > 1)
-    { write("> ? Smooth objects have more than one intersection. Returning only the 0-th one. [ intersect() ]"); }
+    { write("> ? Intersection produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
     return intersection(sm1, sm2, keepdata, round, roundcoeff)[0];
 }
 
@@ -2839,8 +2904,7 @@ smooth[] union (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRR
-)
-// Constructs the union of two given smooth objects. //
+) // Constructs the union of two given smooth objects.
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
 	{ return new smooth[]{sm1, sm2}; }
@@ -3053,7 +3117,13 @@ smooth unite (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRR
-) { return union(sms, keepdata, round, roundcoeff)[0]; }
+) // An alternative to `union` that only returns one smooth object, if there is only one.
+{
+    smooth[] union = union(sms, keepdata, round, roundcoeff);
+    if (union.length > 1) 
+    { write("> ? Union produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
+    return union[0];
+}
 
 smooth unite (
     bool keepdata = true,
@@ -3114,21 +3184,7 @@ smooth tangentspace (
 
 // -- From here starts the collection of the drawing functions provided by the module. -- //
 
-private void fitpath (
-    picture pic,
-    bool overlap,
-    int covermode,
-    bool drawnow,
-    path gs,
-    Label L,
-    pen p,
-    arrowhead arrow,
-    bool beginarrow,
-    bool endarrow,
-    real barsize,
-    bool beginbar,
-    bool endbar
-)
+private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, path gs, Label L, pen p, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
 {
     if (length(L.s) > 0) label(pic = pic, gs, L = L, p = p);
     
@@ -3341,18 +3397,8 @@ void fillfitpath (
     { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
 }
 
-private void drawsections (
-    picture pic,
-    pair[][] sections,
-    pair viewdir,
-    bool dash,
-    bool explain,
-    bool shade,
-    real scale,
-    pen sectionpen,
-    pen dashpen,
-    pen shadepen
-) // Renders the circular sections, given an array of control points.
+private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool explain, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+// Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
     {
@@ -3645,7 +3691,10 @@ void draw (
     draw(pic, sms, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
 }
 
-void phantom (picture pic = currentpicture, smooth sm)
+void phantom (
+    picture pic = currentpicture,
+	smooth sm
+)
 {
 	dot(pic, max(sm.contour), invisible);
 	dot(pic, min(sm.contour), invisible);
@@ -3949,7 +3998,10 @@ void drawarrow (
 	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
 
-void drawdeferred (picture pic = currentpicture, bool flush = true)
+void drawdeferred (
+    picture pic = currentpicture,
+	bool flush = true
+)
 {
     deferredPath[] curdp = extractdeferredpaths(pic, false);
 
@@ -4008,7 +4060,9 @@ void drawdeferred (picture pic = currentpicture, bool flush = true)
     if (flush) curdp.delete();
 }
 
-void flushdeferred (picture pic = currentpicture)
+void flushdeferred (
+    picture pic = currentpicture
+)
 { extractdeferredpaths(pic, false).delete(); }
 
 // -- Redefining functions to execute `drawdeferred` and `flushdeferred` at call -- //
