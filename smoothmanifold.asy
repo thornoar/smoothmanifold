@@ -1402,28 +1402,35 @@ struct smooth
 
 	smooth addelement (pair pos, string label = "", pair labelalign = S, bool unit = true)
 	{ return this.addelement(element(pos, label, labelalign), unit); }
+
     smooth setelement (int ind, element elt, bool unit = true)
     {
         if (unit) elementadjust(elt, this.shift, this.scale, 0, this.center);
         this.elements[ind] = elt;
         return this;
     }
+
     smooth setelement (int index, pair pos, string label = "", pair labelalign = S, bool unit = true)
     { return this.setelement(index, element(pos, label, labelalign), unit); }
+
     smooth setelement (string label, element elt, bool unit = true)
     { return this.setelement(this.getelement(label), elt, unit); }
+
     smooth setelement (string label, pair pos, string newlabel = "", pair labelalign = S, bool unit = true)
     { return this.setelement(this.getelement(label), pos, newlabel, labelalign, unit); }
+
     smooth rmelement (int index)
     {
         this.elements.delete(index);
         return this;
     }
+
     smooth movelement (int index, pair shift)
     {
         this.elements[index].pos += shift;
         return this;
     }
+
     smooth movelement (string label, pair shift)
     { return this.movelement(this.getelement(label), shift); }
 
@@ -1488,6 +1495,7 @@ struct smooth
         this.holes.insert(i = index, hl);
 		return this;
     }
+
     smooth addhole (
         path contour,
         real[][] sections = {},
@@ -1500,14 +1508,17 @@ struct smooth
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
 	}
+
 	smooth addholes (hole[] holes, bool unit = true)
 	{
 		for (int i = 0; i < holes.length; ++i)
 		{ this.addhole(holes[i], unit = unit); }
 		return this;
 	}
+
 	smooth addholes (bool unit = true ... hole[] holes)
 	{ return this.addholes(holes, unit); }
+
     smooth addholes (
         path[] contours,
         real[][][] sections = {},
@@ -1522,14 +1533,19 @@ struct smooth
             return hole(contour = contours[i], sections = sections[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
         }, contours.length), unit = unit);
     }
-    smooth addholes (bool unit = true
-                     ... path[] contours)
+
+    smooth addholes (
+        bool unit = true
+        ... path[] contours
+    )
     { return this.addholes(contours = contours, unit = unit); }
+
     smooth rmhole (int index)
     {
      	this.holes.delete(index);
         return this;
     }
+
     smooth rmholes (int[] indices)
     {
         indices = sort(indices);
@@ -1537,8 +1553,9 @@ struct smooth
         { this.holes.delete(indices[i]); }
         return this;
     }
-    smooth rmholes (... int[] indices)
-    { return this.rmholes(indices); }
+
+    smooth rmholes (... int[] indices) { return this.rmholes(indices); }
+
     smooth movehole (
         int index,
         pair shift = (0,0),
@@ -1557,7 +1574,12 @@ struct smooth
 
         return this;
     }
-    smooth addsection (int index, real[] section = {}, bool unit = false)
+
+    smooth addsection (
+        int index,
+		real[] section = {},
+		bool unit = false
+    )
     {
         if (!checksection(section))
         {
@@ -1578,7 +1600,13 @@ struct smooth
         this.holes[index].sections.push(section);
         return this;
     }
-    smooth setsection (int index, int ind2 = 0, real[] section = {}, bool unit = false)
+
+    smooth setsection (
+        int index,
+		int ind2 = 0,
+		real[] section = {},
+		bool unit = false
+    )
     {
         while (section.length < currentsection.length)
         { section.push(currentsection[section.length]); }
@@ -1594,6 +1622,7 @@ struct smooth
 
         return this;
     }
+
     smooth rmsection (int index, int ind2 = 0)
     {
         this.holes[index].sections.delete(ind2);
@@ -1611,6 +1640,7 @@ struct smooth
         write("> ? Could not find subset: no subset with such label. Returning -1. [ getsubset() ]");
         return -1;
     }
+
 	smooth addsubset (subset sb, int[] indexpath = i(defaultSyDN), bool unit = true)
 	{
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
@@ -1778,6 +1808,7 @@ struct smooth
         subsetcleanreferences(this.subsets);
 		return this;
 	}
+
 	smooth addsubset (
         int[] indexpath = i(defaultSyDN),
         path contour,
@@ -1789,12 +1820,17 @@ struct smooth
         pair labeldir = defaultSyDP,
         pair labelalign = S,
         bool unit = true
-    ) { return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit); }
+    )
+    {
+        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), indexpath = indexpath, unit = unit);
+    }
+
     smooth addsubset (
         string destlabel,
 		subset sb,
 		bool unit = true
     ) { return this.addsubset(sb, i(this.getsubset(destlabel)), unit); }
+
     smooth addsubset (
         string destlabel,
         path contour,
@@ -1807,6 +1843,7 @@ struct smooth
         pair labelalign = S,
         bool unit = true
     ) { return this.addsubset(i(this.getsubset(destlabel)), contour, shift, scale, rotate, point, label, labeldir, labelalign, unit); }
+
     smooth addsubsets (subset[] sbs, int[] indexpath = i(defaultSyDN), bool unit = true)
     {
         for (int i = 0; i < sbs.length; ++i)
@@ -1814,11 +1851,13 @@ struct smooth
 
         return this;
     }
+
     smooth addsubsets (
         int[] indexpath = i(defaultSyDN),
 		bool unit = true
         ... subset[] sbs
     ) { return this.addsubsets(sbs, indexpath, unit); }
+
     smooth addsubsets (
         int[] indexpath = i(defaultSyDN),
         path[] contours,
@@ -1833,16 +1872,19 @@ struct smooth
             return subset(contour = contours[i], shift = shifts[i], scale = scales[i], rotate = rotates[i], point = points[i]);
         }, contours.length), indexpath = indexpath, unit = unit);
     }
+
     smooth addsubsets (
         int[] indexpath = i(defaultSyDN),
         bool unit = true
         ... path[] contours
     ) { return this.addsubsets(indexpath = indexpath, contours = contours, unit = unit); }
+
     smooth addsubsets (
         string label,
 		subset[] sbs,
 		bool unit
     ) { return this.addsubsets(sbs, i(this.getsubset(label)), unit); }
+
     smooth addsubsets (
         string label,
         bool unit = true
