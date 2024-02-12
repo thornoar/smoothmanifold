@@ -2374,7 +2374,7 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
 
 // -- Default pre-built smooth objects -- //
 
-smooth samplesmooth (int type, int num)
+smooth samplesmooth (int type, int num = 0)
 {
     if (type == 0)
     {

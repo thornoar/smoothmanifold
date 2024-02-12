@@ -15,8 +15,8 @@ draw(sm1, contourpen = mediumgrey, smoothfill = invisible, subsetcontourpen = in
 draw(sm2, contourpen = mediumgrey, smoothfill = invisible, subsetcontourpen = invisible, subsetfill = invisible, mode = plain, drawnow = true);
 
 smooth sm3 = intersect(sm1, sm2);
-sm3.setsection(1, 0, a(-2,4,240,dn));
-sm3.setsection(0, 0, a(dn,dn,220,dn));
+sm3.setsection(1, 0, r(-2,4,240,dn));
+sm3.setsection(0, 0, r(dn,dn,220,dn));
 
 draw(sm3, explain = false, mode = free);
 export(prefix = "picture");
