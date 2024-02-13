@@ -1115,7 +1115,9 @@ struct smooth
 	bool shiftsubsets;
     bool isderivative;
 
-    // -- System methods -- //
+    private static smooth[] cache;
+
+    // -- Supporting methods -- //
 
 	bool inside (pair x)
 	{
@@ -1147,7 +1149,7 @@ struct smooth
 		real scale = 1,
 		real rotate = 0,
 		pair point = this.center
-    )
+    ) // Transforms a smooth object as a 2D figure.
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*rotate(rotate, point)*this.center;
@@ -1226,7 +1228,8 @@ struct smooth
         return this;
     }
 
-    smooth dirscale (real s, pair dir)
+    smooth dirscale (pair dir, real s)
+    // Scale smooth object along the direction given by `dir`.
     {
         if (length(dir) == 0) return this;
 		
@@ -1241,6 +1244,7 @@ struct smooth
     // -- Methods for setting the direction of view -- //
 
     smooth dropview ()
+    // Present smooth object under vertical view, not tilted in any direction.
     {
 		if (length(this.viewdir) == 0) return this;
         
@@ -1249,17 +1253,18 @@ struct smooth
 			for (int i = 0; i < this.subsets.length; ++i)
 			{ this.subsets[i].move(shift = -this.viewdir * defaultSmSVS * Sin(defaultSmVA)); }
 		}
-		if (this.distort) this.dirscale(1/Cos(defaultSmVA * length(this.viewdir)), this.viewdir);
+		if (this.distort) this.dirscale(this.viewdir, 1/Cos(defaultSmVA * length(this.viewdir)));
         this.viewdir = (0,0);
 
         return this;
     }
 
     private smooth setview (pair viewdir)
+    // Supporting function to tilt the object as if it were viewed from direction `viewdir`.
     {
 		if (viewdir == this.viewdir) return this;
 
-        if (this.distort) this.dirscale(Cos(defaultSmVA * length(viewdir)), viewdir);
+        if (this.distort) this.dirscale(viewdir, Cos(defaultSmVA * length(viewdir)));
 		if (this.shiftsubsets)
 		{
 			for (int i = 0; i < this.subsets.length; ++i)
@@ -1274,7 +1279,7 @@ struct smooth
         explicit pair viewdir,
 		bool shiftsubsets = this.shiftsubsets,
 		bool drag = true
-    )
+    ) // User function similar to `setview`, but with extended customization.
     {
 		this.shiftsubsets = shiftsubsets;
 
@@ -1291,7 +1296,7 @@ struct smooth
 		if (drag)
 		{
 			for (int i = 0; i < this.attached.length; ++i)
-			{ this.attached[i].view(viewdir, drag = true); }
+			{ this.attached[i].view(viewdir, shiftsubsets, drag = true); }
 		}
 
         return this;
@@ -1312,7 +1317,7 @@ struct smooth
         pair point = this.center,
         bool keepview = false,
         bool drag = true
-    )
+    ) // Transforms the smooth object. Respects the current `viewdir`.
     {
 		if (scale <= 0)
 		{ halt("Could not move: scale value must be positive. [ move() ]"); }
@@ -1336,6 +1341,7 @@ struct smooth
     // -- Methods for setting other object parameters -- //
 
     smooth setratios (real[] ratios, bool horiz)
+    // Controls horizontal (vertical) "ratios" that are used in `cartesian` draw mode.
     {
 		if (ratios.length > 0 && ratios[0] == defaultSyDN)
 		{
@@ -1365,7 +1371,7 @@ struct smooth
         int[] indexpath = {},
 		pair center = center(this.contour),
 		bool unit = true
-    )
+    ) // Sets the center of the object. The center is used for cross section positioning and arrows.
     {
 		if (indexpath.length == 0) this.center = unit ? shift(this.shift)*center : center;
 		else subsetget(this.subsets, indexpath).setcenter(unit ? shift(this.shift)*center : center);
@@ -1382,7 +1388,7 @@ struct smooth
         pair labeldir = this.labeldir,
         pair labelalign = defaultSyDP,
         bool keepalign = false
-    )
+    ) // Controls the label of the object, or one of its subsets under `indexpath`.
     {
 		if (indexpath.length == 0)
 		{
@@ -1405,11 +1411,11 @@ struct smooth
 
     // -- Methods for manipulating elements -- //
 
-    int getelement (string label)
+    private int getelementindex (string label)
     {
         for (int i = 0; i < this.elements.length; ++i)
         { if (this.elements[i].label == label) return i; }
-        write("> ? Could not find element: no element with such label. Returning -1. [ getelement() ]");
+        write("> ? Could not find element: no element with such label. Returning -1. [ getelementindex() ]");
         return -1;
     }
 
@@ -1460,7 +1466,7 @@ struct smooth
 		element elt,
 		bool unit = true
     )
-    { return this.setelement(this.getelement(label), elt, unit); }
+    { return this.setelement(this.getelementindex(label), elt, unit); }
 
     smooth setelement (
         string label,
@@ -1469,7 +1475,7 @@ struct smooth
 		pair labelalign = S,
 		bool unit = true
     )
-    { return this.setelement(this.getelement(label), pos, newlabel, labelalign, unit); }
+    { return this.setelement(this.getelementindex(label), pos, newlabel, labelalign, unit); }
 
     smooth rmelement (int index)
     {
@@ -1484,7 +1490,7 @@ struct smooth
     }
 
     smooth movelement (string label, pair shift)
-    { return this.movelement(this.getelement(label), shift); }
+    { return this.movelement(this.getelementindex(label), shift); }
 
     // -- Methods for manipulating holes -- //
 
@@ -2263,6 +2269,8 @@ struct smooth
 			
 			this.attached = attached;
         }
+
+        cache.push(this);
     }
 
     smooth copy ()
