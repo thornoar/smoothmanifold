@@ -56,6 +56,7 @@ void expar (
     string format = settings.outformat,
     int dpi = currentExRID,
     bool exit = currentExEOE,
+    bool autoexport = !currentExEF,
     bool restore = currentExR,
         string dirname = currentAnDN,
         string informat = currentAnIF,
@@ -91,6 +92,7 @@ void expar (
     settings.outformat = format; currentDrUO = native(format);
 	currentExRID = dpi;
 	currentExEOE = exit;
+	currentExEF = !autoexport;
     currentExR = restore;
 	
     currentAnDN = dirname;
@@ -121,7 +123,7 @@ void invertcolors ()
 	smoothcolor = inverse(smoothcolor);
 	subsetcolor = inverse(subsetcolor);
 	currentDrIC = !currentDrIC;
-	currentDrExP = inverse(currentDrExP);
+	currentDrHP = inverse(currentDrHP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpenscale = new pen (pen p) { return .3*p+dashed; };
     shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
@@ -171,7 +173,7 @@ void export (
 
     void localshipout (string prefix1)
     {
-        if ((simple || (margin == 0 && bgpen == white && framepen == nullpen)))
+        if ((simple || (margin == 0 && bgpen == nullpen && framepen == nullpen)))
         { plainshipout(prefix=prefix1, pic1, orientation, wait, view, options, script, light, P); }
         else
         {
@@ -299,6 +301,7 @@ void animate (
     write("|", suffix = none);
     if (currentAnPC && currentAnCC == 0) clean();
     if (!native(informat)) currentDrUO = false;
+    if (!native(informat) && bgpen == nullpen) bgpen = white;
     
     string hash = (string)currentAnCC + (string)seconds();
     currentAnCC += 1;
@@ -380,7 +383,7 @@ void move (
         bool fill = currentDrF,
         bool fillsubsets = currentDrFS,
         bool drawcontour = currentDrDC,
-        bool explain = currentDrE,
+        bool help = currentDrH,
         bool dash = currentDrDD,
         bool shade = currentDrDS,
         bool avoidsubsets = currentSeAS,
@@ -405,7 +408,7 @@ void move (
 	void update (int i)
 	{
 		if (i > 0) sm.move(shift = stepshift, scale = stepscale, rotate = steprotate, keepview = keepview, drag = drag);
-		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, help, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 
@@ -429,7 +432,7 @@ void revolve (
         bool fill = currentDrF,
         bool fillsubsets = currentDrFS,
         bool drawcontour = currentDrDC,
-        bool explain = currentDrE,
+        bool help = currentDrH,
         bool dash = currentDrDD,
         bool shade = currentDrDS,
         bool avoidsubsets = currentSeAS,
@@ -461,7 +464,7 @@ void revolve (
 			pair viewdir = arc ? (coeff*l1 + (1-coeff)*l2)*dir(coeff*deg1 + (1-coeff)*(deg2+360)) : (coeff*viewdir1 + (1-coeff)*viewdir2);
 			sm.view(viewdir, shiftsubsets = sm.shiftsubsets, drag = drag);
 		}
-		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, explain, dash, shade, avoidsubsets, drag, overlap, drawnow);
+		draw(sm = sm, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, elementpen, mode, fill, fillsubsets, drawcontour, help, dash, shade, avoidsubsets, drag, overlap, drawnow);
 	}
 	if (back) sm = smp;
 

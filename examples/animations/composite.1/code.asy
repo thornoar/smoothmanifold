@@ -17,7 +17,7 @@ void update (int i)
 	draw(sm1, plain);
 	draw(sm2, plain);
 	drawarrow(sm1, sm2, curve = .4);
-	drawarrow(sm2, sm1, i(0), i(0), curve = .4);
+	drawarrow(sm2, 0, sm1, 0, curve = .4);
 }
 
 animate(outprefix = "animation", outformat = "mp4", update = update, n = n, fps = ceil(n/3), compile = true, exit = true, density = 200);

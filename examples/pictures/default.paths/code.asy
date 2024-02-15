@@ -3,6 +3,7 @@ import export;
 settings.render = 8;
 
 size(15cm);
+defaultpen(.7);
 expar(bgpen = paleyellow);
 
 real x = 3.5;

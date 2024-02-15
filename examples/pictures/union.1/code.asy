@@ -3,6 +3,7 @@ import export;
 settings.render = 8;
 
 size(30 cm);
+defaultpen(.7);
 expar(bgpen = paleyellow, margin = 1.5 cm);
 smpar(dash = false);
 
@@ -16,7 +17,7 @@ union.setlabel(labeldir = dir(110));
 union.addsection(0, r(1, -.15, 40, 1));
 union.move(shift = (3.5,0));
 
-draw(sm1, explain = false, mode = free);
-draw(sm2, explain = false, mode = free);
-draw(union, explain = true, mode = free);
+draw(sm1, help = false, mode = free);
+draw(sm2, help = false, mode = free);
+draw(union, help = true, mode = free);
 export(prefix = "picture", format = "pdf");

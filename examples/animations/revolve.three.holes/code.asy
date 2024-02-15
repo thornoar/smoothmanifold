@@ -23,4 +23,4 @@ revolve(sm = sm, viewdir1 = viewdir1, viewdir2 = viewdir3, back = false, n = 2*n
 revolve(sm = sm, viewdir1 = viewdir3, viewdir2 = viewdir4, back = false, n = 2*n);
 revolve(sm = sm, viewdir1 = viewdir4, viewdir2 = viewdir2, back = false, n = 2*n);
 revolve(sm = sm, viewdir1 = viewdir2, viewdir2 = viewdir0, back = false, n = n);
-compile(fps = n, outprefix = "animation", exit = false);
+compile(fps = n, outprefix = "animation", exit = true);

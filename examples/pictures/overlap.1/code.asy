@@ -1,7 +1,7 @@
 import export;
 
 size(20 cm);
-defaultpen(1);
+defaultpen(.7);
 expar(margin = 1cm, bgpen = paleyellow);
 smpar(dashop = .2);
 

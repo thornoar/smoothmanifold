@@ -1,6 +1,9 @@
 import export;
 size(15cm);
 
+defaultpen(.7);
+smpar(gaplength = .03);
+
 fitpath((0,0){up}..{down}(1,0), beginarrow = true, endarrow = true, beginbar = true, endbar = true, barsize = 10, p = blue);
 fitpath((.5,-1.3){up}..(.6,.7), endarrow = true, arrow = TeXHead);
 fitpath(circle(c = (.8,-.1), r = .4), covermode = 2, p = deepgreen);

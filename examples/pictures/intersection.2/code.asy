@@ -4,8 +4,9 @@ settings.render = 16;
 settings.outformat = "pdf";
 
 size(15 cm);
-expar(bgpen = paleyellow, margin = 1.5cm);
-smpar(scfreedom = .8);
+defaultpen(.7);
+expar(bgpen = paleyellow, margin = 1.5cm, autoexport = false);
+smpar(scfreedom = .8, scholenumber = 2, scholeangle = 50);
 
 pair viewdir = dir(45);
 smooth sm1 = samplesmooth(3,1).move(scale = 1.1).view(viewdir);
@@ -15,8 +16,9 @@ draw(sm1, contourpen = mediumgrey, smoothfill = invisible, subsetcontourpen = in
 draw(sm2, contourpen = mediumgrey, smoothfill = invisible, subsetcontourpen = invisible, subsetfill = invisible, mode = plain, drawnow = true);
 
 smooth sm3 = intersect(sm1, sm2);
-sm3.setsection(1, 0, r(-2,4,240,dn));
-sm3.setsection(0, 0, r(dn,dn,220,dn));
+sm3.setsection(1, 0, r(-1.5,4,230,7));
+sm3.setsection(0, 0, r(2,-1,230,dn));
 
-draw(sm3, explain = false, mode = free);
+draw(sm3, help = false, mode = free);
+
 export(prefix = "picture");

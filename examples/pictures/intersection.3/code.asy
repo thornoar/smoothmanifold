@@ -2,6 +2,7 @@ import export;
 
 settings.render = 16;
 size(15 cm);
+defaultpen(.7);
 expar(bgpen = paleyellow);
 smpar(smoothfill = cyan, mode = plain, drawnow = true);
 
