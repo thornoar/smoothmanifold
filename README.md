@@ -74,7 +74,7 @@ You can clone this git repository to receive regular updates.
 
 ## Basic usage
 
-First, create a smooth object with
+First, create a `smooth` object with
 
 ```asymptote
 void operator init (path contour,
