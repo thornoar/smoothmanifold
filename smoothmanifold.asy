@@ -719,14 +719,14 @@ struct element
 	{ return element(this.pos, this.label, this.labelalign); }
 }
 
-// pair operator cast (element elt)
-// { return elt.pos; }
-//
-// element operator cast (pair a)
-// { return element(a); }
-//
-// bool operator == (element a, element b)
-// { return a.pos == b.pos; }
+pair operator cast (element elt)
+{ return elt.pos; }
+
+element operator cast (pair a)
+{ return element(a); }
+
+bool operator == (element a, element b)
+{ return a.pos == b.pos; }
 
 // private void elementadjust (element elt, pair shift, real scale, real rotate, pair point)
 // { elt.pos = srap(scale, rotate, point)*shift(shift)*elt.pos; }
@@ -2434,6 +2434,9 @@ element findelt (string label)
     return smooth.cache[indices[0]].elements[indices[1]];
 }
 
+element operator cast (string label)
+{ return findelt(label); }
+
 void print (smooth sm)
 {
     write("--- Smooth object ---");
@@ -2443,6 +2446,12 @@ void print (smooth sm)
     write("HOLES: " + (string)sm.holes.length);
 
     write("SUBSETS: " + (string)sm.subsets.length);
+}
+
+void printall ()
+{
+    for (int i = 0; i < smooth.cache.length; ++i)
+    { print(smooth.cache[i]); }
 }
 
 private struct deferredPath
@@ -4064,20 +4073,14 @@ void drawarrow (
 
 	real[][] intersection1 = intersections(g, g1);
     real[][] intersection2 = onself ? intersection1 : intersections(g, g2);
-	// pair dir1;
-	// pair dir2;
 	real time1 = arctime(g, margin1);
 	real time2 = arctime(g, arclength(g)-margin2);
+
 	if (intersection1.length > 0)
-	{
-		time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1);
-		// dir1 = dir(g1, intersect1[1]);
-	}
+	{ time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1); }
 	if (intersection2.length > (onself ? 1 : 0))
-	{
-		time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2);
-		// dir2 = -dir(g2, intersect2[1]);
-	}
+	{ time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2); }
+
     path gs = subpath(g, time1, time2);
 
 	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
@@ -4211,6 +4214,31 @@ void drawmapping (
     }
 
     drawmapping(pic, sm1, index1, sm2, index2, curve, angle, (radius == defaultSyDN ? sm1.scale : radius), points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
+}
+
+void drawpath (
+    picture pic = currentpicture,
+    smooth sm,
+    int index1,
+    int index2 = index1,
+    real angle = defaultSyRPA,
+    Label L = "",
+    pen p = currentpen,
+    pair[] points = {},
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN
+)
+{
+    if (index1 == index2)
+    { halt("Could not draw path: elements must be different. Use `drawloop()` instead. [ drawpath() ]"); }
+    
+    pair center1 = sm.elements[index1].pos;
+    pair center2 = sm.elements[index2].pos;
+
+    points.insert(0, center1);
+    points.push(center2);
+
+    fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = randompath(points, angle), L = L, p = p, null, false, false, 0, false, false);
 }
 
 void drawdeferred (

@@ -2,9 +2,9 @@ private path defaultPaUC = reverse(unitcircle); // [U]nit [C]ircle
 private path defaultPaUS = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 path ucircle = defaultPaUC;
 path usquare = defaultPaUS;
-
 private real defaultSyRR = .03; // [R]ounded [P]ath [R]atio
 real currentSyRR = defaultSyRR;
+real defaultSyRPA = 30;
 
 void roundcoeff (
     real val = defaultSyRR
@@ -31,7 +31,7 @@ pair center (
 {
     pair sum = (0,0);
     for (int i = 0; i < n; ++i)
-    { sum += point(p, arc ? arctime(p, arclength(p)*i/n) : length(p) * i/n); }
+    { sum += point(p, arc ? arctime(p, arclength(p)*i/n) : (length(p) * i/n)); }
 	if (inside(p, sum/n)) return sum/n;
 	real[] times = times(p, (0, ypart(sum/n)));
 	return (point(p, times[0]) + point(p, times[1])) * .5;
@@ -50,8 +50,8 @@ bool insidepath (path p, path q)
 
 transform dscale (
     real scale,
-	pair center = (0,0),
-	pair dir
+	pair dir,
+	pair center = (0,0)
 ) // scale in given direction
 {
 	if (length(dir) == 0) return identity;
@@ -63,6 +63,7 @@ pair comb (pair a, pair b, real t)
 
 real round (real a, int places)
 { return floor(10^places*a)*.1^places; }
+
 pair round (pair a, int places)
 { return (round(a.x, places), round(a.y, places)); }
 
@@ -107,6 +108,7 @@ bool contains (int[] source, int a)
 	}
 	return res;
 }
+
 int[] difference (int[] a, int[] b)
 {
 	int[] res = {};
@@ -229,11 +231,11 @@ path pop (path[] source)
 	return i;
 }
 
-real xsize (path p){return xpart(max(p)) - xpart(min(p));}
-real ysize (path p){return ypart(max(p)) - ypart(min(p));}
+real xsize (path p) {return xpart(max(p)) - xpart(min(p));}
+real ysize (path p) {return ypart(max(p)) - ypart(min(p));}
 
-real xsize (picture p){return xpart(max(p)) - xpart(min(p));}
-real ysize (picture p){return ypart(max(p)) - ypart(min(p));}
+real xsize (picture p) {return xpart(max(p)) - xpart(min(p));}
+real ysize (picture p) {return ypart(max(p)) - ypart(min(p));}
 
 path wavypath (real[] nums)
 {
@@ -304,6 +306,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
     }
     
 	int n = times.length;
+
     int[] pinds = sort(sequence(n), new bool (int a, int b){return (times[a][1] <= times[b][1]);});
     int[] qinds = sort(sequence(n), new bool (int a, int b){return (times[pinds[a]][0] <= times[pinds[b]][0]);});
     
@@ -311,6 +314,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
     
 	gauss start = (0, qinds[0]);
     gauss[] nextstarts;
+
     int visited = 0;
     gauss curind = start;
     path curpath;
@@ -318,33 +322,43 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 	while (visited < n)
     {
         visited += 1;
+
         bool pway;
         gauss newind;
         pair pdir = (times[curind.x][0] == floor(times[curind.x][0])) ? dir(p, floor(times[curind.x][0]), sign = 1) : dir(p, times[curind.x][0]);
         pair qdir = (times[curind.x][1] == floor(times[curind.x][1])) ? dir(q, floor(times[curind.x][1]), sign = 1) : dir(q, times[curind.x][1]);
-        if(cross(pdir, qdir)*mode < 0) pway = true;
+
+        if (cross(pdir, qdir)*mode < 0) pway = true;
         else pway = false;
+
 		real curarc = min(pway ? qroundlength : proundlength, arclength(curpath)*.5);
-        if(pway)
+
+        if (pway)
         {
             newind = ((curind.x+1)%n, qinds[(curind.x+1)%n]);
+
             if ((-(newind.y - curind.y)*windingnumber(q, inside(q)))%n > 1)
             { nextstarts.insert(i = 0, (pinds[(curind.y+1)%n], (curind.y+1)%n)); }
         }
         else
         {
             newind = (pinds[(curind.y+1)%n], (curind.y+1)%n);
+
             if ((-(newind.x - curind.x)*windingnumber(p, inside(p)))%n > 1)
             { nextstarts.insert(i = 0, ((curind.x+1)%n, qinds[(curind.x+1)%n])); }
         }
+
         path addpath = subcyclic(pway ? p : q, (times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]));
+
         if (!round || curpath == nullpath) curpath = curpath & addpath;
         else
         {
             path subcurpath = subpath(curpath, 0, arctime(curpath, arclength(curpath) - curarc));
             path subaddpath = subpath(addpath, arctime(addpath, min(pway ? qroundlength : proundlength, arclength(addpath)*.5)), length(addpath));
+
             curpath = connect(subcurpath, subaddpath);
         }
+
         if (newind == start)
         {
             path finpath;
@@ -364,7 +378,7 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
         else curind = newind;
     }
 
-	res = sort(res, new bool (path i, path j){
+	res = sort(res, new bool (path i, path j) {
 		if (clockwise(i)) return true;
 		else if (!clockwise(j)) return true;
 		else return false;
@@ -467,10 +481,21 @@ path[] intersection (
 	return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
 }
 
-path[] intersection (bool correct = true, bool round = false, real roundcoeff = defaultSyRR ... path[] paths)
-{return intersection(paths, correct, round, roundcoeff);}
+path[] intersection (
+    bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+    ... path[] paths
+) {return intersection(paths, correct, round, roundcoeff);}
 
-path[] intersection (path p, path q, path[] holes, bool correct = true, bool round = false, real roundcoeff = defaultSyRR)
+path[] intersection (
+    path p,
+	path q,
+	path[] holes,
+	bool correct = true,
+	bool round = false,
+	real roundcoeff = defaultSyRR
+)
 {
     if (correct)
     {
@@ -563,14 +588,19 @@ path randompath (pair[] controlpoints, real angle)
 {
 	if (controlpoints.length < 2) return nullpath;
 
-	pair outdir = randomdir(controlpoints[1]-controlpoints[0], angle);
+    // bool cyclic = controlpoints[0] == controlpoints[controlpoints.length-1];
+
+	pair outdir = randomdir(controlpoints[1]-controlpoints[/* cyclic ? controlpoints.length-2 :  */0], angle);
 	path res = controlpoints[0];
-	for (int i = 1; i < controlpoints.length; ++i)
+
+	for (int i = 1; i < controlpoints.length-1; ++i)
 	{
-		pair indir = randomdir(controlpoints[i]-controlpoints[i-1], angle);
+		pair indir = randomdir(controlpoints[(i+1)]-controlpoints[i-1], angle);
 		res = res{outdir} .. {indir}controlpoints[i];
 		outdir = indir;
 	}
-
-	return res;
+    
+    pair indir = randomdir(controlpoints[/* cyclic ? 1 :  */(controlpoints.length-1)]-controlpoints[controlpoints.length-2], angle);
+    
+	return res{outdir}..{indir}controlpoints[controlpoints.length-1];
 }
