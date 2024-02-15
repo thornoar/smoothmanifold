@@ -22,7 +22,9 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
 
 - Sophisticated user interface. Each of the custom structures is equipped with a smart `operator init` constructor, which requires minimal information from the user to construct a valid object. Changing an existing object is made very easy as well: each smooth object has its own 'unit coordinate system', which helps visually locate the preferred place to add a hole or subset. A collection of convenient building functions is also given, e.g. `copy`, `view`, `move`, `movesubset`, `addholesection`, `sethole`, etc. All functions are given in multiple versions corresponding to different input data. Case in point, you can access a subsets by its index, an index sequence, or its label. There are also pre-built arrays of paths and `smooth` objects for convenience. Finally, there is a collection of user methods (`drawparams`, `sectionparams`, etc.) for setting global parameters such as the default colors of smooth objects and their subsets, or the cross section mode.
     
-    The module is highly configurable: default values can be set for the colors of drawing pens, the positions for cross sections, the precision of algorithms and many more. All configuration is done in the `smpar(...)` function which has 31 parameter.
+    The module is highly configurable: default values can be set for the colors of drawing pens, the positions for cross sections, the precision of algorithms and many more. All configuration is done in the `smpar(...)` function which has 33 parameters.
+
+    Objects can be accessed by their label. For example, if there are two `smooth` objects with labels `"M"` and `"N"`, an arrow can be drawn between them with `drawarrow("M", "N", curve = ...)`. The objects themselves can be drawn with `draw("M")` and `draw("N")`. Label access also works for `subset`s and `element`s in most cases. See __examples/pictures/arrows.3__ for more examples.
 
 - Wide drawing functionality. The main drawing function is
 
@@ -95,7 +97,7 @@ void operator init (path contour,
                     bool isderivative = false)
 ```
 
-The only required argument is `contour`, everything else is optional. To see examples of pre-built smooth objects, search for 'samplesmooth' in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `view`, etc. You can derive new smooth objects with `union`, `intersection` and `copy()`. Finally, `draw` your object, or draw an arrow connecting two objects. You can `print()` your smooth objects to get parameter values in the console. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.
+The only required argument is `contour`, everything else is optional. To see examples of pre-built smooth objects, search for the 'samplesmooth' function in `smoothmanifold.asy`. Then, you may alter your object with functions s.a. `move`, `setlabel`, `addhole`, `view`, etc. You can derive new smooth objects with `union`, `intersection` and `copy()`. Finally, `draw` your object, or draw an arrow connecting two objects with `drawarrow`. You can `print()` your smooth objects to get parameter values in the console. For finer detail, wait for official documentation, explore the code examples, or read the comments in the module file.
 
 ## Optional extensions
 
@@ -103,7 +105,7 @@ The only required argument is `contour`, everything else is optional. To see exa
 
 But this is not the end. `export.asy` provides a simple general animation interface. Given an update function, the module will compile you an animation in given quality and in any format supported by FFmpeg or ImageMagick. A nice terminal progress bar is included. Unlike the `animation` base module, the algorithm provided by `export` does not create a massive array of pictures, it only stores one at a time, which can be crucial for machines with little RAM.
 
-The extension `export.asy` is dependent on and integrated with `smoothmanifold`, which makes the usage of the latter much more intuitive and simple. Much like the `smpar(...)` function of the main module, `export.asy` provides a configuration function `expar(...)` with 18 parameters, including default file extensions, background color and many more.
+The extension `export.asy` is dependent on and integrated with `smoothmanifold`, which makes the usage of the latter much more intuitive and simple. Much like the `smpar(...)` function of the main module, `export.asy` provides a configuration function `expar(...)` with 19 parameters, including default file extensions, background color and many more.
 
 ## Optional dependencies
 
