@@ -5,7 +5,7 @@ import graph;
 
 size(25cm);
 expar(dpi = 50, informat = "jpg", outformat = "gif", close = false, ymax = 1.6, ratio = 1, clip = false);
-smpar(sectionpenscale = .5, scavoidsubsets = true, shiftsubsets = true);
+smpar(sectionpenscale = .5, scavoidsubsets = true, shiftsubsets = true, dash = false, scfreedom = .1);
 defaultpen(linewidth(1.2));
 
 pair viewdir0 = (0,0);
@@ -14,7 +14,7 @@ pair viewdir2 = dir(180);
 pair viewdir3 = dir(90);
 pair viewdir4 = dir(-90);
 
-smooth sm = samplesmooth(3).move(shift = (-.15,0));
+smooth sm = samplesmooth(3).rmsubset(0).move(shift = (-.15,0));
 
 int n = 30;
 

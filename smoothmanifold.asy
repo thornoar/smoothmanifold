@@ -22,8 +22,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // -- Default constants -- //
 
 // [Sy]stem
-private string defaultversion = "v5.9.0-beta";
-private real defaultSySN = 1.0e-10; // [S]mall [N]umber
+private string defaultversion = "v5.9.8-beta";
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it"
 private string defaultSyDS = "-10000"; // [D]ummy [S]tring
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
@@ -39,7 +38,6 @@ private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
 private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle]
 private real defaultSeEP = -1; // [E]llipse [P]recision
 private real defaultSeMLR = -1; // [M]aximum [L]ength [R]atio
-private real defaultSeMiEHR = .0005; // [Mi]nimal [E]llipse [H]eight [R]atio
 
 // [Sm]ooth
 private real defaultSmNC = .15; // [Ne]igh [C]urve
@@ -48,7 +46,7 @@ private real defaultSmVA = 7; // [V]iew [A]ngle in degrees
 private real defaultSmEAL = .2; // [E]xplain [A]rrow [L]ength
 private real defaultSmCEM = .07; // [C]art [E]dge [M]argin
 private real defaultSmCSD = .1; // [C]art [S]tep [D]istance
-private real defaultSmSVS = .7; // [S]ubset [V]iew [S]hift
+private real defaultSmSVS = .3; // [S]ubset [V]iew [S]hift
 
 // [Dr]awing
 private real defaultDrGL = .1; // [G]ap [L]ength
@@ -235,6 +233,7 @@ private bool currentSeAS = false; // [A]void [S]ubsets
 // [Sm]ooth
 private bool currentSmIL = true; // [I]nfer [L]abels
 private bool currentSmSS = false; // [S]hift [S]ubsets
+private bool currentSmAS = true; // [A]dd [S]ubsets
 
 // [Dr]awing
 private real currentDrGL = defaultDrGL;
@@ -252,7 +251,6 @@ private bool currentDrUO = true; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrH = false; // [H]elp
 private bool currentDrDS = false; // [D]raw [S]hade
-private bool currentDrIC = false; // [I]nvert [C]olors
 private bool currentDrF = true; // [F]ill
 private bool currentDrFS = false; // [F]ill [S]ubsets
 private bool currentDrDC = true; // [D]raw [C]ontour
@@ -300,6 +298,7 @@ string mode (int md)
 }
 
 private bool checksection (real[] section)
+// Checks if array has valid section values in it (see 'struct hole').
 {
 	if (section.length > 1 && section[0] == 0 && section[1] == 0)
 	{ return false; }
@@ -311,28 +310,33 @@ private bool checksection (real[] section)
 }
 
 private real sectionsymmetryvalue (pair p1p2, pair dir1, pair dir2)
+// A rating of how symmetric the section is (see 'sectionparams').
 { return abs(dot(dir2, p1p2)+dot(p1p2, dir1)); }
 
 private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
+// Checks if the section is too wide (see 'cartsections').
 {
     return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
 
 private pen inverse (pen p)
+// Inverts the colors of `p`.
 {
 	real[] colors = colors(p);
-	if (colors.length == 1) return gray(1-colors[0])+linewidth(p);
-	if (colors.length == 3) return rgb(1-colors[0], 1-colors[1], 1-colors[2])+linewidth(p);
-	return invisible;
+	if (colors.length == 1) return colorless(p)+gray(1-colors[0]);
+	if (colors.length == 3) return colorless(p)+rgb(1-colors[0], 1-colors[1], 1-colors[2]);
+	return colorless(p);
 }
 
 private pen sectionpen (pen p)
+// Derives a pen to draw cross sections (see 'draw').
 {
     if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
     else return currentDrSeOP;
 }
 
 private pen nextsubsetpen (pen p, real scale)
+// Derives a pen to fill subsets of increasing layers (see 'struct subset' and 'draw').
 { return scale * p; }
 
 private pen dashpenscale (pen p)
@@ -342,18 +346,22 @@ private pen dashpenopacity (pen p)
 { return p+dashed+opacity(currentDrDPO); }
 
 private pen dashpen (pen p)
+// Derives a pen to draw dashed lines, using either re-coloring or opacity.
 {
     if (currentDrUO) return dashpenopacity(p);
     else return dashpenscale(p);
 }
 
 private pen shadepen (pen p)
+// Derives a pen to fill shaded regions (see 'drawsections').
 { return currentDrShS*p; }
 
 private pen elementpen (pen p)
+// Derives a pen to render elements (see 'struct element' and 'draw').
 { return p + linewidth(currentDrElPW); }
 
 private pen underpen (pen p)
+// Derives a pen to draw paths that go under areas.
 { return dashpen(p); }
 
 // -- User setting functions -- //
@@ -388,6 +396,7 @@ void smpar (
         real elementwidth = currentDrElPW,
         bool inferlabels = currentSmIL,
         bool shiftsubsets = currentSmSS,
+        bool addsubsets = currentSmAS,
         real gaplength = currentDrGL,
         real arrowmargin = currentArM,
             bool repeatlabels = currentSyRL,
@@ -433,6 +442,7 @@ void smpar (
 	currentDrElPW = elementwidth;
     currentSmIL = inferlabels;
     currentSmSS = shiftsubsets;
+    currentSmAS = addsubsets;
 	currentDrGL = gaplength;
 	currentArM = arrowmargin;
     currentSyRL = repeatlabels;
@@ -711,11 +721,21 @@ struct element
 		this.labelalign = labelalign;
 	}
 
-    void set (pair pos, string label, pair labelalign)
+    element set (pair pos, string label, pair labelalign)
     {
         this.pos = pos == defaultSyDP ? this.pos : pos;
         this.label = label == defaultSyDS ? this.label : label;
         this.labelalign = labelalign == defaultSyDP ? this.labelalign : labelalign;
+
+        return this;
+    }
+
+    element move (pair shift, real scale, real rotate, pair point, bool movelabel)
+    {
+        this.pos = shift(shift)*srap(scale, rotate, point)*this.pos;
+		if (movelabel) this.labelalign = rotate(rotate)*this.labelalign;
+
+        return this;
     }
 
 	element copy ()
@@ -734,10 +754,10 @@ bool operator == (element a, element b)
 struct hole
 // A cyclic area 'cut out' of a set.
 {
-    path contour;
-    pair center;
-    real[][] sections;
-    int scnumber;
+    path contour; // The cyclic boundary of the hole.
+    pair center; // The center of the hole.
+    real[][] sections; // Data related to the positioning of cross sections around the hole.
+    int scnumber; // The preferred number of cross sections between this hole and others.
 
     void operator init (
         path contour,
@@ -774,13 +794,8 @@ struct hole
         }
     }
 
-    hole move (
-        pair shift,
-		real scale,
-		real rotate,
-		pair point = this.center,
-		bool movesections = false
-    )
+    hole move (pair shift, real scale, real rotate, pair point, bool movesections)
+    // Shift, scale, rotate around a point.
     {
         this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*srap(scale, rotate, point)*this.center;
@@ -811,10 +826,10 @@ struct hole
 bool operator == (hole a, hole b)
 { return a.contour == b.contour; }
 
-hole[] holecopy (hole[] holes)
+private hole[] holecopy (hole[] holes)
 { return sequence(new hole (int i){return holes[i].copy();}, holes.length); }
 
-path[] holecontours (hole[] h)
+private path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
 private void holeadjust (hole hl, pair shift, real scale, real rotate, pair point)
@@ -849,15 +864,19 @@ struct subset
     {
         this.label = label == defaultSyDS ? this.label : label;
         this.labeldir = labeldir == defaultSyDP ? this.labeldir : labeldir;
-		this.labelalign = keepalign ? this.labelalign : (labelalign == defaultSyDP) ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
+        this.labelalign =
+            (keepalign) ?
+                this.labelalign :
+                (labelalign == defaultSyDP) ?
+                    (
+                        abs(this.labeldir) == 0 ?
+                            (0,0) :
+                            rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir))
+                    ) :
+                    labelalign;
 
         return this;
     }
-
-    subset setlabel (
-        string label,
-		real angle
-    ) { this.setlabel(label, dir(angle)); return this; }
 
     subset move (
         pair shift = (0,0),
@@ -942,15 +961,15 @@ subset[] subsetcopy (subset[] subsets)
 private void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
 { s.move(shift, scale, rotate, shift(-shift) * point, true); }
 
-private subset[] subsetintersection (subset sb1, subset sb2, bool setlabel = currentSmIL)
+private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = currentSmIL)
 {
 	path[] contours = intersection(sb1.contour, sb2.contour);
 	return sequence(new subset (int i){
 		return subset(
 			contour = contours[i],
-			label = (currentSmIL && setlabel && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
+			label = (currentSmIL && inferlabels && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
 			labeldir = rotate(-90)*unit(sb1.center - sb2.center),
-			labelalign = setlabel ? 2*(rotate(90)*unit(sb1.center - sb2.center)) : defaultSyDP,
+			labelalign = inferlabels ? 2*(rotate(90)*unit(sb1.center - sb2.center)) : defaultSyDP,
 			layer = max(sb1.layer, sb2.layer)+1,
 			isderivative = true
 		);
@@ -970,8 +989,8 @@ private void subsetdelete (subset[] subsets, int index, bool recursive)
 	{
 		for (int j = 0; j < subsets[i].subsets.length; ++j)
 		{
-			if (subsets[i].subsets[j] == index) subsets[i].subsets.delete(j);
 			if (subsets[i].subsets[j] > index) subsets[i].subsets[j] -= 1;
+			if (subsets[i].subsets[j] == index) subsets[i].subsets.delete(j);
 		}
 	}
 }
@@ -1206,11 +1225,13 @@ struct smooth
         { this.holes[i].move(shift, scale, rotate, point, true); }
         for (int i = 0; i < this.subsets.length; ++i)
         { this.subsets[i].move(shift, scale, rotate, point, true); }
+        for (int i = 0; i < this.elements.length; ++i)
+        { this.elements[i].move(shift, scale, rotate, point, true); }
 
         return this;
     }
 
-    private smooth xscale (real s)
+    private void xscale (real s)
     {
         pair center = this.center;
         this.simplemove(shift = -center);
@@ -1238,11 +1259,9 @@ struct smooth
 		}
 
         this.simplemove(shift = center);
-
-        return this;
     }
 
-    private smooth yscale (real s)
+    private void yscale (real s)
     {
         pair center = this.center;
         this.simplemove(shift = -center);
@@ -1270,8 +1289,6 @@ struct smooth
 		}
         
 		this.simplemove(shift = center);
-
-        return this;
     }
 
     smooth dirscale (pair dir, real s)
@@ -1305,10 +1322,10 @@ struct smooth
         return this;
     }
 
-    private smooth setview (pair viewdir)
+    private void setview (pair viewdir)
     // Supporting function to tilt the object as if it were viewed from direction `viewdir`.
     {
-		if (viewdir == this.viewdir) return this;
+		if (viewdir == this.viewdir) return;
 
         if (this.distort) this.dirscale(viewdir, Cos(defaultSmVA * length(viewdir)));
 		if (this.shiftsubsets)
@@ -1317,17 +1334,17 @@ struct smooth
 			{ this.subsets[i].move(shift = viewdir * defaultSmSVS * Sin(defaultSmVA)); }
 		}
         this.viewdir = viewdir;
-        
-		return this;
     }
 
     smooth view (
         explicit pair viewdir,
 		bool shiftsubsets = this.shiftsubsets,
+        bool distort = this.distort,
 		bool drag = true
     ) // User function similar to `setview`, but with extended customization.
     {
 		this.shiftsubsets = shiftsubsets;
+		this.distort = distort;
 
 		bool corrected = false;
 		if (length(viewdir) > 1)
@@ -1351,8 +1368,9 @@ struct smooth
 	smooth view (
         real angle,
 		bool shiftsubsets = this.shiftsubsets,
+        bool distort = this.distort,
 		bool drag = true
-    ) { return this.view(dir(angle), shiftsubsets, drag); }
+    ) { return this.view(dir(angle), shiftsubsets, distort, drag); }
 
     // -- Methods for moving smooth object with respect to view direction -- //
 
@@ -1467,7 +1485,16 @@ struct smooth
 		{
 			this.label = label == defaultSyDS ? this.label : label;
 			this.labeldir = labeldir == defaultSyDP ? this.labeldir : labeldir;
-			this.labelalign = keepalign ? this.labelalign : (labelalign == defaultSyDP) ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
+            this.labelalign =
+                (keepalign) ?
+                    this.labelalign :
+                    (labelalign == defaultSyDP) ?
+                        (
+                            abs(this.labeldir) == 0 ?
+                                (0,0) :
+                                rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir))
+                        ) :
+                        labelalign;
 		}
 		else
 		{ this.subsets[index].setlabel(label, labeldir, labelalign, keepalign); }
@@ -1493,7 +1520,7 @@ struct smooth
         if (!currentSyRL && repeats(elt.label))
         { halt("Could not add element: label \""+elt.label+"\" already assigned. [ addelement() ]"); }
         
-		if (unit) elt.pos = srap(this.scale, 0, this.center)*shift(this.shift)*elt.pos;
+        if (unit) elt.pos = srap(this.scale, 0, this.center)*shift(this.shift)*elt.pos;
 
 		if (!this.inside(elt.pos))
 		{ halt("Could not add element: position out of bounds. [ addelement() ]"); }
@@ -1770,6 +1797,7 @@ struct smooth
 	smooth addsubset (
         subset sb,
 		int index = -1,
+        bool inferlabels = currentSmIL,
 		bool unit = true
     )
 	{
@@ -1803,7 +1831,7 @@ struct smooth
 			for (int i = 0; i < this.subsets.length; ++i)
 			{
                 if (this.subsets[i].layer == 0) findindex(i);
-                if (found) return this.addsubset(sb, newindex, false);
+                if (found) return this.addsubset(sb, newindex, inferlabels, false);
 			}
 		}
 
@@ -1884,7 +1912,7 @@ struct smooth
                 return;
             }
 
-            subset[] intersection = subsetintersection(cursb, sb);
+            subset[] intersection = subsetintersection(cursb, sb, inferlabels);
             if (intersection.length > 1)
             {
                 write("> ? Could not add subset: has disconnected intersection with existing subsets. It will be drawn in red on the final picture. [ addsubset() ]");
@@ -1953,17 +1981,19 @@ struct smooth
         string label = "",
         pair labeldir = defaultSyDP,
         pair labelalign = S,
+        bool inferlabels = currentSmIL,
         bool unit = true
     )
     {
-        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), index = index, unit = unit);
+        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, unit);
     }
 
     smooth addsubset (
         string destlabel,
 		subset sb,
+        bool inferlabels = currentSmIL,
 		bool unit = true
-    ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), unit); }
+    ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), inferlabels, unit); }
 
     smooth addsubset (
         string destlabel,
@@ -1975,58 +2005,65 @@ struct smooth
         string label = "",
         pair labeldir = defaultSyDP,
         pair labelalign = S,
+        bool inferlabels = currentSmIL,
         bool unit = true
     )
     {
-        return this.addsubset(destlabel = destlabel, sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
+        return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, unit);
     }
 
     smooth addsubsets (
         subset[] sbs,
 		int index = -1,
+        bool inferlabels = currentSmIL,
 		bool unit = true
     )
     {
         for (int i = 0; i < sbs.length; ++i)
-        { this.addsubset(sbs[i], index, unit); }
+        { this.addsubset(sbs[i], index, inferlabels, unit); }
 
         return this;
     }
 
     smooth addsubsets (
         int index = -1,
+        bool inferlabels = currentSmIL,
 		bool unit = true
         ... subset[] sbs
-    ) { return this.addsubsets(sbs, index, unit); }
+    ) { return this.addsubsets(sbs, index, inferlabels, unit); }
 
     smooth addsubsets (
         int index = -1,
+        bool inferlabels = currentSmIL,
         bool unit = true
         ... path[] contours
     )
     {
-        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), unit = unit);
+        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, unit);
     }
 
     smooth addsubsets (
         string destlabel,
 		subset[] sbs,
+        bool inferlabels = currentSmIL,
 		bool unit = true
-    ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), unit); }
+    ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), inferlabels, unit); }
 
     smooth addsubsets (
         string destlabel,
+        bool inferlabels = currentSmIL,
         bool unit = true
         ... subset[] sbs
-    ) { return this.addsubsets(destlabel, sbs, unit); }
+    ) { return this.addsubsets(destlabel, sbs, inferlabels, unit); }
 
     smooth addsubsets (
         string destlabel,
+        bool inferlabels = currentSmIL,
         bool unit = true
         ... path[] contours
     )
     {
-        return this.addsubsets(destlabel, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), unit = unit);
+        return this.addsubsets(destlabel, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, unit);
     }
 
 	smooth rmsubset (
@@ -2115,6 +2152,7 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
+        bool inferlabels = currentSmIL,
         bool keepview = false
     )
 	{
@@ -2177,8 +2215,8 @@ struct smooth
 
 		if (onlysecondary(index))
 		{
-			rmsubset(index, recursive = false);
-			addsubset(cursb.move(shift, scale, rotate, point, movelabel));
+			rmsubset(index, recursive = true);
+			addsubset(cursb.move(shift, scale, rotate, point, movelabel), inferlabels, unit = false);
 			return this;
 		}
 		if (onlyprimary(index))
@@ -2233,10 +2271,11 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
+        bool inferlabels = currentSmIL,
         bool keepview = false
     )
     {
-        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, keepview);
+        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, inferlabels, keepview);
     }
 
     // -- Methods for controlling relationships between smooth objects -- //
@@ -2269,6 +2308,7 @@ struct smooth
         pair labelalign = defaultSyDP,
         hole[] holes = {},
         subset[] subsets = {},
+        element[] elements = {},
         real[] hratios = r(defaultSyDN),
         real[] vratios = r(defaultSyDN),
         pair shift = (0,0),
@@ -2277,7 +2317,7 @@ struct smooth
         pair viewdir = (0,0),
         bool distort = true,
         smooth[] attached = {},
-        bool unit = true,
+        // bool unit = true,
         bool copy = false,
         bool shiftsubsets = currentSmSS,
         bool isderivative = false
@@ -2308,21 +2348,22 @@ struct smooth
 			if (scale <= 0)
 			{ halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-			this.shift = shift;
-            this.scale = scale;
-            this.rotate = rotate;
+			this.shift = (0,0);
+            this.scale = 1;
+            this.rotate = 0;
             
             this.contour = shift(shift)*srap(scale, rotate, center)*((!clockwise(contour)) ? reverse(contour) : contour);
             this.center = shift(shift)*center;
             this.label = label;
             this.labeldir = labeldir;
             this.labelalign = labelalign == defaultSyDP ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
-            this.holes = new hole[];
 
             for (int i = 0; i < holes.length; ++i)
-            { addhole(holes[i], unit = unit); }
+            { addhole(holes[i].move(shift, scale, rotate, center, true), unit = false); }
             for (int i = 0; i < subsets.length; ++i)
-            { addsubset(subsets[i], unit = unit); }
+            { addsubset(subsets[i].move(shift, scale, rotate, center, true), unit = false); }
+            for (int i = 0; i < elements.length; ++i)
+            { addelement(elements[i].move(shift, scale, rotate, center, true), unit = false); }
 
 			this.setratios(hratios, true);
 			this.setratios(vratios, false);
@@ -2549,7 +2590,7 @@ smooth samplesmooth (int type, int num = 0)
         if (num == 0)
         {
             return smooth(
-                contour = defaultPaCV[0],
+                contour = ucircle,
                 hratios = new real[] {.5},
                 vratios = r(),
                 distort = false
@@ -2564,7 +2605,7 @@ smooth samplesmooth (int type, int num = 0)
         if (num == 2)
         {
             return smooth(
-                contour = defaultPaCC[2],
+                contour = rotate(-90)*defaultPaCC[2],
                 subsets = new subset[]{
                     subset(
                         contour = defaultPaCC[3],
@@ -2573,7 +2614,6 @@ smooth samplesmooth (int type, int num = 0)
                         labeldir = dir(140)
                     )
                 },
-				rotate = -90,
                 hratios = new real[]{.6, .83},
                 vratios = r()
             );
@@ -2635,12 +2675,14 @@ smooth samplesmooth (int type, int num = 0)
 			return smooth(
 				contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
 				holes = new hole[]{
-					hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4,2,200,7))
+					hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-5,2,220,7))
 				},
 				subsets = new subset[]{
 					subset(contour = defaultPaCC[3], shift = (-.3,-.35), rotate = -50),
 					subset(contour = defaultPaCV[3], scale = .9, rotate = 10, shift = (.3,.5))
-				}
+				},
+                scale = .5,
+                shift = (.3,-.1)
 			);
 		}
     }
@@ -2679,37 +2721,37 @@ smooth samplesmooth (int type, int num = 0)
         if (num == 0)
         {
             return smooth(
-                contour = wavypath(new real[]{4,2,4,2,3.7,2}),
+                contour = scale(.35)*wavypath(new real[]{4,2,4,2,3.7,2}),
                 holes = new hole[]{
                     hole(
-                        contour = defaultPaCV[4],
+                        contour = scale(.35)*defaultPaCV[4],
                         sections = rr(),
                         scale = .75,
-                        shift = (2.5,.1),
+                        shift = (.9,.02),
 						rotate = 5
                     ),
                     hole(
-                        contour = defaultPaCV[6],
+                        contour = scale(.35)*defaultPaCV[6],
                         sections = rr(),
                         scale = .75,
-                        shift = (-1.1,-2.1)
+                        shift = (-.4,-.75)
                     ),
                     hole(
-                        contour = defaultPaCV[5],
+                        contour = scale(.35)*defaultPaCV[5],
                         sections = rr(),
                         scale = .80,
-                        shift = (-1,1.8),
+                        shift = (-.35,.6),
 						rotate = -20
                     )
                 },
                 subsets = new subset[]{
                     subset(
-                        contour = defaultPaCV[2],
-                        shift = (0, -.2),
+                        contour = scale(.35)*defaultPaCV[2],
+                        shift = (-.02, -.1),
                         scale = .95
                     )
                 }
-            ).simplemove(scale = .35);
+            );
         }
         if (num == 1)
         {
@@ -2829,7 +2871,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
 ) // Constructs the intersection of two given smooth objects.
 {
 	path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
@@ -3009,7 +3051,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
 )
 {
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
@@ -3037,7 +3079,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
@@ -3049,7 +3091,7 @@ smooth intersect (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
 ) // an alternative to `intersection` that only returns one smooth object.
 {
     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff, addsubsets);
@@ -3065,7 +3107,7 @@ smooth intersect (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
 )
 {
     smooth[] intersection = intersection(sms, keepdata, round, roundcoeff, addsubsets);
@@ -3080,7 +3122,7 @@ smooth intersect (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = false
+    bool addsubsets = currentSmAS
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
 
@@ -3649,12 +3691,12 @@ void draw (
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
     if (currentSeMLR > 0) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
 
-    path[] contour = (sm.contour ^^ sequence(new path(int i){
-        return reverse(sm.holes[i].contour);
-    }, sm.holes.length));
+    path[] holes = holecontours(sm.holes);
+    path[] contour = sm.contour ^^ holes;
 
     // Filling and drawing main contour
-    if (fill) fill(pic = pic, contour, p = smoothfill);
+
+    if (fill) fill(pic = pic, reverse(sm.contour)^^holes, p = smoothfill);
     if (drawcontour)
     {
         for (int i = 0; i < contour.length; ++i)
@@ -3810,11 +3852,21 @@ void draw (
         if (elt.label != "") label(pic = pic, position = elt.pos, L = Label((currentSyID ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign));
         dot(pic = pic, elt.pos, elementpen);
     }
-	if (sm.label != "") label(intersection(sm.contour, sm.center, sm.labeldir), (currentSyID ? ("$"+sm.label+"$") : sm.label), align = sm.labelalign);
+	if (sm.label != "") 
+    {
+        pair pos = (abs(sm.labeldir) == 0) ? sm.center : intersection(sm.contour, sm.center, sm.labeldir);
+        label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sm.label+"$") : sm.label), align = sm.labelalign));
+    }
+
     for (int i = 0; i < sm.subsets.length; ++i)
     {
         subset sb = sm.subsets[i];
-        if (sb.label != "") label(pic = pic, position = intersection(sb.contour, sb.center, sb.labeldir), L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = sb.labelalign));
+        if (sb.label != "")
+        {
+            pair pos = (abs(sb.labeldir) == 0) ? sb.center : intersection(sb.contour, sb.center, sb.labeldir);
+            label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = sb.labelalign));
+        }
+
         if (help) label(pic = pic, L = Label((string)i, position = sb.center, p = blue));
     }
     if (help) draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));

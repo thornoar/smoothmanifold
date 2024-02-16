@@ -28,6 +28,8 @@ private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 private bool currentAnC = true; // [C]lose
+// [Dr]awing
+private bool currentDrIC = false; // [I]nvert [C]olors
 
 include smoothmanifold;
 
@@ -182,6 +184,7 @@ void export (
     }
 
     if (drawdeferred) drawdeferred(pic1, flush = !restore);
+    draw(pic = pic1, currentPrDP, red+1);
 	if (currentFrEP) framepicture(pic1);
     if (native) localshipout(prefix);
     else

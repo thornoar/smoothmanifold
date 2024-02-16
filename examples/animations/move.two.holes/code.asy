@@ -2,8 +2,6 @@ import export;
 
 settings.render = 4;
 
-// import graph;
-
 size(25cm);
 expar(dpi = 200, bgpen = paleyellow, ymax = 2.2, ratio = 1, clip = false, close = false);
 currentpen = linewidth(2.2);
