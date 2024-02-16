@@ -2,17 +2,20 @@ private path defaultPaUC = reverse(unitcircle); // [U]nit [C]ircle
 private path defaultPaUS = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 path ucircle = defaultPaUC;
 path usquare = defaultPaUS;
-private real defaultSyRR = .03; // [R]ounded [P]ath [R]atio
-real currentSyRR = defaultSyRR;
-real defaultSyRPA = 30;
+real defaultSyRPC = .03; // [R]ounded [P]ath [C]oefficient (how rounded to make the path)
+real currentSyRPC = defaultSyRPC;
+real defaultSyRPR = 30; // [R]andom [P]ath [R]ange (how random to make the path)
+real currentSyRPR = defaultSyRPR;
 
-void roundcoeff (
-    real val = defaultSyRR
+void pathpar (
+    real roundcoeff = currentSyRPC,
+    real range = currentSyRPR
 )
 {
-	if (val > .5)
-	{ abort("Number provided for the rounding coefficient is too big. Values below 0.1 are ideal."); }
-	currentSyRR = val;
+	if (roundcoeff > .5)
+	{ write("> ? Number provided for the rounding coefficient ("+(string)roundcoeff+") seems too big. Values below 0.1 are ideal. Just saying."); }
+	currentSyRPC = roundcoeff;
+    currentSyRPR = range;
 }
 
 real mod (real a, real b)
@@ -392,7 +395,7 @@ path[] difference (
 	path q,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -415,7 +418,7 @@ path[] difference (
 	path q,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -439,7 +442,7 @@ path[] intersection (
 	path q,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -461,7 +464,7 @@ path[] intersection (
     path[] paths,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -484,7 +487,7 @@ path[] intersection (
 path[] intersection (
     bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
     ... path[] paths
 ) {return intersection(paths, correct, round, roundcoeff);}
 
@@ -494,7 +497,7 @@ path[] intersection (
 	path[] holes,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -520,7 +523,7 @@ path[] union (
 	path q,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -542,7 +545,7 @@ path[] union (
     path[] paths,
 	bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
 )
 {
     if (correct)
@@ -574,7 +577,7 @@ path[] union (
 path[] union (
     bool correct = true,
 	bool round = false,
-	real roundcoeff = defaultSyRR
+	real roundcoeff = defaultSyRPC
     ... path[] paths
 ) { return union(paths, correct, round, roundcoeff); }
 
@@ -588,9 +591,7 @@ path randompath (pair[] controlpoints, real angle)
 {
 	if (controlpoints.length < 2) return nullpath;
 
-    // bool cyclic = controlpoints[0] == controlpoints[controlpoints.length-1];
-
-	pair outdir = randomdir(controlpoints[1]-controlpoints[/* cyclic ? controlpoints.length-2 :  */0], angle);
+	pair outdir = randomdir(controlpoints[1]-controlpoints[0], angle);
 	path res = controlpoints[0];
 
 	for (int i = 1; i < controlpoints.length-1; ++i)
@@ -600,7 +601,7 @@ path randompath (pair[] controlpoints, real angle)
 		outdir = indir;
 	}
     
-    pair indir = randomdir(controlpoints[/* cyclic ? 1 :  */(controlpoints.length-1)]-controlpoints[controlpoints.length-2], angle);
+    pair indir = randomdir(controlpoints[(controlpoints.length-1)]-controlpoints[controlpoints.length-2], angle);
     
 	return res{outdir}..{indir}controlpoints[controlpoints.length-1];
 }

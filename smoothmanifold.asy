@@ -219,8 +219,8 @@ path randomconcave ()
 // -- Current values (can be changed) -- //
 
 // [Sy]stem
-bool currentSyRL = false; // [R]epeat [L]abels
-bool currentSyID = true; // [I]nsert [D]ollars
+private bool currentSyRL = false; // [R]epeat [L]abels
+private bool currentSyID = true; // [I]nsert [D]ollars
 
 // [Se]ction
 private real[] currentsection = copy(defaultsection);
@@ -230,38 +230,38 @@ private real currentIHSA = defaultSeIHSA;
 private real currentSeEP = defaultSeEP;
 private real currentSeMLR = defaultSeMLR;
 private real currentSeML; // [M]aximum [L]ength
-bool currentSeAS = false; // [A]void [S]ubsets
+private bool currentSeAS = false; // [A]void [S]ubsets
 
 // [Sm]ooth
-bool currentSmIL = true; // [I]nfer [L]abels
-bool currentSmSS = false; // [S]hift [S]ubsets
+private bool currentSmIL = true; // [I]nfer [L]abels
+private bool currentSmSS = false; // [S]hift [S]ubsets
 
 // [Dr]awing
-real currentDrGL = defaultDrGL;
-real currentDrSePS = defaultDrSePS;
-real currentDrElPW = defaultDrElPW;
-pen currentDrHP = defaultDrExP;
-real currentDrShS = defaultDrShS;
-real currentDrDPS = defaultDrDPS;
-real currentDrDPO = defaultDrDPO;
-real currentDrDO = defaultDrDO;
-real currentDrSPM = defaultDrSPM;
-pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
-int currentDrM = 0; // [M]ode
-bool currentDrUO = true; // [U]se [O]pacity
-bool currentDrDD = true; // [D]raw [D]ashes
-bool currentDrH = false; // [H]elp
-bool currentDrDS = false; // [D]raw [S]hade
-bool currentDrIC = false; // [I]nvert [C]olors
-bool currentDrF = true; // [F]ill
-bool currentDrFS = false; // [F]ill [S]ubsets
-bool currentDrDC = true; // [D]raw [C]ontour
-bool currentDrO = false; // [O]verlap
-bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
-bool currentDrDN = false; // [D]raw [N]ow
+private real currentDrGL = defaultDrGL;
+private real currentDrSePS = defaultDrSePS;
+private real currentDrElPW = defaultDrElPW;
+private pen currentDrHP = defaultDrExP;
+private real currentDrShS = defaultDrShS;
+private real currentDrDPS = defaultDrDPS;
+private real currentDrDPO = defaultDrDPO;
+private real currentDrDO = defaultDrDO;
+private real currentDrSPM = defaultDrSPM;
+private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
+private int currentDrM = 0; // [M]ode
+private bool currentDrUO = true; // [U]se [O]pacity
+private bool currentDrDD = true; // [D]raw [D]ashes
+private bool currentDrH = false; // [H]elp
+private bool currentDrDS = false; // [D]raw [S]hade
+private bool currentDrIC = false; // [I]nvert [C]olors
+private bool currentDrF = true; // [F]ill
+private bool currentDrFS = false; // [F]ill [S]ubsets
+private bool currentDrDC = true; // [D]raw [C]ontour
+private bool currentDrO = false; // [O]verlap
+private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
+private bool currentDrDN = false; // [D]raw [N]ow
 
 // [Ar]rows
-real currentArM = defaultArM;
+private real currentArM = defaultArM;
 
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
@@ -280,7 +280,7 @@ arrowbar simples = Arrows(SimpleHead);
 
 // -- Auxiliary utilities -- //
 
-import pathmethods;
+include pathmethods;
 
 // -- System functions -- //
 
@@ -291,7 +291,15 @@ void halt (string msg)
     abort("");
 }
 
-bool checksection (real[] section)
+string mode (int md)
+{
+	if (md == 0) return "free";
+	if (md == 1) return "cartesian";
+	if (md == 2) return "plain";
+	return "";
+}
+
+private bool checksection (real[] section)
 {
 	if (section.length > 1 && section[0] == 0 && section[1] == 0)
 	{ return false; }
@@ -302,14 +310,6 @@ bool checksection (real[] section)
 	return true;
 }
 
-string mode (int md)
-{
-	if (md == 0) return "free";
-	if (md == 1) return "cartesian";
-	if (md == 2) return "plain";
-	return "";
-}
-
 private real sectionsymmetryvalue (pair p1p2, pair dir1, pair dir2)
 { return abs(dot(dir2, p1p2)+dot(p1p2, dir1)); }
 
@@ -318,7 +318,7 @@ private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
     return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
 }
 
-pen inverse (pen p)
+private pen inverse (pen p)
 {
 	real[] colors = colors(p);
 	if (colors.length == 1) return gray(1-colors[0])+linewidth(p);
@@ -326,34 +326,34 @@ pen inverse (pen p)
 	return invisible;
 }
 
-pen sectionpen (pen p)
+private pen sectionpen (pen p)
 {
     if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
     else return currentDrSeOP;
 }
 
-pen nextsubsetpen (pen p, real scale)
+private pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
 
-pen dashpenscale (pen p)
+private pen dashpenscale (pen p)
 { return inverse(currentDrDPS*inverse(p))+dashed; }
 
-pen dashpenopacity (pen p)
+private pen dashpenopacity (pen p)
 { return p+dashed+opacity(currentDrDPO); }
 
-pen dashpen (pen p)
+private pen dashpen (pen p)
 {
     if (currentDrUO) return dashpenopacity(p);
     else return dashpenscale(p);
 }
 
-pen shadepen (pen p)
+private pen shadepen (pen p)
 { return currentDrShS*p; }
 
-pen elementpen (pen p)
+private pen elementpen (pen p)
 { return p + linewidth(currentDrElPW); }
 
-pen underpen (pen p)
+private pen underpen (pen p)
 { return dashpen(p); }
 
 // -- User setting functions -- //
@@ -457,6 +457,8 @@ void defaults ()
     currentDrDPO = defaultDrDPO;
 	currentDrDO = defaultDrDO;
 	currentDrSPM = defaultDrSPM;
+	currentSyRPC = defaultSyRPC;
+    currentSyRPR = defaultSyRPR;
 }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
@@ -515,7 +517,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 	return sections;
 }
 
-path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
+private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
 	if (length(viewdir) == 0) return new path[]{p1--p2};
@@ -592,7 +594,7 @@ path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 	return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
 
-pair[][] sectionparams (path g, path h, int n, real r, int p)
+private pair[][] sectionparams (path g, path h, int n, real r, int p)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
     pair[] pres;
@@ -696,6 +698,7 @@ pair[][] sectionparams (path g, path h, int n, real r, int p)
 usepackage("amssymb"); // LaTeX package for mathematical symbols
 
 struct element
+// An 'element' of a set, in a set-theoretical sense.
 {
 	pair pos;
 	string label;
@@ -728,10 +731,8 @@ element operator cast (pair a)
 bool operator == (element a, element b)
 { return a.pos == b.pos; }
 
-// private void elementadjust (element elt, pair shift, real scale, real rotate, pair point)
-// { elt.pos = srap(scale, rotate, point)*shift(shift)*elt.pos; }
-
 struct hole
+// A cyclic area 'cut out' of a set.
 {
     path contour;
     pair center;
@@ -1107,6 +1108,20 @@ struct smooth
     bool isderivative;
 
     static smooth[] cache;
+    
+    private static bool repeats (string label)
+    {
+        if (label == "") return false;
+        for (int i = 0; i < cache.length; ++i)
+        {
+            if (cache[i].label == label) return true;
+            for (int j = 0; j < cache[i].subsets.length; ++j)
+            { if (cache[i].subsets[j].label == label) return true; }
+            for (int j = 0; j < cache[i].elements.length; ++j)
+            { if (cache[i].elements[j].label == label) return true; }
+        }
+        return false;
+    }
 
     // -- Supporting methods -- //
 
@@ -1475,6 +1490,9 @@ struct smooth
 		bool unit = true
     )
 	{
+        if (!currentSyRL && repeats(elt.label))
+        { halt("Could not add element: label \""+elt.label+"\" already assigned. [ addelement() ]"); }
+        
 		if (unit) elt.pos = srap(this.scale, 0, this.center)*shift(this.shift)*elt.pos;
 
 		if (!this.inside(elt.pos))
@@ -1498,6 +1516,9 @@ struct smooth
 		bool unit = true
     )
     {
+        if (!currentSyRL && repeats(elt.label))
+        { halt("Could not set element: label \""+elt.label+"\" already assigned. [ setelement() ]"); }
+        
         if (unit) elt.pos = srap(this.scale, this.rotate, this.center)*shift(this.shift)*elt.pos; 
         this.elements[ind] = elt;
         return this;
@@ -1509,7 +1530,13 @@ struct smooth
 		string label = defaultSyDS,
 		pair labelalign = defaultSyDP,
 		bool unit = true
-    ) { this.elements[index].set(pos, label, labelalign); return this; }
+    )
+    {
+        if (!currentSyRL && repeats(label))
+        { halt("Could not set element: label \""+label+"\" already assigned. [ setelement() ]"); }
+        
+        this.elements[index].set(pos, label, labelalign); return this;
+    }
 
     smooth setelement (
         string destlabel,
@@ -1523,7 +1550,7 @@ struct smooth
 		string label = defaultSyDS,
 		pair labelalign = defaultSyDP,
 		bool unit = true
-    ) { this.elements[findlocalelementindex(destlabel)].set(pos, label, labelalign); return this; }
+    ) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
 
     smooth rmelement (int index)
     {
@@ -1746,6 +1773,9 @@ struct smooth
 		bool unit = true
     )
 	{
+        if (!currentSyRL && repeats(sb.label))
+        { halt("Could not add subset: label \""+sb.label+"\" already assigned. [ addsubset() ]"); }
+        
 		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
 		
 		if (index == -1)
@@ -2137,6 +2167,7 @@ struct smooth
 		}
 
 		path newcontour = shift(shift)*srap(scale, rotate, point)*cursb.contour;
+
 		if (!insidepath(pcontour, newcontour))
 		{
 			currentPrDP.push(newcontour);
@@ -2797,7 +2828,7 @@ smooth[] intersection (
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
 ) // Constructs the intersection of two given smooth objects.
 {
@@ -2977,7 +3008,7 @@ smooth[] intersection (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
 )
 {
@@ -3005,7 +3036,7 @@ smooth[] intersection (
 smooth[] intersection (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3017,7 +3048,7 @@ smooth intersect (
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
 ) // an alternative to `intersection` that only returns one smooth object.
 {
@@ -3033,7 +3064,7 @@ smooth intersect (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
 )
 {
@@ -3048,7 +3079,7 @@ smooth intersect (
 smooth intersect (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     bool addsubsets = false
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3060,7 +3091,7 @@ smooth[] union (
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR
+    real roundcoeff = currentSyRPC
 ) // Constructs the union of two given smooth objects.
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
@@ -3233,7 +3264,7 @@ smooth[] union (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR
+    real roundcoeff = currentSyRPC
 )
 {
 	sms = sequence(new smooth (int i){return sms[i];}, sms.length);
@@ -3266,7 +3297,7 @@ smooth[] union (
 smooth[] union (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR
+    real roundcoeff = currentSyRPC
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff); }
 
@@ -3274,7 +3305,7 @@ smooth unite (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR
+    real roundcoeff = currentSyRPC
 ) // An alternative to `union` that only returns one smooth object, if there is only one.
 {
     smooth[] union = union(sms, keepdata, round, roundcoeff);
@@ -3286,7 +3317,7 @@ smooth unite (
 smooth unite (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR ... smooth[] sms
+    real roundcoeff = currentSyRPC ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff)[0]; }
 
 smooth tangentspace (
@@ -3776,7 +3807,8 @@ void draw (
     for (int i = 0; i < sm.elements.length; ++i)
     {
         element elt = sm.elements[i];
-        dot(pic = pic, elt.pos, L = Label((currentSyID ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign), elementpen);
+        if (elt.label != "") label(pic = pic, position = elt.pos, L = Label((currentSyID ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign));
+        dot(pic = pic, elt.pos, elementpen);
     }
 	if (sm.label != "") label(intersection(sm.contour, sm.center, sm.labeldir), (currentSyID ? ("$"+sm.label+"$") : sm.label), align = sm.labelalign);
     for (int i = 0; i < sm.subsets.length; ++i)
@@ -3868,7 +3900,7 @@ smooth[] drawintersect (
     pair labelalign = defaultSyDP,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     pair shift = (0,0),
         pen contourpen = currentpen,
         pen smoothfill = smoothcolor,
@@ -3922,7 +3954,7 @@ smooth[] drawintersect (
     pair labelalign = defaultSyDP,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     pair shift = (0,0),
         pen contourpen = currentpen,
         pen smoothfill = smoothcolor,
@@ -3973,7 +4005,7 @@ smooth[] drawintersect (
     pair labelalign = defaultSyDP,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRR,
+    real roundcoeff = currentSyRPC,
     pair shift = (0,0),
         pen contourpen = currentpen,
         pen smoothfill = smoothcolor,
@@ -4154,7 +4186,7 @@ void drawmapping (
     real margin2 = currentArM
 )
 {
-    bool onself = (sm2 == null || sm2 == sm1) && index1 == index2;
+    bool onself = sm2 == sm1 && index1 == index2;
 
 	pair center1 = sm1.elements[index1].pos;
 	pair center2 = onself ? center1 : sm2.elements[index2].pos;
@@ -4203,7 +4235,7 @@ void drawmapping (
     int index2;
     if (destlabel1 == destlabel2)
     {
-        sm2 = null;
+        sm2 = sm1;
         index2 = index1;
     }
     else
@@ -4218,27 +4250,88 @@ void drawmapping (
 
 void drawpath (
     picture pic = currentpicture,
-    smooth sm,
+    smooth sm1,
     int index1,
+    smooth sm2 = sm1,
     int index2 = index1,
-    real angle = defaultSyRPA,
+    real range = currentSyRPR,
+    real angle = defaultSyDN,
+    real radius = defaultSyDN,
+    bool reverse = false,
+    pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    pair[] points = {},
     bool overlap = currentDrO,
     bool drawnow = currentDrDN
 )
 {
-    if (index1 == index2)
-    { halt("Could not draw path: elements must be different. Use `drawloop()` instead. [ drawpath() ]"); }
+    bool onself = sm2 == sm1 && index1 == index2;
+
+    path gs;
+
+    if (points.length < 2 && onself)
+    {
+        element elt = sm1.elements[index1];
+
+        if (angle == defaultSyDN)
+        { angle = abs(elt.labelalign) == 0 ? 90 : degrees(-elt.labelalign); }
+        if (radius == defaultSyDN)
+        { radius = .05*sm1.scale; }
+
+        pair dir1 = randomdir(dir(angle-range), range);
+        pair dir2 = -randomdir(dir(angle+range), range);
+        
+        gs = elt.pos{dir1}..(elt.pos+2*radius*(1+.1*unitrand())*dir(angle))..{dir2}elt.pos;
+    }
+    else
+    {
+        pair center1 = sm1.elements[index1].pos;
+        pair center2 = sm2.elements[index2].pos;
+
+        points.insert(0, center1);
+        points.push(center2);
+
+        gs = randompath(points, range);
+    }
+
+    if (reverse) gs = reverse(gs);
     
-    pair center1 = sm.elements[index1].pos;
-    pair center2 = sm.elements[index2].pos;
+    fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, null, false, false, 0, false, false);
+}
 
-    points.insert(0, center1);
-    points.push(center2);
+void drawpath (
+    picture pic = currentpicture,
+    string destlabel1,
+    string destlabel2 = destlabel1,
+    real range = currentSyRPR,
+    real angle = defaultSyDN,
+    real radius = defaultSyDN,
+    bool reverse = false,
+    pair[] points = {},
+    Label L = "",
+    pen p = currentpen,
+    bool overlap = currentDrO,
+    bool drawnow = currentDrDN
+)
+{
+    int[] indices1 = findelementindex(destlabel1);
+    smooth sm1 = smooth.cache[indices1[0]];
+    int index1 = indices1[1];
+    smooth sm2;
+    int index2;
+    if (destlabel1 == destlabel2)
+    {
+        sm2 = sm1;
+        index2 = index1;
+    }
+    else
+    {
+        int[] indices2 = findelementindex(destlabel2);
+        sm2 = smooth.cache[indices2[0]];
+        index2 = indices2[1];
+    }
 
-    fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = randompath(points, angle), L = L, p = p, null, false, false, 0, false, false);
+    drawpath(pic, sm1, index1, sm2, index2, range = range, angle = angle, radius = radius, reverse = reverse, points, L, p, overlap, drawnow);
 }
 
 void drawdeferred (

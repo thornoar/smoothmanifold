@@ -29,7 +29,7 @@ private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 private bool currentAnC = true; // [C]lose
 
-import smoothmanifold;
+include smoothmanifold;
 
 void linux (string cmd)
 {
