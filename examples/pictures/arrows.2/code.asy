@@ -9,9 +9,9 @@ smpar(dash = false, gaplength = .2, arrowmargin = .12);
 pair viewdir = dir(-50);
 
 smooth sm1 = samplesmooth(1,2).move(scale = 2).view(viewdir);
-sm1.setlabel(0, "U", labeldir = S);
-sm1.setlabel(1, "V", labeldir = dir(70));
-sm1.setlabel(2, "U \cap V", labeldir = dir(110), labelalign = (-1,1.5));
+sm1.setlabel(0, "U", dir = S);
+sm1.setlabel(1, "V", dir = dir(70));
+sm1.setlabel(2, "U \cap V", dir = dir(110), align = (-1,1.5));
 smooth sm2 = samplesmooth(0,2).move(shift = (5,-.2), scale = 1.2).setlabel(0, "W", E+3*N).view(viewdir);
 
 draw(sm1);

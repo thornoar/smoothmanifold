@@ -93,6 +93,7 @@ pair[] concat (pair[][] a)
 path[] concat (path[][] a)
 // Same as the standard Asymptote `concat` function, but with more than two arguments.
 {
+    if (a.length == 0) return new path[];
     if (a.length == 1) return a[0];
     path[] b = a.pop();
     return concat(concat(a), b);

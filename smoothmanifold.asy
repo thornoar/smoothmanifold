@@ -714,21 +714,12 @@ struct element
 	string label;
 	pair labelalign;
 
-	void operator init (pair pos, string label = "", pair labelalign = S)
+	void operator init (pair pos, string label, pair labelalign)
 	{
 		this.pos = pos;
 		this.label = label;
 		this.labelalign = labelalign;
 	}
-
-    element set (pair pos, string label, pair labelalign)
-    {
-        this.pos = pos == defaultSyDP ? this.pos : pos;
-        this.label = label == defaultSyDS ? this.label : label;
-        this.labelalign = labelalign == defaultSyDP ? this.labelalign : labelalign;
-
-        return this;
-    }
 
     element move (pair shift, real scale, real rotate, pair point, bool movelabel)
     {
@@ -744,12 +735,6 @@ struct element
 
 pair operator cast (element elt)
 { return elt.pos; }
-
-element operator cast (pair a)
-{ return element(a); }
-
-bool operator == (element a, element b)
-{ return a.pos == b.pos; }
 
 struct hole
 // A cyclic area 'cut out' of a set.
@@ -780,15 +765,15 @@ struct hole
         }
         else
         {
-            path pseudocontour = shift(shift)*srap(scale, rotate, point)*contour;
-            this.contour = (!clockwise(pseudocontour)) ? reverse(pseudocontour) : pseudocontour;
-            this.center = shift(shift)*center;
+            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
+            if (!clockwise(this.contour)) this.contour = reverse(this.contour);
+            this.center = shift(shift)*srap(scale, rotate, point)*center;
             this.scnumber = scnumber;
             this.sections = new real[][];
             for (int i = 0; i < sections.length; ++i)
             {
                 real[] arr = sections[i];
-                while (arr.length < currentsection.length) {arr.push(currentsection[arr.length]);}
+                while (arr.length < currentsection.length) { arr.push(currentsection[arr.length]); }
                 this.sections.push(arr);
             }
         }
@@ -823,9 +808,6 @@ struct hole
     }
 }
 
-bool operator == (hole a, hole b)
-{ return a.contour == b.contour; }
-
 private hole[] holecopy (hole[] holes)
 { return sequence(new hole (int i){return holes[i].copy();}, holes.length); }
 
@@ -856,34 +838,6 @@ struct subset
 	subset setcenter (pair center)
     { this.center = center; return this; }
 
-    subset setcontour (path contour)
-    {
-        
-    }
-
-    subset setlabel (
-        string label = defaultSyDS,
-		pair labeldir = defaultSyDP,
-		pair labelalign = defaultSyDP,
-		bool keepalign = false
-    )
-    {
-        this.label = label == defaultSyDS ? this.label : label;
-        this.labeldir = labeldir == defaultSyDP ? this.labeldir : labeldir;
-        this.labelalign =
-            (keepalign) ?
-                this.labelalign :
-                (labelalign == defaultSyDP) ?
-                    (
-                        abs(this.labeldir) == 0 ?
-                            (0,0) :
-                            rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir))
-                    ) :
-                    labelalign;
-
-        return this;
-    }
-
     subset move (
         pair shift = (0,0),
 		real scale = 1,
@@ -894,7 +848,7 @@ struct subset
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
 		this.center = shift(shift)*srap(scale, rotate, point)*this.center;
-		if (movelabel) this.setlabel(labeldir = rotate(rotate)*this.labeldir); else this.setlabel();
+		if (movelabel) this.labeldir = rotate(rotate)*this.labeldir;
 
         return this;
     }
@@ -904,9 +858,8 @@ struct subset
 		pair center = center(contour),
 		string label = "",
 		pair labeldir = defaultSyDP,
-		pair labelalign = S,
+		pair labelalign = defaultSyDP,
 		int layer = 0,
-		int[] subsets = {},
 		bool isderivative = false,
 		bool isonboundary = false,
 		pair shift = (0,0),
@@ -924,19 +877,18 @@ struct subset
             this.labeldir = labeldir;
             this.labelalign = labelalign;
 			this.layer = layer;
-			this.subsets = subsets;
 			this.isderivative = isderivative;
 			this.isonboundary = isonboundary;
         }
         else
         {
-            this.contour = (!clockwise(contour)) ? shift(shift)*srap(scale, rotate, point)*reverse(contour)             : shift(shift)*srap(scale, rotate, point)*contour;
+            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
+            if (!clockwise(this.contour)) this.contour = reverse(this.contour);
             this.center = shift(shift)*srap(scale, rotate, point)*center;
             this.label = label;
             this.labeldir = labeldir;
-            this.labelalign = labelalign == defaultSyDP ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
+            this.labelalign = labelalign;
 			this.layer = layer;
-			this.subsets = new int[]{};
 			this.isderivative = isderivative;
 			this.isonboundary = isonboundary;
         }
@@ -944,7 +896,7 @@ struct subset
     
 	subset copy ()
     {
-        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, copy(this.subsets), this.isderivative, copy = true);
+        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, this.isderivative, this.isonboundary, copy = true);
     }
 
     subset replicate (subset s)
@@ -957,15 +909,14 @@ struct subset
 		this.layer = s.layer;
 		this.subsets = copy(s.subsets);
 		this.isderivative = s.isderivative;
+		this.isonboundary = s.isonboundary;
         
         return this;
     }
 }
 
-bool operator == (subset a, subset b) { return a.contour == b.contour; }
-
-subset[] subsetcopy (subset[] subsets)
-{ return sequence(new subset (int i){return subsets[i].copy();}, subsets.length); }
+private subset[] subsetcopy (subset[] subsets)
+{ return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
 
 private void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
 { s.move(shift, scale, rotate, shift(-shift) * point, true); }
@@ -1228,7 +1179,6 @@ struct smooth
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
         this.center = shift(shift)*rotate(rotate, point)*this.center;
         this.labeldir = rotate(rotate)*this.labeldir;
-        this.labelalign = rotate(rotate)*this.labelalign;
 		
 		for (int i = 0; i < this.holes.length; ++i)
         { this.holes[i].move(shift, scale, rotate, point, true); }
@@ -1245,7 +1195,6 @@ struct smooth
         pair center = this.center;
         this.simplemove(shift = -center);
         this.contour = scale(s,1)*this.contour;
-		this.labelalign = rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir));
         
 		for (int i = 0; i < this.holes.length; ++i)
         {
@@ -1264,7 +1213,7 @@ struct smooth
 			subset sb = this.subsets[i];
 			sb.contour = scale(s,1) * sb.contour;
 			sb.center = scale(s,1) * sb.center;
-			sb.setlabel();
+            sb.labeldir = scale(1,s) * sb.labeldir;
 		}
 
         this.simplemove(shift = center);
@@ -1275,7 +1224,6 @@ struct smooth
         pair center = this.center;
         this.simplemove(shift = -center);
         this.contour = scale(1,s)*this.contour;
-		this.labelalign = rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir));
         
 		for (int i = 0; i < this.holes.length; ++i)
         {
@@ -1294,7 +1242,7 @@ struct smooth
 			subset sb = this.subsets[i];
 			sb.contour = scale(1,s) * sb.contour;
 			sb.center = scale(1,s) * sb.center;
-			sb.setlabel();
+            sb.labeldir = scale(1,s) * sb.labeldir;
 		}
         
 		this.simplemove(shift = center);
@@ -1472,9 +1420,8 @@ struct smooth
     smooth setlabel (
         int index = -1,
         string label = defaultSyDS,
-        pair labeldir = defaultSyDP,
-        pair labelalign = defaultSyDP,
-        bool keepalign = false
+        pair dir = defaultSyDP,
+        pair align = defaultSyDP
     ) // Controls the label of the object, or one of its subsets under `indexpath`.
     {
         if (!currentSyRL)
@@ -1492,21 +1439,17 @@ struct smooth
 
 		if (index == -1)
 		{
-			this.label = label == defaultSyDS ? this.label : label;
-			this.labeldir = labeldir == defaultSyDP ? this.labeldir : labeldir;
-            this.labelalign =
-                (keepalign) ?
-                    this.labelalign :
-                    (labelalign == defaultSyDP) ?
-                        (
-                            abs(this.labeldir) == 0 ?
-                                (0,0) :
-                                rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir))
-                        ) :
-                        labelalign;
+            if (label != defaultSyDS) this.label = label;
+            if (dir != defaultSyDP) this.labeldir = dir;
+            if (align != defaultSyDP) this.labelalign = align;
 		}
 		else
-		{ this.subsets[index].setlabel(label, labeldir, labelalign, keepalign); }
+		{
+            subset sb = this.subsets[index];
+            if (label != defaultSyDS) sb.label = label;
+            if (dir != defaultSyDP) sb.labeldir = dir;
+            if (align != defaultSyDP) sb.labelalign = align;
+        }
 
         return this;
     }
@@ -1514,10 +1457,9 @@ struct smooth
     smooth setlabel (
 		string destlabel,
         string label,
-        pair labeldir = defaultSyDP,
-        pair labelalign = defaultSyDP,
-        bool keepalign = false
-    ) { return this.setlabel(findlocalsubsetindex(destlabel), label, labeldir, labelalign, keepalign); }
+        pair dir = defaultSyDP,
+        pair align = defaultSyDP
+    ) { return this.setlabel(findlocalsubsetindex(destlabel), label, dir, align); }
 
     // -- Methods for manipulating elements -- //
 
@@ -1541,10 +1483,10 @@ struct smooth
 	smooth addelement (
         pair pos,
 		string label = "",
-		pair labelalign = S,
+		pair align = S,
 		bool unit = true
     )
-	{ return this.addelement(element(pos, label, labelalign), unit); }
+	{ return this.addelement(element(pos, label, align), unit); }
 
     smooth setelement (
         int ind,
@@ -1571,7 +1513,15 @@ struct smooth
         if (!currentSyRL && repeats(label))
         { halt("Could not set element: label \""+label+"\" already assigned. [ setelement() ]"); }
         
-        this.elements[index].set(pos, label, labelalign); return this;
+        if (pos != defaultSyDP)
+        {
+            if (unit) pos = srap(this.scale, this.rotate, this.center)*shift(this.shift)*pos;
+            this.elements[index].pos = pos;
+        }
+        if (label != defaultSyDS) this.elements[index].label = label;
+        if (labelalign != defaultSyDP) this.elements[index].labelalign = labelalign;
+
+        return this;
     }
 
     smooth setelement (
@@ -1631,9 +1581,16 @@ struct smooth
 			}
 		}
 		path[][] diff;
+        bool[] intersects;
 		bool abort = false;
 		for (int i = 0; i < this.subsets.length; ++i)
 		{
+            intersects.push(intersect(this.subsets[i].contour, hl.contour).length > 0);
+            if (!intersects[i])
+            {
+                diff.push(new path[]);
+                continue;
+            }
 			diff.push(difference(this.subsets[i].contour, hl.contour));
 			if (diff[i].length != 1)
 			{
@@ -1651,9 +1608,11 @@ struct smooth
 		{
 			for (int i = 0; i < this.subsets.length; ++i)
 			{
+                if (!intersects[i]) continue;
 				this.subsets[i].contour = diff[i][0];
 				this.subsets[i].setcenter(center(this.subsets[i].contour));
-				this.subsets[i].setlabel();
+                this.subsets[i].isonboundary = true;
+				// this.subsets[i].setlabel();
 			}
 		}
         pair holedir = (hl.center == this.center) ? (-1,0) : unit(hl.center - this.center);
@@ -1808,7 +1767,8 @@ struct smooth
 		int index = -1,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true
+		bool unit = true,
+        bool checkintersection = true
     )
 	{
         if (!currentSyRL && repeats(sb.label))
@@ -1870,31 +1830,53 @@ struct smooth
 			range = subsetgetlayer(this.subsets, sequence(this.subsets.length), 0);
 		}
 
-		if (!insidepath(pcontour, sb.contour))
-		{
-            if (clip && intersect(pcontour, sb.contour).length > 0)
+        if (checkintersection && !sub)
+        {
+            bool meet = false;
+
+            if (!insidepath(pcontour, sb.contour))
             {
-                sb.contour = intersection(pcontour, sb.contour)[0];
-                sb.isonboundary = true;
-                return this.addsubset(sb, index = -2, inferlabels, false, false);
+                if (clip && meet(pcontour, sb.contour))
+                {
+                    sb.contour = intersection(pcontour, sb.contour)[0];
+                    sb.isonboundary = true;
+                    meet = true;
+                }
+                else
+                {
+                    currentPrDP.push(sb.contour);
+                    write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
+                    return this;
+                }
             }
-            
-			currentPrDP.push(sb.contour);
-			write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
-			return this;
-		}
-		if (!sub)
-		{
+
 			for (int i = 0; i < this.holes.length; ++i)
 			{
-				if (meet(this.holes[i].contour, sb.contour) || inside(this.holes[i].contour, inside(sb.contour)))
+                if (meet(this.holes[i].contour, sb.contour))
+                {
+                    if (clip)
+                    {
+                        sb.contour = difference(sb.contour, this.holes[i].contour)[0];
+                        sb.isonboundary = true;
+                        meet = true;
+                    }
+                    else
+                    {
+                        currentPrDP.push(sb.contour);
+                        write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
+                        return this;
+                    }
+                }
+				else if (inside(this.holes[i].contour, inside(sb.contour)))
 				{
 					currentPrDP.push(sb.contour);
-					write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
+					write("> ? Could not add subset: contour contained in a hole. It will be drawn in red on the final picture. [ addsubset() ]");
 					return this;
 				}
 			}
-		}
+
+            if (meet) return this.addsubset(sb, index = -2, inferlabels, false, false, false);
+        }
 
         for (int i = 0; i < range.length; ++i)
         {
@@ -1997,7 +1979,7 @@ struct smooth
         pair point = center(contour),
         string label = "",
         pair labeldir = defaultSyDP,
-        pair labelalign = S,
+        pair labelalign = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
         bool unit = true
@@ -2023,7 +2005,7 @@ struct smooth
         pair point = center(contour),
         string label = "",
         pair labeldir = defaultSyDP,
-        pair labelalign = S,
+        pair labelalign = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
         bool unit = true
@@ -2343,7 +2325,6 @@ struct smooth
         pair viewdir = (0,0),
         bool distort = true,
         smooth[] attached = {},
-        // bool unit = true,
         bool copy = false,
         bool shiftsubsets = currentSmSS,
         bool isderivative = false
@@ -2355,7 +2336,7 @@ struct smooth
             this.center = center;
             this.label = label;
             this.labeldir = labeldir;
-            this.labelalign = labelalign == defaultSyDP ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
+            this.labelalign = labelalign;
             this.holes = holecopy(holes);
             this.subsets = subsetcopy(subsets);
             this.hratios = hratios;
@@ -2382,7 +2363,7 @@ struct smooth
             this.center = shift(shift)*center;
             this.label = label;
             this.labeldir = labeldir;
-            this.labelalign = labelalign == defaultSyDP ? rotate(90)*dir(this.contour, intersectiontime(this.contour, this.center, this.labeldir)) : labelalign;
+            this.labelalign = labelalign;
 
             for (int i = 0; i < holes.length; ++i)
             { addhole(holes[i].move(shift, scale, rotate, center, true), unit = false); }
@@ -2538,7 +2519,7 @@ element operator cast (string label)
 void print (smooth sm)
 {
     write("--- Smooth object ---");
-    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + "  |  DIRECTION: ~" + (string)round(sm.labeldir, 2) + "  |  ALIGN: ~" + (string)round(sm.labelalign, 2));
+    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + "  |  DIRECTION: ~" + (string)round(sm.labeldir, 2) + "  |  ALIGN: ~" + (sm.labelalign == defaultSyDP ? "automatic" : (string)round(sm.labelalign, 2)));
     write("CENTER: ~" + (string)round(sm.center, 2));
     write("VIEW: ~" + (string)round(sm.viewdir, 2));
     write("HOLES: " + (string)sm.holes.length);
@@ -2878,7 +2859,7 @@ smooth rn (
         contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
         label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
         labeldir = (1,1),
-        labelalign = (-1,-1.5),
+        labelalign = (-1.5,-1.5),
         hratios = new real[]{.4},
         vratios = new real[]{.4},
         shift = shift,
@@ -2962,7 +2943,6 @@ smooth[] intersection (
 			continue;
 		}
 		subsets1[i].contour = curcontours[0];
-		subsets1[i].setlabel();
         if (intersect(subsets1[i].contour, sm2.contour).length > 0) subsets1[i].isonboundary = true;
 	}
 	for (int i = 0; i < subsets2.length; ++i)
@@ -2981,7 +2961,6 @@ smooth[] intersection (
 			continue;
 		}
 		subsets2[i].contour = curcontours[0];
-		subsets2[i].setlabel();
         if (intersect(subsets2[i].contour, sm1.contour).length > 0) subsets2[i].isonboundary = true;
 	}
 
@@ -3045,7 +3024,7 @@ smooth[] intersection (
 
 			if (subsets2inside[ind2] || insidepath(cursm.contour, subsets2[ind2].contour))
 			{
-				cursm.addsubset(subsets2[ind2], ind, unit = false);
+				cursm.addsubset(subsets2[ind2], ind, unit = false, checkintersection = false);
 				subsetsadded[ind2] = true;
 
 				for (int i = 0; i < subsets2[ind2].subsets.length; ++i)
@@ -3387,22 +3366,25 @@ smooth unite (
 smooth unite (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC ... smooth[] sms
+    real roundcoeff = currentSyRPC
+    ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff)[0]; }
 
 smooth tangentspace (
     smooth sm,
     int ind = -1,
-    pair center = (ind == -1) ? sm.center : sm.holes[ind].center,
+    pair center = defaultSyDP,
     real angle,
     real ratio,
     real size = 1,
     real rotate = 45,
-    string eltlabel = "x"
+    string eltlabel = "x",
+    pair eltlabelalign = S
 ) // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
 {
 	if (!inside(-1, sm.holes.length-1, ind))
 	{ halt("Could not build tangent space: index out of bounds. [ tangentspace() ]"); }
+    if (center == defaultSyDP) center = (ind == -1) ? sm.center : sm.holes[ind].center;
 	if (!sm.inside(center))
 	{ halt("Could not build tangent space: center out of bouds [ tangentspace() ]"); }
 	if (!inside(0, 1, ratio))
@@ -3436,7 +3418,7 @@ smooth tangentspace (
         labeldir = dscale(scale = incline, dir = sgn(ratio) * dir) * rotate(rotate) * N
 	).view(sm.viewdir);
 	sm.attach(res);
-	sm.addelement(element(x, eltlabel));
+	sm.addelement(element(x, eltlabel, eltlabelalign));
 
 	return res;
 }
@@ -3472,8 +3454,8 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
             path[] newg;
             bool[] newunder;
             if (!gscyclic) covermode = 2;
-            bool gjcyclic = (g.length == 1);
-    
+            bool gjcyclic = (g.length == 1) && cyclic(g[0]);
+
             for (int j = 0; j < g.length; ++j)
             {
                 real[] aligntest = intersect(g[j], gs);
@@ -3523,11 +3505,17 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
                     cuttimes.push(t1);
                     cuttimes.push(t2);
                 }
-                if (t2 < 0) cuttimes.pop();
+
+                if (t2 < 0)
+                {
+                    if (gjcyclic) cuttimes[0] = abs(t2);
+                    cuttimes.pop();
+                }
                 else if (t3 >= 0)
                 {
                     if (t3 <= t2) cuttimes.pop();
-                    else cuttimes.insert(cuttimes.length-1, t3);
+                    // else cuttimes.insert(cuttimes.length-1, t3);
+                    else cuttimes.push(t3);
                 }
                 else if (cuttimes.length % 2 == 1)
                 {
@@ -3883,7 +3871,18 @@ void draw (
 	if (sm.label != "") 
     {
         pair pos = (abs(sm.labeldir) == 0) ? sm.center : intersection(sm.contour, sm.center, sm.labeldir);
-        label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sm.label+"$") : sm.label), align = sm.labelalign));
+        pair align = sm.labelalign;
+        if (sm.labelalign == defaultSyDP)
+        {
+            if (abs(sm.labeldir) == 0) align = (0,0);
+            else align = rotate(90)*dir(sm.contour, intersectiontime(sm.contour, sm.center, sm.labeldir));
+        }
+        label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sm.label+"$") : sm.label), align = align));
+        if (help && abs(sm.labeldir) > 0)
+        {
+            draw(pic = pic, sm.center -- pos, purple+defaultDrExP);
+            draw(pic = pic, pos -- pos+sm.scale*defaultSmEAL*align, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+        }
     }
 
     for (int i = 0; i < sm.subsets.length; ++i)
@@ -3892,14 +3891,25 @@ void draw (
         if (sb.label != "")
         {
             pair pos = (abs(sb.labeldir) == 0) ? sb.center : intersection(sb.contour, sb.center, sb.labeldir);
-            label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = sb.labelalign));
+            pair align = sb.labelalign;
+            if (sb.labelalign == defaultSyDP)
+            {
+                if (abs(sb.labeldir) == 0) align = (0,0);
+                else align = rotate(90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
+            }
+            label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = align));
+            if (help && abs(sb.labeldir) > 0)
+            {
+                draw(pic = pic, sb.center -- pos, purple+defaultDrExP);
+                draw(pic = pic, pos -- pos+sm.scale*defaultSmEAL*align, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+            }
         }
 
         if (help) label(pic = pic, L = Label((string)i, position = sb.center, p = blue));
     }
-    if (help) draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));
     if (help)
     {
+        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }

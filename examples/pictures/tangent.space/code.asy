@@ -15,7 +15,7 @@ smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10,
 
 smooth rn = rn(n = 1)
     .move(shift = (2.5, .7), scale = .72)
-    .setlabel("\mathbb{R}^n", keepalign = true)
+    .setlabel("\mathbb{R}^n")
     .addsubset(contour = convexpath[9], shift = (.4,-.2), scale = .4);
 
 draw(sm, mode = free, overlap = true);
