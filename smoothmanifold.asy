@@ -245,6 +245,10 @@ private real currentDrDPS = defaultDrDPS;
 private real currentDrDPO = defaultDrDPO;
 private real currentDrDO = defaultDrDO;
 private real currentDrSPM = defaultDrSPM;
+// private real currentDrXMax = 0;
+// private real currentDrXMin = 0;
+// private real currentDrYMax = 0;
+// private real currentDrYMin = 0;
 private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
 private int currentDrM = 0; // [M]ode
 private bool currentDrUO = false; // [U]se [O]pacity
@@ -782,8 +786,10 @@ struct hole
     hole move (pair shift, real scale, real rotate, pair point, bool movesections)
     // Shift, scale, rotate around a point.
     {
-        this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
-        this.center = shift(shift)*srap(scale, rotate, point)*this.center;
+        transform move = shift(shift)*srap(scale, rotate, point);
+
+        this.contour = move*this.contour;
+        this.center = move*this.center;
         if (!movesections) return this;
         for (int i = 0; i < this.sections.length; ++i)
         {
@@ -792,7 +798,7 @@ struct hole
             this.sections[i][1] = ypart(rotate(rotate)*sectdir);
         }
         
-		return this;
+        return this;
     }
 
     hole copy ()
@@ -814,8 +820,8 @@ private hole[] holecopy (hole[] holes)
 private path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
-private void holeadjust (hole hl, pair shift, real scale, real rotate, pair point)
-{ hl.move(shift, scale, rotate, shift(-shift) * point, false); }
+// private void holeadjust (hole hl, pair shift, real scale, real rotate, pair point)
+// { hl.move(shift, scale, rotate, shift(-shift) * point, false); }
 
 struct subset
 // A structure representing a subset of a given object (see "smooth")
@@ -838,13 +844,7 @@ struct subset
 	subset setcenter (pair center)
     { this.center = center; return this; }
 
-    subset move (
-        pair shift = (0,0),
-		real scale = 1,
-		real rotate = 0,
-		pair point = this.center,
-		bool movelabel = false
-    )
+    subset move (pair shift, real scale, real rotate, pair point, bool movelabel)
     {
 		this.contour = shift(shift)*srap(scale, rotate, point)*this.contour;
 		this.center = shift(shift)*srap(scale, rotate, point)*this.center;
@@ -928,8 +928,8 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = 
 		return subset(
 			contour = contours[i],
 			label = (currentSmIL && inferlabels && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
-			labeldir = rotate(-90)*unit(sb1.center - sb2.center),
-			labelalign = /* inferlabels ? 2*(rotate(90)*unit(sb1.center - sb2.center)) :  */defaultSyDP,
+			labeldir = (0,0),
+			labelalign = defaultSyDP,
 			layer = max(sb1.layer, sb2.layer)+1,
 			isderivative = true
 		);
@@ -954,9 +954,6 @@ private void subsetdelete (subset[] subsets, int index, bool recursive)
 		}
 	}
 }
-
-private void subsetsort (subset[] subsets, int[] range)
-{ range = sort(range, new bool (int i, int j){return subsets[i].layer < subsets[j].layer;}); }
 
 private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 {
@@ -1010,19 +1007,6 @@ private int subsetinsertindex (subset[] subsets, int layer)
 	}
 	
 	return insertindex;
-}
-
-private int subsetinsert (subset[] subsets, subset s)
-{
-	int ind = subsetinsertindex(subsets, s.layer);
-	subsets.insert(ind, s);
-	for (int i = 0; i < subsets.length; ++i)
-	{
-		for (int j = 0; j < subsets[i].subsets.length; ++j)
-		{ if (subsets[i].subsets[j] >= ind) subsets[i].subsets[j] += 1; }
-	}
-
-	return ind;
 }
 
 private int subsetmaxlayer (subset[] subsets, int[] range)
@@ -1271,7 +1255,11 @@ struct smooth
 		if (this.shiftsubsets)
 		{
 			for (int i = 0; i < this.subsets.length; ++i)
-			{ this.subsets[i].move(shift = -this.viewdir * defaultSmSVS * Sin(defaultSmVA)); }
+			{
+                transform move = shift(-this.viewdir * defaultSmSVS * Sin(defaultSmVA));
+                this.subsets[i].contour = move * this.subsets[i].contour;
+                this.subsets[i].center = move * this.subsets[i].center;
+            }
 		}
 		if (this.distort) this.dirscale(this.viewdir, 1/Cos(defaultSmVA * length(this.viewdir)));
         this.viewdir = (0,0);
@@ -1288,7 +1276,12 @@ struct smooth
 		if (this.shiftsubsets)
 		{
 			for (int i = 0; i < this.subsets.length; ++i)
-			{ this.subsets[i].move(shift = viewdir * defaultSmSVS * Sin(defaultSmVA)); }
+			{
+                transform move = shift(viewdir * defaultSmSVS * Sin(defaultSmVA));
+                this.subsets[i].contour = move * this.subsets[i].contour;
+                this.subsets[i].center = move * this.subsets[i].center;
+                // this.subsets[i].move(shift = viewdir * defaultSmSVS * Sin(defaultSmVA));
+            }
 		}
         this.viewdir = viewdir;
     }
@@ -1336,7 +1329,7 @@ struct smooth
         real scale = 1,
         real rotate = 0,
         pair point = this.center,
-        bool keepview = false,
+        bool keepview = true,
         bool drag = true
     ) // Transforms the smooth object. Respects the current `viewdir`.
     {
@@ -1396,17 +1389,26 @@ struct smooth
     {
 		if (index == -1)
         {
-            center = center == defaultSyDP ? center(this.contour) : center;
-            this.center = unit ? shift(this.shift)*center : center;
+            if (center == defaultSyDP) center = center(this.contour);
+            else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
+            
+            this.center = center;
+            
+            if (!this.inside(this.center))
+            { write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
         }
 		else
         {
-            center = center == defaultSyDP ? center(this.subsets[index].center) : center;
-            this.subsets[index].setcenter(unit ? shift(this.shift)*center : center);
+            subset sb = this.subsets[index];
+
+            if (center == defaultSyDP) center = center(sb.contour);
+            else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
+            
+            sb.center = center;
+            
+            if (!inside(sb.contour, sb.center))
+            { write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
         }
-        
-		if (!this.inside(this.center))
-		{ write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
 
         return this;
     }
@@ -1564,7 +1566,12 @@ struct smooth
 		bool unit = true
     )
     {
-		if (unit) holeadjust(hl, this.shift, this.scale, 0, this.center);
+		if (unit)
+        {// holeadjust(hl, this.shift, this.scale, 0, this.center);
+            transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            hl.contour = adjust * hl.contour;
+            hl.center = adjust * hl.center;
+        }
 		if (!insidepath(this.contour, hl.contour))
 		{
 			currentPrDP.push(hl.contour);
@@ -1695,13 +1702,57 @@ struct smooth
         real rotate = 0,
         pair point = this.holes[index].center,
         bool movesections = false,
-        bool keepview = false
+        bool keepview = true
     )
     {
 		pair viewdir = this.viewdir;    
 		
 		if (!keepview) this.dropview();
-		this.holes[index].move(shift, scale, rotate, point, movesections);
+
+        transform move = srap(scale, rotate, point) * shift(shift);
+        path newcontour = move * this.holes[index].contour;
+
+        bool outofbounds = false;
+
+        if (!insidepath(this.contour, newcontour)) outofbounds = true;
+        if (!outofbounds) for (int i = 0; i < this.holes.length; ++i)
+        {
+            if (i == index) continue;
+            if (meet(newcontour, this.holes[i].contour))
+            {
+                outofbounds = true;
+                break;
+            }
+        }
+        if (!outofbounds) for (int i = 0; i < this.subsets.length; ++i)
+        {
+            if (meet(newcontour, this.subsets[i].contour))
+            {
+                outofbounds = true;
+                break;
+            }
+        }
+
+        if (outofbounds)
+        {
+            currentPrDP.push(newcontour);
+            write("> ? Could not move hole: new contour out of bounds. It will be drawn in red on the final picture. [ movehole() ]");
+            return this;
+        }
+
+        hole hl = this.holes[index];
+        hl.contour = newcontour;
+        hl.center = move * hl.center;
+        if (movesections)
+        {
+            for (int i = 0; i < hl.sections.length; ++i)
+            {
+                pair sectdir = (hl.sections[i][0], hl.sections[i][1]);
+                hl.sections[i][0] = xpart(rotate(rotate)*sectdir);
+                hl.sections[i][1] = ypart(rotate(rotate)*sectdir);
+            }
+        }
+
 		if (!keepview) this.setview(viewdir);
 
         return this;
@@ -1978,14 +2029,14 @@ struct smooth
         real rotate = 0,
         pair point = center(contour),
         string label = "",
-        pair labeldir = defaultSyDP,
-        pair labelalign = defaultSyDP,
+        pair dir = defaultSyDP,
+        pair align = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
         bool unit = true
     )
     {
-        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, clip, unit);
+        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, clip, unit);
     }
 
     smooth addsubset (
@@ -2004,14 +2055,14 @@ struct smooth
         real rotate = 0,
         pair point = center(contour),
         string label = "",
-        pair labeldir = defaultSyDP,
-        pair labelalign = defaultSyDP,
+        pair dir = defaultSyDP,
+        pair align = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
         bool unit = true
     )
     {
-        return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, clip, unit);
+        return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, clip, unit);
     }
 
     smooth addsubsets (
@@ -2160,15 +2211,18 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
+        bool clip = false,
         bool inferlabels = currentSmIL,
-        bool keepview = false
+        bool keepview = true
     )
 	{
 		subset cursb = this.subsets[index];
 		point = (point == defaultSyDP) ? cursb.center : point;
 
 		if (cursb.isderivative) 
-		{ halt("Could not move subset: subset under index "+(string)index+" is an intersection of subsets. [ movesubset() ]"); }
+		{
+            halt("Could not move subset: subset under index "+(string)index+" is an intersection of subsets. [ movesubset() ]");
+        }
 
         int parentindex = -1;
         int relindex = -1;
@@ -2214,20 +2268,43 @@ struct smooth
 
 		path newcontour = shift(shift)*srap(scale, rotate, point)*cursb.contour;
 
-		if (!insidepath(pcontour, newcontour))
-		{
-			currentPrDP.push(newcontour);
-			write("> ? Could not move subset: new contour out of bounds. It will be drawn in red on the final picture. [ movesubset() ]");
-			return this;
-		}
+        bool onlysecondary = onlysecondary(index);
+        bool onlyprimary = onlyprimary(index);
+        if (!onlysecondary && !onlyprimary)
+        {
+            halt("Could not move subset: situation too complicated: both primary and secondary subsets present. [ movesubset() ]");
+            return this;
+        }
 
-		if (onlysecondary(index))
+        if (!clip && onlysecondary)
+        {
+            bool outofbounds = false;
+
+            if (!insidepath(pcontour, newcontour)) outofbounds = true;
+            if (!outofbounds) for (int i = 0; i < this.holes.length; ++i)
+            {
+                if (meet(this.holes[i].contour, newcontour))
+                {
+                    outofbounds = true;
+                    break;
+                }
+            }
+
+            if (outofbounds)
+            {
+                currentPrDP.push(newcontour);
+                write("> ? Could not move subset: new contour out of bounds. It will be drawn in red on the final picture. [ movesubset() ]");
+                return this;
+            }
+        }
+
+		if (onlysecondary)
 		{
 			rmsubset(index, recursive = true);
-			addsubset(cursb.move(shift, scale, rotate, point, movelabel), inferlabels, unit = false);
+			addsubset(cursb.move(shift, scale, rotate, point, movelabel), inferlabels, clip = clip, unit = false);
 			return this;
 		}
-		if (onlyprimary(index))
+		if (onlyprimary)
 		{
 			for (int i = 0; i < range.length; ++i)
 			{
@@ -2266,7 +2343,6 @@ struct smooth
 			return this;
 		}
 
-		halt("Could not move subset: situation too complicated: both primary and secondary subsets present. [ movesubset() ]");
 		return this;
 	}
 
@@ -2279,11 +2355,12 @@ struct smooth
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
+        bool clip = false,
         bool inferlabels = currentSmIL,
-        bool keepview = false
+        bool keepview = true
     )
     {
-        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, inferlabels, keepview);
+        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, clip, inferlabels, keepview);
     }
 
     // -- Methods for controlling relationships between smooth objects -- //
@@ -4505,6 +4582,35 @@ void plainshipout (
     light lt=currentlight,
     projection P=currentprojection
 ) = shipout;
+
+void preshipout (picture pic)
+{
+    draw(pic = pic, currentPrDP, red+1);
+    if (currentDrH)
+    {
+        pair min = pic.userMin2();
+        pair max = pic.userMax2();
+        pair margin = (max - min)*.1;
+        min -= margin;
+        max += margin;
+        pair diff = max - min;
+
+        draw(pic = pic, min -- (min.x, max.y));
+        draw(pic = pic, min -- (max.x, min.y));
+
+        int n = 5;
+
+        for (int i = 0; i <= n; ++i)
+        {
+            real x = min.x + (i/n)*diff.x;
+            real y = min.y + (i/n)*diff.y;
+
+            label(position = (x, min.y), L = (string)round(x, 1), align = S);
+            label(position = (min.x, y), L = (string)round(y, 1), align = W);
+        }
+    }
+}
+
 shipout = new void (
     string prefix=defaultfilename,
     picture pic=currentpicture,
@@ -4519,7 +4625,7 @@ shipout = new void (
 )
 {
     drawdeferred(pic = pic, flush = false);
-    draw(pic = pic, currentPrDP, red+1);
+    preshipout(pic);
     plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
 

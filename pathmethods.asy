@@ -99,6 +99,18 @@ path[] concat (path[][] a)
     return concat(concat(a), b);
 }
 
+real[] unitseq (real step)
+{
+    real[] res;
+    real cur = step;
+    while (cur < 1)
+    {
+        res.push(cur);
+        cur += step;
+    }
+    return res;
+}
+
 bool contains (int[] source, int a)
 {
 	bool res = false;

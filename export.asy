@@ -185,7 +185,7 @@ void export (
     }
 
     if (drawdeferred) drawdeferred(pic1, flush = !restore);
-    draw(pic = pic1, currentPrDP, red+1);
+    preshipout(pic1);
 	if (currentFrEP) framepicture(pic1);
     if (native) localshipout(prefix);
     else
