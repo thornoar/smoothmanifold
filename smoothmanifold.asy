@@ -247,7 +247,7 @@ private real currentDrDO = defaultDrDO;
 private real currentDrSPM = defaultDrSPM;
 private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
 private int currentDrM = 0; // [M]ode
-private bool currentDrUO = true; // [U]se [O]pacity
+private bool currentDrUO = false; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrH = false; // [H]elp
 private bool currentDrDS = false; // [D]raw [S]hade
@@ -846,6 +846,7 @@ struct subset
 	int layer;
 	int[] subsets;
 	bool isderivative;
+	bool isonboundary;
 
     real xsize ()
     { return xsize(this.contour); }
@@ -902,6 +903,7 @@ struct subset
 		int layer = 0,
 		int[] subsets = {},
 		bool isderivative = false,
+		bool isonboundary = false,
 		pair shift = (0,0),
 		real scale = 1,
 		real rotate = 0,
@@ -919,6 +921,7 @@ struct subset
 			this.layer = layer;
 			this.subsets = subsets;
 			this.isderivative = isderivative;
+			this.isonboundary = isonboundary;
         }
         else
         {
@@ -930,6 +933,7 @@ struct subset
 			this.layer = layer;
 			this.subsets = new int[]{};
 			this.isderivative = isderivative;
+			this.isonboundary = isonboundary;
         }
     }
     
@@ -1798,6 +1802,7 @@ struct smooth
         subset sb,
 		int index = -1,
         bool inferlabels = currentSmIL,
+        bool clip = false,
 		bool unit = true
     )
 	{
@@ -1831,7 +1836,7 @@ struct smooth
 			for (int i = 0; i < this.subsets.length; ++i)
 			{
                 if (this.subsets[i].layer == 0) findindex(i);
-                if (found) return this.addsubset(sb, newindex, inferlabels, false);
+                if (found) return this.addsubset(sb, newindex, inferlabels, clip, false);
 			}
 		}
 
@@ -1862,6 +1867,13 @@ struct smooth
 
 		if (!insidepath(pcontour, sb.contour))
 		{
+            if (clip && intersect(pcontour, sb.contour).length > 0)
+            {
+                sb.contour = intersection(pcontour, sb.contour)[0];
+                sb.isonboundary = true;
+                return this.addsubset(sb, index = -2, inferlabels, false, false);
+            }
+            
 			currentPrDP.push(sb.contour);
 			write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
 			return this;
@@ -1982,18 +1994,20 @@ struct smooth
         pair labeldir = defaultSyDP,
         pair labelalign = S,
         bool inferlabels = currentSmIL,
+        bool clip = false,
         bool unit = true
     )
     {
-        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, unit);
+        return this.addsubset(sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, clip, unit);
     }
 
     smooth addsubset (
         string destlabel,
 		subset sb,
         bool inferlabels = currentSmIL,
+        bool clip = false,
 		bool unit = true
-    ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), inferlabels, unit); }
+    ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubset (
         string destlabel,
@@ -2006,21 +2020,23 @@ struct smooth
         pair labeldir = defaultSyDP,
         pair labelalign = S,
         bool inferlabels = currentSmIL,
+        bool clip = false,
         bool unit = true
     )
     {
-        return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, unit);
+        return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = labeldir, labelalign = labelalign, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, clip, unit);
     }
 
     smooth addsubsets (
         subset[] sbs,
 		int index = -1,
         bool inferlabels = currentSmIL,
+        bool clip = false,
 		bool unit = true
     )
     {
         for (int i = 0; i < sbs.length; ++i)
-        { this.addsubset(sbs[i], index, inferlabels, unit); }
+        { this.addsubset(sbs[i], index, inferlabels, clip, unit); }
 
         return this;
     }
@@ -2028,42 +2044,47 @@ struct smooth
     smooth addsubsets (
         int index = -1,
         bool inferlabels = currentSmIL,
+        bool clip = false,
 		bool unit = true
         ... subset[] sbs
-    ) { return this.addsubsets(sbs, index, inferlabels, unit); }
+    ) { return this.addsubsets(sbs, index, inferlabels, clip, unit); }
 
     smooth addsubsets (
         int index = -1,
         bool inferlabels = currentSmIL,
+        bool clip = false,
         bool unit = true
         ... path[] contours
     )
     {
-        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, unit);
+        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, clip, unit);
     }
 
     smooth addsubsets (
         string destlabel,
 		subset[] sbs,
         bool inferlabels = currentSmIL,
+        bool clip = false,
 		bool unit = true
-    ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), inferlabels, unit); }
+    ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubsets (
         string destlabel,
         bool inferlabels = currentSmIL,
+        bool clip = false,
         bool unit = true
         ... subset[] sbs
-    ) { return this.addsubsets(destlabel, sbs, inferlabels, unit); }
+    ) { return this.addsubsets(destlabel, sbs, inferlabels, clip, unit); }
 
     smooth addsubsets (
         string destlabel,
         bool inferlabels = currentSmIL,
+        bool clip = false,
         bool unit = true
         ... path[] contours
     )
     {
-        return this.addsubsets(destlabel, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, unit);
+        return this.addsubsets(destlabel, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, clip, unit);
     }
 
 	smooth rmsubset (
@@ -2937,6 +2958,7 @@ smooth[] intersection (
 		}
 		subsets1[i].contour = curcontours[0];
 		subsets1[i].setlabel();
+        if (intersect(subsets1[i].contour, sm2.contour).length > 0) subsets1[i].isonboundary = true;
 	}
 	for (int i = 0; i < subsets2.length; ++i)
 	{
@@ -2955,6 +2977,7 @@ smooth[] intersection (
 		}
 		subsets2[i].contour = curcontours[0];
 		subsets2[i].setlabel();
+        if (intersect(subsets2[i].contour, sm1.contour).length > 0) subsets2[i].isonboundary = true;
 	}
 
     smooth[] res;
@@ -3829,7 +3852,7 @@ void draw (
         {
             if (!sm.subsets[i].isderivative)
             {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO, covermode = 2, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, overlap = overlap || currentDrSCO || sm.subsets[i].isonboundary, covermode = 2, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
     }

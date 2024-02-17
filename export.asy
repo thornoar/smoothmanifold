@@ -91,7 +91,8 @@ void expar (
 	{ halt("Could not set margin: value must be positive."); }
 
     currentExP = prefix;
-    settings.outformat = format; currentDrUO = native(format);
+    settings.outformat = format;
+    currentDrUO = currentDrUO && native(format);
 	currentExRID = dpi;
 	currentExEOE = exit;
 	currentExEF = !autoexport;
