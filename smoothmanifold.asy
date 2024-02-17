@@ -853,8 +853,13 @@ struct subset
     real ysize ()
     { return ysize(this.contour); }
 
-	void setcenter (pair center)
-    { this.center = center; }
+	subset setcenter (pair center)
+    { this.center = center; return this; }
+
+    subset setcontour (path contour)
+    {
+        
+    }
 
     subset setlabel (
         string label = defaultSyDS,
