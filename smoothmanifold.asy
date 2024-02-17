@@ -3020,6 +3020,7 @@ smooth[] intersection (
 			continue;
 		}
 		subsets1[i].contour = curcontours[0];
+		subsets1[i].center = center(curcontours[0]);
         if (intersect(subsets1[i].contour, sm2.contour).length > 0) subsets1[i].isonboundary = true;
 	}
 	for (int i = 0; i < subsets2.length; ++i)
@@ -3038,6 +3039,7 @@ smooth[] intersection (
 			continue;
 		}
 		subsets2[i].contour = curcontours[0];
+		subsets2[i].center = center(curcontours[0]);
         if (intersect(subsets2[i].contour, sm1.contour).length > 0) subsets2[i].isonboundary = true;
 	}
 
@@ -3084,12 +3086,13 @@ smooth[] intersection (
 
         int curboundindex = -1;
 
-		cursm.subsets = subsets1;
+		cursm.subsets = subsetcopy(subsets1);
+            
 		for (int i = 0; i < cursm.subsets.length; ++i)
 		{
 			if (cursm.subsets[i].layer > 0) break;
 
-			if (!insidepath(cursm.contour, cursm.subsets[i].contour))
+			if (!inside(cursm.contour, cursm.subsets[i].center))
 			{ subsetdelete(cursm.subsets, i, true); }
 		}
 
@@ -3099,9 +3102,9 @@ smooth[] intersection (
 		{
 			if (subsetsadded[ind2]) return;
 
-			if (subsets2inside[ind2] || insidepath(cursm.contour, subsets2[ind2].contour))
+			if (subsets2inside[ind2] || inside(cursm.contour, subsets2[ind2].center))
 			{
-				cursm.addsubset(subsets2[ind2], ind, unit = false, checkintersection = false);
+				cursm.addsubset(subsets2[ind2], ind, unit = false, clip = true, checkintersection = false);
 				subsetsadded[ind2] = true;
 
 				for (int i = 0; i < subsets2[ind2].subsets.length; ++i)
@@ -4099,8 +4102,8 @@ smooth[] drawintersect (
     smp2.subsets.delete();
     smp1.label = "";
     smp2.label = "";
-    draw(pic, smp1, contourpen = ghostpen, smoothfill = invisible, mode = plain);
-    draw(pic, smp2, contourpen = ghostpen, smoothfill = invisible, mode = plain);
+    draw(pic, smp1, contourpen = ghostpen, smoothfill = invisible, mode = plain, help = false);
+    draw(pic, smp2, contourpen = ghostpen, smoothfill = invisible, mode = plain, help = false);
 
     if (res.length == 1)
     { res[0].setlabel(label, labeldir, labelalign); }
