@@ -929,7 +929,7 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = 
 			contour = contours[i],
 			label = (currentSmIL && inferlabels && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
 			labeldir = rotate(-90)*unit(sb1.center - sb2.center),
-			labelalign = inferlabels ? 2*(rotate(90)*unit(sb1.center - sb2.center)) : defaultSyDP,
+			labelalign = /* inferlabels ? 2*(rotate(90)*unit(sb1.center - sb2.center)) :  */defaultSyDP,
 			layer = max(sb1.layer, sb2.layer)+1,
 			isderivative = true
 		);
@@ -2754,7 +2754,7 @@ smooth samplesmooth (int type, int num = 0)
                 subsets = new subset[]{
                     subset(
                         contour = scale(.35)*defaultPaCV[2],
-                        shift = (-.02, -.1),
+                        shift = (.05, -.1),
                         scale = .95
                     )
                 }
