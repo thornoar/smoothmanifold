@@ -234,6 +234,7 @@ private bool currentSeAS = false; // [A]void [S]ubsets
 private bool currentSmIL = true; // [I]nfer [L]abels
 private bool currentSmSS = false; // [S]hift [S]ubsets
 private bool currentSmAS = true; // [A]dd [S]ubsets
+private bool currentSmU = true; // [U]nit
 
 // [Dr]awing
 private real currentDrGL = defaultDrGL;
@@ -245,15 +246,12 @@ private real currentDrDPS = defaultDrDPS;
 private real currentDrDPO = defaultDrDPO;
 private real currentDrDO = defaultDrDO;
 private real currentDrSPM = defaultDrSPM;
-// private real currentDrXMax = 0;
-// private real currentDrXMin = 0;
-// private real currentDrYMax = 0;
-// private real currentDrYMin = 0;
 private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
 private int currentDrM = 0; // [M]ode
 private bool currentDrUO = false; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrH = false; // [H]elp
+private int currentDrHNC = 10; // [H]elp [N]umber [C]ount
 private bool currentDrDS = false; // [D]raw [S]hade
 private bool currentDrF = true; // [F]ill
 private bool currentDrFS = false; // [F]ill [S]ubsets
@@ -401,6 +399,7 @@ void smpar (
         bool inferlabels = currentSmIL,
         bool shiftsubsets = currentSmSS,
         bool addsubsets = currentSmAS,
+        bool unit = currentSmU,
         real gaplength = currentDrGL,
         real arrowmargin = currentArM,
             bool repeatlabels = currentSyRL,
@@ -447,6 +446,7 @@ void smpar (
     currentSmIL = inferlabels;
     currentSmSS = shiftsubsets;
     currentSmAS = addsubsets;
+    currentSmU = unit;
 	currentDrGL = gaplength;
 	currentArM = arrowmargin;
     currentSyRL = repeatlabels;
@@ -1384,7 +1384,7 @@ struct smooth
     smooth setcenter (
         int index = -1,
 		pair center = defaultSyDP,
-		bool unit = true
+		bool unit = currentSmU
     ) // Sets the center of the object. The center is used for cross section positioning and arrows.
     {
 		if (index == -1)
@@ -1416,7 +1416,7 @@ struct smooth
     smooth setcenter (
         string destlabel,
         pair center,
-        bool unit = true
+        bool unit = currentSmU
     ) { return this.setcenter(findlocalsubsetindex(destlabel), center, unit); }
 
     smooth setlabel (
@@ -1467,7 +1467,7 @@ struct smooth
 
 	smooth addelement (
         element elt,
-		bool unit = true
+		bool unit = currentSmU
     )
 	{
         if (!currentSyRL && repeats(elt.label))
@@ -1486,14 +1486,14 @@ struct smooth
         pair pos,
 		string label = "",
 		pair align = S,
-		bool unit = true
+		bool unit = currentSmU
     )
 	{ return this.addelement(element(pos, label, align), unit); }
 
     smooth setelement (
         int ind,
 		element elt,
-		bool unit = true
+		bool unit = currentSmU
     )
     {
         if (!currentSyRL && repeats(elt.label))
@@ -1509,7 +1509,7 @@ struct smooth
 		pair pos = defaultSyDP,
 		string label = defaultSyDS,
 		pair labelalign = defaultSyDP,
-		bool unit = true
+		bool unit = currentSmU
     )
     {
         if (!currentSyRL && repeats(label))
@@ -1529,7 +1529,7 @@ struct smooth
     smooth setelement (
         string destlabel,
 		element elt,
-		bool unit = true
+		bool unit = currentSmU
     ) { return this.setelement(findlocalelementindex(destlabel), elt, unit); }
 
     smooth setelement (
@@ -1537,7 +1537,7 @@ struct smooth
 		pair pos = defaultSyDP,
 		string label = defaultSyDS,
 		pair labelalign = defaultSyDP,
-		bool unit = true
+		bool unit = currentSmU
     ) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
 
     smooth rmelement (int index)
@@ -1563,7 +1563,7 @@ struct smooth
     smooth addhole (
         hole hl,
 		int index = this.holes.length,
-		bool unit = true
+		bool unit = currentSmU
     )
     {
 		if (unit)
@@ -1645,7 +1645,7 @@ struct smooth
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool unit = true
+        bool unit = currentSmU
     )
     {
 		return this.addhole(hole(contour = contour, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), unit = unit);
@@ -1653,7 +1653,7 @@ struct smooth
 
 	smooth addholes (
         hole[] holes,
-		bool unit = true
+		bool unit = currentSmU
     )
 	{
 		for (int i = 0; i < holes.length; ++i)
@@ -1662,21 +1662,21 @@ struct smooth
 	}
 
 	smooth addholes (
-        bool unit = true
+        bool unit = currentSmU
         ... hole[] holes
     )
 	{ return this.addholes(holes, unit); }
 
     smooth addholes (
         path[] contours,
-        bool unit = true
+        bool unit = currentSmU
     )
     {
         return this.addholes(holes = sequence(new hole (int i) { return hole(contours[i]); }, contours.length), unit = unit);
     }
 
 	smooth addholes (
-        bool unit = true
+        bool unit = currentSmU
         ... path[] contours
     )
 	{ return this.addholes(contours, unit); }
@@ -1818,7 +1818,7 @@ struct smooth
 		int index = -1,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true,
+		bool unit = currentSmU,
         bool checkintersection = true
     )
 	{
@@ -2033,7 +2033,7 @@ struct smooth
         pair align = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
-        bool unit = true
+        bool unit = currentSmU
     )
     {
         return this.addsubset(sb = subset(contour = contour, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, clip, unit);
@@ -2044,7 +2044,7 @@ struct smooth
 		subset sb,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true
+		bool unit = currentSmU
     ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubset (
@@ -2059,7 +2059,7 @@ struct smooth
         pair align = defaultSyDP,
         bool inferlabels = currentSmIL,
         bool clip = false,
-        bool unit = true
+        bool unit = currentSmU
     )
     {
         return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, clip, unit);
@@ -2070,7 +2070,7 @@ struct smooth
 		int index = -1,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true
+		bool unit = currentSmU
     )
     {
         for (int i = 0; i < sbs.length; ++i)
@@ -2083,7 +2083,7 @@ struct smooth
         int index = -1,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true
+		bool unit = currentSmU
         ... subset[] sbs
     ) { return this.addsubsets(sbs, index, inferlabels, clip, unit); }
 
@@ -2091,7 +2091,7 @@ struct smooth
         int index = -1,
         bool inferlabels = currentSmIL,
         bool clip = false,
-        bool unit = true
+        bool unit = currentSmU
         ... path[] contours
     )
     {
@@ -2103,14 +2103,14 @@ struct smooth
 		subset[] sbs,
         bool inferlabels = currentSmIL,
         bool clip = false,
-		bool unit = true
+		bool unit = currentSmU
     ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubsets (
         string destlabel,
         bool inferlabels = currentSmIL,
         bool clip = false,
-        bool unit = true
+        bool unit = currentSmU
         ... subset[] sbs
     ) { return this.addsubsets(destlabel, sbs, inferlabels, clip, unit); }
 
@@ -2118,7 +2118,7 @@ struct smooth
         string destlabel,
         bool inferlabels = currentSmIL,
         bool clip = false,
-        bool unit = true
+        bool unit = currentSmU
         ... path[] contours
     )
     {
@@ -4595,18 +4595,26 @@ void preshipout (picture pic)
         max += margin;
         pair diff = max - min;
 
-        draw(pic = pic, min -- (min.x, max.y));
-        draw(pic = pic, min -- (max.x, min.y));
+        // draw(pic = pic, min -- (min.x, max.y));
+        // draw(pic = pic, min -- (max.x, min.y));
 
-        int n = 5;
+        int nx = currentDrHNC, ny = currentDrHNC;
+        if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
+        else ny = floor(nx * (diff.y/diff.x));
 
-        for (int i = 0; i <= n; ++i)
+        for (int i = 0; i <= nx; ++i)
         {
-            real x = min.x + (i/n)*diff.x;
-            real y = min.y + (i/n)*diff.y;
+            real x = min.x + (i/nx)*diff.x;
 
-            label(position = (x, min.y), L = (string)round(x, 1), align = S);
-            label(position = (min.x, y), L = (string)round(y, 1), align = W);
+            label(pic = pic, position = (x, min.y), L = (string)round(x, 1), align = S);
+            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(currentpen));
+        }
+        for (int i = 0; i <= ny; ++i)
+        {
+            real y = min.y + (i/ny)*diff.y;
+
+            label(pic = pic, position = (min.x, y), L = (string)round(y, 1), align = W);
+            draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen));
         }
     }
 }
