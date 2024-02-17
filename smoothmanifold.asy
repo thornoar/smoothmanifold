@@ -2645,8 +2645,8 @@ smooth samplesmooth (int type, int num = 0)
                     subset(
                         contour = defaultPaCV[3],
                         labeldir = S,
-                        shift = (.45,-.35),
-                        scale = .43,
+                        shift = (.43,-.38),
+                        scale = .5,
                         rotate = 10
                     )
                 }
