@@ -340,7 +340,7 @@ void animate (
     if (back)
     {
         for (int i = 0; i < n; ++i)
-        { write(f, s = hash + "_" + (string)(n+i)); }
+        { write(f, s = hash+"_"+(string)(n+i)+"."+informat, suffix = endl); }
     }
 
 	write("|");

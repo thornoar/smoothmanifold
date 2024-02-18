@@ -3021,7 +3021,7 @@ smooth[] intersection (
 		}
 		subsets1[i].contour = curcontours[0];
 		subsets1[i].center = center(curcontours[0]);
-        if (intersect(subsets1[i].contour, sm2.contour).length > 0) subsets1[i].isonboundary = true;
+        if (meet(subsets1[i].contour, sm2.contour^^holecontours(sm2.holes))) subsets2[i].isonboundary = true;
 	}
 	for (int i = 0; i < subsets2.length; ++i)
 	{
@@ -3040,7 +3040,7 @@ smooth[] intersection (
 		}
 		subsets2[i].contour = curcontours[0];
 		subsets2[i].center = center(curcontours[0]);
-        if (intersect(subsets2[i].contour, sm1.contour).length > 0) subsets2[i].isonboundary = true;
+        if (meet(subsets2[i].contour, sm1.contour^^holecontours(sm1.holes))) subsets2[i].isonboundary = true;
 	}
 
     smooth[] res;
@@ -3106,6 +3106,8 @@ smooth[] intersection (
 			{
 				cursm.addsubset(subsets2[ind2], ind, unit = false, clip = true, checkintersection = false);
 				subsetsadded[ind2] = true;
+
+                write(subsets2[ind2].isonboundary);
 
 				for (int i = 0; i < subsets2[ind2].subsets.length; ++i)
 				{
@@ -3269,6 +3271,7 @@ smooth[] union (
 
         if (!used1 && !diffused[i])
         {
+            if (inside(sm2.contour, sm1.holes[i].center)) continue;
             holes.push(sm1.holes[i].contour);
             hrefs.push(i);            
             for (int j = 0; j < trueholes[i].sections.length; ++j)
@@ -3308,6 +3311,7 @@ smooth[] union (
     {
         if (!used[i] && !diffused[sm1.holes.length + i])
         {
+            if (inside(sm1.contour, sm2.holes[i].center)) continue;
             holes.push(sm2.holes[i].contour);
             hrefs.push(i + sm1.holes.length);
 
@@ -3370,7 +3374,10 @@ smooth[] union (
     res.shift = res.center;
 
     for (int i = 0; i < holes.length; ++i)
-    { res.addhole((hrefs[i] == -1) ? hole(holes[i], copy = true) : trueholes[hrefs[i]], unit = false); }
+    {
+        // write(hrefs[i]);
+        res.addhole((hrefs[i] == -1) ? hole(holes[i], copy = true) : trueholes[hrefs[i]], unit = false);
+    }
 
 	res.subsets = subsetcopy(sm1.subsets);
 	subset[] subsets2 = subsetcopy(sm2.subsets);
@@ -3378,7 +3385,7 @@ smooth[] union (
 	void subset2add (int ind, int ind2)
 	{
 		if (subsetsadded[ind2]) return;
-		res.addsubset(subsets2[ind2], ind);
+		res.addsubset(subsets2[ind2], ind, unit = false);
 		subsetsadded[ind2] = true;
 		for (int i = 0; i < subsets2[ind2].subsets.length; ++i)
 		{ subset2add(res.subsets.length-1, subsets2[ind2].subsets[i]); }
