@@ -407,7 +407,7 @@ void smpar (
         real arrowmargin = currentArM,
             bool repeatlabels = currentSyRL,
             bool insertdollars = currentSyID
-)
+) // The configuration function. It is used by the user to set all global system variables.
 {
 	if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
 	{ halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
