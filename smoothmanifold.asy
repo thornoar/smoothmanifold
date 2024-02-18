@@ -250,6 +250,7 @@ private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
 private int currentDrM = 0; // [M]ode
 private bool currentDrUO = false; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
+private bool currentDrDUD = false; // [D]raw [U]nder [D]ashes
 private bool currentDrH = false; // [H]elp
 private int currentDrHNC = 10; // [H]elp [N]umber [C]ount
 private bool currentDrDS = false; // [D]raw [S]hade
@@ -387,6 +388,7 @@ void smpar (
         pen explainpen = currentDrHP,
         real dragop = currentDrDO,
         bool dash = currentDrDD,
+        bool underdash = currentDrDUD,
         bool useopacity = currentDrUO,
         real dashscale = currentDrDPS,
         real dashop = currentDrDPO,
@@ -434,6 +436,7 @@ void smpar (
 	currentDrHP = explainpen;
 	currentDrDO = dragop;
 	currentDrDD = dash;
+	currentDrDUD = underdash;
     currentDrUO = useopacity;
     currentDrDPS = dashscale;
     currentDrDPO = dashop;
@@ -2503,6 +2506,18 @@ struct smooth
 
         return this;
     }
+
+    smooth shift (explicit pair shift)
+    { return this.move(shift = shift); }
+
+    smooth shift (real xshift, real yshift = 0)
+    { return this.move(shift = (xshift, yshift)); }
+
+    smooth scale (real scale)
+    { return this.move(scale = scale); }
+
+    smooth rotate (real rotate)
+    { return this.move(rotate = rotate); }
 }
 
 private int[] findsetindex (string label)
@@ -2663,6 +2678,33 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
         ));
     }
     return res;
+}
+
+private void purgedeferredunder (deferredPath[] curdeferred)
+{
+    // deferredPath[] curdeferred = extractdeferredpaths(pic, false);
+    for (int i = 0; i < curdeferred.length; ++i)
+    {
+        for (int j = 0; j < curdeferred[i].g.length; ++j)
+        {
+            if (curdeferred[i].under[j])
+            {
+                if (j == 0)
+                {
+                    curdeferred[i].beginarrow = false;
+                    curdeferred[i].beginbar = false;
+                }
+                if (j == curdeferred[i].g.length-1)
+                {
+                    curdeferred[i].endarrow = false;
+                    curdeferred[i].endbar = false;
+                }
+                curdeferred[i].g.delete(j);
+                curdeferred[i].under.delete(j);
+                j -= 1;
+            }
+        }
+    }
 }
 
 // -- Default pre-built smooth objects -- //
@@ -3779,6 +3821,7 @@ void draw (
     bool drawcontour = currentDrDC,
     bool help = currentDrH,
     bool dash = currentDrDD,
+    bool underdash = currentDrDD,
     bool shade = currentDrDS,
     bool avoidsubsets = currentSeAS,
     bool drag = true,
@@ -4511,12 +4554,14 @@ void drawpath (
     drawpath(pic, sm1, index1, sm2, index2, range = range, angle = angle, radius = radius, reverse = reverse, points, L, p, overlap, drawnow);
 }
 
-void drawdeferred (
+private void drawdeferred (
     picture pic = currentpicture,
 	bool flush = true
 )
 {
     deferredPath[] curdp = extractdeferredpaths(pic, false);
+    if (!currentDrDUD)
+    { purgedeferredunder(curdp); }
 
     void auxdraw (deferredPath p)
     {
