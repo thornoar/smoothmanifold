@@ -252,7 +252,7 @@ private bool currentDrUO = false; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrDUD = false; // [D]raw [U]nder [D]ashes
 private bool currentDrH = false; // [H]elp
-private int currentDrHNC = 10; // [H]elp [N]umber [C]ount
+private int currentDrHGN = 10; // [H]elp [G]rid [N]umber
 private bool currentDrDS = false; // [D]raw [S]hade
 private bool currentDrF = true; // [F]ill
 private bool currentDrFS = false; // [F]ill [S]ubsets
@@ -385,6 +385,7 @@ void smpar (
         bool subsetoverlap = currentDrSCO,
         bool drawnow = currentDrDN,
         bool help = currentDrH,
+        int gridnumber = currentDrHGN,
         pen explainpen = currentDrHP,
         real dragop = currentDrDO,
         bool dash = currentDrDD,
@@ -401,7 +402,7 @@ void smpar (
         bool inferlabels = currentSmIL,
         bool shiftsubsets = currentSmSS,
         bool addsubsets = currentSmAS,
-        bool unit = currentSmU,
+        bool unit = currentSmU && !help,
         real gaplength = currentDrGL,
         real arrowmargin = currentArM,
             bool repeatlabels = currentSyRL,
@@ -433,6 +434,7 @@ void smpar (
     currentDrSCO = subsetoverlap;
 	currentDrDN = drawnow;
 	currentDrH = help;
+	currentDrHGN = gridnumber;
 	currentDrHP = explainpen;
 	currentDrDO = dragop;
 	currentDrDD = dash;
@@ -4653,7 +4655,7 @@ void preshipout (picture pic)
         // draw(pic = pic, min -- (min.x, max.y));
         // draw(pic = pic, min -- (max.x, min.y));
 
-        int nx = currentDrHNC, ny = currentDrHNC;
+        int nx = currentDrHGN, ny = currentDrHGN;
         if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
         else ny = floor(nx * (diff.y/diff.x));
 
@@ -4662,14 +4664,14 @@ void preshipout (picture pic)
             real x = min.x + (i/nx)*diff.x;
 
             label(pic = pic, position = (x, min.y), L = (string)round(x, 1), align = S);
-            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(currentpen));
+            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(currentpen+linewidth(.2)));
         }
         for (int i = 0; i <= ny; ++i)
         {
             real y = min.y + (i/ny)*diff.y;
 
             label(pic = pic, position = (min.x, y), L = (string)round(y, 1), align = W);
-            draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen));
+            draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(.2)));
         }
     }
 }

@@ -77,6 +77,13 @@ real[][] dr (... real[][] source)
 real[][] rr (... real[] source)
 { return new real[][]{source}; }
 
+pair[] p (... pair[] source)
+{ return source; }
+pair[][] dp (... pair[][] source)
+{ return source; }
+pair[][] pp (... pair[] source)
+{ return new pair[][]{source}; }
+
 int[] i (... int[] source)
 { return source; }
 int[][] di (... int[][] source)
