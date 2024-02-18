@@ -461,6 +461,7 @@ void smpar (
 }
 
 void defaults ()
+// Revert global settings to the default.
 {
 	currentsection = copy(defaultsection);
 	currentSeIHSN = defaultSeIHSN;
@@ -923,8 +924,8 @@ struct subset
 private subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
 
-private void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
-{ s.move(shift, scale, rotate, shift(-shift) * point, true); }
+// private void subsetadjust (subset s, pair shift, real scale, real rotate, pair point)
+// { s.move(shift, scale, rotate, shift(-shift) * point, true); }
 
 private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = currentSmIL)
 {
@@ -1572,7 +1573,7 @@ struct smooth
     )
     {
 		if (unit)
-        {// holeadjust(hl, this.shift, this.scale, 0, this.center);
+        {
             transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
             hl.contour = adjust * hl.contour;
             hl.center = adjust * hl.center;
@@ -1830,7 +1831,12 @@ struct smooth
         if (!currentSyRL && repeats(sb.label))
         { halt("Could not add subset: label \""+sb.label+"\" already assigned. [ addsubset() ]"); }
         
-		if (unit) subsetadjust(sb, this.shift, this.scale, 0, this.center);
+		if (unit)
+        {
+            transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            sb.contour = adjust * sb.contour;
+            sb.center = adjust * sb.center;
+        }
 		
 		if (index == -1)
 		{
@@ -3065,7 +3071,7 @@ smooth[] intersection (
 		}
 		subsets1[i].contour = curcontours[0];
 		subsets1[i].center = center(curcontours[0]);
-        if (meet(subsets1[i].contour, sm2.contour^^holecontours(sm2.holes))) subsets2[i].isonboundary = true;
+        if (meet(subsets1[i].contour, sm2.contour^^holecontours(sm2.holes))) subsets1[i].isonboundary = true;
 	}
 	for (int i = 0; i < subsets2.length; ++i)
 	{
