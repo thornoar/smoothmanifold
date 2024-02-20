@@ -259,7 +259,6 @@ private bool currentDrFS = false; // [F]ill [S]ubsets
 private bool currentDrDC = true; // [D]raw [C]ontour
 private bool currentDrO = false; // [O]verlap
 private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
-private bool currentDrDN = false; // [D]raw [N]ow
 
 // [Ar]rows
 private real currentArM = defaultArM;
@@ -383,7 +382,7 @@ void smpar (
         real minscale = currentDrSPM,
         bool overlap = currentDrO,
         bool subsetoverlap = currentDrSCO,
-        bool drawnow = currentDrDN,
+        bool drawnow = overlap,
         bool help = currentDrH,
         int gridnumber = currentDrHGN,
         pen explainpen = currentDrHP,
@@ -432,7 +431,6 @@ void smpar (
 	currentDrSPM = minscale;
     currentDrO = overlap;
     currentDrSCO = subsetoverlap;
-	currentDrDN = drawnow;
 	currentDrH = help;
 	currentDrHGN = gridnumber;
 	currentDrHP = explainpen;
@@ -2637,7 +2635,7 @@ private struct deferredPath
 {
     path[] g;
     pen p;
-    bool[] under;
+    int[] under;
 
     arrowhead arrow;
     bool beginarrow;
@@ -2647,7 +2645,7 @@ private struct deferredPath
     bool beginbar;
     bool endbar;
 
-    void operator init (path[] g, pen p, bool[] under, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
+    void operator init (path[] g, pen p, int[] under, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
     {
         this.g = g;
         this.p = p;
@@ -2695,7 +2693,7 @@ private void purgedeferredunder (deferredPath[] curdeferred)
     {
         for (int j = 0; j < curdeferred[i].g.length; ++j)
         {
-            if (curdeferred[i].under[j])
+            if (curdeferred[i].under[j] > 0)
             {
                 if (j == 0)
                 {
@@ -2974,6 +2972,8 @@ smooth samplesmooth (int type, int num = 0)
     return smooth(ucircle);
 }
 
+smooth sm (int type, int num = 0) = samplesmooth;
+
 smooth rn (
     int n,
     pair labeldir = (1,1),
@@ -3222,6 +3222,9 @@ smooth[] intersection (
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
+smooth[] operator ^^ (smooth sm1, smooth sm2)
+{ return intersection(sm1, sm2); }
+
 // -- Intersects -- //
  
 smooth intersect (
@@ -3264,6 +3267,9 @@ smooth intersect (
     bool addsubsets = currentSmAS
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
+
+smooth operator ^ (smooth sm1, smooth sm2)
+{ return intersect(sm1, sm2); }
 
 // -- Unions -- //
 
@@ -3573,14 +3579,13 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
     {
         bool gscyclic = cyclic(gs);
 
-        bool under (bool inside, bool curunder)
+        int under (bool inside, int curunder)
         {
-            bool res = curunder;
-            if (inside && covermode < 2)
+            int res = curunder;
+            if (inside)
             {
-                if (covermode == 1) { res = true; }
-                else if (covermode == -1) { res = false; }
-                else { res = !res; }
+                if (covermode == 1) { res += 1; }
+                else if (covermode == -1) { res = max(0,res-1); }
             }
             return res;
         }
@@ -3589,7 +3594,7 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
 		{
             path[] g = curdp[i].g;
             path[] newg;
-            bool[] newunder;
+            int[] newunder;
             if (!gscyclic) covermode = 2;
             bool gjcyclic = (g.length == 1) && cyclic(g[0]);
 
@@ -3700,7 +3705,7 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
         curdp.push(deferredPath(
             g = new path[]{gs},
             p = p,
-            under = new bool[]{false},
+            under = new int[]{0},
             arrow = arrow,
             beginarrow = beginarrow,
             endarrow = endarrow,
@@ -3728,7 +3733,7 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
 void fitpath (
     picture pic = currentpicture,
     path g,
-    int covermode = 2,
+    int covermode = 0,
     Label L = "",
     pen p = currentpen,
     bool drawnow = false,
@@ -3743,7 +3748,7 @@ void fitpath (
 void fitpath (
     picture pic = currentpicture,
     path[] g,
-    int covermode = 2,
+    int covermode = 0,
     Label L = "",
     pen p = currentpen,
     bool drawnow = false
@@ -3756,7 +3761,7 @@ void fitpath (
 void fillfitpath (
     picture pic = currentpicture,
     path g,
-    int covermode = 0,
+    int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
     pen fillpen = currentpen,
@@ -3770,7 +3775,7 @@ void fillfitpath (
 void fillfitpath (
     picture pic = currentpicture,
     path[] g,
-    int covermode = 0,
+    int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
     pen fillpen = currentpen,
@@ -3829,12 +3834,11 @@ void draw (
     bool drawcontour = currentDrDC,
     bool help = currentDrH,
     bool dash = currentDrDD,
-    bool underdash = currentDrDD,
     bool shade = currentDrDS,
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool drawnow = overlap
 ) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `help` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
     // Configuring variables
@@ -3846,16 +3850,16 @@ void draw (
     if (currentSeMLR > 0) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] holes = holecontours(sm.holes);
-    path[] contour = sm.contour ^^ holes;
+    path[] contour = reverse(sm.contour) ^^ holes;
 
     // Filling and drawing main contour
 
-    if (fill) fill(pic = pic, reverse(sm.contour)^^holes, p = smoothfill);
+    if (fill) fill(pic = pic, contour, p = smoothfill);
     if (drawcontour)
     {
         for (int i = 0; i < contour.length; ++i)
         {
-            fitpath(pic = pic, overlap = overlap || sm.isderivative, covermode = 0, drawnow = drawnow, gs = contour[i], L = "", p = contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+            fitpath(pic = pic, overlap = overlap || sm.isderivative, covermode = 1-2*sgn(i), drawnow = drawnow, gs = contour[i], L = "", p = contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
         }
     }
 
@@ -3983,7 +3987,7 @@ void draw (
         {
             if (!sm.subsets[i].isderivative)
             {
-                fitpath(pic = pic, overlap = overlap || currentDrSCO || sm.subsets[i].isonboundary, covermode = 2, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, overlap = overlap || currentDrSCO || sm.subsets[i].isonboundary, covermode = 0, drawnow = drawnow, gs = sm.subsets[i].contour, L = "", p = subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
     }
@@ -4075,7 +4079,8 @@ void draw (
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN)
+    bool drawnow = overlap
+)
 {
 	for (int i = 0; i < sms.length; ++i)
 	{
@@ -4103,7 +4108,7 @@ void draw (
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool drawnow = overlap
     ... smooth[] sms
 )
 {
@@ -4147,7 +4152,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = currentDrDN,
+        bool drawnow = overlap,
     pen ghostpen = dashpen(contourpen)
 ) // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
@@ -4201,7 +4206,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = currentDrDN,
+        bool drawnow = overlap,
     pen ghostpen = dashpen(contourpen)
 )
 {
@@ -4252,7 +4257,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = currentDrDN,
+        bool drawnow = overlap,
     pen ghostpen = dashpen(contourpen)
     ... smooth[] sms
 )
@@ -4280,7 +4285,7 @@ void drawarrow (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
+    bool drawnow = overlap,
     real margin1 = currentArM,
     real margin2 = currentArM
 ) // Draws an arrow between two given smooth objects, or their subsets.
@@ -4319,8 +4324,6 @@ void drawarrow (
     }
     else center2 = center1;
 
-	// if (center1 == center2) { halt("Could not draw arrow between object and itself. [ drawarrow() ]"); }
-
     path g;
 
     if (points.length > 0)
@@ -4343,7 +4346,7 @@ void drawarrow (
 
     path gs = subpath(g, time1, time2);
 
-	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
+	fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
 
 void drawarrow (
@@ -4364,7 +4367,7 @@ void drawarrow (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
+    bool drawnow = overlap,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4409,7 +4412,7 @@ void drawmapping (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
+    bool drawnow = overlap,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4430,7 +4433,7 @@ void drawmapping (
     if (reverse) g = reverse(g);
 
 	g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
-	fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = g, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
+	fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = g, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
 
 void drawmapping (
@@ -4451,7 +4454,7 @@ void drawmapping (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
+    bool drawnow = overlap,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4490,7 +4493,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool drawnow = overlap
 )
 {
     bool onself = sm2 == sm1 && index1 == index2;
@@ -4524,7 +4527,7 @@ void drawpath (
 
     if (reverse) gs = reverse(gs);
     
-    fitpath(pic, overlap = overlap, covermode = 2, drawnow = drawnow, gs = gs, L = L, p = p, null, false, false, 0, false, false);
+    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, null, false, false, 0, false, false);
 }
 
 void drawpath (
@@ -4539,7 +4542,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool drawnow = overlap
 )
 {
     int[] indices1 = findelementindex(destlabel1);
@@ -4581,24 +4584,24 @@ private void drawdeferred (
         if (!beginarrow && !endarrow && !beginbar && !endbar)
         {
             for (int j = startind; j <= finishind; ++j)
-            { draw(pic = pic, g[j], p = under[j] ? underp : p); }
+            { draw(pic = pic, g[j], p = under[j] > 0 ? underp : p); }
             return;
         }
 
         if (!beginarrow && !beginbar)
         {
-            draw(pic = pic, g[g.length-1], p = under[g.length-1] ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
+            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
             finishind -= 1;
         }
         else if (!endarrow && !endbar)
         {
-            draw(pic = pic, g[0], p = under[0] ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
+            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
             startind += 1;
         }
         else if (g.length > 1)
         {
-            draw(pic = pic, g[0], p = under[0] ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
-            draw(pic = pic, g[g.length-1], p = under[g.length-1] ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
+            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
+            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
             startind += 1;
             finishind -= 1;
         }
@@ -4614,12 +4617,12 @@ private void drawdeferred (
             else if (beginbar) truebar = BeginBar(barsize);
             else if (endbar) truebar = EndBar(barsize);
             else truebar = None;
-            draw(pic = pic, g[0], p = under[0] ? underp : p, arrow = truearrow, bar = truebar);
+            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             return;
         }
 
         for (int j = startind; j <= finishind; ++j)
-        { draw(pic = pic, g[j], p = under[j] ? underp : p); }
+        { draw(pic = pic, g[j], p = under[j] > 0 ? underp : p); }
     }
     for (int i = 0; i < curdp.length; ++i)
     { auxdraw(curdp[i]); }
