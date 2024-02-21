@@ -1820,11 +1820,11 @@ struct smooth
 	smooth addsubset (
         subset sb,
 		int index = -1,
-        bool inferlabels = currentSmIL,
-        bool clip = false,
+        bool inferlabels = currentSmIL, // whether to create intersection labels.
+        bool clip = false, // whether to complain if subset is out of bounds, or clip its contour instead.
 		bool unit = currentSmU,
         bool checkintersection = true
-    )
+    ) // Add a subset to the smooth object.
 	{
         if (!currentSyRL && repeats(sb.label))
         { halt("Could not add subset: label \""+sb.label+"\" already assigned. [ addsubset() ]"); }
