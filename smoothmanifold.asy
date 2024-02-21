@@ -23,20 +23,20 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // [Sy]stem
 private string defaultversion = "v5.9.8-beta";
-private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it"
-private string defaultSyDS = "-10000"; // [D]ummy [S]tring
-private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air
+private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it".
+private string defaultSyDS = "-10000"; // [D]ummy [S]tring --||--
+private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
 
 // [Se]ction
-private real defaultSeSN = 5.0e-4; // [S]mall [N]umber
-private real defaultSeWT = .65; // [W]idth [T]est
-real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7};
+private real defaultSeSN = 5.0e-4; // [S]mall [N]umber -- custom "epsilon" used in backend algorithms.
+private real defaultSeWUB = .65; // [W]idth [U]pper [B]oundary -- see `sectiontoowide()`.
+real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7}; // -- default expressed in section notation.
 
-private real defaultSeF = .3; // [F]reedom
-private int defaultSeP = 20; // [P]recision
-private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber
-private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle]
-private real defaultSeEP = -1; // [E]llipse [P]recision
+private real defaultSeF = .3; // [F]reedom -- how freely sections can deviate from their target positions.
+private int defaultSeP = 20; // [P]recision -- how many points to sample in search for good section position.
+private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
+private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle] -- range to be used for interhole sections.
+private real defaultSeEP = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of bin. search.
 private real defaultSeMLR = -1; // [M]aximum [L]ength [R]atio
 
 // [Sm]ooth
@@ -318,7 +318,7 @@ private real sectionsymmetryvalue (pair p1p2, pair dir1, pair dir2)
 private bool sectiontoowide (pair p1, pair p2, pair dir1, pair dir2)
 // Checks if the section is too wide (see 'cartsections').
 {
-    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWT || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWT);
+    return (min(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) <= -defaultSeWUB || max(dot(unit(dir2), unit(p1-p2)), dot(unit(p2-p1), unit(dir1))) >= defaultSeWUB);
 }
 
 private pen inverse (pen p)
@@ -1819,10 +1819,10 @@ struct smooth
 
 	smooth addsubset (
         subset sb,
-		int index = -1,
+		int index = -1, // the index of parent subset (or the entire smooth object, if index = -1).
         bool inferlabels = currentSmIL, // whether to create intersection labels.
         bool clip = false, // whether to complain if subset is out of bounds, or clip its contour instead.
-		bool unit = currentSmU,
+		bool unit = currentSmU, // whether to transform subset using this.shift, this.scale, and this.rotate.
         bool checkintersection = true
     ) // Add a subset to the smooth object.
 	{
