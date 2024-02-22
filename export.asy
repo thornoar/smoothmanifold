@@ -126,7 +126,7 @@ void invertcolors ()
 	smoothcolor = inverse(smoothcolor);
 	subsetcolor = inverse(subsetcolor);
 	currentDrIC = !currentDrIC;
-	currentDrHP = inverse(currentDrHP);
+	// currentDrHP = inverse(currentDrHP);
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpenscale = new pen (pen p) { return .3*p+dashed; };
     shadepen = new pen (pen p) { return inverse(currentDrShS*inverse(p)); };
