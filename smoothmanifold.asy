@@ -28,38 +28,40 @@ private string defaultSyDS = "-10000"; // [D]ummy [S]tring --||--
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
 
 // [Se]ction
-private real defaultSeSN = 5.0e-4; // [S]mall [N]umber -- custom "epsilon" used in backend algorithms.
+private real defaultSeSN = 5.0e-4; // [S]mall [N]umber -- custom "epsilon" used in some algorithms.
 private real defaultSeWUB = .65; // [W]idth [U]pper [B]oundary -- see `sectiontoowide()`.
 real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,7}; // -- default expressed in section notation.
 
 private real defaultSeF = .3; // [F]reedom -- how freely sections can deviate from their target positions.
 private int defaultSeP = 20; // [P]recision -- how many points to sample in search for good section position.
-private int defaultSeIHSN = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
-private real defaultSeIHSA = 25; // [I]nter[h]ole [S]ection [Angle] -- range to be used for interhole sections.
-private real defaultSeEP = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of bin. search.
-private real defaultSeMLR = -1; // [M]aximum [L]ength [R]atio
+private real defaultSeEP = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
 
 // [Sm]ooth
-private real defaultSmNC = .15; // [Ne]igh [C]urve
-private real defaultSmAR = 0.1; // [A]rc [R]atio
-private real defaultSmVA = 7; // [V]iew [A]ngle in degrees
-private real defaultSmEAL = .2; // [E]xplain [A]rrow [L]ength
-private real defaultSmCEM = .07; // [C]art [E]dge [M]argin
-private real defaultSmCSD = .1; // [C]art [S]tep [D]istance
-private real defaultSmSVS = .3; // [S]ubset [V]iew [S]hift
+private int defaultSmIHSN = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
+private real defaultSmIHSA = 25; // [I]nter[h]ole [S]ection [Angle] -- range to be used for interhole sections.
+private real defaultSmMSLR = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) the section can be compared to the size of parent object. A value of -1 means no restriction.
+private real defaultSmSRC = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
+private real defaultSmVA = 7; // [V]iew [A]ngle -- angle (in degrees) of rotation of smooth objects when setting the 'viewdir' parameter.
+private real defaultSmCEM = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
+private real defaultSmCSD = .1; // [C]art [S]tep [D]istance --||--
+private real defaultSmSVS = .3; // [S]ubset [V]iew [S]hift -- how much to shift subsets under different `viewdir` values.
 
 // [Dr]awing
-private real defaultDrGL = .1; // [G]ap [L]ength
-private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor
-private pen defaultDrSbC = grey; // [S]u[b]set [C]olor
-private pen defaultDrExP = linewidth(.3); // [E]xplain [P]en
-private real defaultDrSePS = .6; // [Se]ction [P]en [S]cale
-private real defaultDrElPW = 3.0; // [E]lement [P]en
-private real defaultDrShS = .85; // [S]hade [S]cale
-private real defaultDrDPS = .4; // [D]ash [P]en [S]cale
-private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity
-private real defaultDrDO = .8; // [D]rag [O]pacity
-private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier;
+private real defaultDrGL = .1; // [G]ap [L]ength -- the length of the gap made on path overlaps.
+private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor -- the filling color of smooth objects.
+private pen defaultDrSbC = grey; // [S]u[b]set [C]olor -- the filling color of layer 0 subsets.
+private real defaultDrSePS = .6; // [Se]ction [P]en [S]cale -- how thinner the section pen is compared to the contour pen.
+private real defaultDrElPW = 3.0; // [E]lement [P]en -- pen to draw element dots.
+private real defaultDrShS = .85; // [S]hade [S]cale -- how darker shaded areas are compared to object filling color.
+private real defaultDrDPS = .4; // [D]ash [P]en [S]cale -- how lighter dashed lines are compared to regular ones.
+private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
+private real defaultDrDO = .8; // [D]rag [O]pacity -- opacity of smooth objects attached to main object.
+private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
+
+// [H]e[l]p
+private real defaultHlAR = 0.1; // [A]rc [R]atio
+private real defaultHlAL = .2; // [A]rrow [L]ength
+private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth
 
 // [Ar]rows
 private real defaultArM = defaultDrGL*.7; // [M]argin (see "arrow")
@@ -214,33 +216,32 @@ path randomconvex ()
 path randomconcave ()
 { return defaultPaCC[rand()%defaultPaCC.length]; }
 
-// -- Current values (can be changed) -- //
+// -- Current values (can be changed by the user) -- //
 
 // [Sy]stem
-private bool currentSyRL = false; // [R]epeat [L]abels
-private bool currentSyID = true; // [I]nsert [D]ollars
+private bool currentSyRL = false; // [R]epeat [L]abels -- whether to allow two entities to have one label.
+private bool currentSyID = true; // [I]nsert [D]ollars -- whether to automatically insert dollars in labels.
 
 // [Se]ction
 private real[] currentsection = copy(defaultsection);
 private real currentSeF = defaultSeF;
-private int currentSeIHSN = defaultSeIHSN;
-private real currentIHSA = defaultSeIHSA;
 private real currentSeEP = defaultSeEP;
-private real currentSeMLR = defaultSeMLR;
-private real currentSeML; // [M]aximum [L]ength
 private bool currentSeAS = false; // [A]void [S]ubsets
 
 // [Sm]ooth
-private bool currentSmIL = true; // [I]nfer [L]abels
-private bool currentSmSS = false; // [S]hift [S]ubsets
-private bool currentSmAS = true; // [A]dd [S]ubsets
+private int currentSmIHSN = defaultSmIHSN;
+private real currentSmIHSA = defaultSmIHSA;
+private real currentSmMSLR = defaultSmMSLR;
+private real currentSmMSL; // [M]aximum [L]ength
+private bool currentSmIL = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection. 
+private bool currentSmSS = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
+private bool currentSmAS = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
 private bool currentSmU = true; // [U]nit
 
 // [Dr]awing
 private real currentDrGL = defaultDrGL;
 private real currentDrSePS = defaultDrSePS;
 private real currentDrElPW = defaultDrElPW;
-private pen currentDrHP = defaultDrExP;
 private real currentDrShS = defaultDrShS;
 private real currentDrDPS = defaultDrDPS;
 private real currentDrDPO = defaultDrDPO;
@@ -252,13 +253,16 @@ private bool currentDrUO = false; // [U]se [O]pacity
 private bool currentDrDD = true; // [D]raw [D]ashes
 private bool currentDrDUD = false; // [D]raw [U]nder [D]ashes
 private bool currentDrH = false; // [H]elp
-private int currentDrHGN = 10; // [H]elp [G]rid [N]umber
 private bool currentDrDS = false; // [D]raw [S]hade
 private bool currentDrF = true; // [F]ill
 private bool currentDrFS = false; // [F]ill [S]ubsets
 private bool currentDrDC = true; // [D]raw [C]ontour
 private bool currentDrO = false; // [O]verlap
 private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
+
+// [H]e[l]p
+private pen currentHlLW = defaultHlLW;
+private int currentHlGN = 10; // [H]elp [G]rid [N]umber
 
 // [Ar]rows
 private real currentArM = defaultArM;
@@ -285,6 +289,7 @@ include pathmethods;
 // -- System functions -- //
 
 void halt (string msg)
+// write error and exit compilation.
 {
     write();
     write("> ! "+msg);
@@ -371,10 +376,10 @@ private pen underpen (pen p)
 void smpar (
     real[] section = currentsection,
     real scfreedom = currentSeF,
-    int scholenumber = currentSeIHSN,
-    real scholeangle = currentIHSA,
+    int scholenumber = currentSmIHSN,
+    real scholeangle = currentSmIHSA,
     real scprecision = currentSeEP,
-    real scmaxlength = currentSeMLR,
+    real scmaxlength = currentSmMSLR,
     bool scavoidsubsets = currentSeAS,
         int mode = currentDrM,
         pen smoothfill = smoothcolor,
@@ -384,8 +389,8 @@ void smpar (
         bool subsetoverlap = currentDrSCO,
         bool drawnow = overlap,
         bool help = currentDrH,
-        int gridnumber = currentDrHGN,
-        pen explainpen = currentDrHP,
+        int gridnumber = currentHlGN,
+        pen explainpen = currentHlLW,
         real dragop = currentDrDO,
         bool dash = currentDrDD,
         bool underdash = currentDrDUD,
@@ -420,10 +425,10 @@ void smpar (
 	{ halt("Could not set drag opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
 
     currentSeF = scfreedom;
-	currentSeIHSN = scholenumber;
-	currentIHSA = scholeangle;
+	currentSmIHSN = scholenumber;
+	currentSmIHSA = scholeangle;
     currentSeEP = scprecision;
-	currentSeMLR = scmaxlength;
+	currentSmMSLR = scmaxlength;
     currentSeAS = scavoidsubsets;
 	currentDrM = mode;
 	smoothcolor = smoothfill;
@@ -432,8 +437,8 @@ void smpar (
     currentDrO = overlap;
     currentDrSCO = subsetoverlap;
 	currentDrH = help;
-	currentDrHGN = gridnumber;
-	currentDrHP = explainpen;
+	currentHlGN = gridnumber;
+	currentHlLW = explainpen;
 	currentDrDO = dragop;
 	currentDrDD = dash;
 	currentDrDUD = underdash;
@@ -462,13 +467,13 @@ void defaults ()
 // Revert global settings to the default.
 {
 	currentsection = copy(defaultsection);
-	currentSeIHSN = defaultSeIHSN;
-	currentIHSA = defaultSeIHSA;
-	currentSeMLR = defaultSeMLR;
+	currentSmIHSN = defaultSmIHSN;
+	currentSmIHSA = defaultSmIHSA;
+	currentSmMSLR = defaultSmMSLR;
 	currentDrGL = defaultDrGL;
 	currentArM = defaultArM;
 	currentDrSePS = defaultDrSePS;
-	currentDrHP = defaultDrExP;
+	currentHlLW = defaultHlLW;
 	currentDrElPW = defaultDrElPW;
 	currentDrShS = defaultDrShS;
     currentDrDPS = defaultDrDPS;
@@ -521,7 +526,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 		for (int j = 0; j < g.length; ++j)
 		{
 			if (j == presections[i][2].x || j == presections[i+1][2].x) continue;
-			if (meet(g[j], curvedpath(presections[i][0], presections[i+1][0], defaultSmNC)) || meet(g[j], curvedpath(presections[i+1][0], presections[i][0], defaultSmNC)))
+			if (meet(g[j], curvedpath(presections[i][0], presections[i+1][0], defaultSmSRC)) || meet(g[j], curvedpath(presections[i+1][0], presections[i][0], defaultSmSRC)))
 			{
 				exclude = true;
 				break;
@@ -756,7 +761,7 @@ struct hole
         path contour,
 		pair center = center(contour),
 		real[][] sections = {},
-		int scnumber = currentSeIHSN,
+		int scnumber = currentSmIHSN,
 		pair shift = (0,0),
 		real scale = 1,
 		real rotate = 0,
@@ -1284,7 +1289,6 @@ struct smooth
                 transform move = shift(viewdir * defaultSmSVS * Sin(defaultSmVA));
                 this.subsets[i].contour = move * this.subsets[i].contour;
                 this.subsets[i].center = move * this.subsets[i].center;
-                // this.subsets[i].move(shift = viewdir * defaultSmSVS * Sin(defaultSmVA));
             }
 		}
         this.viewdir = viewdir;
@@ -3793,7 +3797,7 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
     for (int k = 0; k < sections.length; ++k)
     {
 		if (sections[k].length > 4) continue;
-		if (currentSeMLR > 0 && length(sections[k][1]-sections[k][0]) > currentSeML)
+		if (currentSmMSLR > 0 && length(sections[k][1]-sections[k][0]) > currentSmMSL)
         { continue; }
 
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir);
@@ -3805,9 +3809,9 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
             dot(pic, point(section[0], arctime(section[0], arclength(section[0])*.5)), red+1);
             dot(pic, sections[k][0], blue+1.5);
             dot(pic, sections[k][1], blue+1);
-            draw(pic, sections[k][0] -- sections[k][1], deepgreen + defaultDrExP);
-            draw(pic, sections[k][0]-.5*defaultSmEAL*scale*sections[k][2] -- sections[k][0]+.5*defaultSmEAL*scale*sections[k][2], deepgreen+defaultDrExP, arrow = Arrow(SimpleHead));
-            draw(pic, sections[k][1]-.5*defaultSmEAL*scale*sections[k][3] -- sections[k][1]+.5*defaultSmEAL*scale*sections[k][3], deepgreen+defaultDrExP, arrow = Arrow(SimpleHead));
+            draw(pic, sections[k][0] -- sections[k][1], deepgreen + defaultHlLW);
+            draw(pic, sections[k][0]-.5*defaultHlAL*scale*sections[k][2] -- sections[k][0]+.5*defaultHlAL*scale*sections[k][2], deepgreen+defaultHlLW, arrow = Arrow(SimpleHead));
+            draw(pic, sections[k][1]-.5*defaultHlAL*scale*sections[k][3] -- sections[k][1]+.5*defaultHlAL*scale*sections[k][3], deepgreen+defaultHlLW, arrow = Arrow(SimpleHead));
         }
     }
 }
@@ -3847,7 +3851,7 @@ void draw (
 	{ halt("Invalid mode specified. [ draw() ]"); }
 
     pair viewdir = Sin(defaultSmVA)*sm.viewdir;
-    if (currentSeMLR > 0) currentSeML = currentSeMLR*min(xsize(sm.contour), ysize(sm.contour));
+    if (currentSmMSLR > 0) currentSmMSL = currentSmMSLR*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] holes = holecontours(sm.holes);
     path[] contour = reverse(sm.contour) ^^ holes;
@@ -3889,30 +3893,30 @@ void draw (
 				{
 					pair smstart = point(cursmcontour, 0);
 					pair smfinish = point(cursmcontour, length(cursmcontour));
-					pair hlvec = defaultSmAR * sm.scale * unit(smstart - hl.center);
-					draw(pic = pic, (hl.center + hlvec) -- smstart, yellow + defaultDrExP);
-					draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- smfinish, yellow + defaultDrExP);
-					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultDrExP);
+					pair hlvec = defaultHlAR * sm.scale * unit(smstart - hl.center);
+					draw(pic = pic, (hl.center + hlvec) -- smstart, yellow + defaultHlLW);
+					draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- smfinish, yellow + defaultHlLW);
+					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultHlLW);
 				}
 
 				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
 			}
 
             // Drawing sections between holes
-            if (currentSeIHSN > 0)
+            if (currentSmIHSN > 0)
             {   
                 for (int j = 0; j < sm.holes.length; ++j)
                 {
                     if (holeconnected[i][j] || holeconnected[j][i]) continue;                    
 
-                    if (meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmNC)) || meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmNC))) continue;
+                    if (meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmSRC)) || meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmSRC))) continue;
                     
                     bool near = true;
                     for (int k = 0; k < sm.holes.length; ++k)
                     {
                         if (k == i || k == j) continue;
 
-                        if (intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmNC)).length > 0 || intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmNC)).length > 0)
+                        if (intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmSRC)).length > 0 || intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmSRC)).length > 0)
                         {
                             near = false;
                             break;
@@ -3924,8 +3928,8 @@ void draw (
                     hole hl1 = hl;
                     hole hl2 = sm.holes[j];
 
-                    pair hl1times = range(hl1.contour, hl1.center, hl2.center-hl1.center, currentIHSA);
-                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, currentIHSA, -1);
+                    pair hl1times = range(hl1.contour, hl1.center, hl2.center-hl1.center, currentSmIHSA);
+                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, currentSmIHSA, -1);
                     path curhl1contour = subcyclic(hl1.contour, hl1times);
                     path curhl2contour = subcyclic(reverse(hl2.contour), hl2times);
 
@@ -3935,17 +3939,17 @@ void draw (
                         pair hl1finish = point(curhl1contour, length(curhl1contour));
                         pair hl2start = point(curhl2contour, 0);
                         pair hl2finish = point(curhl2contour, length(curhl2contour));
-                        pair hl1vec = defaultSmAR * sm.scale * unit(hl1start - hl1.center);
-                        pair hl2vec = defaultSmAR * sm.scale * unit(hl2start - hl2.center);
-                        draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultDrExP);
-                        draw(pic, (hl1.center + rotate(-currentIHSA)*hl1vec)--hl1finish, yellow+defaultDrExP);
-                        draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultDrExP);
-                        draw(pic, (hl2.center + rotate(currentIHSA)*hl2vec)--hl2finish, yellow+defaultDrExP);
-                        draw(pic = pic, arc(hl1.center, hl1.center + hl1vec, hl1finish, direction = CW), blue+defaultDrExP);
-                        draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultDrExP);
+                        pair hl1vec = defaultHlAR * sm.scale * unit(hl1start - hl1.center);
+                        pair hl2vec = defaultHlAR * sm.scale * unit(hl2start - hl2.center);
+                        draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultHlLW);
+                        draw(pic, (hl1.center + rotate(-currentSmIHSA)*hl1vec)--hl1finish, yellow+defaultHlLW);
+                        draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultHlLW);
+                        draw(pic, (hl2.center + rotate(currentSmIHSA)*hl2vec)--hl2finish, yellow+defaultHlLW);
+                        draw(pic = pic, arc(hl1.center, hl1.center + hl1vec, hl1finish, direction = CW), blue+defaultHlLW);
+                        draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultHlLW);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, min(currentSeIHSN, abs(min(hl1.scnumber, hl2.scnumber))), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, min(currentSmIHSN, abs(min(hl1.scnumber, hl2.scnumber))), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -4022,8 +4026,8 @@ void draw (
         label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sm.label+"$") : sm.label), align = align));
         if (help && abs(sm.labeldir) > 0)
         {
-            draw(pic = pic, sm.center -- pos, purple+defaultDrExP);
-            draw(pic = pic, pos -- pos+sm.scale*defaultSmEAL*align, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+            draw(pic = pic, sm.center -- pos, purple+defaultHlLW);
+            draw(pic = pic, pos -- pos+sm.scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
         }
     }
 
@@ -4042,8 +4046,8 @@ void draw (
             label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = align));
             if (help && abs(sb.labeldir) > 0)
             {
-                draw(pic = pic, sb.center -- pos, purple+defaultDrExP);
-                draw(pic = pic, pos -- pos+sm.scale*defaultSmEAL*align, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+                draw(pic = pic, sb.center -- pos, purple+defaultHlLW);
+                draw(pic = pic, pos -- pos+sm.scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
             }
         }
 
@@ -4051,7 +4055,7 @@ void draw (
     }
     if (help)
     {
-        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultSmEAL, purple+defaultDrExP, arrow = Arrow(SimpleHead));
+        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultHlAL, purple+defaultHlLW, arrow = Arrow(SimpleHead));
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
@@ -4664,7 +4668,7 @@ void preshipout (picture pic)
         // draw(pic = pic, min -- (min.x, max.y));
         // draw(pic = pic, min -- (max.x, min.y));
 
-        int nx = currentDrHGN, ny = currentDrHGN;
+        int nx = currentHlGN, ny = currentHlGN;
         if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
         else ny = floor(nx * (diff.y/diff.x));
 
