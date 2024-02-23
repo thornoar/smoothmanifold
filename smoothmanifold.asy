@@ -3231,22 +3231,22 @@ smooth[] operator ^^ (smooth sm1, smooth sm2)
 
 // -- Intersects -- //
  
-smooth intersect (
-    smooth sm1,
-    smooth sm2,
-    bool keepdata = true,
-    bool round = false,
-    real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
-) // an alternative to `intersection` that only returns one smooth object.
-{
-    smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff, addsubsets);
-    if (intersection.length == 0)
-    { halt("Could not intersect: smooth objects do not intersect. [ intersect() ]"); }
-    if (intersection.length > 1)
-    { write("> ? Intersection produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
-    return intersection[0];
-}
+// smooth intersect (
+//     smooth sm1,
+//     smooth sm2,
+//     bool keepdata = true,
+//     bool round = false,
+//     real roundcoeff = currentSyRPC,
+//     bool addsubsets = currentSmAS
+// ) // an alternative to `intersection` that only returns one smooth object.
+// {
+//     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff, addsubsets);
+//     if (intersection.length == 0)
+//     { halt("Could not intersect: smooth objects do not intersect. [ intersect() ]"); }
+//     if (intersection.length > 1)
+//     { write("> ? Intersection produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
+//     return intersection[0];
+// }
 
 smooth intersect (
     smooth[] sms,
@@ -3497,6 +3497,9 @@ smooth[] union (
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff); }
 
+smooth[] operator ++ (smooth sm1, smooth sm2)
+{ return union(sm1, sm2); }
+
 smooth unite (
     smooth[] sms,
     bool keepdata = true,
@@ -3516,6 +3519,9 @@ smooth unite (
     real roundcoeff = currentSyRPC
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff)[0]; }
+
+smooth operator + (smooth sm1, smooth sm2)
+{ return unite(sm1, sm2); }
 
 smooth tangentspace (
     smooth sm,
@@ -3817,6 +3823,7 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
 }
 
 private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+// Draw vertical and horizontal cross sections.
 {
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
 }
