@@ -4585,7 +4585,78 @@ void drawpath (
     drawpath(pic, sm1, index1, sm2, index2, range, angle, radius, reverse, points, L, p, help, overlap, drawnow);
 }
 
-private void drawdeferred (
+void drawgrid (
+    picture pic = currentpicture,
+    pair min = pic.userMin2(),
+    pair max = pic.userMax2()
+)
+{
+    // pair min = pic.userMin2();
+    // pair max = pic.userMax2();
+    pair margin = (max - min)*.1;
+    if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
+    else margin = (margin.x, margin.x);
+    min -= margin;
+    max += margin;
+    pair diff = max - min;
+
+    int nx = currentHlGN, ny = currentHlGN;
+    if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
+    else ny = floor(nx * (diff.y/diff.x));
+
+    draw(pic, min -- (min.x,max.y) -- max -- (max.x, min.y) -- cycle, dashpen(linewidth(.2)));
+
+    gauss count = (1,1);
+    gauss places = (0,0);
+
+    while (true)
+    {
+        int nxp = floor(diff.x*10^places.x) # count.x;
+        if (nxp > nx) { count.x += 1; continue; }
+        if (nxp < nx)
+        {
+            if (places.x > 0) break;
+            places.x += 1;
+            continue;
+        }
+        if (nxp == nx) break;
+    }
+    
+    real stepx = count.x/10^places.x;
+    real x;
+
+    for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
+    {
+        label(pic = pic, position = (x, min.y), L = (string)x, align = S);
+        label(pic = pic, position = (x, max.y), L = (string)x, align = N);
+        draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(.2)));
+    }
+
+    while (true)
+    {
+        int nyp = floor(diff.y*10^places.y) # count.y;
+        if (nyp > ny) { count.y += 1; continue; }
+        if (nyp < ny)
+        {
+            if (places.y > 0) break;
+            places.y += 1;
+            continue;
+        }
+        if (nyp == ny) break;
+    }
+    
+    real stepy = count.y/10^places.y;
+    real y;
+
+    for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
+    {
+        label(pic = pic, position = (min.x, y), L = (string)y, align = W);
+        label(pic = pic, position = (max.x, y), L = (string)y, align = E);
+        draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(.2)));
+    }
+}
+
+void drawdeferred (
     picture pic = currentpicture,
 	bool flush = true
 )
@@ -4674,71 +4745,7 @@ private void preshipout (picture pic)
 {
     draw(pic = pic, currentPrDP, red+1);
     if (currentDrH)
-    {
-        pair min = pic.userMin2();
-        pair max = pic.userMax2();
-        pair margin = (max - min)*.1;
-        if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
-        else margin = (margin.x, margin.x);
-        min -= margin;
-        max += margin;
-        pair diff = max - min;
-
-        int nx = currentHlGN, ny = currentHlGN;
-        if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
-        else ny = floor(nx * (diff.y/diff.x));
-
-        draw(min -- (min.x,max.y) -- max -- (max.x, min.y) -- cycle, dashpen(linewidth(.2)));
-
-        gauss count = (1,1);
-        gauss places = (0,0);
-
-        while (true)
-        {
-            int nxp = floor(diff.x*10^places.x) # count.x;
-            if (nxp > nx) { count.x += 1; continue; }
-            if (nxp < nx)
-            {
-                if (places.x > 0) break;
-                places.x += 1;
-                continue;
-            }
-            if (nxp == nx) break;
-        }
-        
-        real stepx = count.x/10^places.x;
-        real x;
-
-        for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
-        {
-            label(pic = pic, position = (x, min.y), L = (string)x, align = S);
-            label(pic = pic, position = (x, max.y), L = (string)x, align = N);
-            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(.2)));
-        }
-
-        while (true)
-        {
-            int nyp = floor(diff.y*10^places.y) # count.y;
-            if (nyp > ny) { count.y += 1; continue; }
-            if (nyp < ny)
-            {
-                if (places.y > 0) break;
-                places.y += 1;
-                continue;
-            }
-            if (nyp == ny) break;
-        }
-        
-        real stepy = count.y/10^places.y;
-        real y;
-
-        for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
-        {
-            label(pic = pic, position = (min.x, y), L = (string)y, align = W);
-            label(pic = pic, position = (max.x, y), L = (string)y, align = E);
-            draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(.2)));
-        }
-    }
+    { drawgrid(pic, pic.userMin2(), pic.userMax2()); }
 }
 
 shipout = new void (
