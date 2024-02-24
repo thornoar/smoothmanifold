@@ -258,6 +258,7 @@ private bool currentDrF = true; // [F]ill
 private bool currentDrFS = false; // [F]ill [S]ubsets
 private bool currentDrDC = true; // [D]raw [C]ontour
 private bool currentDrO = false; // [O]verlap
+private bool currentDrDN = false; // [D]raw [N]ow
 private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 
 // [H]e[l]p
@@ -387,7 +388,7 @@ void smpar (
         real minscale = currentDrSPM,
         bool overlap = currentDrO,
         bool subsetoverlap = currentDrSCO,
-        bool drawnow = overlap,
+        bool drawnow = currentDrDN,
         bool help = currentDrH,
         int gridnumber = currentHlGN,
         pen explainpen = currentHlLW,
@@ -435,6 +436,7 @@ void smpar (
 	subsetcolor = subsetfill;
 	currentDrSPM = minscale;
     currentDrO = overlap;
+    currentDrDN = drawnow;
     currentDrSCO = subsetoverlap;
 	currentDrH = help;
 	currentHlGN = gridnumber;
@@ -3849,7 +3851,7 @@ void draw (
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = overlap
+    bool drawnow = currentDrDN
 ) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `help` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
 {
     // Configuring variables
@@ -4090,7 +4092,7 @@ void draw (
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = overlap
+    bool drawnow = currentDrDN
 )
 {
 	for (int i = 0; i < sms.length; ++i)
@@ -4119,7 +4121,7 @@ void draw (
     bool avoidsubsets = currentSeAS,
     bool drag = true,
     bool overlap = currentDrO,
-    bool drawnow = overlap
+    bool drawnow = currentDrDN
     ... smooth[] sms
 )
 {
@@ -4163,7 +4165,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = overlap,
+        bool drawnow = currentDrDN,
     pen ghostpen = dashpen(contourpen)
 ) // Draws the intersection of two smooth objects, as well as their dim contours for comparison
 {
@@ -4217,7 +4219,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = overlap,
+        bool drawnow = currentDrDN,
     pen ghostpen = dashpen(contourpen)
 )
 {
@@ -4268,7 +4270,7 @@ smooth[] drawintersect (
         bool avoidsubsets = currentSeAS,
         bool shade = currentDrDS,
         bool overlap = currentDrO,
-        bool drawnow = overlap,
+        bool drawnow = currentDrDN,
     pen ghostpen = dashpen(contourpen)
     ... smooth[] sms
 )
@@ -4296,7 +4298,7 @@ void drawarrow (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = overlap,
+    bool drawnow = currentDrDN,
     real margin1 = currentArM,
     real margin2 = currentArM
 ) // Draws an arrow between two given smooth objects, or their subsets.
@@ -4378,7 +4380,7 @@ void drawarrow (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = overlap,
+    bool drawnow = currentDrDN,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4423,7 +4425,7 @@ void drawmapping (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = overlap,
+    bool drawnow = currentDrDN,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4465,7 +4467,7 @@ void drawmapping (
     bool beginbar = false,
     bool endbar = false,
     bool overlap = currentDrO,
-    bool drawnow = overlap,
+    bool drawnow = currentDrDN,
     real margin1 = currentArM,
     real margin2 = currentArM
 )
@@ -4504,7 +4506,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool overlap = currentDrO,
-    bool drawnow = overlap
+    bool drawnow = currentDrDN
 )
 {
     bool onself = sm2 == sm1 && index1 == index2;
@@ -4553,7 +4555,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool overlap = currentDrO,
-    bool drawnow = overlap
+    bool drawnow = currentDrDN
 )
 {
     int[] indices1 = findelementindex(destlabel1);
@@ -4635,15 +4637,16 @@ private void drawdeferred (
         for (int j = startind; j <= finishind; ++j)
         { draw(pic = pic, g[j], p = under[j] > 0 ? underp : p); }
     }
+
     for (int i = 0; i < curdp.length; ++i)
     { auxdraw(curdp[i]); }
+
     if (flush) curdp.delete();
 }
 
 void flushdeferred (
     picture pic = currentpicture
-)
-{ extractdeferredpaths(pic, false).delete(); }
+) { extractdeferredpaths(pic, false).delete(); }
 
 // -- Redefining functions to execute `drawdeferred` and `flushdeferred` at call -- //
 
@@ -4660,7 +4663,7 @@ void plainshipout (
     projection P=currentprojection
 ) = shipout;
 
-void preshipout (picture pic)
+private void preshipout (picture pic)
 {
     draw(pic = pic, currentPrDP, red+1);
     if (currentDrH)
@@ -4714,26 +4717,49 @@ shipout = new void (
     plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
 
-void plainerase (picture pic = currentpicture) = erase;
-erase = new void (picture pic = currentpicture)
+void plainerase (
+    picture pic = currentpicture
+) = erase;
+
+erase = new void (
+    picture pic = currentpicture
+)
 {
     flushdeferred();
     plainerase(pic);
 };
 
-add = new void (picture dest, picture src, bool group=true, filltype filltype=NoFill, bool above=true)
+add = new void (
+    picture dest,
+	picture src,
+	bool group=true,
+	filltype filltype=NoFill,
+	bool above=true
+)
 {
     drawdeferred(src);
     dest.add(src, group, filltype, above);
 };
 
-add = new void (picture src, bool group=true, filltype filltype=NoFill, bool above=true)
+add = new void (
+    picture src,
+	bool group=true,
+	filltype filltype=NoFill,
+	bool above=true
+)
 {
     drawdeferred(src);
     currentpicture.add(src, group, filltype, above);
 };
 
-add = new void (picture dest, picture src, pair position, bool group=true, filltype filltype=NoFill, bool above=true)
+add = new void (
+    picture dest,
+	picture src,
+	pair position,
+	bool group=true,
+	filltype filltype=NoFill,
+	bool above=true
+)
 {
     drawdeferred(src);
     add(dest, src.fit(identity()), position, group, filltype, above);
@@ -4743,8 +4769,8 @@ picture plainapply (transform t, picture p) { return t*p; }
 
 picture operator * (transform t, picture p)
 {
-    picture q = plainapply(t,p);
     deferredPath[] curdp = extractdeferredpaths(p, false);
+    picture q = plainapply(t,p);
     if (curdp.length > 0)
     {
         for (int i = 0; i < curdp.length; ++i)
