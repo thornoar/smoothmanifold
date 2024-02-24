@@ -264,6 +264,7 @@ private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 // [H]e[l]p
 private pen currentHlLW = defaultHlLW;
 private int currentHlGN = 10; // [H]elp [G]rid [N]umber
+private int currentHlGP = 1; // [H]elp [G]rid [N]umber
 
 // [Ar]rows
 private real currentArM = defaultArM;
@@ -391,6 +392,7 @@ void smpar (
         bool drawnow = currentDrDN,
         bool help = currentDrH,
         int gridnumber = currentHlGN,
+        int gridplaces = currentHlGP,
         pen explainpen = currentHlLW,
         real dragop = currentDrDO,
         bool dash = currentDrDD,
@@ -440,6 +442,7 @@ void smpar (
     currentDrSCO = subsetoverlap;
 	currentDrH = help;
 	currentHlGN = gridnumber;
+	currentHlGP = gridplaces;
 	currentHlLW = explainpen;
 	currentDrDO = dragop;
 	currentDrDD = dash;
@@ -4587,7 +4590,7 @@ void drawpath (
 
 void drawgrid (
     picture pic = currentpicture,
-    int places = 1,
+    int places = currentHlGP,
     int number = currentHlGN,
     pair min = pic.userMin2(),
     pair max = pic.userMax2()
@@ -4612,6 +4615,7 @@ void drawgrid (
     while (true)
     {
         int nxp = floor(diff.x*10^exponent.x) # count.x;
+        if (nxp == nx) break;
         if (nxp > nx) { count.x += 1; continue; }
         if (nxp < nx)
         {
@@ -4619,7 +4623,6 @@ void drawgrid (
             exponent.x += 1;
             continue;
         }
-        if (nxp == nx) break;
     }
     
     real stepx = count.x/10^exponent.x;
@@ -4635,6 +4638,7 @@ void drawgrid (
     while (true)
     {
         int nyp = floor(diff.y*10^exponent.y) # count.y;
+        if (nyp == ny) break;
         if (nyp > ny) { count.y += 1; continue; }
         if (nyp < ny)
         {
@@ -4642,7 +4646,6 @@ void drawgrid (
             exponent.y += 1;
             continue;
         }
-        if (nyp == ny) break;
     }
     
     real stepy = count.y/10^exponent.y;
