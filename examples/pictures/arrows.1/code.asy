@@ -3,7 +3,7 @@ settings.render = 16;
 
 size(25 cm);
 defaultpen(.7);
-smpar(gaplength = .12, shiftsubsets = true, fill = true);
+smpar(gaplength = .12, shiftsubsets = true, fill = true, unit = true);
 expar(bgpen = paleyellow, margin = 2 cm);
 
 pair viewdir = dir(25);
@@ -31,7 +31,7 @@ draw(sm2, shade = true, dash = false);
 drawarrow(sm1, sm2, curve = -.15, L = Label("f", align = Relative(W)));
 drawarrow(sm1, sm2, index1 = 0, index2 = 0, curve = .34, L = Label("f_U", position = Relative(.4)));
 drawarrow(sm2, sm1, index1 = 1, index2 = 0, curve = .4, L = "g");
-drawarrow(sm1, 0, angle = 190, radius = .62, L = Label("\mathrm{id}_U", position = Relative(.22), align = Relative(W)));
+drawarrow(sm1, 0, angle = 182, radius = .62, L = Label("\mathrm{id}_U", position = Relative(.22), align = Relative(W)));
 drawarrow(sm2, 1, angle = -63, radius = .8, reverse = true, L = Label("\mathrm{id}_W", position = Relative(.45), align = Relative(E)));
 drawarrow(sm2, 2, angle = 150, radius = .7);
 drawarrow(sm1, angle = 70, radius = .9, L = Label("\mathrm{id}_M", align = Relative(W)));

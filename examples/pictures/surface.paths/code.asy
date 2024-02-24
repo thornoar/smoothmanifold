@@ -3,7 +3,7 @@ size(17cm);
 
 defaultpen(1);
 expar(margin = 1.5cm, bgpen = paleyellow, autoexport = true);
-smpar(scholeangle = 30, scfreedom = .3, gaplength = .1, subsetoverlap = true);
+smpar(scholeangle = 30, scfreedom = .3, gaplength = .1, subsetoverlap = true, unit = true);
 
 smooth sm1 = samplesmooth(0)
     .setlabel("\mathcal{S}^2")

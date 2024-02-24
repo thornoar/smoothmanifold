@@ -4,7 +4,7 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-smpar(minscale = .05, subsetoverlap = false, gaplength = .05, smoothfill = lightgreen, subsetfill = cyan);
+smpar(minscale = .05, subsetoverlap = false, gaplength = .05, smoothfill = lightgreen, subsetfill = cyan, unit = true);
 
 smooth sm = samplesmooth(0).move(scale = 1.5);
 

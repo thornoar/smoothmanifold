@@ -2,8 +2,8 @@ import export;
 
 settings.render = 8;
 
-size(15 cm);
-defaultpen(.7);
+size(17 cm);
+defaultpen(.8);
 expar(bgpen = paleyellow);
 smpar(gaplength = .09, dragop = .9, help = true);
 

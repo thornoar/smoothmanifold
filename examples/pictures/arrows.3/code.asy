@@ -3,7 +3,7 @@ size(15cm);
 
 defaultpen(.7);
 expar(margin = 1.5cm, bgpen = paleyellow);
-smpar(scholeangle = 30, scfreedom = .3, gaplength = .1);
+smpar(scholeangle = 30, scfreedom = .3, gaplength = .1, unit = true);
 
 smooth sm1 = samplesmooth(3, 1).setlabel("M", dir(160));
 sm1.addelement((-.4,.2), "x", align = W);

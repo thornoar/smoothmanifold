@@ -236,7 +236,7 @@ private real currentSmMSL; // [M]aximum [L]ength
 private bool currentSmIL = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection. 
 private bool currentSmSS = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
 private bool currentSmAS = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
-private bool currentSmU = true; // [U]nit
+private bool currentSmU = false; // [U]nit
 
 // [Dr]awing
 private real currentDrGL = defaultDrGL;
@@ -407,7 +407,7 @@ void smpar (
         bool inferlabels = currentSmIL,
         bool shiftsubsets = currentSmSS,
         bool addsubsets = currentSmAS,
-        bool unit = currentSmU && !help,
+        bool unit = currentSmU,
         real gaplength = currentDrGL,
         real arrowmargin = currentArM,
             bool repeatlabels = currentSyRL,
@@ -4505,6 +4505,7 @@ void drawpath (
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
+    bool help = currentDrH,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN
 )
@@ -4513,6 +4514,11 @@ void drawpath (
 
     path gs;
 
+    if (help)
+    {
+        for (int i = 0; i < points.length; ++i)
+        { dot(pic, points[i], elementpen(red)); }
+    }
     if (points.length < 2 && onself)
     {
         element elt = sm1.elements[index1];
@@ -4554,6 +4560,7 @@ void drawpath (
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
+    bool help = currentDrH,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN
 )
@@ -4575,7 +4582,7 @@ void drawpath (
         index2 = indices2[1];
     }
 
-    drawpath(pic, sm1, index1, sm2, index2, range = range, angle = angle, radius = radius, reverse = reverse, points, L, p, overlap, drawnow);
+    drawpath(pic, sm1, index1, sm2, index2, range, angle, radius, reverse, points, L, p, help, overlap, drawnow);
 }
 
 private void drawdeferred (
@@ -4671,29 +4678,64 @@ private void preshipout (picture pic)
         pair min = pic.userMin2();
         pair max = pic.userMax2();
         pair margin = (max - min)*.1;
+        if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
+        else margin = (margin.x, margin.x);
         min -= margin;
         max += margin;
         pair diff = max - min;
-
-        // draw(pic = pic, min -- (min.x, max.y));
-        // draw(pic = pic, min -- (max.x, min.y));
 
         int nx = currentHlGN, ny = currentHlGN;
         if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
         else ny = floor(nx * (diff.y/diff.x));
 
-        for (int i = 0; i <= nx; ++i)
-        {
-            real x = min.x + (i/nx)*diff.x;
+        draw(min -- (min.x,max.y) -- max -- (max.x, min.y) -- cycle, dashpen(linewidth(.2)));
 
-            label(pic = pic, position = (x, min.y), L = (string)round(x, 1), align = S);
-            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(currentpen+linewidth(.2)));
+        gauss count = (1,1);
+        gauss places = (0,0);
+
+        while (true)
+        {
+            int nxp = floor(diff.x*10^places.x) # count.x;
+            if (nxp > nx) { count.x += 1; continue; }
+            if (nxp < nx)
+            {
+                if (places.x > 0) break;
+                places.x += 1;
+                continue;
+            }
+            if (nxp == nx) break;
         }
-        for (int i = 0; i <= ny; ++i)
-        {
-            real y = min.y + (i/ny)*diff.y;
+        
+        real stepx = count.x/10^places.x;
+        real x;
 
-            label(pic = pic, position = (min.x, y), L = (string)round(y, 1), align = W);
+        for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
+        {
+            label(pic = pic, position = (x, min.y), L = (string)x, align = S);
+            label(pic = pic, position = (x, max.y), L = (string)x, align = N);
+            draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(.2)));
+        }
+
+        while (true)
+        {
+            int nyp = floor(diff.y*10^places.y) # count.y;
+            if (nyp > ny) { count.y += 1; continue; }
+            if (nyp < ny)
+            {
+                if (places.y > 0) break;
+                places.y += 1;
+                continue;
+            }
+            if (nyp == ny) break;
+        }
+        
+        real stepy = count.y/10^places.y;
+        real y;
+
+        for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
+        {
+            label(pic = pic, position = (min.x, y), L = (string)y, align = W);
+            label(pic = pic, position = (max.x, y), L = (string)y, align = E);
             draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(.2)));
         }
     }
