@@ -4587,12 +4587,12 @@ void drawpath (
 
 void drawgrid (
     picture pic = currentpicture,
+    int places = 1,
+    int number = currentHlGN,
     pair min = pic.userMin2(),
     pair max = pic.userMax2()
 )
 {
-    // pair min = pic.userMin2();
-    // pair max = pic.userMax2();
     pair margin = (max - min)*.1;
     if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
     else margin = (margin.x, margin.x);
@@ -4600,29 +4600,29 @@ void drawgrid (
     max += margin;
     pair diff = max - min;
 
-    int nx = currentHlGN, ny = currentHlGN;
+    int nx = number, ny = number;
     if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
     else ny = floor(nx * (diff.y/diff.x));
 
     draw(pic, min -- (min.x,max.y) -- max -- (max.x, min.y) -- cycle, dashpen(linewidth(.2)));
 
     gauss count = (1,1);
-    gauss places = (0,0);
+    gauss exponent = (0,0);
 
     while (true)
     {
-        int nxp = floor(diff.x*10^places.x) # count.x;
+        int nxp = floor(diff.x*10^exponent.x) # count.x;
         if (nxp > nx) { count.x += 1; continue; }
         if (nxp < nx)
         {
-            if (places.x > 0) break;
-            places.x += 1;
+            if (exponent.x >= places) break;
+            exponent.x += 1;
             continue;
         }
         if (nxp == nx) break;
     }
     
-    real stepx = count.x/10^places.x;
+    real stepx = count.x/10^exponent.x;
     real x;
 
     for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
@@ -4634,18 +4634,18 @@ void drawgrid (
 
     while (true)
     {
-        int nyp = floor(diff.y*10^places.y) # count.y;
+        int nyp = floor(diff.y*10^exponent.y) # count.y;
         if (nyp > ny) { count.y += 1; continue; }
         if (nyp < ny)
         {
-            if (places.y > 0) break;
-            places.y += 1;
+            if (exponent.y >= places) break;
+            exponent.y += 1;
             continue;
         }
         if (nyp == ny) break;
     }
     
-    real stepy = count.y/10^places.y;
+    real stepy = count.y/10^exponent.y;
     real y;
 
     for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
