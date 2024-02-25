@@ -4199,8 +4199,8 @@ smooth[] drawintersect (
     picture pic = currentpicture,
     smooth[] sms,
     string label = defaultSyDS,
-    pair labeldir = defaultSyDP,
-    pair labelalign = defaultSyDP,
+    pair dir = defaultSyDP,
+    pair align = defaultSyDP,
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
@@ -4237,7 +4237,7 @@ smooth[] drawintersect (
 	}
 
     if (res.length == 1)
-    { res[0].setlabel(label, labeldir, labelalign); }
+    { res[0].setlabel(label, dir, align); }
 
 	for (int i = 0; i < res.length; ++i)
 	{
@@ -4250,8 +4250,8 @@ smooth[] drawintersect (
 smooth[] drawintersect (
     picture pic = currentpicture,
     string label = defaultSyDS,
-    pair labeldir = defaultSyDP,
-    pair labelalign = defaultSyDP,
+    pair dir = defaultSyDP,
+    pair align = defaultSyDP,
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
@@ -4278,7 +4278,7 @@ smooth[] drawintersect (
     ... smooth[] sms
 )
 {
-	return drawintersect(pic, sms, label, labeldir, labelalign, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, help, dash, avoidsubsets, shade, overlap, drawnow);
+	return drawintersect(pic, sms, label, dir, align, keepdata, round, roundcoeff, shift, ghostpen, contourpen, smoothfill, subsetcontourpen, subsetfill, sectionpen, dashpen, shadepen, mode, fill, fillsubsets, drawcontour, help, dash, avoidsubsets, shade, overlap, drawnow);
 }
 
 void drawarrow (
