@@ -564,8 +564,8 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     if (lsang2 < 0) { dir2 = -dir2; lsang2 = -lsang2; }
     pair hv = (rotate(90)*p1p2) * h;
 
-    pair dir1p = l*(rotate(-degrees(p1p2))*dir1);
-    pair dir2p = l*(rotate(-degrees(p1p2))*dir2);
+    pair dir1p = l*(rotate(-degrees(p1p2, false))*dir1);
+    pair dir2p = l*(rotate(-degrees(p1p2, false))*dir2);
 
     path line1 = (-dir1p) -- (dir1p);
     path line2 = ((l,0) - dir2p) -- ((l,0) + dir2p);
@@ -2674,7 +2674,7 @@ private deferredPath[][] savedDeferredPaths;
 private int extractdeferredindex (picture pic)
 {
     string[] split;
-    if (pic.nodes.length > 0 && (split = split(pic.nodes[0].key, "")).length > 0 && split[0] == (string)defaultSyDN)
+    if (pic.nodes.length > 0 && (split = split(pic.nodes[0].key, "")).length > 1 && split[0] == defaultSyDS)
     { return (int)split[1]; }
     return -1;
 }
@@ -2689,7 +2689,7 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
         deferredPaths.push(res);
         pic.nodes.insert(0, node(
             d = new void (frame f, transform t, transform T, pair lb, pair rt) {},
-            key = (string)defaultSyDN+" "+(string)(deferredPaths.length-1)
+            key = defaultSyDS+" "+(string)(deferredPaths.length-1)
         ));
     }
     return res;
@@ -4527,7 +4527,7 @@ void drawpath (
         element elt = sm1.elements[index1];
 
         if (angle == defaultSyDN)
-        { angle = abs(elt.labelalign) == 0 ? 90 : degrees(-elt.labelalign); }
+        { angle = degrees(-elt.labelalign, warn = false); }
         if (radius == defaultSyDN)
         { radius = .05*sm1.scale; }
 
@@ -4630,8 +4630,8 @@ void drawgrid (
 
     for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
     {
-        label(pic = pic, position = (x, min.y), L = (string)x, align = S);
-        label(pic = pic, position = (x, max.y), L = (string)x, align = N);
+        label(pic = pic, position = (x, min.y), L = (string)x, align = S, p = overwrite(MoveQuiet));
+        label(pic = pic, position = (x, max.y), L = (string)x, align = N, p = overwrite(MoveQuiet));
         draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(.2)));
     }
 
@@ -4653,8 +4653,8 @@ void drawgrid (
 
     for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
     {
-        label(pic = pic, position = (min.x, y), L = (string)y, align = W);
-        label(pic = pic, position = (max.x, y), L = (string)y, align = E);
+        label(pic = pic, position = (min.x, y), L = (string)y, align = W, p = overwrite(MoveQuiet));
+        label(pic = pic, position = (max.x, y), L = (string)y, align = E, p = overwrite(MoveQuiet));
         draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(.2)));
     }
 }
