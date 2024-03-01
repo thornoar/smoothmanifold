@@ -1061,6 +1061,25 @@ private void subsetcleanreferences (subset[] subsets)
     for (int i = 0; i < subsets.length; ++i) { clean(i); }
 }
 
+void print (smooth sm)
+{
+    write("--- Smooth object ---");
+    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + " | DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "automatic" : (string)round(sm.labelalign, 2)));
+    write("CENTER: " + (string)round(sm.center, 2));
+    write("VIEW: " + (string)round(sm.viewdir, 2));
+    write("HOLES: " + (string)sm.holes.length);
+    int holeindexlength = length((string)(sm.holes.length - 1));
+    int holecenterlength = 12;
+    for (int i = 0; i < sm.holes.length; ++i)
+    {
+        string index = (string)i + copychar(" ", holeindexlength - length((string)i));
+        string center = (string)round(sm.holes[i].center, 2);
+        center = center + copychar(" ", holecenterlength - length(center));
+        write("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
+    }
+    write("SUBSETS: " + (string)sm.subsets.length);
+}
+
 struct smooth
 // The main class in the module. Represents the way a "smooth manifold" would be drawn on a piece of paper.
 {
@@ -2623,15 +2642,10 @@ element findelt (string label)
 element operator cast (string label)
 { return findelt(label); }
 
-void print (smooth sm)
+private string copychar (string str, int n)
 {
-    write("--- Smooth object ---");
-    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + "  |  DIRECTION: ~" + (string)round(sm.labeldir, 2) + "  |  ALIGN: ~" + (sm.labelalign == defaultSyDP ? "automatic" : (string)round(sm.labelalign, 2)));
-    write("CENTER: ~" + (string)round(sm.center, 2));
-    write("VIEW: ~" + (string)round(sm.viewdir, 2));
-    write("HOLES: " + (string)sm.holes.length);
-
-    write("SUBSETS: " + (string)sm.subsets.length);
+	if (n == 0) return "";
+	return copychar(str, n-1) + str;
 }
 
 void printall ()

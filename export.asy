@@ -44,12 +44,6 @@ void linux (string cmd)
     delete(filename);
 }
 
-private string copychar (string str, int n)
-{
-	if (n == 0) return "";
-	return copychar(str, n-1) + str;
-}
-
 private bool native (string format = currentAnIF)
 {return format == "" || format == "eps" || format == "pdf";}
 
