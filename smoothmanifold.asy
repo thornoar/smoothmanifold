@@ -1061,25 +1061,6 @@ private void subsetcleanreferences (subset[] subsets)
     for (int i = 0; i < subsets.length; ++i) { clean(i); }
 }
 
-void print (smooth sm)
-{
-    write("--- Smooth object ---");
-    write("LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + " | DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "automatic" : (string)round(sm.labelalign, 2)));
-    write("CENTER: " + (string)round(sm.center, 2));
-    write("VIEW: " + (string)round(sm.viewdir, 2));
-    write("HOLES: " + (string)sm.holes.length);
-    int holeindexlength = length((string)(sm.holes.length - 1));
-    int holecenterlength = 12;
-    for (int i = 0; i < sm.holes.length; ++i)
-    {
-        string index = (string)i + copychar(" ", holeindexlength - length((string)i));
-        string center = (string)round(sm.holes[i].center, 2);
-        center = center + copychar(" ", holecenterlength - length(center));
-        write("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
-    }
-    write("SUBSETS: " + (string)sm.subsets.length);
-}
-
 struct smooth
 // The main class in the module. Represents the way a "smooth manifold" would be drawn on a piece of paper.
 {
@@ -2646,6 +2627,77 @@ private string copychar (string str, int n)
 {
 	if (n == 0) return "";
 	return copychar(str, n-1) + str;
+}
+
+void print (smooth sm)
+{
+    // "LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + 
+    string[] msg;
+    msg.push("> SMOOTH OBJECT: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label));
+    msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "[automatic]" : (string)round(sm.labelalign, 2)));
+    msg.push("> CENTER: " + (string)round(sm.center, 2) + " | VIEW: " + (string)round(sm.viewdir, 2));
+    // msg.push("VIEW: " + (string)round(sm.viewdir, 2));
+
+    msg.push("");
+    msg.push("> HOLES: " + (string)sm.holes.length);
+    if (sm.holes.length > 0)
+    {
+        int holeindexlength = length((string)(sm.holes.length - 1));
+        int holecenterlength = max(sequence(
+            new int (int i) { return length((string)round(sm.holes[i].center, 2)); },
+            sm.holes.length
+        ));
+        for (int i = 0; i < sm.holes.length; ++i)
+        {
+            string index = (string)i + copychar(" ", holeindexlength - length((string)i));
+            string center = (string)round(sm.holes[i].center, 2);
+            center = center + copychar(" ", holecenterlength - length(center));
+
+            msg.push("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
+        }
+    }
+
+    msg.push("");
+    msg.push("> SUBSETS: " + (string)sm.subsets.length);
+    if (sm.subsets.length > 0)
+    {
+        int subsetindexlength = length((string)(sm.subsets.length - 1));
+        int subsetcenterlength = max(sequence(
+            new int (int i) { return length((string)round(sm.subsets[i].center, 2)); },
+            sm.subsets.length
+        ));
+        int subsetlabellength = max(sequence(
+            new int (int i) {
+                if (sm.subsets[i].label == "") return length("[unlabeled]");
+                return length(sm.subsets[i].label);
+            },
+            sm.subsets.length
+        ));
+        for (int i = 0; i < sm.subsets.length; ++i)
+        {
+            string index = (string)i + copychar(" ", subsetindexlength - length((string)i));
+            string center = (string)round(sm.subsets[i].center, 2);
+            center = center + copychar(" ", subsetcenterlength - length(center));
+            string label = sm.subsets[i].label == "" ? "[unlabeled]" : sm.subsets[i].label;
+            label = label + copychar(" ", subsetlabellength - length(label));
+        
+            string curmsg = "| " + index + " | CENTER: " + center + " | LABEL: " + label + " | SUBSETS: [";
+            for (int j = 0; j < sm.subsets[i].subsets.length; ++j)
+            { curmsg += ((string)sm.subsets[i].subsets[j] + ", "); }
+            curmsg += "]";
+
+            msg.push(curmsg);
+        }
+    }
+
+    int msgwidth = max(sequence(
+        new int (int i) { return length(msg[i]); },
+        msg.length
+    ));
+    write(copychar("-", msgwidth));
+    for (int i = 0; i < msg.length; ++i)
+    { write(msg[i]); }
+    write(copychar("-", msgwidth));
 }
 
 void printall ()
