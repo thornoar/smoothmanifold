@@ -2690,14 +2690,15 @@ void print (smooth sm)
         }
     }
 
-    int msgwidth = max(sequence(
+    write("");
+    string line = copychar("-", max(sequence(
         new int (int i) { return length(msg[i]); },
         msg.length
-    ));
-    write(copychar("-", msgwidth));
+    )));
+    write(line);
     for (int i = 0; i < msg.length; ++i)
     { write(msg[i]); }
-    write(copychar("-", msgwidth));
+    write(line);
 }
 
 void printall ()
