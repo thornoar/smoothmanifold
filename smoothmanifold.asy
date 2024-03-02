@@ -2631,12 +2631,10 @@ private string copychar (string str, int n)
 
 void print (smooth sm)
 {
-    // "LABEL: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label) + 
     string[] msg;
     msg.push("> SMOOTH OBJECT: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label));
     msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "[automatic]" : (string)round(sm.labelalign, 2)));
     msg.push("> CENTER: " + (string)round(sm.center, 2) + " | VIEW: " + (string)round(sm.viewdir, 2));
-    // msg.push("VIEW: " + (string)round(sm.viewdir, 2));
 
     msg.push("");
     msg.push("> HOLES: " + (string)sm.holes.length);
