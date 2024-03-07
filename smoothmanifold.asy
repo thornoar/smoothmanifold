@@ -2681,7 +2681,7 @@ void print (smooth sm)
         
             string curmsg = "| " + index + " | CENTER: " + center + " | LABEL: " + label + " | SUBSETS: [";
             for (int j = 0; j < sm.subsets[i].subsets.length; ++j)
-            { curmsg += ((string)sm.subsets[i].subsets[j] + ", "); }
+            { curmsg += ((string)sm.subsets[i].subsets[j] + (j < sm.subsets[i].subsets.length - 1 ? ", " : "")); }
             curmsg += "]";
 
             msg.push(curmsg);
