@@ -59,7 +59,7 @@ private real defaultDrDO = .8; // [D]rag [O]pacity -- opacity of smooth objects 
 private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
 
 // [H]e[l]p
-private real defaultHlAR = 0.1; // [A]rc [R]atio
+private real defaultHlAR = 0.2; // [A]rc [R]atio
 private real defaultHlAL = .2; // [A]rrow [L]ength
 private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth
 
@@ -850,6 +850,9 @@ struct subset
 	bool isderivative;
 	bool isonboundary;
 
+    pair shift;
+    real scale;
+
     real xsize ()
     { return xsize(this.contour); }
     real ysize ()
@@ -893,6 +896,8 @@ struct subset
 			this.layer = layer;
 			this.isderivative = isderivative;
 			this.isonboundary = isonboundary;
+            // this.shift = shift;
+            // this.scale = scale;
         }
         else
         {
@@ -905,12 +910,14 @@ struct subset
 			this.layer = layer;
 			this.isderivative = isderivative;
 			this.isonboundary = isonboundary;
+            // this.shift = shift;
+            // this.scale = scale;
         }
     }
     
 	subset copy ()
     {
-        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, this.isderivative, this.isonboundary, copy = true);
+        return subset(this.contour, this.center, this.label, this.labeldir, this.labelalign, this.layer, this.isderivative, this.isonboundary, /* this.shift, this.scale, 0, this.center,  */copy = true);
     }
 
     subset replicate (subset s)
@@ -924,6 +931,8 @@ struct subset
 		this.subsets = copy(s.subsets);
 		this.isderivative = s.isderivative;
 		this.isonboundary = s.isonboundary;
+        // this.shift = s.shift;
+        // this.scale = s.scale;
         
         return this;
     }
@@ -1074,9 +1083,11 @@ struct smooth
 	element[] elements;
     real[] hratios;
     real[] vratios;
+
     pair shift;
     real scale;
-    real rotate;
+    // real rotate;
+
     pair viewdir;
     bool distort;
     smooth[] attached;
@@ -1126,6 +1137,17 @@ struct smooth
 
     private real getxpoint (real x)
     { x = x - floor(x); return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x); }
+
+    transform adjust (int index)
+    {
+        if (index >= 0)
+        {
+            subset sb = this.subsets[index];
+            return shift(sb.center)*scale(size(sb.contour));
+        }
+        else
+        { return shift(this.center)*scale(size(this.contour)); }
+    }
 
     private int findlocalsubsetindex (string label)
     {
@@ -1349,9 +1371,9 @@ struct smooth
 		if (scale <= 0)
 		{ halt("Could not move: scale value must be positive. [ move() ]"); }
 		
-		this.rotate += rotate;
-        this.scale *= scale;
-		this.shift += shift + (srap(scale, rotate, point) * this.center - this.center);
+		// this.rotate += rotate;
+        // this.scale *= scale;
+		// this.shift += shift + (srap(scale, rotate, point) * this.center - this.center);
 
 		pair viewdir = this.viewdir;
         if (!keepview) this.dropview();
@@ -1403,7 +1425,8 @@ struct smooth
 		if (index == -1)
         {
             if (center == defaultSyDP) center = center(this.contour);
-            else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
+            else if (unit) center = this.adjust(index)*center;
+            // else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
             
             this.center = center;
             
@@ -1415,7 +1438,8 @@ struct smooth
             subset sb = this.subsets[index];
 
             if (center == defaultSyDP) center = center(sb.contour);
-            else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
+            else if (unit) center = this.adjust(index)*center;
+            // else if (unit) center = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*center;
             
             sb.center = center;
             
@@ -1480,13 +1504,15 @@ struct smooth
 
 	smooth addelement (
         element elt,
+        int index = -1,
 		bool unit = currentSmU
     )
 	{
         if (!currentSyRL && repeats(elt.label))
         { halt("Could not add element: label \""+elt.label+"\" already assigned. [ addelement() ]"); }
         
-        if (unit) elt.pos = srap(this.scale, 0, this.center)*shift(this.shift)*elt.pos;
+        // if (unit) elt.pos = srap(this.scale, 0, this.center)*shift(this.shift)*elt.pos;
+        if (unit) { elt.pos = this.adjust(index)*elt.pos; }
 
 		if (!this.inside(elt.pos))
 		{ halt("Could not add element: position out of bounds. [ addelement() ]"); }
@@ -1506,13 +1532,16 @@ struct smooth
     smooth setelement (
         int ind,
 		element elt,
+        int index = -1,
 		bool unit = currentSmU
     )
     {
         if (!currentSyRL && repeats(elt.label))
         { halt("Could not set element: label \""+elt.label+"\" already assigned. [ setelement() ]"); }
         
-        if (unit) elt.pos = srap(this.scale, this.rotate, this.center)*shift(this.shift)*elt.pos; 
+        // if (unit) { elt.pos = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*elt.pos; }
+        if (unit) { elt.pos = this.adjust(index)*elt.pos; }
+
         this.elements[ind] = elt;
         return this;
     }
@@ -1530,9 +1559,11 @@ struct smooth
         
         if (pos != defaultSyDP)
         {
-            if (unit) pos = srap(this.scale, this.rotate, this.center)*shift(this.shift)*pos;
+            // if (unit) pos = shift(this.center)*scale(this.scale)*shift(this.shift - this.center)*pos;
+            if (unit) { pos = this.adjust(index)*pos; }
             this.elements[index].pos = pos;
         }
+
         if (label != defaultSyDS) this.elements[index].label = label;
         if (labelalign != defaultSyDP) this.elements[index].labelalign = labelalign;
 
@@ -1581,7 +1612,8 @@ struct smooth
     {
 		if (unit)
         {
-            transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            // transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            transform adjust = this.adjust(-1);
             hl.contour = adjust * hl.contour;
             hl.center = adjust * hl.center;
         }
@@ -1831,7 +1863,7 @@ struct smooth
 		int index = -1, // the index of parent subset (or the entire smooth object, if index = -1).
         bool inferlabels = currentSmIL, // whether to create intersection labels.
         bool clip = false, // whether to complain if subset is out of bounds, or clip its contour instead.
-		bool unit = currentSmU, // whether to transform subset using this.shift, this.scale, and this.rotate.
+		bool unit = currentSmU, // whether to transform subset using this.shift and this.scale.
         bool checkintersection = true
     ) // Add a subset to the smooth object.
 	{
@@ -1840,7 +1872,8 @@ struct smooth
         
 		if (unit)
         {
-            transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            // transform adjust = shift(this.center)*scale(this.scale)*shift(this.shift - this.center);
+            transform adjust = this.adjust(index);
             sb.contour = adjust * sb.contour;
             sb.center = adjust * sb.center;
         }
@@ -2436,9 +2469,9 @@ struct smooth
             this.subsets = subsetcopy(subsets);
             this.hratios = hratios;
             this.vratios = vratios;
-            this.shift = shift;
-            this.scale = scale;
-            this.rotate = rotate;
+            // this.shift = shift;
+            // this.scale = scale;
+            // this.rotate = rotate;
             this.viewdir = viewdir;
             this.distort = distort;
 			this.attached = attached;
@@ -2450,9 +2483,9 @@ struct smooth
 			if (scale <= 0)
 			{ halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-			this.shift = (0,0);
-            this.scale = 1;
-            this.rotate = 0;
+			// this.shift = (0,0);
+            // this.scale = 1;
+            // this.rotate = 0;
             
             this.contour = shift(shift)*srap(scale, rotate, center)*((!clockwise(contour)) ? reverse(contour) : contour);
             this.center = shift(shift)*center;
@@ -2494,9 +2527,9 @@ struct smooth
             subsetcopy(this.subsets),
             this.hratios,
             this.vratios,
-            this.shift,
-            this.scale,
-            this.rotate,
+            // this.shift,
+            // this.scale,
+            // this.rotate,
             this.viewdir,
             this.attached,
             copy = true
@@ -2513,9 +2546,9 @@ struct smooth
         this.subsets = subsetcopy(sm.subsets);
         this.hratios = sm.hratios;
         this.vratios = sm.vratios;
-        this.shift = sm.shift;
-        this.scale = sm.scale;
-        this.rotate = sm.rotate;
+        // this.shift = sm.shift;
+        // this.scale = sm.scale;
+        // this.rotate = sm.rotate;
         this.viewdir = sm.viewdir;
         this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
 
@@ -3207,8 +3240,8 @@ smooth[] intersection (
         real rsize2 = min(size2.x, size2.y);
         real sm1 = sm1.scale * rsize/rsize1;
         real sm2 = sm2.scale * rsize/rsize2;
-        cursm.scale = (sm1+sm2)*.5;
-        cursm.shift = cursm.center;
+        // cursm.scale = (sm1+sm2)*.5;
+        // cursm.shift = cursm.center;
 
         int curboundindex = -1;
 
@@ -3502,8 +3535,8 @@ smooth[] union (
     real sc1 = sm1.scale * rsize/rsize1;
     real sc2 = sm2.scale * rsize/rsize2;
 
-    res.scale = (sc1+sc2)*.5;
-    res.shift = res.center;
+    // res.scale = (sc1+sc2)*.5;
+    // res.shift = res.center;
 
     for (int i = 0; i < holes.length; ++i)
     {
@@ -3970,12 +4003,12 @@ void draw (
 
 				if (help)
 				{
-					pair smstart = point(cursmcontour, 0);
-					pair smfinish = point(cursmcontour, length(cursmcontour));
-					pair hlvec = defaultHlAR * sm.scale * unit(smstart - hl.center);
-					draw(pic = pic, (hl.center + hlvec) -- smstart, yellow + defaultHlLW);
-					draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- smfinish, yellow + defaultHlLW);
-					draw(pic = pic, arc(hl.center, hl.center + hlvec, smfinish, direction = CW), blue+defaultHlLW);
+					pair hlstart = point(curhlcontour, 0);
+					pair hlfinish = point(curhlcontour, length(curhlcontour));
+					pair hlvec = defaultHlAR * size(hl.contour) * unit(hlstart - hl.center);
+					draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + defaultHlLW);
+					draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- hlfinish, yellow + defaultHlLW);
+					draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+defaultHlLW);
 				}
 
 				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
@@ -4018,8 +4051,8 @@ void draw (
                         pair hl1finish = point(curhl1contour, length(curhl1contour));
                         pair hl2start = point(curhl2contour, 0);
                         pair hl2finish = point(curhl2contour, length(curhl2contour));
-                        pair hl1vec = defaultHlAR * sm.scale * unit(hl1start - hl1.center);
-                        pair hl2vec = defaultHlAR * sm.scale * unit(hl2start - hl2.center);
+                        pair hl1vec = defaultHlAR * size(hl1.contour) * unit(hl1start - hl1.center);
+                        pair hl2vec = defaultHlAR * size(hl2.contour) * unit(hl2start - hl2.center);
                         draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultHlLW);
                         draw(pic, (hl1.center + rotate(-currentSmIHSA)*hl1vec)--hl1finish, yellow+defaultHlLW);
                         draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultHlLW);
@@ -4138,6 +4171,7 @@ void draw (
         dot(pic = pic, sm.center, red+1);
         for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
+        draw(sm.adjust(-1)*unitcircle, blue+defaultHlLW);
     }
 }
 
