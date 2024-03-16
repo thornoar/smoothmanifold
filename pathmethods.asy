@@ -259,7 +259,6 @@ real ysize (path p) {return ypart(max(p)) - ypart(min(p));}
 
 real size (path p)
 { return (xsize(p) + ysize(p))*.25; }
-// { return sqrt((xsize(p)^2 + ysize(p)^2)*.5)*.5; }
 
 real xsize (picture p) {return xpart(max(p)) - xpart(min(p));}
 real ysize (picture p) {return ypart(max(p)) - ypart(min(p));}
