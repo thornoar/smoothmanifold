@@ -1521,8 +1521,6 @@ struct smooth
 		return this;
 	}
 
-
-
 	smooth addelement (
         pair pos,
 		string label = "",
