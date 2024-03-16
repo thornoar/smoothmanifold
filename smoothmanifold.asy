@@ -2614,6 +2614,7 @@ private int[] findelementindex (string label)
 }
 
 element findelt (string label)
+// 
 {
     int[] indices = findelementindex (label);
     if (indices[1] == -1) halt("Could not identify element: object with label \""+label+"\" is not a element. Use `findsm()` instead. [ findsb() ]");
@@ -2623,17 +2624,18 @@ element findelt (string label)
 element operator cast (string label)
 { return findelt(label); }
 
-private string copychar (string str, int n)
+private string repeatstring (string str, int n)
 {
 	if (n == 0) return "";
-	return copychar(str, n-1) + str;
+	return repeatstring(str, n-1) + str;
 }
 
 void print (smooth sm)
+// Print information about a given smooth object. Could be useful when drawing the object is too resource-consuming.
 {
     string[] msg;
     msg.push("> SMOOTH OBJECT: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label));
-    msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "[automatic]" : (string)round(sm.labelalign, 2)));
+    msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (sm.labelalign == defaultSyDP ? "[normal]" : (string)round(sm.labelalign, 2)));
     msg.push("> CENTER: " + (string)round(sm.center, 2) + " | VIEW: " + (string)round(sm.viewdir, 2));
 
     msg.push("");
@@ -2647,9 +2649,9 @@ void print (smooth sm)
         ));
         for (int i = 0; i < sm.holes.length; ++i)
         {
-            string index = (string)i + copychar(" ", holeindexlength - length((string)i));
+            string index = (string)i + repeatstring(" ", holeindexlength - length((string)i));
             string center = (string)round(sm.holes[i].center, 2);
-            center = center + copychar(" ", holecenterlength - length(center));
+            center = center + repeatstring(" ", holecenterlength - length(center));
 
             msg.push("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
         }
@@ -2673,11 +2675,11 @@ void print (smooth sm)
         ));
         for (int i = 0; i < sm.subsets.length; ++i)
         {
-            string index = (string)i + copychar(" ", subsetindexlength - length((string)i));
+            string index = (string)i + repeatstring(" ", subsetindexlength - length((string)i));
             string center = (string)round(sm.subsets[i].center, 2);
-            center = center + copychar(" ", subsetcenterlength - length(center));
+            center = center + repeatstring(" ", subsetcenterlength - length(center));
             string label = sm.subsets[i].label == "" ? "[unlabeled]" : sm.subsets[i].label;
-            label = label + copychar(" ", subsetlabellength - length(label));
+            label = label + repeatstring(" ", subsetlabellength - length(label));
         
             string curmsg = "| " + index + " | CENTER: " + center + " | LABEL: " + label + " | SUBSETS: [";
             for (int j = 0; j < sm.subsets[i].subsets.length; ++j)
@@ -2689,7 +2691,7 @@ void print (smooth sm)
     }
 
     write("");
-    string line = copychar("-", max(sequence(
+    string line = repeatstring("-", max(sequence(
         new int (int i) { return length(msg[i]); },
         msg.length
     )));

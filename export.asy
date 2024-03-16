@@ -295,7 +295,7 @@ void animate (
 )
 {
 	string s = "> Writing animation...";
-	write(s + copychar(" ", defaultPrML-2-length(s)) + "->|");
+	write(s + repeatstring(" ", defaultPrML-2-length(s)) + "->|");
     write("|", suffix = none);
     if (currentAnPC && currentAnCC == 0) clean();
     if (!native(informat)) currentDrUO = false;
