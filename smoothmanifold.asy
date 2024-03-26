@@ -1084,8 +1084,8 @@ struct smooth
     real[] hratios;
     real[] vratios;
 
-    pair shift;
-    real scale;
+    // pair shift;
+    // real scale;
     // real rotate;
 
     pair viewdir;
@@ -3238,8 +3238,8 @@ smooth[] intersection (
         real rsize1 = min(size1.x, size1.y);
         pair size2 = max(sm2.contour)-min(sm2.contour);
         real rsize2 = min(size2.x, size2.y);
-        real sm1 = sm1.scale * rsize/rsize1;
-        real sm2 = sm2.scale * rsize/rsize2;
+        // real sm1 = sm1.scale * rsize/rsize1;
+        // real sm2 = sm2.scale * rsize/rsize2;
         // cursm.scale = (sm1+sm2)*.5;
         // cursm.shift = cursm.center;
 
@@ -3532,8 +3532,8 @@ smooth[] union (
     real rsize1 = min(size1.x, size1.y);
     pair size2 = max(sm2.contour)-min(sm2.contour);
     real rsize2 = min(size2.x, size2.y);
-    real sc1 = sm1.scale * rsize/rsize1;
-    real sc2 = sm2.scale * rsize/rsize2;
+    // real sc1 = sm1.scale * rsize/rsize1;
+    // real sc2 = sm2.scale * rsize/rsize2;
 
     // res.scale = (sc1+sc2)*.5;
     // res.shift = res.center;
@@ -3967,6 +3967,7 @@ void draw (
 
     path[] holes = holecontours(sm.holes);
     path[] contour = reverse(sm.contour) ^^ holes;
+    real scale = size(sm.contour);
 
     // Filling and drawing main contour
 
@@ -4011,7 +4012,7 @@ void draw (
 					draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+defaultHlLW);
 				}
 
-				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
+				drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
 			}
 
             // Drawing sections between holes
@@ -4061,7 +4062,7 @@ void draw (
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultHlLW);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, min(currentSmIHSN, abs(min(hl1.scnumber, hl2.scnumber))), currentSeF, defaultSeP), viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, min(currentSmIHSN, abs(min(hl1.scnumber, hl2.scnumber))), currentSeF, defaultSeP), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -4073,11 +4074,11 @@ void draw (
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.hratios[i], true, viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.hratios[i], true, viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.vratios[i], false, viewdir, dash, help, shade, sm.scale, sectionpen, dashpen, shadepen);
+            drawcartsections(pic, contour, (avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.vratios[i], false, viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
         }
     }
 
@@ -4139,7 +4140,7 @@ void draw (
         if (help && abs(sm.labeldir) > 0)
         {
             draw(pic = pic, sm.center -- pos, purple+defaultHlLW);
-            draw(pic = pic, pos -- pos+sm.scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
+            draw(pic = pic, pos -- pos+scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
         }
     }
 
@@ -4159,7 +4160,7 @@ void draw (
             if (help && abs(sb.labeldir) > 0)
             {
                 draw(pic = pic, sb.center -- pos, purple+defaultHlLW);
-                draw(pic = pic, pos -- pos+sm.scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
+                draw(pic = pic, pos -- pos+scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
             }
         }
 
@@ -4390,7 +4391,8 @@ void drawarrow (
     int index2 = index1,
     real curve = 0,
     real angle = 0,
-    real radius = sm1.scale,
+    // real radius = sm1.scale,
+    real radius = defaultSyDN,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
@@ -4446,7 +4448,10 @@ void drawarrow (
     if (points.length > 0)
     { g = connect(concat(new pair[]{center1}, points, new pair[]{center2})); }
     else if (onself)
-    { g = cyclepath(center1, angle, radius); }
+    {
+        if (radius == defaultSyDN) radius = size(sm1.contour);
+        g = cyclepath(center1, angle, radius);
+    }
     else
     { g = curvedpath(center1, center2, curve = curve); }
     if (reverse) g = reverse(g);
@@ -4506,7 +4511,7 @@ void drawarrow (
         index2 = indices2[1];
     }
 
-    drawarrow(pic, sm1, index1, sm2, index2, curve, angle, (radius == defaultSyDN ? sm1.scale : radius), points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
+    drawarrow(pic, sm1, index1, sm2, index2, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
 }
 
 void drawmapping (
@@ -4517,7 +4522,7 @@ void drawmapping (
     int index2 = index1,
     real curve = 0,
     real angle = 0,
-    real radius = sm1.scale,
+    real radius = defaultSyDN,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
@@ -4544,7 +4549,10 @@ void drawmapping (
     if (points.length > 0)
     { g = connect(concat(new pair[]{center1}, points, new pair[]{center2})); }
     else if (onself)
-    { g = cyclepath(center1, angle, radius); }
+    {
+        if (radius == defaultSyDN) radius = size(sm1.contour);
+        g = cyclepath(center1, angle, radius);
+    }
     else
     { g = curvedpath(center1, center2, curve = curve); }
     if (reverse) g = reverse(g);
@@ -4593,7 +4601,7 @@ void drawmapping (
         index2 = indices2[1];
     }
 
-    drawmapping(pic, sm1, index1, sm2, index2, curve, angle, (radius == defaultSyDN ? sm1.scale : radius), points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
+    drawmapping(pic, sm1, index1, sm2, index2, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
 }
 
 void drawpath (
@@ -4630,7 +4638,7 @@ void drawpath (
         if (angle == defaultSyDN)
         { angle = degrees(-elt.labelalign, warn = false); }
         if (radius == defaultSyDN)
-        { radius = .05*sm1.scale; }
+        { radius = .05*size(sm1.contour); }
 
         pair dir1 = randomdir(dir(angle-range), range);
         pair dir2 = -randomdir(dir(angle+range), range);
