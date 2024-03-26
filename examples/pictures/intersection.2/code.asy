@@ -5,7 +5,7 @@ settings.outformat = "pdf";
 
 size(15 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow, margin = 1.5cm, autoexport = false);
+expar(bgpen = paleyellow, margin = 1cm, autoexport = false);
 smpar(scfreedom = .8, scholenumber = 2, scholeangle = 50);
 
 pair viewdir = dir(45);

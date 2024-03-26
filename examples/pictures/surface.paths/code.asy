@@ -1,7 +1,7 @@
 import export;
 size(17cm);
 
-defaultpen(1);
+defaultpen(.8);
 expar(margin = 1.5cm, bgpen = paleyellow, autoexport = true);
 smpar(scholeangle = 30, scfreedom = .3, gaplength = .1, subsetoverlap = true, unit = true);
 
@@ -16,13 +16,13 @@ smooth sm2 = samplesmooth(1, 2)
     .setlabel("\mathcal{B}", dir(40))
     .setlabel(0, "\mathcal{C}", dir(-50))
     .setlabel(1, "\mathcal{D}", dir(80))
-    .addelement((-.35,.6), "y", align = E)
+    .addelement((-.3,.5), "y", align = E)
     .movesubset(0, shift = (0,.1), inferlabels = true)
     .setlabel(2, dir = (0,0))
     .view(20);
 
 draw(sm1, mode = cartesian);
-draw(sm2, help = false);
+draw(sm2);
 
 drawpath(sm1, 0, 1, range = 50, drawnow = true);
 drawpath(sm1, 0, range = 50, radius = .3, angle = 200, drawnow = true);

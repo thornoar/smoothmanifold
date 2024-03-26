@@ -9,14 +9,14 @@ smpar(gaplength = .09, dragop = .9, help = true);
 
 smooth sm = samplesmooth(1).view(dir(-40))
     .setlabel("M")
-    .setlabel(0, "S", S);
+    .setlabel(0, "U", S+.5*E);
 
 smooth ts = tangentspace(sm = sm, ind = -1, angle = 45, ratio = .8, rotate = 10, size = .7);
 
 smooth rn = rn(n = 1)
     .move(shift = (2.5, .7), scale = .72)
     .setlabel("\mathbb{R}^n")
-    .addsubset(contour = convexpath[9], shift = (.4,-.2), scale = .4, unit = true);
+    .addsubset(contour = convexpath[9], label = "V", dir = dir(-50), shift = (.4,-.2), scale = .4, unit = true);
 
 draw(sm, mode = free, overlap = true);
 draw(rn, sectionpen = currentpen, smoothfill = invisible, contourpen = invisible, subsetcontourpen = currentpen, mode = cartesian);

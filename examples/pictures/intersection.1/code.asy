@@ -16,4 +16,4 @@ sm2.move(shift = (1,-.2));
 
 drawintersect(sm1, sm2, shift = (0, -2.5), labeldir = dir(-55), labelalign = (4,-1.5));
 
-export("picture", "pdf", 1.5 cm);
+export("picture", "pdf", 1 cm);
