@@ -166,10 +166,10 @@ real intersectiontime (path g, pair point, pair dir)
 
 path connect (pair[] points)
 {
-	path res = nullpath;
+    guide acc;
 	for (int i = 0; i < points.length; ++i)
-	{ res = res..points[i]; }
-	return res;
+	{ acc = acc..points[i]; }
+	return (path) acc;
 }
 
 pair intersection (path g, pair point, pair dir)

@@ -2538,6 +2538,14 @@ struct smooth
     { return this.move(rotate = rotate); }
 }
 
+smooth[] concat (smooth[][] smss)
+{
+    if (smss.length == 0) return new smooth[];
+    if (smss.length == 1) return smss[0];
+    smooth[] sms = smss.pop();
+    return concat(concat(smss), sms);
+}
+
 private int[] findsetindex (string label)
 {
     bool found = false;
