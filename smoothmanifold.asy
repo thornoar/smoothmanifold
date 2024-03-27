@@ -754,6 +754,9 @@ struct element
 pair operator cast (element elt)
 { return elt.pos; }
 
+private element[] elementcopy (element[] elements)
+{ return sequence(new element (int i) { return elements[i].copy(); }, elements.length); }
+
 struct hole
 // A cyclic area 'cut out' of a set.
 {
@@ -2494,17 +2497,18 @@ struct smooth
     smooth copy ()
     {
         return smooth(
-            this.contour,
-            this.center,
-            this.label,
-            this.labeldir,
-            this.labelalign,
-            holecopy(this.holes),
-            subsetcopy(this.subsets),
-            this.hratios,
-            this.vratios,
-            this.viewdir,
-            this.attached,
+            contour = this.contour,
+            center = this.center,
+            label = this.label,
+            labeldir = this.labeldir,
+            labelalign = this.labelalign,
+            holes = holecopy(this.holes),
+            subsets = subsetcopy(this.subsets),
+            elements = elementcopy(this.elements),
+            hratios = this.hratios,
+            vratios = this.vratios,
+            viewdir = this.viewdir,
+            attached = this.attached,
             copy = true
         );
     }
@@ -3185,6 +3189,7 @@ smooth[] intersection (
     while (contours.length != 0)
     {
         path curcontour = contours.pop();
+
         smooth cursm = smooth(
             contour = curcontour,
             label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
@@ -3210,14 +3215,14 @@ smooth[] intersection (
 			}
 		}
 
-        pair cursize = max(cursm.contour)-min(cursm.contour);
-        real rsize = min(cursize.x, cursize.y);
-        pair size1 = max(sm1.contour)-min(sm1.contour);
-        real rsize1 = min(size1.x, size1.y);
-        pair size2 = max(sm2.contour)-min(sm2.contour);
-        real rsize2 = min(size2.x, size2.y);
+        // pair cursize = max(cursm.contour)-min(cursm.contour);
+        // real rsize = min(cursize.x, cursize.y);
+        // pair size1 = max(sm1.contour)-min(sm1.contour);
+        // real rsize1 = min(size1.x, size1.y);
+        // pair size2 = max(sm2.contour)-min(sm2.contour);
+        // real rsize2 = min(size2.x, size2.y);
 
-        int curboundindex = -1;
+        // int curboundindex = -1;
 
 		cursm.subsets = subsetcopy(subsets1);
             
@@ -3239,8 +3244,6 @@ smooth[] intersection (
 			{
 				cursm.addsubset(subsets2[ind2], ind, unit = false, clip = true, checkintersection = false);
 				subsetsadded[ind2] = true;
-
-                write(subsets2[ind2].isonboundary);
 
 				for (int i = 0; i < subsets2[ind2].subsets.length; ++i)
 				{
