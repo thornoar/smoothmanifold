@@ -71,6 +71,8 @@ real round (real a, int places)
 pair round (pair a, int places)
 { return (round(a.x, places), round(a.y, places)); }
 
+// The following functions are for the purpose of making array creation less redundant, much like in the R language.
+
 real[] r (... real[] source)
 { return source; }
 real[][] dr (... real[][] source)
@@ -98,6 +100,13 @@ path[][] dc (... path[][] source)
 { return source; }
 path[][] cc (... path[] source)
 { return new path[][]{source}; }
+
+string[] s (... string[] source)
+{ return source; }
+string[][] ds (... string[][] source)
+{ return source; }
+string[][] ss (... string[] source)
+{ return new string[][]{source}; }
 
 pair[] concat (pair[][] a)
 // Same as the standard Asymptote `concat` function, but with more than two arguments.

@@ -288,6 +288,7 @@ void export (
         }
     }
 
+    if (!native) settings.outformat = format;
     if (exit) exit();
     if (restore) pic1.clear();
     currentExEF = true;
