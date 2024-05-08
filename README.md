@@ -110,4 +110,4 @@ Any suggestions, bug reports, questions and contributions are most welcome. You 
 
 ## License
 
-The module is released under version 3 of the GNU General Public License (see the LICENSE file in source).
+The module is released under version 3 of the GNU Lesser General Public License (see the LICENSE and LICENSE.LESSER files attached).
