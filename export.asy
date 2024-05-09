@@ -247,6 +247,7 @@ void export (
         bool forcenative = currentExFN
 )
 {
+    string oldformat = settings.outformat;
 	bool native = forcenative || native(format);
 	settings.outformat = native ? format : "pdf";
     restore = restore || currentFrEP;
@@ -288,7 +289,7 @@ void export (
         }
     }
 
-    if (!native) settings.outformat = format;
+    settings.outformat = oldformat;
     if (exit) exit();
     if (restore) pic1.clear();
     currentExEF = true;
