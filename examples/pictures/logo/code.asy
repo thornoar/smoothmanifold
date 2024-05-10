@@ -2,7 +2,7 @@ import export;
 settings.render = 16;
 
 size(25 cm);
-defaultpen(.7);
+defaultpen(.5);
 smpar(gaplength = .07, shiftsubsets = true, fill = true, unit = true, mode = free, viewdir = dir(15), scfreedom = .15, help = false);
 expar(bgpen = paleyellow, margin = 2 cm);
 

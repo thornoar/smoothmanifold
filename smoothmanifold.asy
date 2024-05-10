@@ -29,22 +29,22 @@ private string defaultSyDS = (string) defaultSyDN; // [D]ummy [S]tring --||--
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
 
 // [Se]ction
-private real defaultSeMB = .65; // [M]aximum [B]readth -- see `sectiontoobroad()`.
+private real defaultSeMB = .65; // [M]aximum [B]readth -- how wide the section can be.
 private real defaultSeF = .3; // [F]reedom -- how freely sections can deviate from their target positions.
 private int defaultSeP = 20; // [P]recision -- how many points to sample in search for good section position.
 private real defaultSeEP = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
-real[] defaultsection = new real[]{defaultSyDN,defaultSyDN,235,5}; // -- default expressed in section notation.
+real[] defaultsection = new real[] {defaultSyDN,defaultSyDN,235,5}; // -- default expressed in section notation.
 
 // [Sm]ooth
 private int defaultSmIHSN = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
 private real defaultSmIHSA = 25; // [I]nter[h]ole [S]ection [Angle] -- range to be used for interhole sections.
 private real defaultSmMSLR = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) the section can be compared to the size of parent object. A value of -1 means no restriction.
 private real defaultSmSRC = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
-private pair defaultSmVD = (0,0); // [V]iew [D]irection -- the default 'viewdir' parameter.
+private pair defaultSmVD = (0,0); // [V]iew [D]irection -- the default direction of the view.
 private real defaultSmVS = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
 private real defaultSmCEM = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
 private real defaultSmCSD = .15; // [C]art [S]tep [D]istance --||--
-private real defaultSmNS = 1; // [N]ode [S]ize -- the size of nodes. see `smooth node ()`
+private real defaultSmNS = 1; // [N]ode [S]ize -- the size of nodes.
 
 // [Dr]awing
 private real defaultDrGL = .05; // [G]ap [L]ength -- the length of the gap made on path overlaps.
@@ -64,10 +64,10 @@ private real defaultHlAL = .2; // [A]rrow [L]ength -- the length of help arrows
 private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth -- the width of help lines
 
 // [Ar]rows
-private real defaultArM = defaultDrGL*.7; // [M]argin -- (see "drawarrow")
+private real defaultArM = defaultDrGL*.7; // [M]argin -- the margin of arrows from the edge of the object.
 
 // [Pa]ths -- a collection of default paths to be used in smooth objects.
-private path[] defaultPaCV = new path[]{ // [C]on[V]ex
+private path[] defaultPaCV = new path[] { // [C]on[V]ex
     (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
     (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
     (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
@@ -84,7 +84,7 @@ private path[] defaultPaCV = new path[]{ // [C]on[V]ex
     (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
 
-private path[] defaultPaCC = new path[]{ // [C]on[C]ave
+private path[] defaultPaCC = new path[] { // [C]on[C]ave
     (
         (-0.9,0).. controls
         (-1.07649842837266,0.638748977821067) and
@@ -146,9 +146,11 @@ private path[] defaultPaCC = new path[]{ // [C]on[C]ave
         (-0.244186500029556,0.896228533675695) 
         ..(-1.11022302462516e-16,0.74).. controls
         (0.394876451006404,0.487361263147939) and
-        (1.0095388806718,0.479180198886787) ..(1.11,1.1327982892113e-16).. controls
+        (1.0095388806718,0.479180198886787)
+        ..(1.11,1.1327982892113e-16).. controls
         (1.33690476375748,-1.08229204047052) and
-        (-0.898239052326633,-1.59366714480983) ..(-1.11,0.37).. controls
+        (-0.898239052326633,-1.59366714480983)
+        ..(-1.11,0.37).. controls
         (-1.14560254698906,0.700143742564816) and
         (-1.03848931729363,1.04782511478409) ..cycle
     ),
@@ -329,7 +331,7 @@ private bool dummy (string s)
 { return s == defaultSyDS; }
 
 private bool checksection (real[] section)
-// Checks if array has valid section values in it (see 'struct hole').
+// Checks if array has valid section values in it
 {
     if (section.length > 1 && section[0] == 0 && section[1] == 0)
     { return false; }
@@ -341,11 +343,11 @@ private bool checksection (real[] section)
 }
 
 private real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
-// A rating of how symmetric the section is (see 'sectionparams').
+// A rating of how symmetric the section is
 { return abs(dot(dir2, p1p2) + dot(p1p2, dir1)); }
 
 private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
-// Checks if the section is too wide (see 'cartsections').
+// Checks if the section is too wide
 {
     pair p1p2u = unit(p2-p1);
     return (
@@ -365,14 +367,14 @@ private pen inverse (pen p)
 }
 
 private pen sectionpen (pen p)
-// Derives a pen to draw cross sections (see 'draw').
+// Derives a pen to draw cross sections
 {
     if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
     else return currentDrSeOP;
 }
 
 private pen nextsubsetpen (pen p, real scale)
-// Derives a pen to fill subsets of increasing layers (see 'struct subset' and 'draw').
+// Derives a pen to fill subsets of increasing layers
 { return scale * p; }
 
 private pen dashpenscale (pen p)
@@ -389,11 +391,11 @@ private pen dashpen (pen p)
 }
 
 private pen shadepen (pen p)
-// Derives a pen to fill shaded regions (see 'drawsections').
+// Derives a pen to fill shaded regions
 { return currentDrShS*p; }
 
 private pen elementpen (pen p)
-// Derives a pen to render elements (see 'struct element' and 'draw').
+// Derives a pen to render elements
 { return p + linewidth(currentDrElPW); }
 
 private pen underpen (pen p)
@@ -577,6 +579,9 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
         if (sectiontoobroad(presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]))
         { continue; }
         
+        if (currentSmMSLR > 0 && length(presections[i][0]-presections[i+1][0]) > currentSmMSL)
+        { continue; }
+
         bool exclude = false;
         for (int j = 0; j < avoid.length; ++j)
         {
@@ -596,7 +601,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
         }
         if (exclude) continue;
 
-        sections.push(new pair[]{presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]});
+        sections.push(new pair[] {presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]});
     }
 
     return sections;
@@ -605,7 +610,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
-    if (length(viewdir) == 0) return new path[]{p1--p2};
+    if (length(viewdir) == 0) return new path[] {p1--p2};
 
     pair p1p2 = p2-p1;
     real l = length(p1p2);
@@ -615,7 +620,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     real h = cross(p1p2, viewdir);
     int sgnh = sgn(h);
     h = abs(h);
-    if (h < epsilon*l) return new path[]{p1--p2};
+    if (h < epsilon*l) return new path[] {p1--p2};
     real lsang1 = cross(p1p2, dir1);
     real lsang2 = cross(dir2, -p1p2);
     if (lsang1 < 0) { dir1 = -dir1; lsang1 = -lsang1; }
@@ -688,7 +693,7 @@ private pair[][] sectionparams (path g, path h, int n, real r, int p)
     if (r < 0)
     {
         if (n == 1)
-        { pres = new pair[]{(arctime(g, .5*arclength(g)), arctime(h, .5*arclength(h)))}; }
+        { pres = new pair[] {(arctime(g, .5*arclength(g)), arctime(h, .5*arclength(h)))}; }
         else
         {
             real gl = arclength(g)/(n-1);
@@ -775,7 +780,7 @@ private pair[][] sectionparams (path g, path h, int n, real r, int p)
     }
 
     return sequence(new pair[] (int i) {
-        return new pair[]{point(h, pres[i].y), point(g, pres[i].x), dir(h, pres[i].y), dir(g, pres[i].x)};
+        return new pair[] {point(h, pres[i].y), point(g, pres[i].x), dir(h, pres[i].y), dir(g, pres[i].x)};
     }, pres.length);
 }
 
@@ -2399,7 +2404,7 @@ struct smooth
         bool recursive = true
     )
     {
-        for (int i = 0; i < indices.length; ++i)
+        for (int i = indices.length-1; i >= 0; i -= 1)
         { this.rmsubset(indices[i], recursive); }
         return this;
     }
@@ -3058,7 +3063,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = rotate(-90)*defaultPaCC[2],
-                subsets = new subset[]{
+                subsets = new subset[] {
                     subset(
                         contour = defaultPaCC[3],
                         scale = .48,
@@ -3066,7 +3071,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         labeldir = dir(140)
                     )
                 },
-                hratios = new real[]{.6, .83},
+                hratios = new real[] {.6, .83},
                 vratios = r(),
                 label = label
             );
@@ -3079,7 +3084,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
             return smooth(
                 contour = defaultPaCV[1],
                 labeldir = (-2,1),
-                holes = new hole[]{
+                holes = new hole[] {
                     hole(
                         contour = defaultPaCV[2],
                         sections = rr(defaultSyDN, defaultSyDN, 260, defaultSyDN),
@@ -3103,18 +3108,18 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = rotate(50) * reflect((0,0), (0,1))*defaultPaCC[4],
-                holes = new hole[]{
+                holes = new hole[] {
                     hole(
                         contour = rotate(45) * defaultPaCV[4],
                         shift = (-.73,-.08),
                         scale = .51,
                         rotate = -60,
-                        sections = new real[][]{
+                        sections = new real[][] {
                             new real[] {-5, -1, 280, 10, .65, 200}
                         }
                     )
                 },
-                subsets = new subset[]{
+                subsets = new subset[] {
                     subset(
                         contour = defaultPaCV[6],
                         scale = .45,
@@ -3129,10 +3134,10 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
-                holes = new hole[]{
-                    hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-5,2,220,7))
+                holes = new hole[] {
+                    hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4.5,1.5,230,8))
                 },
-                subsets = new subset[]{
+                subsets = new subset[] {
                     subset(contour = defaultPaCC[3], shift = (-.3,-.35), rotate = -50),
                     subset(contour = defaultPaCV[3], scale = .9, rotate = 10, shift = (.3,.5))
                 },
@@ -3148,12 +3153,12 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = defaultPaCC[4],
-                holes = new hole[]{
+                holes = new hole[] {
                     hole(
                         contour = defaultPaCV[4],
-                        sections = new real[][]{
-                            new real[]{-2,1.5, 60, 3},
-                            new real[]{0, -1, 80, 4}
+                        sections = new real[][] {
+                            new real[] {-2,1.5, 60, 3},
+                            new real[] {0, -1, 80, 4}
                         },
                         shift = (-.5, -.15),
                         scale = .45,
@@ -3161,8 +3166,8 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     ),
                     hole(
                         contour = defaultPaCV[3],
-                        sections = new real[][]{
-                            new real[]{defaultSyDN, defaultSyDN, 230, 10}
+                        sections = new real[][] {
+                            new real[] {defaultSyDN, defaultSyDN, 230, 10}
                         },
                         shift = (.57,.52),
                         scale = .47,
@@ -3178,8 +3183,8 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 0)
         {
             return smooth(
-                contour = scale(.35)*wavypath(new real[]{4,2,4,2,3.7,2}),
-                holes = new hole[]{
+                contour = scale(.35)*wavypath(new real[] {4,2,4,2,3.7,2}),
+                holes = new hole[] {
                     hole(
                         contour = scale(.35)*defaultPaCV[4],
                         sections = rr(),
@@ -3201,7 +3206,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = -20
                     )
                 },
-                subsets = new subset[]{
+                subsets = new subset[] {
                     subset(
                         contour = scale(.35)*defaultPaCV[2],
                         shift = (.05, -.1),
@@ -3215,11 +3220,11 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = defaultPaCC[5],
-                holes = new hole[]{
+                holes = new hole[] {
                     hole(
                         contour = defaultPaCV[5],
-                        sections = new real[][]{
-                            new real[]{3,0, 160, 7}
+                        sections = new real[][] {
+                            new real[] {3,0, 160, 7}
                         },
                         shift = (.57,-.13),
                         scale = .37,
@@ -3227,8 +3232,8 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     ),
                     hole(
                         contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
-                        sections = new real[][]{
-                            new real[]{0,1,190,6}
+                        sections = new real[][] {
+                            new real[] {0,1,190,6}
                         },
                         scnumber = -1,
                         shift = (-.12,.7),
@@ -3236,8 +3241,8 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     ),
                     hole(
                         contour = defaultPaCV[6],
-                        sections = new real[][]{
-                            new real[]{-3,-2, 190, 6}
+                        sections = new real[][] {
+                            new real[] {-3,-2, 190, 6}
                         },
                         shift = (-.35,-.43),
                         scale = .32,
@@ -3255,7 +3260,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = wavypath(1.05,2,1.1,2,1.15,2,1.1,2),
-                holes = new hole[]{
+                holes = new hole[] {
                     hole(
                         contour = convexpath[4],
                         shift = (-.83,-.85),
@@ -3314,8 +3319,8 @@ smooth rn (
         label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
         labeldir = (1,1),
         labelalign = (-1.5,-1.5),
-        hratios = new real[]{.4},
-        vratios = new real[]{.4},
+        hratios = new real[] {.4},
+        vratios = new real[] {.4},
         shift = shift,
         scale = scale,
         rotate = rotate
@@ -3414,8 +3419,8 @@ smooth[] intersection (
         }
     }
 
-    subset[] subsets1 = addsubsets ? subsetcopy(sm1.subsets) : new subset[]{};
-    subset[] subsets2 = addsubsets ? subsetcopy(sm2.subsets) : new subset[]{};
+    subset[] subsets1 = addsubsets ? subsetcopy(sm1.subsets) : new subset[] {};
+    subset[] subsets2 = addsubsets ? subsetcopy(sm2.subsets) : new subset[] {};
     path[] holecontours1 = holecontours(sm1.holes);
     path[] holecontours2 = holecontours(sm2.holes);
 
@@ -3632,7 +3637,7 @@ smooth[] union (
 ) // Constructs the union of two given smooth objects.
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
-    { return new smooth[]{sm1, sm2}; }
+    { return new smooth[] {sm1, sm2}; }
 
     path[] union = union(sm1.contour, sm2.contour, correct = false, round = round, roundcoeff = roundcoeff);
     path contour; 
@@ -3708,7 +3713,7 @@ smooth[] union (
                     dirang += ang*.5;
                     num = ceil((real)num*.5);
                 }
-                trueholes[i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num};
+                trueholes[i].sections[j] = new real[] {dir(dirang).x, dir(dirang).y, ang, num};
             }
         }
     }
@@ -3750,7 +3755,7 @@ smooth[] union (
                     num = ceil((real)num*.5);
                 }
                 
-                trueholes[sm1.holes.length+i].sections[j] = new real[]{dir(dirang).x, dir(dirang).y, ang, num};
+                trueholes[sm1.holes.length+i].sections[j] = new real[] {dir(dirang).x, dir(dirang).y, ang, num};
             }
         }
     }
@@ -3793,7 +3798,7 @@ smooth[] union (
     for (int i = 0; i < subsets2.length; ++i)
     { subset2add(ind = -1, ind2 = i); }
 
-    return new smooth[]{res};
+    return new smooth[] {res};
 }
 
 smooth[] union (
@@ -3970,7 +3975,7 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
 
                 real[][] times = intersections(g[j], gs);
 
-                real[] cuttimes = new real[]{0};
+                real[] cuttimes = new real[] {0};
                 bool[] skipped = array(2*(times.length+1), value = false);
                 real t1;
                 real t2;
@@ -4059,9 +4064,9 @@ private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, pa
     if (!drawnow)
     {
         curdp.push(deferredPath(
-            g = new path[]{gs},
+            g = new path[] {gs},
             p = p,
-            under = new int[]{0},
+            under = new int[] {0},
             arrow = arrow,
             beginarrow = beginarrow,
             endarrow = endarrow,
@@ -4148,10 +4153,6 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
 {
     for (int k = 0; k < sections.length; ++k)
     {
-        if (sections[k].length > 4) continue;
-        if (currentSmMSLR > 0 && length(sections[k][1]-sections[k][0]) > currentSmMSL)
-        { continue; }
-
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir);
         if (shade && currentDrF && section.length > 1) { fill(pic = pic, section[0]--section[1]--cycle, shadepen); }
         if (section.length > 1 && dash) { draw(pic, section[1], dashpen); }
@@ -4296,11 +4297,11 @@ void draw (
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[]{}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
         }
     }
 
@@ -4567,7 +4568,7 @@ void drawarrow (
     path g;
 
     if (points.length > 0)
-    { g = connect(concat(new pair[]{center1}, points, new pair[]{center2})); }
+    { g = connect(concat(new pair[] {center1}, points, new pair[] {center2})); }
     else if (onself)
     {
         if (dummy(radius)) radius = size(sm1.contour);
@@ -4668,7 +4669,7 @@ void drawmapping (
     path g;
 
     if (points.length > 0)
-    { g = connect(concat(new pair[]{center1}, points, new pair[]{center2})); }
+    { g = connect(concat(new pair[] {center1}, points, new pair[] {center2})); }
     else if (onself)
     {
         if (dummy(radius)) radius = size(sm1.contour);
