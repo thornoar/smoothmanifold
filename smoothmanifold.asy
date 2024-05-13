@@ -1521,8 +1521,12 @@ struct smooth
             real[] curratios = horiz ? this.hratios : this.vratios;
             int bound = floor((1 - 2*defaultSmCEM)/currentSmCSD) + 1;
 
+            real r = defaultSmCEM;
             for (int i = 0; i < bound; ++i)
-            { curratios.push(defaultSmCEM + i*currentSmCSD); }
+            {
+                curratios.push(r);
+                r += currentSmCSD;
+            }
 
             return this;
         }
@@ -4179,7 +4183,7 @@ void draw (
     picture pic = currentpicture,
     smooth sm,
     dpar dspec = null
-) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are four section-drawing modes available: `free`, `strict`, `cart` and `plain`. The `help` parameter may be tweaked to show auxillary information about the object. Used for debugging. 
+) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are three section-drawing modes available: `free`, `cartesian` and `plain`. 
 {
     // Configuring variables
 
@@ -4337,7 +4341,7 @@ void draw (
     for (int i = 0; i < sm.attached.length; ++i)
     { draw(pic = pic, sm = sm.attached[i], dspec = dspec.subs(smoothfill = dspec.smoothfill+opacity(currentDrAO))); }
 
-    // Labels and explaination drawings
+    // Labels and help drawings
 
     for (int i = 0; i < sm.elements.length; ++i)
     {
@@ -4395,6 +4399,8 @@ void draw (
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
         draw(sm.adjust(-1)*unitcircle, blue+defaultHlLW);
     }
+
+    // Applying the postdraw function
 
     sm.postdraw(dspec);
 }
