@@ -1,10 +1,14 @@
-// -- Defaults -- //
+// -- Default constants -- //
+// Variable names are abbreviated to avoid really long names. Naming is hard...
+
 // [Pr]ogress
 private int defaultPrML = 50; // [M]essage [L]ength
+
 // [An]imations
 private string defaultAnFLN = ".animation_input_list.txt";
 
-// -- Changeables -- //
+// -- Current values (can be changed by the user, though not directly) -- //
+
 // [Ex]port
 private string currentExP = outname(); // [P]refix
 private bool currentExEOE = false; // [E]xit [O]n [E]xport
@@ -15,10 +19,12 @@ private real currentExM = 0; // [M]argin
 private bool currentExR = true; // [R]estore
 private bool currentExEF = false; // [E]xit [F]lag
 private bool currentExFN = false; // [F]orce [N]ative
+
 // [Fr]ame
 private bool currentFrEP = false; // [E]nclose [P]icture
 private bool currentFrCP = false; // [C]lip [P]icture
 private pair currentFrFC = (0,0); // [F]rame [C]orner
+
 // [An]imations
 private int currentAnFPS = 30; // [FPS]
 private int currentAnCC = 0; // [C]all [C]ount
@@ -28,13 +34,12 @@ private string currentAnIF = "jpg"; // [I]nput [F]ormat
 private string currentAnOP = outname(); // [O]otput [P]refix
 private string currentAnOF = "mp4"; // [O]utput [F]ormat
 private bool currentAnC = true; // [C]lose
+
 // [Dr]awing
 private bool currentDrIC = false; // [I]nvert [C]olors
 private bool currentDrDG = false; // [D]raw [G]rid
 
 string[] currentnatives = new string[]{};
-
-include smoothmanifold;
 
 void linux (string cmd)
 {
@@ -56,6 +61,8 @@ bool contains (string[] strs, string s)
 
 private bool native (string format)
 { return format == "" || format == "eps" || format == "pdf" || contains(currentnatives, format); }
+
+include smoothmanifold;
 
 void expar (
     string prefix = currentExP,
@@ -79,7 +86,7 @@ void expar (
             pen bgpen = currentExBG,
             pen framepen = currentExFP,
             real margin = currentExM,
-            pair size = (dn,dn)
+            pair size = (defaultSyDN,defaultSyDN)
 )
 {
 	if (dpi < 10)

@@ -20,7 +20,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 // -- Default constants -- //
-// Variable names are abbreviated to avoid really long names. Naming is hard.
+// Variable names are abbreviated to avoid really long names. Naming is hard...
 
 // [Sy]stem
 private string defaultversion = "v5.17.0-alpha";
@@ -283,11 +283,11 @@ private real currentArM = defaultArM;
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
 
-// User variables
+// User convenience variables
 pen smoothcolor = defaultDrSmC;
 pen subsetcolor = defaultDrSbC;
-path[] convexpath = copy(defaultPaCV);
-path[] concavepath = copy(defaultPaCC);
+path[] convexpath = defaultPaCV;
+path[] concavepath = defaultPaCC;
 int plain = 0;
 int free = 1;
 int cartesian = 2;
@@ -4389,13 +4389,13 @@ void draw (
             }
         }
 
-        if (dspec.help) label(pic = pic, L = Label((string)i, position = sb.center, p = blue));
+        if (dspec.help && dspec.drawlabels) label(pic = pic, L = Label((string)i, position = sb.center, p = blue));
     }
     if (dspec.help)
     {
         draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultHlAL, purple+defaultHlLW, arrow = Arrow(SimpleHead));
         dot(pic = pic, sm.center, red+1);
-        for (int i = 0; i < sm.holes.length; ++i)
+        if (dspec.drawlabels) for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
         draw(sm.adjust(-1)*unitcircle, blue+defaultHlLW);
     }
