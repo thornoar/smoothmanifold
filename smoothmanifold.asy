@@ -218,7 +218,7 @@ path randomconvex ()
 path randomconcave ()
 { return defaultPaCC[rand()%defaultPaCC.length]; }
 
-// -- Current values (can be changed by the user, though not directly) -- //
+// -- Current values (can be changed in the configuration function) -- //
 
 // [Sy]stem
 private bool currentSyRL = false; // [R]epeat [L]abels -- whether to allow two entities to have one label.
@@ -298,14 +298,14 @@ arrowbar simples = Arrows(SimpleHead);
 
 // -- Supporting utilities -- //
 
-include pathmethods; // Basic functions for paths.
+include pathmethods; // Basic functions for paths and more.
 
 usepackage("amssymb"); // LaTeX package for mathematical symbols
 
 // -- System functions -- //
 
 void halt (string msg)
-// write error and exit compilation.
+// Writes error message and exits compilation.
 {
     write();
     write("> ! "+msg);
@@ -313,6 +313,7 @@ void halt (string msg)
 }
 
 string mode (int md)
+// Extracts the name of given draw mode.
 {
     if (md == 0) return "plain";
     if (md == 1) return "free";
@@ -323,10 +324,13 @@ string mode (int md)
 
 private bool dummy (int n)
 { return n == defaultSyDN; }
+
 private bool dummy (real r)
 { return r == defaultSyDN; }
+
 private bool dummy (pair p)
 { return p == defaultSyDP; }
+
 private bool dummy (string s)
 { return s == defaultSyDS; }
 
@@ -347,7 +351,7 @@ private real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
 { return abs(dot(dir2, p1p2) + dot(p1p2, dir1)); }
 
 private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
-// Checks if the section is too wide
+// Checks if the section is too broad
 {
     pair p1p2u = unit(p2-p1);
     return (
@@ -455,16 +459,16 @@ void smpar (
     bool drawnow = currentDrDN
 ) // The main configuration function. It is called by the user to set all global system variables.
 {
-    if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
-    { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
-    for (int i = 0; i < section.length; ++i)
-    { if (!dummy(section[i])) currentsection[i] = section[i]; }
     if (!inside(0,2, mode))
     { halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
     if (!inside(0,1, minscale))
     { halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
     if (!inside(0,1, attachedop))
     { halt("Could not set attached opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
+    if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
+    { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
+    for (int i = 0; i < section.length; ++i)
+    { if (!dummy(section[i])) currentsection[i] = section[i]; }
 
     currentSmVD = viewdir;
     currentSmVS = viewscale;
