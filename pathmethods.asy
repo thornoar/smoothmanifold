@@ -489,6 +489,31 @@ path[] operator - (path p, path q)
 path[] operator - (path[] p, path q)
 { return difference(p, q); }
 
+path[] symmetric (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = defaultSyRPC
+)
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+    if (!meet(p, q))
+    {
+        if (windingnumber(p, point(q,0)) == -1)
+            return new path[] {p, reverse(q)};
+        if (windingnumber(q, point(p,0)) == -1)
+            return new path[] {q, reverse(p)};
+        return new path[] {p,q};
+    }
+
+    return concat(difference(p,q,false,round,roundcoeff), difference(q,p,false,round,roundcoeff));
+}
+
 path[] intersection (
     path p,
     path q,
