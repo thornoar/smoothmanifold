@@ -514,6 +514,9 @@ path[] symmetric (
     return concat(difference(p,q,false,round,roundcoeff), difference(q,p,false,round,roundcoeff));
 }
 
+path[] operator :: (path p, path q)
+{ return symmetric(p, q); }
+
 path[] intersection (
     path p,
     path q,
