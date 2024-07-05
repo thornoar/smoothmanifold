@@ -4538,7 +4538,7 @@ void drawarrow (
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
     real margin1 = currentArM,
-    real margin2 = currentArM
+    real margin2 = margin1
 ) // Draws an arrow between two given smooth objects, or their subsets.
 {
     bool onself = sm2 == sm1 && index1 == index2;
@@ -4623,7 +4623,7 @@ void drawarrow (
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
     real margin1 = currentArM,
-    real margin2 = currentArM
+    real margin2 = margin1
 )
 {
     int[] indices1 = findsetindex(destlabel1);
@@ -4668,7 +4668,7 @@ void drawmapping (
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
     real margin1 = currentArM,
-    real margin2 = currentArM
+    real margin2 = margin1
 )
 {
     bool onself = sm2 == sm1 && index1 == index2;
@@ -4713,7 +4713,7 @@ void drawmapping (
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
     real margin1 = currentArM,
-    real margin2 = currentArM
+    real margin2 = margin1
 )
 {
     int[] indices1 = findelementindex(destlabel1);
