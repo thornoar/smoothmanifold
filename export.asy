@@ -38,6 +38,8 @@ private bool currentAnC = true; // [C]lose
 // [Dr]awing
 private bool currentDrIC = false; // [I]nvert [C]olors
 private bool currentDrDG = false; // [D]raw [G]rid
+private int currentHlGN = 10; // [H]elp [G]rid [N]umber
+private int currentHlGP = 1; // [H]elp [G]rid [N]umber
 
 string[] currentnatives = new string[]{};
 
@@ -72,6 +74,8 @@ void expar (
     bool autoexport = !currentExEF,
     bool restore = currentExR,
     bool drawgrid = currentDrDG,
+    int gridnumber = currentHlGN,
+    int gridplaces = currentHlGP,
         string dirname = currentAnDN,
         string informat = currentAnIF,
         string outprefix = currentAnOP,
@@ -112,6 +116,8 @@ void expar (
 	currentExEF = !autoexport;
     currentExR = restore;
     currentDrDG = drawgrid;
+    currentHlGN = gridnumber;
+    currentHlGP = gridplaces;
 	
     currentAnDN = dirname;
 	currentAnIF = informat;

@@ -274,8 +274,6 @@ private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 
 // [H]e[l]p
 private pen currentHlLW = defaultHlLW;
-private int currentHlGN = 10; // [H]elp [G]rid [N]umber
-private int currentHlGP = 1; // [H]elp [G]rid [N]umber
 
 // [Ar]rows
 private real currentArM = defaultArM;
@@ -434,8 +432,6 @@ void smpar (
     real arrowmargin = currentArM,
     bool repeatlabels = currentSyRL,
     bool insertdollars = currentSyID,
-    int gridnumber = currentHlGN,
-    int gridplaces = currentHlGP,
     pen explainpen = currentHlLW,
     real attachedop = currentDrAO,
     real nodesize = currentSmNS,
@@ -494,8 +490,6 @@ void smpar (
     currentArM = arrowmargin;
     currentSyRL = repeatlabels;
     currentSyID = insertdollars;
-    currentHlGN = gridnumber;
-    currentHlGP = gridplaces;
     currentHlLW = explainpen;
     currentDrAO = attachedop;
     currentSmNS = nodesize;
