@@ -44,6 +44,7 @@ private int currentHlGP = 1; // [H]elp [G]rid [N]umber
 string[] currentnatives = new string[]{};
 
 void linux (string cmd)
+// Runs an arbitrary Linux command.
 {
     string filename = "cmd.sh";
     file f = output(name = filename);
@@ -54,7 +55,8 @@ void linux (string cmd)
     delete(filename);
 }
 
-bool contains (string[] strs, string s)
+private bool contains (string[] strs, string s)
+// checks if the `strs` array contains the string `s`.
 {
     for (int i = 0; i < strs.length; ++i)
     { if (strs[i] == s) return true; }
@@ -91,7 +93,7 @@ void expar (
             pen framepen = currentExFP,
             real margin = currentExM,
             pair size = (defaultSyDN,defaultSyDN)
-)
+) // The main configuration function. It is called by the user to set all global system variables.
 {
 	if (dpi < 10)
 	{ halt("Could not apply changes: inacceptable quality."); }
@@ -142,6 +144,7 @@ void expar (
 }
 
 void invertcolors ()
+// Inverts most colors (white -> black, blue -> yellow, etc.), e.g. the background of the picture, the contour and fill colors, etc. Must be called after all colors have been set, for correct working.
 {
 	currentExBG = inverse(currentExBG);
 	currentpen = inverse(currentpen);
@@ -154,6 +157,7 @@ void invertcolors ()
 }
 
 bool exists (string filename)
+// Returns true if and only if a file exists.
 {
     file f = input(filename, check = false);
     bool res = !error(f);
@@ -167,7 +171,7 @@ private void drawgrid (
     int number = currentHlGN,
     pair min = pic.userMin2(),
     pair max = pic.userMax2()
-)
+) // Draws an auxiliary coordinate grid on the given picture. It helps understand what coordinates paths have.
 {
     pair margin = (max - min)*.1;
     if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
@@ -206,7 +210,10 @@ private void drawgrid (
         label(pic = pic, position = (x, max.y), L = (string)x, align = N);
         if (x != 0) draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(lwidth)));
     }
-    draw(pic = pic, (0,min.y)--(0, max.y), currentpen+linewidth(lwidth));
+    if (inside(min.x, max.x, 0))
+    {
+        draw(pic = pic, (0,min.y)--(0, max.y), currentpen+linewidth(lwidth));
+    }
 
     while (true)
     {
@@ -228,10 +235,14 @@ private void drawgrid (
         label(pic = pic, position = (max.x, y), L = (string)y, align = E);
         if (y != 0) draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(lwidth)));
     }
-    draw(pic = pic, (min.x, 0)--(max.x, 0), currentpen+linewidth(lwidth));
+    if (inside(min.y, max.y, 0))
+    {
+        draw(pic = pic, (min.x, 0)--(max.x, 0), currentpen+linewidth(lwidth));
+    }
 }
 
 private void framepicture (picture pic)
+// Enclose the given picture in a frame, and clip if if necessary.
 {
     dot(pic, -currentFrFC, linewidth(0)+invisible);
     dot(pic, currentFrFC, linewidth(0)+invisible);
@@ -239,6 +250,7 @@ private void framepicture (picture pic)
 }
 
 void export (
+    // Base parameters hadled by `shipout`:
     string prefix = currentExP,
     picture pic = currentpicture,
     orientation orientation = orientation,
@@ -249,6 +261,7 @@ void export (
     string script = "",
     light light = currentlight,
     projection P = currentprojection,
+        // Additional settings -- background, quality control, deferred drawing, file conversion:
         pen bgpen = currentExBG,
         real margin = currentExM,
         pen framepen = currentExFP,
@@ -258,7 +271,7 @@ void export (
         bool drawdeferred = true,
         bool restore = currentExR,
         bool forcenative = currentExFN
-)
+) // The main function of the module. Analogous to the base `shipout`, but has more sophisticated settings.
 {
     string oldformat = settings.outformat;
 	bool native = forcenative || native(format);
@@ -309,6 +322,7 @@ void export (
 }
 
 int numberoffiles (string dirname)
+// Counts the number of files in a given directory.
 {
     linux("ls "+dirname+" -1 | wc -l > tmp_numberoffiles.txt");
     int res = input("tmp_numberoffiles.txt");
@@ -318,6 +332,7 @@ int numberoffiles (string dirname)
 }
 
 void clean ()
+// Cleans the cached animation frames.
 {
     file f = input(name = defaultAnFLN, check = false);
     if (error(f)) return;
@@ -339,7 +354,7 @@ void compile (
     bool clean = true,
     bool exit = true,
     int density = currentExRID
-)
+) // Compiles an animation from a list of frame pictures.
 {
 	write("> Compiling... ", suffix = none);
 
@@ -399,7 +414,7 @@ void animate (
     int fps = currentAnFPS,
     bool clean = true,
     bool exit = currentExEOE
-)
+) // Produces a list of animation frames from an update function. These frames can later be compiled to an animation.
 {
 	string s = "> Writing animation...";
 	write(s + repeatstring(" ", defaultPrML-2-length(s)) + "->|");
@@ -540,6 +555,8 @@ void revolve (
 
 	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
 }
+
+// Redefining the `shipout` function to default to `export`.
 
 shipout = new void (
     string prefix=outname(),

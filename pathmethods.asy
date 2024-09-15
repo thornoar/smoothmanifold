@@ -1,3 +1,25 @@
+/*
+
+This is module pathmethods. It is an auxiliary collection of low-level path-related
+functions primarily aimed at supporting the main module, smoothmanifold. It can be
+useful on its own, though.
+
+Copyright (C) 2024 Maksimovich Roman Alekseevich. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 private path defaultPaUC = reverse(unitcircle); // [U]nit [C]ircle
 private path defaultPaUS = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 path ucircle = defaultPaUC;
@@ -71,7 +93,7 @@ real round (real a, int places)
 pair round (pair a, int places)
 { return (round(a.x, places), round(a.y, places)); }
 
-// The following functions are for the purpose of making array creation less redundant, much like in the R language.
+// The following functions make array creation less of a boilerplate, much like in the R language.
 
 real[] r (... real[] source)
 { return source; }
