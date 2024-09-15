@@ -4515,7 +4515,7 @@ void drawarrow (
     smooth sm1,
     int index1 = -1,
     smooth sm2 = sm1,
-    int index2 = index1,
+    int index2 = -1,
     real curve = 0,
     real angle = 0,
     real radius = defaultSyDN,
@@ -4645,7 +4645,7 @@ void drawmapping (
     smooth sm1,
     int index1,
     smooth sm2 = sm1,
-    int index2 = index1,
+    int index2 = defaultSyDN,
     real curve = 0,
     real angle = 0,
     real radius = defaultSyDN,
@@ -4665,6 +4665,12 @@ void drawmapping (
     real margin2 = margin1
 )
 {
+    if (index2 == defaultSyDN)
+    {
+        if (sm1 == sm2) index2 = index1;
+        else index2 = -1;
+    }
+
     bool onself = sm2 == sm1 && index1 == index2;
 
     pair center1 = sm1.elements[index1].pos;
