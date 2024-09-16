@@ -295,6 +295,7 @@ void export (
     }
 
     if (drawdeferred) drawdeferred(pic1, flush = !restore);
+    if (currentPrDP.length > 0) draw(pic = pic1, currentPrDP, red+1);
     if (currentDrDG) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
 	if (currentFrEP) framepicture(pic1);
 

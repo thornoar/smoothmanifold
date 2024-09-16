@@ -795,6 +795,12 @@ struct element
 
     // Methods
 
+    element move (transform move)
+    {
+        this.pos = move*this.pos;
+
+        return this;
+    }
     element move (pair shift, real scale, real rotate, pair point, bool movelabel)
     {
         this.pos = shift(shift)*srap(scale, rotate, point)*this.pos;
@@ -843,6 +849,13 @@ struct hole
 
     // Methods
 
+    hole move (transform move)
+    {
+        this.contour = move*this.contour;
+        if (!dummy(this.center)) this.center = move*this.center;
+
+        return this;
+    }
     hole move (pair shift, real scale, real rotate, pair point, bool movesections)
     // Shift, scale, rotate around a point.
     {
@@ -940,6 +953,13 @@ struct subset
     real ysize ()
     { return ysize(this.contour); }
 
+    subset move (transform move)
+    {
+        this.contour = move*this.contour;
+        if (!dummy(this.center)) this.center = move*this.center;
+
+        return this;
+    }
     subset move (pair shift, real scale, real rotate, pair point, bool movelabel)
     {
         transform move = shift(shift)*srap(scale, rotate, point);
@@ -1302,6 +1322,8 @@ struct smooth
     subset[] subsets;       // The subsets of the smooth object.
     element[] elements;     // The elements of the smooth object.
 
+    transform unitadjust;   // The unit coordinates of the object.
+
     real[] hratios;         // The horizontal insert points for cross sections.
     real[] vratios;         // The vertical insert points for cross sections.
 
@@ -1357,8 +1379,12 @@ struct smooth
     private real getxpoint (real x)
     { x = x - floor(x); return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x); }
 
+    private transform selfadjust ()
+    // Calculates the unit coordinates of the object.
+    { return shift(this.center)*scale(size(this.contour)); }
+
     transform adjust (int index)
-    // Returns the adjustment transform for a subset or the object itself.
+    // Returns the adjustment transform for a subset (calculated) or the object itself (cached).
     {
         if (index >= 0)
         {
@@ -1366,7 +1392,7 @@ struct smooth
             return shift(sb.center)*scale(size(sb.contour));
         }
         else
-        { return shift(this.center)*scale(size(this.contour)); }
+        { return this.unitadjust; }
     }
 
     private int findlocalsubsetindex (string label)
@@ -1416,6 +1442,7 @@ struct smooth
         real scale = 1,
         real rotate = 0,
         pair point = this.center,
+        bool readjust = true,
         bool drag = true
     ) // Transforms the smooth object. Respects the current `viewdir`.
     {
@@ -1426,6 +1453,8 @@ struct smooth
         this.center = shift(shift)*rotate(rotate, point)*this.center;
         this.labeldir = rotate(rotate)*this.labeldir;
         
+        if (readjust) this.unitadjust = this.selfadjust();
+
         for (int i = 0; i < this.holes.length; ++i)
         { this.holes[i].move(shift, scale, rotate, point, true); }
         for (int i = 0; i < this.subsets.length; ++i)
@@ -1439,7 +1468,7 @@ struct smooth
         return this;
     }
 
-    void xscale (real s)
+    private void xscale (real s)
     {
         pair center = this.center;
         this.move(shift = -center, drag = false);
@@ -1467,43 +1496,17 @@ struct smooth
         this.move(shift = center, drag = false);
     }
 
-    void yscale (real s)
-    {
-        pair center = this.center;
-        this.move(shift = -center, drag = false);
-        this.contour = scale(1,s)*this.contour;
-        
-        for (hole hl : this.holes)
-        {
-            hl.contour = scale(1,s)*hl.contour;
-            hl.center = scale(1,s)*hl.center;
-
-            for (real[] sc : hl.sections)
-            {
-                pair dir = (sc[0], sc[1]);
-                sc[0] = (scale(1,s)*dir).x;
-                sc[1] = (scale(1,s)*dir).y;
-            }
-        }
-        for (subset sb : this.subsets)
-        {
-            sb.contour = scale(1,s) * sb.contour;
-            sb.center = scale(1,s) * sb.center;
-            sb.labeldir = scale(1,s) * sb.labeldir;
-        }
-        
-        this.move(shift = center, drag = false);
-    }
-
     smooth dirscale (pair dir, real s)
     // Scale smooth object along the direction given by `dir`.
     {
         if (length(dir) == 0) return this;
         
         real deg = degrees(dir);
-        this.move(rotate = -deg, drag = false);
+        this.move(rotate = -deg, readjust = false, drag = false);
         this.xscale(s);
-        this.move(rotate = deg, drag = false);
+        this.move(rotate = deg, readjust = false, drag = false);
+        
+        this.unitadjust = this.selfadjust();
         
         return this;
     }
@@ -1549,9 +1552,10 @@ struct smooth
         if (index == -1)
         {
             if (dummy(center)) center = center(this.contour);
-            else if (unit) center = this.adjust(index)*center;
+            else if (unit) center = this.unitadjust*center;
             
             this.center = center;
+            this.unitadjust = this.selfadjust();
             
             if (!this.inside(this.center))
             { write("> ? Center out of bounds: might cause problems later. [ setcenter() ]"); }
@@ -1721,9 +1725,8 @@ struct smooth
     {
         if (unit)
         {
-            transform adjust = this.adjust(-1);
-            hl.contour = adjust * hl.contour;
-            if (!dummy(hl.center)) hl.center = adjust * hl.center;
+            hl.contour = this.unitadjust * hl.contour;
+            if (!dummy(hl.center)) hl.center = this.unitadjust * hl.center;
         }
         
         bool add = true;
@@ -1966,7 +1969,7 @@ struct smooth
     { return this.rmholes(indices); }
 
     smooth movehole (
-        int index = this.holes.length-1,
+        int index,
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
@@ -2024,8 +2027,7 @@ struct smooth
 
     smooth addsection (
         int index,
-        real[] section = {},
-        bool unit = false
+        real[] section = {}
     )
     {
         if (!checksection(section))
@@ -2051,8 +2053,7 @@ struct smooth
     smooth setsection (
         int index,
         int scindex = 0,
-        real[] section = {},
-        bool unit = false
+        real[] section = {}
     )
     {
         if (!checksection(section))
@@ -2077,7 +2078,7 @@ struct smooth
 
     smooth addsubset (
         subset sb,
-        int index = -1, // the index of parent subset (or the entire smooth object, if index = -1).
+        int index = -1, // the index of parent subset (or the entire smooth object, if index == -1).
         bool inferlabels = currentSmIL, // whether to create intersection labels.
         bool clip = currentSmC, // whether to complain if subset is out of bounds, or clip its contour instead.
         bool unit = currentSmU, // whether to fit the subset to the smooth object
@@ -2157,7 +2158,6 @@ struct smooth
                 if (clip && meet(pcontour, sb.contour))
                 {
                     sb.contour = intersection(pcontour, sb.contour)[0];
-                    // if (dummy(sb.center)) sb.center = center(sb.contour);
                     sb.isonboundary = true;
                     meet = true;
                 }
@@ -2636,6 +2636,7 @@ struct smooth
     // -- Methods for controlling relationships between smooth objects -- //
 
     smooth attach (smooth sm)
+    // Make the current object remember `sm` and drag it when moving.
     { this.attached.push(sm); return this; }
 
     smooth fit (
@@ -2643,7 +2644,7 @@ struct smooth
         picture pic = currentpicture,
         picture addpic,
         pair shift = (0,0)
-    )
+    ) // Fit an entire picture inside the object or its subset.
     {
         path contour = (index == -1) ? this.contour : this.subsets[index].contour;
         pair center = (index == -1) ? this.center : this.subsets[index].center;
@@ -2669,12 +2670,14 @@ struct smooth
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
+        pair point = center,
         pair viewdir = currentSmVD,
         bool distort = true,
         smooth[] attached = {},
         bool copy = false,
         bool shiftsubsets = currentSmSS,
         bool isderivative = false,
+        bool unit = currentSmU,
         void postdraw (dpar ds) = new void (dpar) {} 
     )
     {
@@ -2698,7 +2701,7 @@ struct smooth
             if (scale <= 0)
             { halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-            this.contour = shift(shift)*srap(scale, rotate, center)*((!clockwise(contour)) ? reverse(contour) : contour);
+            this.contour = shift(shift)*srap(scale, rotate, point)*((!clockwise(contour)) ? reverse(contour) : contour);
             this.center = shift(shift)*center;
             if (!currentSyRL && label != "" && smooth.repeats(label))
             {
@@ -2708,12 +2711,14 @@ struct smooth
             this.labeldir = labeldir;
             this.labelalign = labelalign;
 
+            this.unitadjust = shift(this.center) * scale(size(this.contour));
+
             for (int i = 0; i < holes.length; ++i)
-            { addhole(holes[i].move(shift, scale, rotate, center, true), unit = false); }
+            { addhole(holes[i].move(shift, scale, rotate, point, false), unit = unit); }
             for (int i = 0; i < subsets.length; ++i)
-            { addsubset(subsets[i].move(shift, scale, rotate, center, true), unit = false); }
+            { addsubset(subsets[i].move(shift, scale, rotate, point, false), unit = unit); }
             for (int i = 0; i < elements.length; ++i)
-            { addelement(elements[i].move(shift, scale, rotate, center, true), unit = false); }
+            { addelement(elements[i].move(shift, scale, rotate, point, false), unit = unit); }
 
             this.setratios(hratios, true);
             this.setratios(vratios, false);
@@ -2755,6 +2760,8 @@ struct smooth
         this.labelalign = sm.labelalign;
         this.holes = holecopy(sm.holes);
         this.subsets = subsetcopy(sm.subsets);
+        this.elements = elementcopy(sm.elements);
+        this.unitadjust = sm.unitadjust;
         this.hratios = sm.hratios;
         this.vratios = sm.vratios;
         this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
@@ -3051,6 +3058,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 hratios = new real[] {.5},
                 vratios = r(),
                 distort = false,
+                unit = false,
                 label = label
             );
         }
@@ -3058,6 +3066,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         {
             return smooth(
                 contour = defaultPaCC[0],
+                unit = false,
                 label = label
             ); 
         }
@@ -3073,6 +3082,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         labeldir = dir(140)
                     )
                 },
+                unit = false,
                 hratios = new real[] {.6, .83},
                 vratios = r(),
                 label = label
@@ -3103,6 +3113,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = 10
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -3129,6 +3140,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         shift = (.5,.28)
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -3143,6 +3155,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     subset(contour = defaultPaCC[3], shift = (-.3,-.35), rotate = -50),
                     subset(contour = defaultPaCV[3], scale = .9, rotate = 10, shift = (.3,.5))
                 },
+                unit = false,
                 label = label,
                 scale = .5,
                 shift = (.3,-.1)
@@ -3176,6 +3189,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = -113
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -3215,6 +3229,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         scale = .95
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -3251,6 +3266,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = 75
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -3297,6 +3313,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         scale = .56
                     )
                 },
+                unit = false,
                 label = label
             );
         }
@@ -4515,7 +4532,7 @@ void drawarrow (
     smooth sm1,
     int index1 = -1,
     smooth sm2 = sm1,
-    int index2 = -1,
+    int index2 = defaultSyDN,
     real curve = 0,
     real angle = 0,
     real radius = defaultSyDN,
@@ -4535,6 +4552,12 @@ void drawarrow (
     real margin2 = margin1
 ) // Draws an arrow between two given smooth objects, or their subsets.
 {
+    if (index2 == defaultSyDN)
+    {
+        if (sm1 == sm2) index2 = index1;
+        else index2 = -1;
+    }
+
     bool onself = sm2 == sm1 && index1 == index2;
 
     path g1;
