@@ -2394,7 +2394,14 @@ struct smooth
     smooth rmsubset (
         int index = this.subsets.length-1,
         bool recursive = true
-    ) { subsetdelete(this.subsets, index, recursive); return this; }
+    ) // Remove a subset.
+    {
+        if (this.subsets[index].isderivative)
+        {
+            write("> ? Removing an intersection of subsets. [ rmsubset() ]");
+        }
+        subsetdelete(this.subsets, index, recursive); return this;
+    }
 
     smooth rmsubset (
         string destlabel,

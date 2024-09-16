@@ -21,7 +21,7 @@ smooth rn = rn(n = 1)
 draw(sm, dpar(mode = free, overlap = false));
 draw(rn, rnpar());
 
-drawarrow(ts, rn, endarrow = true, beginarrow = true, curve = -.2, L = Label("\cong", align = Relative(W)));
+drawarrow(ts, rn, endarrow = true, beginarrow = true, margin1 = 0.1, margin2 = -.2, curve = -.2, L = Label("\cong", align = Relative(W)));
 drawarrow(sm, 0, rn, 0, curve = .3, margin1 = .07, margin2 = .1, L = Label("f"));
 
 export("picture", "pdf", 1 cm);
