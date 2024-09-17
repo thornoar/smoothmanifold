@@ -560,7 +560,7 @@ void revolve (
 // Redefining the `shipout` function to default to `export`.
 
 shipout = new void (
-    string prefix=outname(),
+    string prefix=currentExP,
 	picture pic=currentpicture,
     orientation orientation=orientation,
     string format=settings.outformat,

@@ -23,7 +23,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // Variable names are abbreviated to avoid really long names. Naming is hard...
 
 // [Sy]stem
-private string defaultversion = "v5.17.0-alpha";
+private string defaultversion = "v5.18.0-alpha";
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it".
 private string defaultSyDS = (string) defaultSyDN; // [D]ummy [S]tring --||--
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
@@ -1306,6 +1306,15 @@ dpar ghostpar (pen contourpen = currentpen)
     );
 }
 
+dpar emptypar ()
+{
+    return dpar(
+        contourpen = nullpen,
+        smoothfill = nullpen,
+        subsetfill = nullpen
+    );
+}
+
 struct smooth
 // The main structure in the module. Represents the way a "smooth manifold" would be drawn on a piece of paper.
 {
@@ -1331,7 +1340,7 @@ struct smooth
 
     smooth[] attached;      // The smooth objects linked to this one.
 
-    void postdraw (dpar);   // What do do after drawing the object.
+    void postdraw (dpar, smooth);   // What do do after drawing the object.
 
     static smooth[] cache;  // The store of all smooth objects created.
 
@@ -2685,7 +2694,7 @@ struct smooth
         bool shiftsubsets = currentSmSS,
         bool isderivative = false,
         bool unit = currentSmU,
-        void postdraw (dpar ds) = new void (dpar) {} 
+        void postdraw (dpar ds, smooth sm) = new void (dpar, smooth) {} 
     )
     {
         if (copy)
@@ -3950,12 +3959,14 @@ smooth tangentspace (
 // -- From here starts the collection of the drawing functions provided by the module. -- //
 
 private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, path gs, Label L, pen p, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
-// Fit the path on the picture without actually drawing it (unless specified otherwise). The path may then be changed "after it was drawn", and it will finally be rendered to the picture at shipout time.
-// The `covermode` parameter needs additional explanation. It determines what happens to the paths that find themselves going 'under' the path `gs`. The possible values are:
-//      -1: The path going under is 'promoted' back to the surface (used by holes in smooth objects)
-//       0: The path going under is left as it is (used with non-cyclical `gs`, serves as a neutral mode)
-//       1: The path going under is 'demoted' to the background and either removed or drawn with a dashed line (used by smooth and subset contours)
-//       2: The path going under is erased.
+/*
+Fit the path on the picture without actually drawing it (unless specified otherwise). The path may then be changed "after it was drawn", and it will finally be rendered to the picture at shipout time.
+The `covermode` parameter needs additional explanation. It determines what happens to the paths that find themselves going 'under' the path `gs`. The possible values are:
+    -1: The path going under is 'promoted' back to the surface (used by holes in smooth objects)
+    0: The path going under is left as it is (used with non-cyclical `gs`, serves as a neutral mode)
+    1: The path going under is 'demoted' to the background and either removed or drawn with a dashed line (used by smooth and subset contours)
+    2: The path going under is erased.
+*/
 {
     if (currentSyID && length(L.s) > 0) L.s = "$"+L.s+"$";
     if (length(L.s) > 0) label(pic = pic, gs, L = L, p = p);
@@ -4424,7 +4435,7 @@ void draw (
 
     // Applying the postdraw function
 
-    sm.postdraw(dspec);
+    sm.postdraw(dspec, sm);
 }
 
 void draw (
