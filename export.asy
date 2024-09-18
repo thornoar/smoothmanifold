@@ -1,3 +1,25 @@
+/*
+
+This is module export. It is an optional library aimed at simplifying the process of
+framing a diagram into a final picture. The module supports features like background
+setting, margin setting, format conversion, animation creation, and more.
+
+Copyright (C) 2024 Maksimovich Roman Alekseevich. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 // -- Default constants -- //
 // Variable names are abbreviated to avoid really long names. Naming is hard...
 
@@ -44,7 +66,7 @@ private int currentHlGP = 1; // [H]elp [G]rid [N]umber
 string[] currentnatives = new string[]{};
 
 void linux (string cmd)
-// Runs an arbitrary Linux command.
+// Run an arbitrary Linux command.
 {
     string filename = "cmd.sh";
     file f = output(name = filename);
@@ -56,7 +78,7 @@ void linux (string cmd)
 }
 
 private bool contains (string[] strs, string s)
-// checks if the `strs` array contains the string `s`.
+// Check if the `strs` array contains the string `s`.
 {
     for (int i = 0; i < strs.length; ++i)
     { if (strs[i] == s) return true; }
@@ -64,6 +86,7 @@ private bool contains (string[] strs, string s)
 }
 
 private bool native (string format)
+// Check if the format is supported by Asymptote natively.
 { return format == "" || format == "eps" || format == "pdf" || contains(currentnatives, format); }
 
 include smoothmanifold;
@@ -144,7 +167,7 @@ void expar (
 }
 
 void invertcolors ()
-// Inverts most colors (white -> black, blue -> yellow, etc.), e.g. the background of the picture, the contour and fill colors, etc. Must be called after all colors have been set, for correct working.
+// Invert most colors (white -> black, blue -> yellow, etc.), e.g. the background of the picture, the contour and fill colors, etc. Must be called after all colors have been set, for correct working.
 {
 	currentExBG = inverse(currentExBG);
 	currentpen = inverse(currentpen);
@@ -323,7 +346,7 @@ void export (
 }
 
 int numberoffiles (string dirname)
-// Counts the number of files in a given directory.
+// Count the number of files in a given directory.
 {
     linux("ls "+dirname+" -1 | wc -l > tmp_numberoffiles.txt");
     int res = input("tmp_numberoffiles.txt");
@@ -333,7 +356,7 @@ int numberoffiles (string dirname)
 }
 
 void clean ()
-// Cleans the cached animation frames.
+// Clean the cached animation frames.
 {
     file f = input(name = defaultAnFLN, check = false);
     if (error(f)) return;
@@ -355,7 +378,7 @@ void compile (
     bool clean = true,
     bool exit = true,
     int density = currentExRID
-) // Compiles an animation from a list of frame pictures.
+) // Compile an animation from a list of frame pictures.
 {
 	write("> Compiling... ", suffix = none);
 
@@ -415,7 +438,7 @@ void animate (
     int fps = currentAnFPS,
     bool clean = true,
     bool exit = currentExEOE
-) // Produces a list of animation frames from an update function. These frames can later be compiled to an animation.
+) // Produce a list of animation frames from an update function. These frames can later be compiled to an animation.
 {
 	string s = "> Writing animation...";
 	write(s + repeatstring(" ", defaultPrML-2-length(s)) + "->|");
@@ -472,7 +495,7 @@ void addframe (
         pen bgpen = currentExBG,
         real margin = currentExM,
         pen framepen = currentExFP
-)
+) // Add a single frame to the current frame pool.
 {
     string hash = (string)currentAnCC + (string)seconds();
     currentAnCC += 1;
@@ -499,7 +522,7 @@ void move (
     bool compile = false,
     int fps = currentAnFPS,
     bool close = currentAnC
-) // Animates the process of shifting, scaling and rotating a given smooth object. //
+) // Animate the process of shifting, scaling and rotating a given smooth object.
 {
     smooth smp;
     if (back) smp = sm.copy();
@@ -531,7 +554,7 @@ void revolve (
     bool compile = false,
     int fps = currentAnFPS,
     bool close = currentAnC
-) // Creates the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
+) // Create the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
     smooth smp;
     if (back) smp = sm.copy();

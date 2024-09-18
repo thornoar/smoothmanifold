@@ -32,7 +32,7 @@ real currentSyRPR = defaultSyRPR;
 void pathpar (
     real roundcoeff = currentSyRPC,
     real range = currentSyRPR
-)
+) // The configuration function.
 {
     if (roundcoeff > .5)
     { write("> ? Number provided for the rounding coefficient ("+(string)roundcoeff+") seems too big. Values below 0.1 are ideal. Just saying."); }
@@ -41,6 +41,7 @@ void pathpar (
 }
 
 real mod (real a, real b)
+// Calculate a % b.
 {
     if (b < 0) return -1;
     while (a < 0) a += b;
@@ -52,7 +53,13 @@ pair center (
     path p,
     int n = 10,
     bool arc = true
-)
+) /*
+Calculate the center of mass of the area enclosed by the path `p`.
+The `arc` parameter determines whether arclength should be used
+instead of path time. If the resulting point is outside of the
+area, a point inside the area with the same y-coordinate is
+chosen.
+*/
 {
     pair sum = (0,0);
     for (int i = 0; i < n; ++i)
@@ -67,30 +74,33 @@ transform srap (real scale, real rotate, pair point)
 { return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
 
 bool inside (real a, real b, real c)
+// Check if a <= c <= b.
 { return (a <= c && c <= b); }
 
 bool insidepath (path p, path q)
-// Checks if q is completely inside p (the directions of p and q do not matter). Shorthand for inside(p, q) == 1
+// Check if q is completely inside p (the directions of p and q do not matter). Shorthand for inside(p, q) == 1
 { return (inside(p, q, evenodd) == 1); }
-// { return (inside(p, srap(scale = .99, rotate = 0, point = center(p))*q, evenodd) == 1); }
 
 transform dscale (
     real scale,
     pair dir,
     pair center = (0,0)
-) // scale in given direction
+) // Scale in given direction
 {
     if (length(dir) == 0) return identity;
     return rotate(degrees(dir), center) * xscale(scale) * rotate(-degrees(dir), center);
 }
 
 pair comb (pair a, pair b, real t)
+// A linear combination.
 { return t*b + (1-t)*a;}
 
 real round (real a, int places)
+// Leave the given number of decimal places.
 { return floor(10^places*a)*.1^places; }
 
 pair round (pair a, int places)
+// Leave the given number of decimal places, in each coordinate.
 { return (round(a.x, places), round(a.y, places)); }
 
 // The following functions make array creation less of a boilerplate, much like in the R language.
@@ -129,6 +139,8 @@ string[][] ds (... string[][] source)
 { return source; }
 string[][] ss (... string[] source)
 { return new string[][]{source}; }
+
+// Array functions
 
 pair[] concat (pair[][] a)
 // Same as the standard Asymptote `concat` function, but with more than two arguments.
@@ -173,6 +185,7 @@ bool contains (int[] source, int a)
 }
 
 int[] difference (int[] a, int[] b)
+// Calculate the set difference of two arrays.
 {
     int[] res = {};
     for (int i = 0; i < a.length; ++i)
@@ -180,19 +193,22 @@ int[] difference (int[] a, int[] b)
     return res;
 }
 
-real xsize (path p) {return xpart(max(p)) - xpart(min(p));}
-real ysize (path p) {return ypart(max(p)) - ypart(min(p));}
+real xsize (path p) { return xpart(max(p)) - xpart(min(p)); }
+real ysize (path p) { return ypart(max(p)) - ypart(min(p)); }
 
-real size (path p)
+real radius (path p)
+// Calculate the approximate "radius" of a path-enclosed area.
 { return (xsize(p) + ysize(p))*.25; }
 
-real xsize (picture p) {return xpart(max(p)) - xpart(min(p));}
-real ysize (picture p) {return ypart(max(p)) - ypart(min(p));}
+real xsize (picture p) { return xpart(max(p)) - xpart(min(p)); }
+real ysize (picture p) { return ypart(max(p)) - ypart(min(p)); }
 
 real arclength (path g, real a, real b)
+// A more functional version of `arclength`.
 { return arclength(subpath(g, a, b)); }
 
 real relarctime (path g, real t0, real a)
+// Calculate the time at which arclength `a` will be traveled, starting from time t0.
 {
     real t0arc = arclength(g, 0, t0);
     if (t0arc + a < 0 || t0arc + a > arclength(g)) { return -arctime(g, mod(t0arc + a, arclength(g))); }
@@ -202,39 +218,36 @@ real relarctime (path g, real t0, real a)
 real intersectiontime (path g, pair point, pair dir)
 // Returns the time of the intersection of `g` with a beam going from `point` in direction `dir`
 {
-    real[] isect = intersect(g, point -- (point + unit(dir)*(8*size(g))));
+    real[] isect = intersect(g, point -- (point + unit(dir)*(8*radius(g))));
     if (isect.length > 0) return isect[0];
     return -1;
 }
 
-path connect (pair[] points)
-// Connect an array of points into a path
-{
-    guide acc;
-    for (int i = 0; i < points.length; ++i)
-    { acc = acc .. points[i]; }
-    return (path) acc;
-}
-
 pair intersection (path g, pair point, pair dir)
+// Same as `intersectiontime`, but returns the point.
 { return point(g, intersectiontime(g, point, dir)); }
 
 path reorient (path g, real time)
+// Shift the starting point of a path along the path.
 { return subpath(g, time, length(g)) & subpath(g, 0, time) & cycle; }
 
 path turn (path g, pair point, pair dir)
+// Reorient in the direction of `dir` from point `point`.
 { return reorient(g, intersectiontime(g, point, dir)); }
 
 path subcyclic (path p, pair t)
+// An improved `subpath` made for cyclic paths.
 {
     if (t.x <= t.y) return subpath(p, t.x, t.y);
     return (subpath(p, t.x, length(p)) & subpath(p, 0, t.y));
 }
 
 bool clockwise (path p)
+// Check if the path is clockwise.
 { return (windingnumber(p, inside(p)) == -1); }
 
 bool meet (path p, path q)
+// A shorthand to check if paths intersect.
 { return (intersect(p, q).length > 0); }
 
 bool meet (path p, path[] q)
@@ -259,7 +272,7 @@ path ellipsepath (
     pair b,
     real curve = 0,
     bool abs = false
-) // Returns half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
+) // Produce half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
 {
     if (!abs) curve = curve*length(b-a);
     pair mid = (a+b)*.5;
@@ -272,7 +285,7 @@ path curvedpath (
     pair b,
     real curve = 0,
     bool abs = false
-) // Constucts a curved path between two points.
+) // Constuct a curved path between two points.
 {
     if (abs) curve = curve/length(b-a);
     pair mid = (a+b)*.5;
@@ -280,9 +293,11 @@ path curvedpath (
 }
 
 path cyclepath (pair a, real angle, real radius)
-{ return shift(a)*rotate(angle)*scale(radius)*shift(1,0)*rotate(180)*reverse(unitcircle); }
+// A circular path starting from `a` and 
+{ return shift(a)*rotate(-180 + angle)*scale(radius)*shift(-1,0)*reverse(unitcircle); }
 
 pair range (path g, pair center, pair dir, real ang, real orient = 1)
+// Calculate the subpath times based on `center`, `dir`, and `ang`.
 {
     return (
         intersectiontime(g, center, rotate(orient*ang*.5)*dir),
@@ -291,10 +306,11 @@ pair range (path g, pair center, pair dir, real ang, real orient = 1)
 }
 
 bool outsidepath (path p, path q)
+// Check if `q` is outside of the area enclosed by `p`.
 { return !meet(p,q) && !insidepath(p,q); }
 
 path midpath (path g, path h, int n = 20)
-// Constructs the "mean" path between two given paths.
+// Construct the "mean" path between two given paths.
 {
     path res;
     for (int i = 0; i < n; ++i)
@@ -305,28 +321,50 @@ path midpath (path g, path h, int n = 20)
 }
 
 path pop (path[] source)
+// Delete the first element and return it.
 {
-    path i = source[0];
+    path p = source[0];
     source.delete(0);
-    return i;
+    return p;
 }
 
-path wavypath (real[] nums, bool adjust = false)
+path connect (pair[] points)
+// Connect an array of points into a path
+{
+    guide acc;
+    for (int i = 0; i < points.length; ++i)
+    { acc = acc .. points[i]; }
+    return (path) acc;
+}
+
+path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
+// Connect points around the origin with a path.
 {
     if (nums.length == 0) return nullpath;
     if (nums.length == 1) return scale(nums[0])*defaultPaUC;
     
     pair[] points = sequence(new pair (int i) { return nums[i]*dir(-360*(i/nums.length)); }, nums.length);
 
-    guide getpath (pair[] arr)
-    {
-        if (arr.length == 2) return arr[0]{rotate(-90)*arr[0]}..{rotate(-90)*arr[1]}arr[1];
-        pair a = arr.pop();
-        return getpath(arr) .. {rotate(-90)*a}a;
-    }
+    path res;
 
-    path res = (path) (getpath(points)..cycle);
-    return adjust ? scale(1/size(res))*shift(-center(res))*res : res;
+    if (normaldir)
+    {
+        guide getpath (pair[] arr)
+        {
+            if (arr.length == 2)
+            {
+                return arr[0]{rotate(-90)*arr[0]} .. 
+                             {rotate(-90)*arr[1]}arr[1];
+            }
+            pair a = arr.pop();
+            return getpath(arr) .. {rotate(-90)*a}a;
+        }
+        res = (path) (getpath(points)..cycle);
+    }
+    else
+    { res = connect(points)..cycle; }
+
+    return adjust ? scale(1/radius(res))*shift(-center(res))*res : res;
 }
 
 path wavypath (... real[] nums)
@@ -355,7 +393,7 @@ pair operator cast (gauss g)
 { return (g.x, g.y); }
 
 path connect (path p, path q)
-// Connects `p` and `q` smoothly.
+// Connect `p` and `q` smoothly.
 { return p{dir(p, length(p))}..{dir(q,0)}q; }
 
 path[] combination (path p, path q, int mode, bool round, real roundcoeff)
@@ -470,7 +508,7 @@ path[] difference (
     bool correct = true,
     bool round = false,
     real roundcoeff = defaultSyRPC
-)
+) // Construct the set difference between two path-enclosed areas.
 {
     if (correct)
     {
@@ -517,7 +555,7 @@ path[] symmetric (
     bool correct = true,
     bool round = false,
     real roundcoeff = defaultSyRPC
-)
+) // Construct the set symmetric difference between two path-enclosed areas.
 {
     if (correct)
     {
@@ -545,7 +583,7 @@ path[] intersection (
     bool correct = true,
     bool round = false,
     real roundcoeff = defaultSyRPC
-)
+) // Construct the intersection of two path-enclosed areas.
 {
     if (correct)
     {
@@ -626,7 +664,7 @@ path[] union (
     bool correct = true,
     bool round = false,
     real roundcoeff = defaultSyRPC
-)
+) // Construct the union of two path-enclosed areas.
 {
     if (correct)
     {
@@ -690,6 +728,7 @@ pair randomdir (pair dir, real angle)
 { return dir(degrees(dir) + (unitrand()-.5)*angle); }
 
 path randompath (pair[] controlpoints, real angle)
+// Like `connect`, but the path has some randomness to it.
 {
     if (controlpoints.length < 2) return nullpath;
 

@@ -1422,7 +1422,7 @@ struct smooth
 
     private transform selfadjust ()
     // Calculates the unit coordinates of the object.
-    { return shift(this.center)*scale(size(this.contour)); }
+    { return shift(this.center)*scale(radius(this.contour)); }
 
     transform adjust (int index)
     // Returns the adjustment transform for a subset (calculated) or the object itself (cached).
@@ -1431,7 +1431,7 @@ struct smooth
         if (index >= 0)
         {
             subset sb = this.subsets[index];
-            return shift(sb.center)*scale(size(sb.contour));
+            return shift(sb.center)*scale(radius(sb.contour));
         }
         else
         { return this.unitadjust; }
@@ -2777,7 +2777,7 @@ struct smooth
             this.labeldir = labeldir;
             this.labelalign = labelalign;
 
-            this.unitadjust = shift(this.center) * scale(size(this.contour));
+            this.unitadjust = shift(this.center) * scale(radius(this.contour));
 
             for (int i = 0; i < holes.length; ++i)
             { addhole(holes[i].move(shift, scale, rotate, point, false), unit = unit); }
@@ -4375,7 +4375,7 @@ void draw (
 
     path[] holes = holecontours(sm.holes);
     path[] contour = reverse(sm.contour) ^^ holes;
-    real scale = size(sm.contour);
+    real scale = radius(sm.contour);
 
     // Applying the postdraw function if specified
 
@@ -4418,7 +4418,7 @@ void draw (
                 {
                     pair hlstart = point(curhlcontour, 0);
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
-                    pair hlvec = defaultHlAR * size(hl.contour) * unit(hlstart - hl.center);
+                    pair hlvec = defaultHlAR * radius(hl.contour) * unit(hlstart - hl.center);
                     draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + defaultHlLW);
                     draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- hlfinish, yellow + defaultHlLW);
                     draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+defaultHlLW);
@@ -4464,8 +4464,8 @@ void draw (
                         pair hl1finish = point(curhl1contour, length(curhl1contour));
                         pair hl2start = point(curhl2contour, 0);
                         pair hl2finish = point(curhl2contour, length(curhl2contour));
-                        pair hl1vec = defaultHlAR * size(hl1.contour) * unit(hl1start - hl1.center);
-                        pair hl2vec = defaultHlAR * size(hl2.contour) * unit(hl2start - hl2.center);
+                        pair hl1vec = defaultHlAR * radius(hl1.contour) * unit(hl1start - hl1.center);
+                        pair hl2vec = defaultHlAR * radius(hl2.contour) * unit(hl2start - hl2.center);
                         draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultHlLW);
                         draw(pic, (hl1.center + rotate(-currentSmIHSA)*hl1vec)--hl1finish, yellow+defaultHlLW);
                         draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultHlLW);
@@ -4801,7 +4801,7 @@ void drawarrow (
     { g = connect(concat(new pair[] {start}, points, new pair[] {finish})); }
     else if (onself)
     {
-        if (dummy(radius)) radius = size(sm1.contour);
+        if (dummy(radius)) radius = radius(sm1.contour);
         g = cyclepath(start, angle, radius);
     }
     else
@@ -4925,7 +4925,7 @@ void drawpath (
         if (dummy(angle))
         { angle = degrees(-elt.labelalign, warn = false); }
         if (dummy(radius))
-        { radius = .05*size(sm1.contour); }
+        { radius = .05*radius(sm1.contour); }
 
         pair dir1 = randomdir(dir(angle-range), range);
         pair dir2 = -randomdir(dir(angle+range), range);
