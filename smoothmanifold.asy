@@ -23,7 +23,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // Variable names are abbreviated to avoid really long names. Naming is hard...
 
 // [Sy]stem
-private string defaultversion = "v5.18.0-alpha";
+private string defaultversion = "v5.20.0-alpha";
 private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it".
 private string defaultSyDS = (string) defaultSyDN; // [D]ummy [S]tring --||--
 private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
@@ -64,7 +64,7 @@ private real defaultHlAL = .2; // [A]rrow [L]ength -- the length of help arrows
 private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth -- the width of help lines
 
 // [Ar]rows
-private real defaultArM = defaultDrGL*.7; // [M]argin -- the margin of arrows from the edge of the object.
+private real defaultArM = 0.03; // [M]argin -- the margin of arrows from the edge of the object.
 
 // [Pa]ths -- a collection of default paths to be used in smooth objects.
 private path[] defaultPaCV = new path[] { // [C]on[V]ex
@@ -268,8 +268,10 @@ private bool currentDrF = true; // [F]ill
 private bool currentDrFS = true; // [F]ill [S]ubsets
 private bool currentDrDC = true; // [D]raw [C]ontour
 private bool currentDrDSC = true; // [D]raw [S]ubset [C]ontour
+private bool currentDrPR = false; // [P]ath [R]andom
 private bool currentDrO = false; // [O]verlap
 private bool currentDrDN = false; // [D]raw [N]ow
+private bool currentDrPDO = false; // [P]ost [D]raw [O]ver
 private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
 
 // [H]e[l]p
@@ -450,9 +452,11 @@ void smpar (
     real dashscale = currentDrDPS,
     real dashop = currentDrDPO,
     bool shade = currentDrDS,
+    bool pathrandom = currentDrPR,
     bool overlap = currentDrO,
     bool subsetoverlap = currentDrSCO,
-    bool drawnow = currentDrDN
+    bool drawnow = currentDrDN,
+    bool postdrawover = currentDrPDO
 ) // The main configuration function. It is called by the user to set all global system variables.
 {
     if (!inside(0,2, mode))
@@ -508,9 +512,11 @@ void smpar (
     currentDrDPS = dashscale;
     currentDrDPO = dashop;
     currentDrDS = shade;
+    currentDrPR = pathrandom;
     currentDrO = overlap;
     currentDrSCO = subsetoverlap;
     currentDrDN = drawnow;
+    currentDrPDO = postdrawover;
 
     if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
 }
@@ -1190,6 +1196,7 @@ struct dpar
     bool avoidsubsets;      // Whether to refrain from drawing sections that intersect subsets.
     bool overlap;           // Whether to leave gaps where lines intersect.
     bool drawnow;           // Whether to draw the object immediately instead of deferring until shipout.
+    bool postdrawover;      // Whether to call `postdraw` after everything else.
 
     // Methods
 
@@ -1215,7 +1222,8 @@ struct dpar
         bool shade = currentDrDS,
         bool avoidsubsets = currentSeAS,
         bool overlap = currentDrO,
-        bool drawnow = currentDrDN
+        bool drawnow = currentDrDN,
+        bool postdrawover = currentDrPDO
     ) // Constructor
     {
         this.contourpen = contourpen;
@@ -1240,6 +1248,7 @@ struct dpar
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
         this.drawnow = drawnow;
+        this.postdrawover = postdrawover;
     }
 
     dpar subs (
@@ -1264,7 +1273,8 @@ struct dpar
         bool shade = this.shade,
         bool avoidsubsets = this.avoidsubsets,
         bool overlap = this.overlap,
-        bool drawnow = this.drawnow
+        bool drawnow = this.drawnow,
+        bool postdrawover = this.postdrawover
     ) // Create a new dpar with some attributes changed.
     {
         this.contourpen = contourpen;
@@ -1289,6 +1299,7 @@ struct dpar
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
         this.drawnow = drawnow;
+        this.postdrawover = postdrawover;
 
         return this;
     }
@@ -1361,6 +1372,27 @@ struct smooth
         return false;
     }
 
+    void checksubsetindex (int index, string fname)
+    {
+        if (index >= this.subsets.length)
+        {
+            halt(
+                "Subset index out of bounds for smooth object " + 
+                (this.label == "" ? "[unlabeled]" : this.label) +
+                ". [ " + fname + "() ]"
+            );
+        }
+        if (index < -1)
+        {
+            write(
+                "> ? Unrecognized index value: " +
+                (string) index +
+                ". Please use -1 for self-reference to the smooth object" +
+                ". [ " + fname + "() ]"
+            );
+        }
+    }
+
     // -- Supporting methods -- //
 
     real xsize ()
@@ -1395,6 +1427,7 @@ struct smooth
     transform adjust (int index)
     // Returns the adjustment transform for a subset (calculated) or the object itself (cached).
     {
+        this.checksubsetindex(index, "adjust");
         if (index >= 0)
         {
             subset sb = this.subsets[index];
@@ -1403,6 +1436,10 @@ struct smooth
         else
         { return this.unitadjust; }
     }
+
+    pair relative (pair point)
+    // Returns the point in unit coordinates.
+    { return this.unitadjust * point; }
 
     private int findlocalsubsetindex (string label)
     // Locate a subset by its label.
@@ -1558,6 +1595,7 @@ struct smooth
         bool unit = currentSmU
     ) // Sets the center of the object or one of its subsets. The center is used for cross section positioning and arrows.
     {
+        this.checksubsetindex(index, "setcenter");
         if (index == -1)
         {
             if (dummy(center)) center = center(this.contour);
@@ -1598,6 +1636,8 @@ struct smooth
         pair align = defaultSyDP
     ) // Controls the label of the object, or one of its subsets under `indexpath`.
     {
+        this.checksubsetindex(index, "setlabel");
+
         if (!currentSyRL && repeats(label))
         { halt("Could not set label: label \""+label+"\" already assigned. [ setlabel() ]"); }
 
@@ -1633,6 +1673,8 @@ struct smooth
         bool unit = currentSmU
     )
     {
+        this.checksubsetindex(index, "addelement");
+
         if (!currentSyRL && repeats(elt.label))
         { halt("Could not add element: label \""+elt.label+"\" already assigned. [ addelement() ]"); }
         
@@ -1727,7 +1769,7 @@ struct smooth
 
     smooth addhole (
         hole hl,
-        int index = this.holes.length,
+        int insertindex = this.holes.length,
         bool clip = currentSmC,
         bool unit = currentSmU
     )
@@ -1910,7 +1952,7 @@ struct smooth
             if (dummy(hl.sections[i][3]) || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = currentsection[3];
         }
 
-        this.holes.insert(i = index, hl);
+        this.holes.insert(i = insertindex, hl);
         return this;
     }
 
@@ -2094,6 +2136,8 @@ struct smooth
         bool checkintersection = true
     ) // Add a subset to the smooth object.
     {
+        this.checksubsetindex(index, "addsubset");
+
         if (!currentSyRL && repeats(sb.label))
         { halt("Could not add subset: label \""+sb.label+"\" already assigned. [ addsubset() ]"); }
 
@@ -2405,6 +2449,8 @@ struct smooth
         bool recursive = true
     ) // Remove a subset.
     {
+        this.checksubsetindex(index, "rmsubset");
+
         if (this.subsets[index].isderivative)
         {
             write("> ? Removing an intersection of subsets. [ rmsubset() ]");
@@ -2498,6 +2544,8 @@ struct smooth
         bool keepview = true
     )
     {
+        this.checksubsetindex(index, "movesubset");
+
         subset cursb = this.subsets[index];
         point = (dummy(point)) ? cursb.center : point;
 
@@ -2662,6 +2710,8 @@ struct smooth
         pair shift = (0,0)
     ) // Fit an entire picture inside the object or its subset.
     {
+        this.checksubsetindex(index, "fit");
+
         path contour = (index == -1) ? this.contour : this.subsets[index].contour;
         pair center = (index == -1) ? this.center : this.subsets[index].center;
         addpic = shift(center)*shift(-shift)*addpic;
@@ -2807,11 +2857,10 @@ smooth[] concat (smooth[][] smss)
     return concat(concat(smss), sms);
 }
 
-private int[] findsetindex (string label)
+private int findsmoothindex (string label)
 {
     bool found = false;
-    int smres;
-    int sbres = -1;
+    int smres = -1;
 
     for (int i = 0; i < smooth.cache.length; ++i)
     {
@@ -2819,10 +2868,42 @@ private int[] findsetindex (string label)
         {
             if (found) halt("Cannot identify smooth set: ambiguous label \""+label+"\". [ findsetindex() ]");
             found = true;
-            if (!currentSyRL) return i(i, -1);
+            if (!currentSyRL) return i;
             smres = i;
         }
+    }
 
+    if (!found) halt("Could not identify set: no object with label \""+label+"\". [ findsetindex() ]");
+    return smres;
+}
+
+smooth findsm (string label)
+{
+    // int index = findsmoothindex(label);
+    // if (indices[1] != -1) halt("Could not identify smooth object: object with label \""+label+"\" is a subset. Use `findsb()` instead. [ findsm() ]");
+    return smooth.cache[findsmoothindex(label)];
+}
+
+smooth operator cast (string label)
+{ return findsm(label); }
+
+smooth[] operator cast (string[] labels)
+{
+    return sequence(
+        new smooth (int i)
+        { return findsm(labels[i]); },
+        labels.length
+    );
+}
+
+private int[] findsubsetindex (string label)
+{
+    bool found = false;
+    int smres = -1;
+    int sbres = -1;
+
+    for (int i = 0; i < smooth.cache.length; ++i)
+    {
         for (int j = 0; j < smooth.cache[i].subsets.length; ++j)
         {
             if (smooth.cache[i].subsets[j].label == label)
@@ -2840,24 +2921,23 @@ private int[] findsetindex (string label)
     return i(smres, sbres);
 }
 
-smooth findsm (string label)
-{
-    int[] indices = findsetindex (label);
-    if (indices[1] != -1) halt("Could not identify smooth object: object with label \""+label+"\" is a subset. Use `findsb()` instead. [ findsm() ]");
-    return smooth.cache[findsetindex(label)[0]];
-}
-
-smooth operator cast (string label)
-{ return findsm(label); }
-
-smooth[] operator cast (string[] labels)
-{ return sequence(new smooth (int i) { return findsm(labels[i]); }, labels.length); }
-
 subset findsb (string label)
 {
-    int[] indices = findsetindex (label);
-    if (indices[1] == -1) halt("Could not identify subset: object with label \""+label+"\" is not a subset. Use `findsm()` instead. [ findsb() ]");
+    int[] indices = findsubsetindex(label);
+    // if (indices[1] == -1) halt("Could not identify subset: object with label \""+label+"\" is not a subset. Use `findsm()` instead. [ findsb() ]");
     return smooth.cache[indices[0]].subsets[indices[1]];
+}
+
+subset operator cast (string label)
+{ return findsb(label); }
+
+subset[] operator cast (string[] labels)
+{
+    return sequence(
+        new subset (int i)
+        { return findsb(labels[i]); },
+        labels.length
+    );
 }
 
 private int[] findelementindex (string label)
@@ -2888,13 +2968,72 @@ private int[] findelementindex (string label)
 element findelt (string label)
 // 
 {
-    int[] indices = findelementindex (label);
-    if (indices[1] == -1) halt("Could not identify element: object with label \""+label+"\" is not a element. Use `findsm()` instead. [ findsb() ]");
+    int[] indices = findelementindex(label);
+    // if (indices[1] == -1) halt("Could not identify element: object with label \""+label+"\" is not a element. Use `findsm()` instead. [ findsb() ]");
     return smooth.cache[indices[0]].elements[indices[1]];
 }
 
 element operator cast (string label)
 { return findelt(label); }
+
+element[] operator cast (string[] labels)
+{
+    return sequence(
+        new element (int i)
+        { return findelt(labels[i]); },
+        labels.length
+    );
+}
+
+private int[] findbylabel (string label)
+{
+    bool found = false;
+    int smres;
+    int type = -2;
+    int sbres = -1;
+    int eltres;
+
+    for (int i = 0; i < smooth.cache.length; ++i)
+    {
+        if (smooth.cache[i].label == label)
+        {
+            if (found) halt("Cannot identify smooth set: ambiguous label \""+label+"\". [ findsetindex() ]");
+            if (!currentSyRL) return i(i, -1, -1);
+            found = true;
+            smres = i;
+            type = -1;
+        }
+
+        for (int j = 0; j < smooth.cache[i].subsets.length; ++j)
+        {
+            if (smooth.cache[i].subsets[j].label == label)
+            {
+                if (found) halt("Cannot identify set: ambiguous label \""+label+"\". [ findsetindex() ]");
+                found = true;
+                if (!currentSyRL) return i(i, 0, j);
+                smres = i;
+                type = 0;
+                sbres = j;
+            }   
+        }
+
+        for (int j = 0; j < smooth.cache[i].elements.length; ++j)
+        {
+            if (smooth.cache[i].elements[j].label == label)
+            {
+                if (found) halt("Cannot identify element: ambiguous label \""+label+"\". [ findelementindex() ]");
+                found = true;
+                if (!currentSyRL) return i(i, 1, j);
+                smres = i;
+                type = 1;
+                eltres = j;
+            }   
+        }
+    }
+
+    if (!found) halt("Could not identify set: no object with label \""+label+"\". [ findsetindex() ]");
+    return i(smres, type, (type == 1) ? eltres : sbres);
+}
 
 private string repeatstring (string str, int n)
 {
@@ -3347,15 +3486,22 @@ smooth rn (
     pair shift = (0,0),
     real scale = 1,
     real rotate = 0
-) // An alias for the common diagram representation of the n-dimensional Eucledian space.
+) // A method for the common diagram representation of the n-dimensional Eucledian space.
 {
     return smooth(
         contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
         label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
-        labeldir = (1,1),
+        labeldir = (.5,1),
         labelalign = (-1.5,-1.5),
-        hratios = new real[] {.4},
-        vratios = new real[] {.4},
+        hratios = new real[] {},
+        vratios = new real[] {},
+        postdraw = new void (dpar dspec, smooth sm)
+        {
+            transform adj = sm.unitadjust;
+            pen p = dspec.contourpen;
+            draw(adj*((-1,-.2)--(1,-.2)), p = p, arrow = Arrow(SimpleHead));
+            draw(adj*((-.2,-1)--(-.2,1)), p = p, arrow = Arrow(SimpleHead));
+        },
         shift = shift,
         scale = scale,
         rotate = rotate
@@ -3368,8 +3514,9 @@ dpar rnpar ()
         drawsubsetcontour = true,
         fill = false,
         fillsubsets = true,
-        mode = cartesian,
-        viewdir = (0,0)
+        mode = plain,
+        viewdir = (0,0),
+        postdrawover = false
     );
 }
 
@@ -3905,7 +4052,7 @@ smooth operator + (smooth sm1, smooth sm2)
 
 smooth tangentspace (
     smooth sm,
-    int ind = -1,
+    int hlindex = -1,
     pair center = defaultSyDP,
     real angle,
     real ratio,
@@ -3913,11 +4060,11 @@ smooth tangentspace (
     real rotate = 45,
     string eltlabel = "x",
     pair eltlabelalign = 1.5*S
-) // Returns a tangent space to `sm` at point determined by `ind`, `dir` and `ratio` //
+) // Returns a tangent space to `sm` at point determined by `hlindex`, `dir` and `ratio` //
 {
-    if (!inside(-1, sm.holes.length-1, ind))
+    if (!inside(-1, sm.holes.length-1, hlindex))
     { halt("Could not build tangent space: index out of bounds. [ tangentspace() ]"); }
-    if (dummy(center)) center = (ind == -1) ? sm.center : sm.holes[ind].center;
+    if (dummy(center)) center = (hlindex == -1) ? sm.center : sm.holes[hlindex].center;
     if (!sm.inside(center))
     { halt("Could not build tangent space: center out of bouds [ tangentspace() ]"); }
     if (!inside(0, 1, ratio))
@@ -3929,7 +4076,7 @@ smooth tangentspace (
     pair finish;
     pair[] ipoints;
 
-    if (ind > -1)
+    if (hlindex > -1)
     {
         path[] fullcontour = sm.contour ^^ holecontours(sm.holes);
         ipoints = sort(concat(sequence(new pair[](int i){return intersectionpoints(dirpath, fullcontour[i]);}, fullcontour.length)), new bool (pair i, pair j){return length(i - center) <= length(j - center);});
@@ -3969,7 +4116,8 @@ The `covermode` parameter needs additional explanation. It determines what happe
 */
 {
     if (currentSyID && length(L.s) > 0) L.s = "$"+L.s+"$";
-    if (length(L.s) > 0) label(pic = pic, gs, L = L, p = p);
+    if (currentDrDL && length(L.s) > 0)
+    { label(pic = pic, gs, L = L, p = p); }
 
     deferredPath[] curdp = extractdeferredpaths(pic, true);
 
@@ -4229,6 +4377,10 @@ void draw (
     path[] contour = reverse(sm.contour) ^^ holes;
     real scale = size(sm.contour);
 
+    // Applying the postdraw function if specified
+
+    if (!dspec.postdrawover) sm.postdraw(dspec, sm);
+
     // Filling and drawing main contour
 
     if (dspec.fill) fill(pic = pic, contour, p = dspec.smoothfill);
@@ -4433,9 +4585,9 @@ void draw (
         draw(sm.adjust(-1)*unitcircle, blue+defaultHlLW);
     }
 
-    // Applying the postdraw function
+    // Applying the postdraw function if specified
 
-    sm.postdraw(dspec, sm);
+    if (dspec.postdrawover) sm.postdraw(dspec, sm);
 }
 
 void draw (
@@ -4547,10 +4699,12 @@ smooth[] drawintersect (
 
 void drawarrow (
     picture pic = currentpicture,
-    smooth sm1,
-    int index1 = -1,
+    smooth sm1 = null,
+    int index1 = defaultSyDN,
+    pair start = defaultSyDP,
     smooth sm2 = sm1,
     int index2 = defaultSyDN,
+    pair finish = defaultSyDP,
     real curve = 0,
     real angle = 0,
     real radius = defaultSyDN,
@@ -4564,76 +4718,122 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
+    bool help = currentDrH,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
+    real margin = defaultSyDN,
     real margin1 = currentArM,
-    real margin2 = margin1
+    real margin2 = currentArM
 ) // Draws an arrow between two given smooth objects, or their subsets.
 {
-    if (index2 == defaultSyDN)
-    {
-        if (sm1 == sm2) index2 = index1;
-        else index2 = -1;
-    }
-
-    bool onself = sm2 == sm1 && index1 == index2;
-
+    bool onself = false;
+    bool hasenclosure1 = false;
     path g1;
+    bool hasenclosure2 = false;
     path g2;
-    pair center1;
-    pair center2;
+
+    if (margin != defaultSyDN)
+    {
+        margin1 = margin;
+        margin2 = margin;
+    }
     
-    if (index1 > -1)
+    if (start == defaultSyDP)
     {
-        subset sb1 = sm1.subsets[index1];
-        g1 = sb1.contour;
-        center1 = sb1.center;
-    }
-    else
-    {
-        g1 = sm1.contour;
-        center1 = sm1.center;
-    }
-    if (!onself)
-    {
-        if (index2 > -1)
+        if (sm1 == null)
         {
-            subset sb2 = sm2.subsets[index2];
-            g2 = sb2.contour;
-            center2 = sb2.center;
+            halt("Please provide either `sm1` or a starting point for the arrow. [ drawarrow() ]");
+        }
+
+        hasenclosure1 = true;
+        if (index1 == defaultSyDN) index1 = -1;
+        if (index1 > -1)
+        {
+            sm1.checksubsetindex(index1, "drawarrow");
+            subset sb1 = sm1.subsets[index1];
+            g1 = sb1.contour;
+            start = sb1.center;
         }
         else
         {
-            g2 = sm2.contour;
-            center2 = sm2.center;
+            g1 = sm1.contour;
+            start = sm1.center;
         }
     }
-    else center2 = center1;
+
+    if (finish == defaultSyDP)
+    {
+        if (sm2 == null)
+        {
+            halt("Please provide either `sm2` or a finishing point for the arrow. [ drawarrow() ]");
+        }
+
+        hasenclosure2 = true;
+        if (index2 == defaultSyDN)
+        {
+            if (sm1 == sm2) index2 = index1;
+            else index2 = -1;
+        }
+
+        onself = sm2 == sm1 && index1 == index2;
+
+        if (!onself)
+        {
+            if (index2 > -1)
+            {
+                sm2.checksubsetindex(index2, "drawarrow");
+                subset sb2 = sm2.subsets[index2];
+                g2 = sb2.contour;
+                finish = sb2.center;
+            }
+            else
+            {
+                g2 = sm2.contour;
+                finish = sm2.center;
+            }
+        }
+        else finish = start;
+    }
 
     path g;
 
     if (points.length > 0)
-    { g = connect(concat(new pair[] {center1}, points, new pair[] {center2})); }
+    { g = connect(concat(new pair[] {start}, points, new pair[] {finish})); }
     else if (onself)
     {
         if (dummy(radius)) radius = size(sm1.contour);
-        g = cyclepath(center1, angle, radius);
+        g = cyclepath(start, angle, radius);
     }
     else
-    { g = curvedpath(center1, center2, curve = curve); }
+    { g = curvedpath(start, finish, curve = curve); }
     if (reverse) g = reverse(g);
 
-    real[][] intersection1 = intersections(g, g1);
-    real[][] intersection2 = onself ? intersection1 : intersections(g, g2);
-    real time1 = arctime(g, margin1);
-    real time2 = arctime(g, arclength(g)-margin2);
+    real[][] intersection1;
+    if (hasenclosure1) intersection1 = intersections(g, g1);
+    real[][] intersection2;
+    if (hasenclosure2) intersection2 = onself ? intersection1 : intersections(g, g2);
+
+    real length = arclength(g);
+    real time1;
+    real time2; 
 
     if (intersection1.length > 0)
-    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1); }
+    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1*length); }
+    else { time1 = arctime(g, margin1*length); }
+
     if (intersection2.length > (onself ? 1 : 0))
-    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2); }
+    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2*length); }
+    else { time2 = arctime(g, (1-margin2)*length); }
 
     path gs = subpath(g, time1, time2);
+
+    if (help)
+    {
+        for (int i = 0; i < points.length; ++i)
+        { dot(pic, points[i], elementpen(red)); }
+        dot(start, elementpen(blue));
+        dot(finish, elementpen(blue));
+    }
 
     fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
 }
@@ -4655,126 +4855,39 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
+    bool help = currentDrH,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN,
     real margin1 = currentArM,
-    real margin2 = margin1
+    real margin2 = currentArM
 )
 {
-    int[] indices1 = findsetindex(destlabel1);
-    smooth sm1 = smooth.cache[indices1[0]];
-    int index1 = indices1[1];
-    smooth sm2;
-    int index2;
-    if (destlabel1 == destlabel2)
+    smooth sm1 = null, sm2 = null;
+    int index1 = defaultSyDN, index2 = defaultSyDN;
+    pair start = defaultSyDP, finish = defaultSyDP;
+
+    int[] indices1 = findbylabel(destlabel1);
+    sm1 = smooth.cache[indices1[0]];
+    if (indices1[1] == 0) index1 = indices1[2];
+    else if (indices1[1] == 1)
+    { start = sm1.elements[indices1[2]].pos; }
+
+    if (destlabel2 == destlabel1)
     {
         sm2 = sm1;
         index2 = index1;
+        finish = start;
     }
     else
     {
-        int[] indices2 = findsetindex(destlabel2);
+        int[] indices2 = findbylabel(destlabel2);
         sm2 = smooth.cache[indices2[0]];
-        index2 = indices2[1];
+        if (indices2[1] == 0) index2 = indices2[2];
+        else if (indices2[1] == 1)
+        { finish = sm2.elements[indices2[2]].pos; }
     }
 
-    drawarrow(pic, sm1, index1, sm2, index2, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
-}
-
-void drawmapping (
-    picture pic = currentpicture,
-    smooth sm1,
-    int index1,
-    smooth sm2 = sm1,
-    int index2 = defaultSyDN,
-    real curve = 0,
-    real angle = 0,
-    real radius = defaultSyDN,
-    bool reverse = false,
-    pair[] points = {},
-    Label L = "",
-    pen p = currentpen,
-    arrowhead arrow = SimpleHead,
-    bool beginarrow = false,
-    bool endarrow = true,
-    real barsize = 0,
-    bool beginbar = false,
-    bool endbar = false,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
-    real margin1 = currentArM,
-    real margin2 = margin1
-)
-{
-    if (index2 == defaultSyDN)
-    {
-        if (sm1 == sm2) index2 = index1;
-        else index2 = -1;
-    }
-
-    bool onself = sm2 == sm1 && index1 == index2;
-
-    pair center1 = sm1.elements[index1].pos;
-    pair center2 = onself ? center1 : sm2.elements[index2].pos;
-
-    path g;
-
-    if (points.length > 0)
-    { g = connect(concat(new pair[] {center1}, points, new pair[] {center2})); }
-    else if (onself)
-    {
-        if (dummy(radius)) radius = size(sm1.contour);
-        g = cyclepath(center1, angle, radius);
-    }
-    else
-    { g = curvedpath(center1, center2, curve = curve); }
-    if (reverse) g = reverse(g);
-
-    g = subpath(g, arctime(g, margin1), arctime(g, arclength(g)-margin2));
-    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = g, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
-}
-
-void drawmapping (
-    picture pic = currentpicture,
-    string destlabel1,
-    string destlabel2 = destlabel1,
-    real curve = 0,
-    real angle = 0,
-    real radius = defaultSyDN,
-    bool reverse = false,
-    pair[] points = {},
-    Label L = "",
-    pen p = currentpen,
-    arrowhead arrow = SimpleHead,
-    bool beginarrow = false,
-    bool endarrow = true,
-    real barsize = 0,
-    bool beginbar = false,
-    bool endbar = false,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
-    real margin1 = currentArM,
-    real margin2 = margin1
-)
-{
-    int[] indices1 = findelementindex(destlabel1);
-    smooth sm1 = smooth.cache[indices1[0]];
-    int index1 = indices1[1];
-    smooth sm2;
-    int index2;
-    if (destlabel1 == destlabel2)
-    {
-        sm2 = sm1;
-        index2 = index1;
-    }
-    else
-    {
-        int[] indices2 = findelementindex(destlabel2);
-        sm2 = smooth.cache[indices2[0]];
-        index2 = indices2[1];
-    }
-
-    drawmapping(pic, sm1, index1, sm2, index2, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, overlap, drawnow, margin1, margin2);
+    drawarrow(pic, sm1, index1, start, sm2, index2, finish, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, help, overlap, drawnow, margin1, margin2);
 }
 
 void drawpath (
@@ -4791,6 +4904,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool help = currentDrH,
+    bool random = currentDrPR,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN
 )
@@ -4816,7 +4930,10 @@ void drawpath (
         pair dir1 = randomdir(dir(angle-range), range);
         pair dir2 = -randomdir(dir(angle+range), range);
         
-        gs = elt.pos{dir1}..(elt.pos+2*radius*(1+.1*unitrand())*dir(angle))..{dir2}elt.pos;
+        gs =
+        elt.pos{dir1} ..
+        (elt.pos+2*radius*(1+.1*unitrand())*dir(angle)) .. 
+        {dir2}elt.pos;
     }
     else
     {
@@ -4826,7 +4943,8 @@ void drawpath (
         points.insert(0, center1);
         points.push(center2);
 
-        gs = randompath(points, range);
+        if (random) gs = randompath(points, range);
+        else gs = connect(points);
     }
 
     if (reverse) gs = reverse(gs);
@@ -4846,6 +4964,7 @@ void drawpath (
     Label L = "",
     pen p = currentpen,
     bool help = currentDrH,
+    bool random = currentDrPR,
     bool overlap = currentDrO,
     bool drawnow = currentDrDN
 )

@@ -4,7 +4,7 @@ settings.render = 16;
 size(20 cm);
 defaultpen(.7);
 expar(bgpen = paleyellow);
-smpar(dash = false, gaplength = .2, arrowmargin = .12, viewdir = dir(-50));
+smpar(dash = false, gaplength = .2, arrowmargin = .02, viewdir = dir(-50));
 
 smooth sm1 = samplesmooth(1,2).move(scale = 2);
 sm1.setlabel(0, "U", dir = S);

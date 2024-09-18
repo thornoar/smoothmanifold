@@ -57,11 +57,10 @@ drawpath(
 );
 drawpath(
     sm, 0, angle = -15, radius = .15,
-    L = Label("\mathrm{Im}\hspace{1pt} f_2", position = Relative(.75), align = Relative(E)),
+    L = Label("\mathrm{Im}\hspace{1pt} f_2", position = Relative(.7), align = Relative(1.5*E)),
     p = pathpen,
     overlap = true
 );
-
 for (real i = 0.13; i > 0; i -= 0.03)
 {
     drawpath(sm, 0, angle = -15, radius = i, p = pathpen, overlap = true);
@@ -69,24 +68,20 @@ for (real i = 0.13; i > 0; i -= 0.03)
 
 draw(segment, dspec = emptypar());
 
-sm.setcenter((.1,.1), unit = true);
-segment.setcenter((0,.5), unit = true);
 drawarrow(
-    segment,
-    sm,
+    start = segment.relative((-.2,.5)),
+    finish = sm.relative((.45,.35)),
     curve = .15,
-    margin1 = -.01,
-    margin2 = -.18,
+    margin1 = 0,
+    margin2 = 0,
     L = Label("f_1")
 );
 
-sm.setcenter((.7,-.3), unit = true);
-segment.setcenter((0,-.5), unit = true);
 drawarrow(
-    segment,
-    sm,
+    start = segment.relative((-.2,-.9)),
+    finish = sm.relative((.97,-.3)),
     curve = -.15,
-    margin1 = -.02,
-    margin2 = -.05,
+    margin1 = 0,
+    margin2 = 0,
     L = Label("f_2", align = Relative(W))
 );
