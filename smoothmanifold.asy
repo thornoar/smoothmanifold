@@ -243,6 +243,7 @@ private real currentSmMSL; // [M]aximum [L]ength
 private bool currentSmIL = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection.
 private bool currentSmSS = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
 private bool currentSmAS = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
+private bool currentSmCC = false; // [C]orrect [C]ontour
 private bool currentSmC = false; // [C]lip
 private bool currentSmU = false; // [U]nit
 private bool currentSmSC = true; // [S]et [C]enter
@@ -427,6 +428,7 @@ void smpar (
     bool inferlabels = currentSmIL,
     bool shiftsubsets = currentSmSS,
     bool addsubsets = currentSmAS,
+    bool correct = currentSmCC,
     bool clip = currentSmC,
     bool unit = currentSmU,
     bool setcenter = currentSmSC,
@@ -487,6 +489,7 @@ void smpar (
     currentSmIL = inferlabels;
     currentSmSS = shiftsubsets;
     currentSmAS = addsubsets;
+    currentSmCC = correct;
     currentSmC = clip;
     currentSmU = unit;
     currentSmSC = setcenter;
@@ -889,6 +892,7 @@ struct hole
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
+        bool correct = currentSmCC,
         bool copy = false
     )
     {
@@ -901,7 +905,7 @@ struct hole
         }
         else
         {
-            if (!clockwise(contour)) contour = reverse(contour);
+            if (!clockwise(contour) && correct) contour = reverse(contour);
             this.contour = shift(shift)*srap(scale, rotate, point)*contour;
             this.center = center;
             this.scnumber = scnumber;
@@ -989,6 +993,7 @@ struct subset
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
+        bool correct = currentSmCC,
         bool copy = false
     )
     {
@@ -1005,7 +1010,7 @@ struct subset
         }
         else
         {
-            contour = clockwise(contour) ? contour : reverse(contour);
+            contour = (clockwise(contour) && correct) ? contour : reverse(contour);
             this.contour = shift(shift)*srap(scale, rotate, point)*contour;
             this.center = center;
             this.label = label;
@@ -2740,6 +2745,7 @@ struct smooth
         pair viewdir = currentSmVD,
         bool distort = true,
         smooth[] attached = {},
+        bool correct = currentSmCC,
         bool copy = false,
         bool shiftsubsets = currentSmSS,
         bool isderivative = false,
@@ -2767,7 +2773,7 @@ struct smooth
             if (scale <= 0)
             { halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-            this.contour = shift(shift)*srap(scale, rotate, point)*((!clockwise(contour)) ? reverse(contour) : contour);
+            this.contour = shift(shift)*srap(scale, rotate, point)*((!clockwise(contour) && correct) ? reverse(contour) : contour);
             this.center = shift(shift)*center;
             if (!currentSyRL && label != "" && smooth.repeats(label))
             {
