@@ -1696,9 +1696,10 @@ struct smooth
         pair pos,
         string label = "",
         pair align = 1.5*S,
+        int index = -1,
         bool unit = currentSmU
     )
-    { return this.addelement(element(pos, label, align), unit); }
+    { return this.addelement(element(pos, label, align), index, unit); }
 
     smooth setelement (
         int index,
@@ -1721,6 +1722,7 @@ struct smooth
         pair pos = defaultSyDP,
         string label = defaultSyDS,
         pair labelalign = defaultSyDP,
+        int sbindex = -1,
         bool unit = currentSmU
     )
     {

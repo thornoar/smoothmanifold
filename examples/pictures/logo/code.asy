@@ -1,131 +1,107 @@
 import export;
-settings.render = 16;
+expar(margin = .2cm);
 
-size(25 cm);
-defaultpen(.5);
+size(10cm);
+settings.outformat = "pdf";
+defaultpen(linewidth(.7pt));
 smpar(
-    gaplength = .07,
-	shiftsubsets = true,
-	fill = true,
-	unit = true,
-	mode = free,
-	viewdir = dir(15),
-	scfreedom = .15,
-	help = false
+    drawlabels = false,
+    underdash = false
 );
-expar(bgpen = paleyellow, margin = 2 cm);
 
-smooth sm1 = samplesmooth(3,0)
-    .rotate(-50)
-    .setsection(0, 0, r(dn,dn,dn,6))
-    .setsection(1, 0, r(dn,dn,dn,6))
-    .movesubset(0, shift = (0.05,.09))
-    .setlabel("M", dir = dir(100))
-    .setlabel(0, label = "U", dir = dir(180));
-
-smooth sm2 = samplesmooth(1)
-.move(shift = (4,0), rotate = 90)
-.rmsubset(0)
-.setsection(0, r(dn,dn,240,5))
+smooth sm1 = smooth(
+    contour = wavypath(r(.9,2,1.1,2,1.1,2), true),
+    holes = new hole[]{
+        hole(
+            contour = convexpath[1],
+            shift = (-.84,.1),
+            scale = .57,
+            rotate = 30,
+            sections = rr(-1,0,235,8)
+        )
+    },
+    subsets = new subset[]{
+        subset(
+            contour = convexpath[4],
+            shift = (.55,-.95),
+            scale = .5,
+            rotate = -40
+        )
+    },
+    vratios = r(),
+    hratios = r()
+)
+.addelement(index = 0, (-.3,.4), unit = true)
 .addsubset(
-    contour = convexpath[4],
-    label = "V",
-    dir = dir(150),
-    shift = (.55,.8),
-    scale = .23,
-    rotate = -20
-).addsubset(
-    contour = concavepath[2],
-    label = "W",
-    dir = dir(-110),
-    shift = (.07,.20),
-    scale = .46,
-    rotate = 150
-).addsubset(
-    1,
-    contour = convexpath[2],
-    shift = (-.5,.3),
-    scale = .4,
-    rotate = 0
-).addsubset(
-    1,
-    contour = convexpath[1],
-    shift = (.7,-.15),
-    scale = .32,
-    rotate = -20
-);
+    index = 0,
+	contour = convexpath[2],
+    shift = (.2,-.2),
+	scale = .5,
+	unit = true
+)
+.addelement(index = 1, (-.2,.2), unit = true);
 
-sm2.movesubset(1, recursive = true, rotate = -10);
-sm2.setlabel("N", dir = dir(-30));
+smooth sm2 = smooth(
+    contour = concavepath[4],
+    subsets = new subset[]{
+        subset(
+            contour = convexpath[6],
+            shift = (.55,.55),
+            scale = .5,
+            rotate = -130
+        ),
+        subset(
+            contour = reflect((0,0),(0,1))*concavepath[2],
+            shift = (-.15,-.1),
+            scale = .6,
+            rotate = 30
+        )
+    },
+    shift = (1.2,.2),
+    scale = .9,
+    rotate = 110,
+    vratios = r(),
+    hratios = r()
+)
+.addelement(index = 0, (-.45,0), unit = true)
+.addelement(index = 1, (.4,-.4), unit = true);
 
-draw(sm1);
-draw(sm2, dpar(shade = true, dash = false));
+draw(sm1, dpar(mode = free, viewdir = (-1,0)));
+draw(sm2);
 
-drawarrow(
+drawpath(
     sm1,
-	sm2,
-	curve = -.15,
-    margin = .02,
-	L = Label("f", align = Relative(W))
-);
-drawarrow(
-    sm1,
-	sm2,
-	index1 = 0,
-	index2 = 0,
-	curve = .34,
-    margin = .015,
-	L = Label("f_U", position = Relative(.4))
-);
-drawarrow(
     sm2,
-	sm1,
-	index1 = 1,
-	index2 = 0,
-	curve = .4,
-    margin1 = .015,
-    margin2 = .03,
-	L = "g"
+    index1 = 0,
+    index2 = 0,
+    points = p((.3,-.1), (.45,.1))
+);
+drawpath(
+    sm1,
+    index1 = 0,
+    points = p((0,-.4),(0,-.1),(.6,-.3))
+);
+drawpath(
+    sm2,
+    index1 = 0,
+    index2 = 1,
+    points = p((1.2,0.6), (1.5,.3))
+);
+drawarrow(
+    start = sm2.elements[1].pos,
+    finish = sm1.elements[1].pos,
+    curve = -.4
 );
 drawarrow(
     sm1,
-	0,
-	angle = 185,
-	radius = .62,
-    margin = .02,
-	L = Label(
-        "\mathrm{id}_U",
-        position = Relative(.22),
-        align = Relative(W)
-    )
-);
-drawarrow(
-    sm2,
-	1,
-	angle = -63,
-	radius = .8,
-	reverse = true,
-    margin = .02,
-	L = Label(
-        "\mathrm{id}_W",
-        position = Relative(.45),
-        align = Relative(E)
-    )
-);
-drawarrow(
-    sm2,
-	2,
-    margin = .01,
-	angle = 150,
-	radius = .7
-);
-drawarrow(
-    sm1,
-	angle = 70,
-	radius = .9,
-    margin1 = .02,
-    margin2 = .01,
-	L = Label("\mathrm{id}_M", align = Relative(W))
+    angle = 180,
+    radius = 1.2,
+    margin = .015
 );
 
-export("picture", "pdf");
+picture pic;
+usepackage("tgschola");
+defaultpen(fontsize(11pt));
+label(pic, (0,.2), L = "module");
+label(pic, (0,0), L = "\texttt{smoothmanifold}");
+add(shift((-.92,-.05))*pic);
