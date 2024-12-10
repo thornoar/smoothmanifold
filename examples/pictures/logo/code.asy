@@ -1,7 +1,7 @@
 import export;
-expar(margin = .2cm);
+expar(margin = .2cm, prefix = "picture", format = "pdf");
 
-size(10cm);
+size(11cm);
 settings.outformat = "pdf";
 defaultpen(linewidth(.7pt));
 smpar(
@@ -100,8 +100,8 @@ drawarrow(
 );
 
 picture pic;
-usepackage("tgschola");
+// usepackage("tgschola");
 defaultpen(fontsize(11pt));
-label(pic, (0,.2), L = "module");
+label(pic, (0,.2), L = "\textrm{module}");
 label(pic, (0,0), L = "\texttt{smoothmanifold}");
 add(shift((-.92,-.05))*pic);
