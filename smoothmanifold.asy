@@ -65,9 +65,10 @@ private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth -- the width of help 
 
 // [Ar]rows
 private real defaultArM = 0.03; // [M]argin -- the margin of arrows from the edge of the object.
+private bool defaultArAM = false; // [A]bsolute [M]argin -- whether margins should be absolute.
 
 // [Pa]ths -- a collection of default paths to be used in smooth objects.
-private path[] defaultPaCV = new path[] { // [C]on[V]ex
+path[] defaultPaCV = new path[] { // [C]on[V]ex
     (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
     (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
     (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
@@ -84,7 +85,7 @@ private path[] defaultPaCV = new path[] { // [C]on[V]ex
     (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
 
-private path[] defaultPaCC = new path[] { // [C]on[C]ave
+path[] defaultPaCC = new path[] { // [C]on[C]ave
     (
         (-0.9,0).. controls
         (-1.07649842837266,0.638748977821067) and
@@ -243,7 +244,7 @@ private real currentSmMSL; // [M]aximum [L]ength
 private bool currentSmIL = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection.
 private bool currentSmSS = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
 private bool currentSmAS = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
-private bool currentSmCC = false; // [C]orrect [C]ontour
+private bool currentSmCC = true; // [C]orrect [C]ontour
 private bool currentSmC = false; // [C]lip
 private bool currentSmU = false; // [U]nit
 private bool currentSmSC = true; // [S]et [C]enter
@@ -280,6 +281,7 @@ private pen currentHlLW = defaultHlLW;
 
 // [Ar]rows
 private real currentArM = defaultArM;
+private bool currentArAM = defaultArAM;
 
 // [Pr]ogress
 private path[] currentPrDP; // [D]ebug [P]aths
@@ -434,6 +436,7 @@ void smpar (
     bool setcenter = currentSmSC,
     real gaplength = currentDrGL,
     real arrowmargin = currentArM,
+    bool arrowabsolutemargin = currentArAM,
     bool repeatlabels = currentSyRL,
     bool insertdollars = currentSyID,
     pen explainpen = currentHlLW,
@@ -495,6 +498,7 @@ void smpar (
     currentSmSC = setcenter;
     currentDrGL = gaplength;
     currentArM = arrowmargin;
+    currentArAM = arrowabsolutemargin;
     currentSyRL = repeatlabels;
     currentSyID = insertdollars;
     currentHlLW = explainpen;
@@ -4396,6 +4400,10 @@ void draw (
     {
         for (int i = 0; i < contour.length; ++i)
         {
+            if (dspec.help && (i == 0 ? clockwise(contour[i]) : !clockwise(contour[i])))
+            {
+                currentPrDP.push(contour[i]);
+            }
             fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = 1-2*sgn(i), dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
         }
     }
@@ -4524,6 +4532,10 @@ void draw (
         {
             if (!sm.subsets[i].isderivative)
             {
+                if (dspec.help && !clockwise(sm.subsets[i].contour))
+                {
+                    currentPrDP.push(sm.subsets[i].contour);
+                }
                 fitpath(pic = pic, dspec.overlap = dspec.overlap || currentDrSCO || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
@@ -4822,6 +4834,11 @@ void drawarrow (
     if (hasenclosure2) intersection2 = onself ? intersection1 : intersections(g, g2);
 
     real length = arclength(g);
+    if (currentArAM)
+    {
+        margin1 *= length;    
+        margin2 *= length;    
+    }
     real time1;
     real time2; 
 
