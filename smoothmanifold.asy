@@ -4834,7 +4834,7 @@ void drawarrow (
     if (hasenclosure2) intersection2 = onself ? intersection1 : intersections(g, g2);
 
     real length = arclength(g);
-    if (currentArAM)
+    if (!currentArAM)
     {
         margin1 *= length;    
         margin2 *= length;    
