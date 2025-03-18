@@ -8,6 +8,7 @@ smpar(
 	scfreedom = .3,
 	gaplength = .1,
 	arrowmargin = .02,
+    arrowabsolutemargin = true,
 	unit = true,
 	mode = cartesian,
 	scavoidsubsets = false,

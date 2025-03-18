@@ -9,6 +9,7 @@ expar(
 	drawgrid = true
 );
 smpar(
+    arrowabsolutemargin = true,
     gaplength = .09,
 	attachedop = .9,
 	help = true,

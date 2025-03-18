@@ -5,6 +5,7 @@ size(11cm);
 settings.outformat = "pdf";
 defaultpen(linewidth(.7pt));
 smpar(
+    arrowabsolutemargin = true,
     drawlabels = false,
     underdash = false
 );

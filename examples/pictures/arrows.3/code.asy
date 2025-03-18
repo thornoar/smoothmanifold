@@ -6,6 +6,7 @@ defaultpen(.5);
 smpar(
     gaplength = .07,
 	shiftsubsets = true,
+    arrowabsolutemargin = true,
 	fill = true,
 	unit = true,
 	mode = free,
