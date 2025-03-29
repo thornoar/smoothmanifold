@@ -19,53 +19,98 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// -- Default constants -- //
-// Variable names are abbreviated to avoid really long names. Naming is hard...
+// -- Configuration structures -- //
 
-// [Sy]stem
-private string defaultversion = "v5.20.0-alpha";
-private int defaultSyDN = -10000; // [D]ummy [N]umber -- "the program knows what to do with it".
-private string defaultSyDS = (string) defaultSyDN; // [D]ummy [S]tring --||--
-private pair defaultSyDP = (defaultSyDN, defaultSyDN); // [D]ummy [P]air --||--
+struct systemconfig {
+    string version = "v5.20.0-alpha";
+    int dummynumber = -10000;
+    string dummystring = (string) dummynumber;
+    pair dummypair = (dummynumber, dummynumber);
+    bool repeatlabels = false; // [R]epeat [L]abels -- whether to allow two entities to have one label.
+    bool insertdollars = true; // [I]nsert [D]ollars -- whether to automatically insert dollars in labels.
+}
 
-// [Se]ction
-private real defaultSeMB = .65; // [M]aximum [B]readth -- how wide the section can be.
-private real defaultSeF = .3; // [F]reedom -- how freely sections can deviate from their target positions.
-private int defaultSeP = 20; // [P]recision -- how many points to sample in search for good section position.
-private real defaultSeEP = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
-real[] defaultsection = new real[] {defaultSyDN,defaultSyDN,235,5}; // -- default expressed in section notation.
+struct sectionconfig {
+    real maxbreadth = .65; // [M]aximum [B]readth -- how wide the section can be.
+    real freedom = .3; // [F]reedom -- how freely sections can deviate from their target positions.
+    int precision = 20; // [P]recision -- how many points to sample in search for good section position.
+    real elprecision = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
+    bool avoidsubsets = false; // [A]void [S]ubsets
+    real[] default = new real[] {-10000,-10000,235,5}; // -- default expressed in section notation.
+}
 
-// [Sm]ooth
-private int defaultSmIHSN = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
-private real defaultSmIHSA = 25; // [I]nter[h]ole [S]ection [Angle] -- range to be used for interhole sections.
-private real defaultSmMSLR = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) the section can be compared to the size of parent object. A value of -1 means no restriction.
-private real defaultSmSRC = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
-private pair defaultSmVD = (0,0); // [V]iew [D]irection -- the default direction of the view.
-private real defaultSmVS = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
-private real defaultSmCEM = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
-private real defaultSmCSD = .15; // [C]art [S]tep [D]istance --||--
-private real defaultSmNS = 1; // [N]ode [S]ize -- the size of nodes.
+struct smoothconfig {
+    int interholenumber = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
+    real interholeangle = 25; // [I]nter[h]ole [S]ection [A]ngle -- range to be used for interhole sections.
+    real maxsectionlength = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) a section can be, compared to the size of parent object. A value of -1 means no restriction.
+    real rejectcurve = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
+    pair viewdir = (0,0); // [V]iew [D]irection -- the default direction of the view.
+    real viewscale = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
+    real edgemargin = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
+    real stepdistance = .15; // [C]art [S]tep [D]istance --||--
+    real nodesize = 1; // [N]ode [S]ize -- the size of nodes.
+    real maxlength; // [M]aximum [L]ength
+    bool inferlabels = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection.
+    bool shiftsubsets = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
+    bool addsubsets = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
+    bool correct = true; // [C]orrect [C]ontour
+    bool clip = false; // [C]lip
+    bool unit = false; // [U]nit
+    bool setcenter = true; // [S]et [C]enter
+}
 
-// [Dr]awing
-private real defaultDrGL = .05; // [G]ap [L]ength -- the length of the gap made on path overlaps.
-private pen defaultDrSmC = lightgrey; // [Sm]ooth [C]olor -- the filling color of smooth objects.
-private pen defaultDrSbC = grey; // [S]u[b]set [C]olor -- the filling color of layer 0 subsets.
-private real defaultDrSePS = .6; // [Se]ction [P]en [S]cale -- how thinner the section pen is compared to the contour pen.
-private real defaultDrElPW = 3.0; // [El]ement [P]en [W]idth -- pen width to draw element dots.
-private real defaultDrShS = .85; // [S]hade [S]cale -- how darker shaded areas are compared to object filling color.
-private real defaultDrDPS = .4; // [D]ash [P]en [S]cale -- how lighter dashed lines are compared to regular ones.
-private real defaultDrDPO = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
-private real defaultDrAO = .8; // [D]rag [O]pacity -- opacity of smooth objects attached to main object.
-private real defaultDrSPM = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
+struct drawingconfig {
+    real gaplength = .05; // [G]ap [L]ength -- the length of the gap made on path overlaps.
+    pen smoothfill = lightgrey; // [Sm]ooth [C]olor -- the filling color of smooth objects.
+    pen subsetfill = grey; // [S]u[b]set [C]olor -- the filling color of layer 0 subsets.
+    real sectpenscale = .6; // [Se]ction [P]en [S]cale -- how thinner the section pen is compared to the contour pen.
+    real elpenwidth = 3.0; // [El]ement [P]en [W]idth -- pen width to draw element dots.
+    real shadescale = .85; // [S]hade [S]cale -- how darker shaded areas are compared to object filling color.
+    real dashpenscale = .4; // [D]ash [P]en [S]cale -- how lighter dashed lines are compared to regular ones.
+    real dashpenopacity = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
+    real attachedopacity = .8; // [D]rag [O]pacity -- opacity of smooth objects attached to main object.
+    real subpenfactor = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
+    pen overridepen = nullpen; // [Se]ction [O]verride [P]en
+    int mode = 0; // [M]ode
+    bool useopacity = false; // [U]se [O]pacity
+    bool dashes = true; // [D]raw [D]ashes
+    bool underdashes = false; // [D]raw [U]nder [D]ashes
+    bool help = false; // [H]elp
+    bool shade = false; // [D]raw [S]hade
+    bool labels = true; // [D]raw [L]abels
+    bool fill = true; // [F]ill
+    bool fillsubsets = true; // [F]ill [S]ubsets
+    bool drawcontour = true; // [D]raw [C]ontour
+    bool drawsubsetcontour = true; // [D]raw [S]ubset [C]ontour
+    bool pathrandom = false; // [P]ath [R]andom
+    bool overlap = false; // [O]verlap
+    bool drawnow = false; // [D]raw [N]ow
+    bool postdrawover = false; // [P]ost [D]raw [O]ver
+    bool subsetoverlap = false; // [S]ubset [C]outour [O]verlap
+}
 
-// [H]e[l]p
-private real defaultHlAR = 0.2; // [A]rc [R]atio -- the radius of the arc around the center of a hole
-private real defaultHlAL = .2; // [A]rrow [L]ength -- the length of help arrows
-private pen defaultHlLW = linewidth(.3); // [L]ine [W]idth -- the width of help lines
+struct helpconfig {
+    real arcratio = 0.2; // [A]rc [R]atio -- the radius of the arc around the center of a hole
+    real arrowlength = .2; // [A]rrow [L]ength -- the length of help arrows
+    pen linewidth = linewidth(.3); // [L]ine [W]idth -- the width of help lines
+}
 
-// [Ar]rows
-private real defaultArM = 0.03; // [M]argin -- the margin of arrows from the edge of the object.
-private bool defaultArAM = false; // [A]bsolute [M]argin -- whether margins should be absolute.
+struct arrowconfig {
+    real margin = 0.03; // [M]argin -- the margin of arrows from the edge of the object.
+    bool absmargins = false; // [A]bsolute [M]argin -- whether margins should be absolute.
+}
+
+struct globalconfig {
+    systemconfig system;
+    sectionconfig section;
+    smoothconfig smooth;
+    drawingconfig drawing;
+    helpconfig help;
+    arrowconfig arrow;
+}
+
+private globalconfig defaultconfig;
+globalconfig config;
 
 // [Pa]ths -- a collection of default paths to be used in smooth objects.
 path[] defaultPaCV = new path[] { // [C]on[V]ex
@@ -219,83 +264,17 @@ path randomconvex ()
 path randomconcave ()
 { return defaultPaCC[rand()%defaultPaCC.length]; }
 
-// -- Current values (can be changed in the configuration function) -- //
-
-// [Sy]stem
-private bool currentSyRL = false; // [R]epeat [L]abels -- whether to allow two entities to have one label.
-private bool currentSyID = true; // [I]nsert [D]ollars -- whether to automatically insert dollars in labels.
-
-// [Se]ction
-private real[] currentsection = copy(defaultsection);
-private real currentSeMB = defaultSeMB;
-private real currentSeF = defaultSeF;
-private real currentSeEP = defaultSeEP;
-private bool currentSeAS = false; // [A]void [S]ubsets
-
-// [Sm]ooth
-private int currentSmIHSN = defaultSmIHSN;
-private real currentSmIHSA = defaultSmIHSA;
-private real currentSmMSLR = defaultSmMSLR;
-private real currentSmNS = defaultSmNS;
-private real currentSmCSD = defaultSmCSD;
-private pair currentSmVD = defaultSmVD;
-private real currentSmVS = defaultSmVS;
-private real currentSmMSL; // [M]aximum [L]ength
-private bool currentSmIL = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection.
-private bool currentSmSS = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
-private bool currentSmAS = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
-private bool currentSmCC = true; // [C]orrect [C]ontour
-private bool currentSmC = false; // [C]lip
-private bool currentSmU = false; // [U]nit
-private bool currentSmSC = true; // [S]et [C]enter
-
-// [Dr]awing
-private real currentDrGL = defaultDrGL;
-private real currentDrSePS = defaultDrSePS;
-private real currentDrElPW = defaultDrElPW;
-private real currentDrShS = defaultDrShS;
-private real currentDrDPS = defaultDrDPS;
-private real currentDrDPO = defaultDrDPO;
-private real currentDrAO = defaultDrAO;
-private real currentDrSPM = defaultDrSPM;
-private pen currentDrSeOP = nullpen; // [Se]ction [O]verride [P]en
-private int currentDrM = 0; // [M]ode
-private bool currentDrUO = false; // [U]se [O]pacity
-private bool currentDrDD = true; // [D]raw [D]ashes
-private bool currentDrDUD = false; // [D]raw [U]nder [D]ashes
-private bool currentDrH = false; // [H]elp
-private bool currentDrDS = false; // [D]raw [S]hade
-private bool currentDrDL = true; // [D]raw [L]abels
-private bool currentDrF = true; // [F]ill
-private bool currentDrFS = true; // [F]ill [S]ubsets
-private bool currentDrDC = true; // [D]raw [C]ontour
-private bool currentDrDSC = true; // [D]raw [S]ubset [C]ontour
-private bool currentDrPR = false; // [P]ath [R]andom
-private bool currentDrO = false; // [O]verlap
-private bool currentDrDN = false; // [D]raw [N]ow
-private bool currentDrPDO = false; // [P]ost [D]raw [O]ver
-private bool currentDrSCO = false; // [S]ubset [C]outour [O]verlap
-
-// [H]e[l]p
-private pen currentHlLW = defaultHlLW;
-
-// [Ar]rows
-private real currentArM = defaultArM;
-private bool currentArAM = defaultArAM;
-
 // [Pr]ogress
-private path[] currentPrDP; // [D]ebug [P]aths
+private path[] debugpaths; // [D]ebug [P]aths
 
 // User convenience variables
-pen smoothcolor = defaultDrSmC;
-pen subsetcolor = defaultDrSbC;
 path[] convexpath = defaultPaCV;
 path[] concavepath = defaultPaCC;
 int plain = 0;
 int free = 1;
 int cartesian = 2;
 int combined = 3;
-int dn = defaultSyDN; // shorthand for [d]ummy[n]umber
+int dn = config.system.dummynumber;
 arrowbar simple = Arrow(SimpleHead);
 arrowbar simples = Arrows(SimpleHead);
 
@@ -326,16 +305,16 @@ string mode (int md)
 }
 
 private bool dummy (int n)
-{ return n == defaultSyDN; }
+{ return n == config.system.dummynumber; }
 
 private bool dummy (real r)
-{ return r == defaultSyDN; }
+{ return r == config.system.dummynumber; }
 
 private bool dummy (pair p)
-{ return p == defaultSyDP; }
+{ return p == config.system.dummypair; }
 
 private bool dummy (string s)
-{ return s == defaultSyDS; }
+{ return s == config.system.dummystring; }
 
 private bool checksection (real[] section)
 // Checks if array has valid section values in it
@@ -358,9 +337,9 @@ private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
 {
     pair p1p2u = unit(p2-p1);
     return (
-        min(dot(dir2, -p1p2u), dot(p1p2u, dir1)) <= -currentSeMB
+        min(dot(dir2, -p1p2u), dot(p1p2u, dir1)) <= -config.section.maxbreadth
         ||
-        max(dot(dir2, -p1p2u), dot(p1p2u, dir1)) >= currentSeMB
+        max(dot(dir2, -p1p2u), dot(p1p2u, dir1)) >= config.section.maxbreadth
     );
 }
 
@@ -373,11 +352,11 @@ private pen inverse (pen p)
     return colorless(p);
 }
 
-private pen sectionpen (pen p)
+private pen overridepen (pen p)
 // Derives a pen to draw cross sections
 {
-    if (currentDrSeOP == nullpen) return p+linewidth(currentDrSePS*linewidth(p));
-    else return currentDrSeOP;
+    if (config.drawing.overridepen == nullpen) return p+linewidth(config.drawing.sectpenscale*linewidth(p));
+    else return config.drawing.overridepen;
 }
 
 private pen nextsubsetpen (pen p, real scale)
@@ -385,25 +364,25 @@ private pen nextsubsetpen (pen p, real scale)
 { return scale * p; }
 
 private pen dashpenscale (pen p)
-{ return inverse(currentDrDPS*inverse(p))+dashed; }
+{ return inverse(config.drawing.dashpenscale*inverse(p))+dashed; }
 
 private pen dashpenopacity (pen p)
-{ return p+dashed+opacity(currentDrDPO); }
+{ return p+dashed+opacity(config.drawing.dashpenopacity); }
 
 private pen dashpen (pen p)
 // Derives a pen to draw dashed lines, using either color dimming or opacity.
 {
-    if (currentDrUO) return dashpenopacity(p);
+    if (config.drawing.useopacity) return dashpenopacity(p);
     else return dashpenscale(p);
 }
 
 private pen shadepen (pen p)
 // Derives a pen to fill shaded regions
-{ return currentDrShS*p; }
+{ return config.drawing.shadescale*p; }
 
 private pen elementpen (pen p)
 // Derives a pen to render elements
-{ return p + linewidth(currentDrElPW); }
+{ return p + linewidth(config.drawing.elpenwidth); }
 
 private pen underpen (pen p)
 // Derives a pen to draw paths that go under areas.
@@ -412,118 +391,118 @@ private pen underpen (pen p)
 // -- User setting functions -- //
 
 void smpar (
-    pair viewdir = currentSmVD,
-    real viewscale = currentSmVS,
-    real[] section = currentsection,
-    real scmaxbreadth = currentSeMB,
-    real scfreedom = currentSeF,
-    int scholenumber = currentSmIHSN,
-    real scholeangle = currentSmIHSA,
-    real scprecision = currentSeEP,
-    real scmaxlength = currentSmMSLR,
-    real sccartstep = currentSmCSD,
-    bool scavoidsubsets = currentSeAS,
-    real minscale = currentDrSPM,
-    real sectionpenscale = currentDrSePS,
-    pen sectionpen = currentDrSeOP,
-    real elementwidth = currentDrElPW,
-    bool inferlabels = currentSmIL,
-    bool shiftsubsets = currentSmSS,
-    bool addsubsets = currentSmAS,
-    bool correct = currentSmCC,
-    bool clip = currentSmC,
-    bool unit = currentSmU,
-    bool setcenter = currentSmSC,
-    real gaplength = currentDrGL,
-    real arrowmargin = currentArM,
-    bool arrowabsolutemargin = currentArAM,
-    bool repeatlabels = currentSyRL,
-    bool insertdollars = currentSyID,
-    pen explainpen = currentHlLW,
-    real attachedop = currentDrAO,
-    real nodesize = currentSmNS,
-    pen smoothfill = smoothcolor,
-    pen subsetfill = subsetcolor,
-    int mode = currentDrM,
-    bool drawlabels = currentDrDL,
-    bool fill = currentDrF,
-    bool fillsubsets = currentDrFS,
-    bool drawcontour = currentDrDC,
-    bool drawsubsetcontour = currentDrDSC,
-    bool help = currentDrH,
-    bool dash = currentDrDD,
-    bool underdash = currentDrDUD,
-    bool useopacity = currentDrUO,
-    real dashscale = currentDrDPS,
-    real dashop = currentDrDPO,
-    bool shade = currentDrDS,
-    bool pathrandom = currentDrPR,
-    bool overlap = currentDrO,
-    bool subsetoverlap = currentDrSCO,
-    bool drawnow = currentDrDN,
-    bool postdrawover = currentDrPDO
+    pair viewdir = config.smooth.viewdir,
+    real viewscale = config.smooth.viewscale,
+    real[] section = config.section.default,
+    real scmaxbreadth = config.section.maxbreadth,
+    real freedom = config.section.freedom,
+    int interholenumber = config.smooth.interholenumber,
+    real interholeangle = config.smooth.interholeangle,
+    real elprecision = config.section.elprecision,
+    real maxsectionlength = config.smooth.maxsectionlength,
+    real stepdistance = config.smooth.stepdistance,
+    bool avoidsubsets = config.section.avoidsubsets,
+    real subpenfactor = config.drawing.subpenfactor,
+    real sectpenscale = config.drawing.sectpenscale,
+    pen overridepen = config.drawing.overridepen,
+    real elementwidth = config.drawing.elpenwidth,
+    bool inferlabels = config.smooth.inferlabels,
+    bool shiftsubsets = config.smooth.shiftsubsets,
+    bool addsubsets = config.smooth.addsubsets,
+    bool correct = config.smooth.correct,
+    bool clip = config.smooth.clip,
+    bool unit = config.smooth.unit,
+    bool setcenter = config.smooth.setcenter,
+    real gaplength = config.drawing.gaplength,
+    real arrowmargin = config.arrow.margin,
+    bool arrowabsmargin = config.arrow.absmargins,
+    bool repeatlabels = config.system.repeatlabels,
+    bool insertdollars = config.system.insertdollars,
+    pen helplinewidth = config.help.linewidth,
+    real attachedopacity = config.drawing.attachedopacity,
+    real nodesize = config.smooth.nodesize,
+    pen smoothfill = config.drawing.smoothfill,
+    pen subsetfill = config.drawing.subsetfill,
+    int mode = config.drawing.mode,
+    bool drawlabels = config.drawing.labels,
+    bool fill = config.drawing.fill,
+    bool fillsubsets = config.drawing.fillsubsets,
+    bool drawcontour = config.drawing.drawcontour,
+    bool drawsubsetcontour = config.drawing.drawsubsetcontour,
+    bool help = config.drawing.help,
+    bool dash = config.drawing.dashes,
+    bool underdash = config.drawing.underdashes,
+    bool useopacity = config.drawing.useopacity,
+    real dashscale = config.drawing.dashpenscale,
+    real dashop = config.drawing.dashpenopacity,
+    bool shade = config.drawing.shade,
+    bool pathrandom = config.drawing.pathrandom,
+    bool overlap = config.drawing.overlap,
+    bool subsetoverlap = config.drawing.subsetoverlap,
+    bool drawnow = config.drawing.drawnow,
+    bool postdrawover = config.drawing.postdrawover
 ) // The main configuration function. It is called by the user to set all global system variables.
 {
     if (!inside(0,2, mode))
     { halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
-    if (!inside(0,1, minscale))
+    if (!inside(0,1, subpenfactor))
     { halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
-    if (!inside(0,1, attachedop))
+    if (!inside(0,1, attachedopacity))
     { halt("Could not set attached opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
-    if (!checksection(section) || scfreedom >= 1 || scholenumber < 0 || !inside(0, 180, scholeangle))
+    if (!checksection(section) || freedom >= 1 || interholenumber < 0 || !inside(0, 180, interholeangle))
     { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
     for (int i = 0; i < section.length; ++i)
-    { if (!dummy(section[i])) currentsection[i] = section[i]; }
+    { if (!dummy(section[i])) config.section.default[i] = section[i]; }
 
-    currentSmVD = viewdir;
-    currentSmVS = viewscale;
-    currentSeMB = scmaxbreadth;
-    currentSeF = scfreedom;
-    currentSmIHSN = scholenumber;
-    currentSmIHSA = scholeangle;
-    currentSeEP = scprecision;
-    currentSmMSLR = scmaxlength;
-    currentSmCSD = sccartstep;
-    currentSeAS = scavoidsubsets;
-    currentDrSPM = minscale;
-    currentDrSePS = sectionpenscale;
-    currentDrSeOP = sectionpen;
-    currentDrElPW = elementwidth;
-    currentSmIL = inferlabels;
-    currentSmSS = shiftsubsets;
-    currentSmAS = addsubsets;
-    currentSmCC = correct;
-    currentSmC = clip;
-    currentSmU = unit;
-    currentSmSC = setcenter;
-    currentDrGL = gaplength;
-    currentArM = arrowmargin;
-    currentArAM = arrowabsolutemargin;
-    currentSyRL = repeatlabels;
-    currentSyID = insertdollars;
-    currentHlLW = explainpen;
-    currentDrAO = attachedop;
-    currentSmNS = nodesize;
-    smoothcolor = smoothfill;
-    subsetcolor = subsetfill;
-    currentDrM = mode;
-    currentDrDL = drawlabels;
-    currentDrF = fill;
-    currentDrFS = fillsubsets;
-    currentDrDC = drawcontour;
-    currentDrDSC = drawsubsetcontour;
-    currentDrH = help;
-    currentDrDD = dash;
-    currentDrDUD = underdash;
-    currentDrUO = useopacity;
-    currentDrDPS = dashscale;
-    currentDrDPO = dashop;
-    currentDrDS = shade;
-    currentDrPR = pathrandom;
-    currentDrO = overlap;
-    currentDrSCO = subsetoverlap;
-    currentDrDN = drawnow;
-    currentDrPDO = postdrawover;
+    config.smooth.viewdir = viewdir;
+    config.smooth.viewscale = viewscale;
+    config.section.maxbreadth = scmaxbreadth;
+    config.section.freedom = freedom;
+    config.smooth.interholenumber = interholenumber;
+    config.smooth.interholeangle = interholeangle;
+    config.section.elprecision = elprecision;
+    config.smooth.maxsectionlength = maxsectionlength;
+    config.smooth.stepdistance = stepdistance;
+    config.section.avoidsubsets = avoidsubsets;
+    config.drawing.subpenfactor = subpenfactor;
+    config.drawing.sectpenscale = sectpenscale;
+    config.drawing.overridepen = overridepen;
+    config.drawing.elpenwidth = elementwidth;
+    config.smooth.inferlabels = inferlabels;
+    config.smooth.shiftsubsets = shiftsubsets;
+    config.smooth.addsubsets = addsubsets;
+    config.smooth.correct = correct;
+    config.smooth.clip = clip;
+    config.smooth.unit = unit;
+    config.smooth.setcenter = setcenter;
+    config.drawing.gaplength = gaplength;
+    config.arrow.margin = arrowmargin;
+    config.arrow.absmargins = arrowabsmargin;
+    config.system.repeatlabels = repeatlabels;
+    config.system.insertdollars = insertdollars;
+    config.help.linewidth = helplinewidth;
+    config.drawing.attachedopacity = attachedopacity;
+    config.smooth.nodesize = nodesize;
+    config.drawing.smoothfill = smoothfill;
+    config.drawing.subsetfill = subsetfill;
+    config.drawing.mode = mode;
+    config.drawing.labels = drawlabels;
+    config.drawing.fill = fill;
+    config.drawing.fillsubsets = fillsubsets;
+    config.drawing.drawcontour = drawcontour;
+    config.drawing.drawsubsetcontour = drawsubsetcontour;
+    config.drawing.help = help;
+    config.drawing.dashes = dash;
+    config.drawing.underdashes = underdash;
+    config.drawing.useopacity = useopacity;
+    config.drawing.dashpenscale = dashscale;
+    config.drawing.dashpenopacity = dashop;
+    config.drawing.shade = shade;
+    config.drawing.pathrandom = pathrandom;
+    config.drawing.overlap = overlap;
+    config.drawing.subsetoverlap = subsetoverlap;
+    config.drawing.drawnow = drawnow;
+    config.drawing.postdrawover = postdrawover;
 
     if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
 }
@@ -531,32 +510,78 @@ void smpar (
 void defaults ()
 // Revert global settings to the defaults.
 {
-    currentsection = copy(defaultsection);
-    currentSeMB = defaultSeMB;
-    currentSeF = defaultSeF;
-    currentSeEP = defaultSeEP;
-    currentSmVD = defaultSmVD;
-    currentSmVS = defaultSmVS;
-    currentSmIHSN = defaultSmIHSN;
-    currentSmIHSA = defaultSmIHSA;
-    currentSmMSLR = defaultSmMSLR;
-    currentSmNS = defaultSmNS;
-    currentSmCSD = defaultSmCSD;
-    currentDrGL = defaultDrGL;
-    currentArM = defaultArM;
-    currentDrSePS = defaultDrSePS;
-    currentHlLW = defaultHlLW;
-    currentDrElPW = defaultDrElPW;
-    currentDrShS = defaultDrShS;
-    currentDrDPS = defaultDrDPS;
-    currentDrDPO = defaultDrDPO;
-    currentDrAO = defaultDrAO;
-    currentDrSPM = defaultDrSPM;
-    currentDrSeOP = nullpen;
-    smoothcolor = defaultDrSmC;
-    subsetcolor = defaultDrSbC;
-    currentSyRPC = defaultSyRPC;
-    currentSyRPR = defaultSyRPR;
+    // System config
+    config.system.version = defaultconfig.system.version;
+    config.system.dummynumber = defaultconfig.system.dummynumber;
+    config.system.dummystring = defaultconfig.system.dummystring;
+    config.system.dummypair = defaultconfig.system.dummypair;
+    config.system.repeatlabels = defaultconfig.system.repeatlabels;
+    config.system.insertdollars = defaultconfig.system.insertdollars;
+
+    // Section config
+    config.section.maxbreadth = defaultconfig.section.maxbreadth;
+    config.section.freedom = defaultconfig.section.freedom;
+    config.section.precision = defaultconfig.section.precision;
+    config.section.elprecision = defaultconfig.section.elprecision;
+    config.section.avoidsubsets = defaultconfig.section.avoidsubsets;
+    config.section.default = copy(defaultconfig.section.default);
+
+    // Smooth config
+    config.smooth.interholenumber = defaultconfig.smooth.interholenumber;
+    config.smooth.interholeangle = defaultconfig.smooth.interholeangle;
+    config.smooth.maxsectionlength = defaultconfig.smooth.maxsectionlength;
+    config.smooth.rejectcurve = defaultconfig.smooth.rejectcurve;
+    config.smooth.viewdir = defaultconfig.smooth.viewdir;
+    config.smooth.viewscale = defaultconfig.smooth.viewscale;
+    config.smooth.edgemargin = defaultconfig.smooth.edgemargin;
+    config.smooth.stepdistance = defaultconfig.smooth.stepdistance;
+    config.smooth.nodesize = defaultconfig.smooth.nodesize;
+    config.smooth.maxlength = defaultconfig.smooth.maxlength;
+    config.smooth.inferlabels = defaultconfig.smooth.inferlabels;
+    config.smooth.shiftsubsets = defaultconfig.smooth.shiftsubsets;
+    config.smooth.addsubsets = defaultconfig.smooth.addsubsets;
+    config.smooth.correct = defaultconfig.smooth.correct;
+    config.smooth.clip = defaultconfig.smooth.clip;
+    config.smooth.unit = defaultconfig.smooth.unit;
+    config.smooth.setcenter = defaultconfig.smooth.setcenter;
+
+    // Drawing config
+    config.drawing.gaplength = defaultconfig.drawing.gaplength;
+    config.drawing.smoothfill = defaultconfig.drawing.smoothfill;
+    config.drawing.subsetfill = defaultconfig.drawing.subsetfill;
+    config.drawing.sectpenscale = defaultconfig.drawing.sectpenscale;
+    config.drawing.elpenwidth = defaultconfig.drawing.elpenwidth;
+    config.drawing.shadescale = defaultconfig.drawing.shadescale;
+    config.drawing.dashpenscale = defaultconfig.drawing.dashpenscale;
+    config.drawing.dashpenopacity = defaultconfig.drawing.dashpenopacity;
+    config.drawing.attachedopacity = defaultconfig.drawing.attachedopacity;
+    config.drawing.subpenfactor = defaultconfig.drawing.subpenfactor;
+    config.drawing.overridepen = defaultconfig.drawing.overridepen;
+    config.drawing.mode = defaultconfig.drawing.mode;
+    config.drawing.useopacity = defaultconfig.drawing.useopacity;
+    config.drawing.dashes = defaultconfig.drawing.dashes;
+    config.drawing.underdashes = defaultconfig.drawing.underdashes;
+    config.drawing.help = defaultconfig.drawing.help;
+    config.drawing.shade = defaultconfig.drawing.shade;
+    config.drawing.labels = defaultconfig.drawing.labels;
+    config.drawing.fill = defaultconfig.drawing.fill;
+    config.drawing.fillsubsets = defaultconfig.drawing.fillsubsets;
+    config.drawing.drawcontour = defaultconfig.drawing.drawcontour;
+    config.drawing.drawsubsetcontour = defaultconfig.drawing.drawsubsetcontour;
+    config.drawing.pathrandom = defaultconfig.drawing.pathrandom;
+    config.drawing.overlap = defaultconfig.drawing.overlap;
+    config.drawing.subsetoverlap = defaultconfig.drawing.subsetoverlap;
+    config.drawing.drawnow = defaultconfig.drawing.drawnow;
+    config.drawing.postdrawover = defaultconfig.drawing.postdrawover;
+
+    // Help config
+    config.help.arcratio = defaultconfig.help.arcratio;
+    config.help.arrowlength = defaultconfig.help.arrowlength;
+    config.help.linewidth = defaultconfig.help.linewidth;
+
+    // Arrow config
+    config.arrow.margin = defaultconfig.arrow.margin;
+    config.arrow.absmargins = defaultconfig.arrow.absmargins;
 }
 
 // -- Technical functions to construct horizontal and vertical sections -- //
@@ -590,7 +615,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
         if (sectiontoobroad(presections[i][0], presections[i+1][0], presections[i][1], presections[i+1][1]))
         { continue; }
         
-        if (currentSmMSLR > 0 && length(presections[i][0]-presections[i+1][0]) > currentSmMSL)
+        if (config.smooth.maxsectionlength > 0 && length(presections[i][0]-presections[i+1][0]) > config.smooth.maxlength)
         { continue; }
 
         bool exclude = false;
@@ -604,7 +629,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
         for (int j = 0; j < g.length; ++j)
         {
             if (j == presections[i][2].x || j == presections[i+1][2].x) continue;
-            if (meet(g[j], curvedpath(presections[i][0], presections[i+1][0], defaultSmSRC)) || meet(g[j], curvedpath(presections[i+1][0], presections[i][0], defaultSmSRC)))
+            if (meet(g[j], curvedpath(presections[i][0], presections[i+1][0], config.smooth.rejectcurve)) || meet(g[j], curvedpath(presections[i+1][0], presections[i][0], config.smooth.rejectcurve)))
             {
                 exclude = true;
                 break;
@@ -644,7 +669,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     path line1 = (-dir1p) -- (dir1p);
     path line2 = ((l,0) - dir2p) -- ((l,0) + dir2p);
 
-    if (currentSeEP <= 0)
+    if (config.section.elprecision <= 0)
     {
         real reciprocal1 = 1/lsang1;
         real reciprocal2 = 1/lsang2;
@@ -661,7 +686,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
         path ellipse (real d1, real d2)
         { return ellipse(((d1 + l-d2)*.5, 0), (l-d1-d2)*.5, h); }
 
-        while (l1-r1 >= currentSeEP || l2-r2 >= currentSeEP)
+        while (l1-r1 >= config.section.elprecision || l2-r2 >= config.section.elprecision)
         {
             real c1 = (r1+l1)*.5;
             real c2 = (r2+l2)*.5;
@@ -889,14 +914,14 @@ struct hole
 
     void operator init (
         path contour,
-        pair center = defaultSyDP,
+        pair center = config.system.dummypair,
         real[][] sections = {},
-        int scnumber = currentSmIHSN,
+        int scnumber = config.smooth.interholenumber,
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool correct = currentSmCC,
+        bool correct = config.smooth.correct,
         bool copy = false
     )
     {
@@ -917,7 +942,7 @@ struct hole
             for (int i = 0; i < sections.length; ++i)
             {
                 real[] arr = sections[i];
-                while (arr.length < currentsection.length) { arr.push(currentsection[arr.length]); }
+                while (arr.length < config.section.default.length) { arr.push(config.section.default[arr.length]); }
                 this.sections.push(arr);
             }
         }
@@ -986,10 +1011,10 @@ struct subset
 
     void operator init (
         path contour,
-        pair center = defaultSyDP,
+        pair center = config.system.dummypair,
         string label = "",
-        pair labeldir = defaultSyDP,
-        pair labelalign = defaultSyDP,
+        pair labeldir = config.system.dummypair,
+        pair labelalign = config.system.dummypair,
         int layer = 0,
         bool isderivative = false,
         bool isonboundary = false,
@@ -997,7 +1022,7 @@ struct subset
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool correct = currentSmCC,
+        bool correct = config.smooth.correct,
         bool copy = false
     )
     {
@@ -1050,7 +1075,7 @@ struct subset
 private subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
 
-private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = currentSmIL)
+private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.smooth.inferlabels)
 {
     path[] contours = intersection(sb1.contour, sb2.contour);
     return sequence(new subset (int i){
@@ -1059,7 +1084,7 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = 
             center = center(contours[i]),
             label = (inferlabels && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
             labeldir = (0,0),
-            labelalign = defaultSyDP,
+            labelalign = config.system.dummypair,
             layer = max(sb1.layer, sb2.layer)+1,
             isderivative = true,
             isonboundary = false,
@@ -1187,7 +1212,7 @@ struct dpar
     pen smoothfill;         // The pen used to fill the smooth object.
     pen subsetcontourpen;   // The pen used to draw the contour of the subsets.
     pen subsetfill;         // The pen used to fill the subsets.
-    pen sectionpen;         // The pen used to draw the cross sections.
+    pen overridepen;         // The pen used to draw the cross sections.
     pen dashpen;            // The pen used to draw dashed lines on cross sections.
     pen shadepen;           // The pen used to fill shaded regions.
     pen elementpen;         // The pen used to dot elements.
@@ -1211,35 +1236,35 @@ struct dpar
 
     void operator init (
         pen contourpen = currentpen,
-        pen smoothfill = smoothcolor,
+        pen smoothfill = config.drawing.smoothfill,
         pen subsetcontourpen = contourpen,
-        pen subsetfill = subsetcolor,
-        pen sectionpen = sectionpen(contourpen),
-        pen dashpen = dashpen(sectionpen),
+        pen subsetfill = config.drawing.subsetfill,
+        pen overridepen = overridepen(contourpen),
+        pen dashpen = dashpen(overridepen),
         pen shadepen = shadepen(smoothfill),
         pen elementpen = elementpen(contourpen),
         pen labelpen = currentpen,
-        int mode = currentDrM,
-        pair viewdir = currentSmVD,
-        bool drawlabels = currentDrDL,
-        bool fill = currentDrF,
-        bool fillsubsets = currentDrFS,
-        bool drawcontour = currentDrDC,
-        bool drawsubsetcontour = currentDrDSC,
-        bool help = currentDrH,
-        bool dash = currentDrDD,
-        bool shade = currentDrDS,
-        bool avoidsubsets = currentSeAS,
-        bool overlap = currentDrO,
-        bool drawnow = currentDrDN,
-        bool postdrawover = currentDrPDO
+        int mode = config.drawing.mode,
+        pair viewdir = config.smooth.viewdir,
+        bool drawlabels = config.drawing.labels,
+        bool fill = config.drawing.fill,
+        bool fillsubsets = config.drawing.fillsubsets,
+        bool drawcontour = config.drawing.drawcontour,
+        bool drawsubsetcontour = config.drawing.drawsubsetcontour,
+        bool help = config.drawing.help,
+        bool dash = config.drawing.dashes,
+        bool shade = config.drawing.shade,
+        bool avoidsubsets = config.section.avoidsubsets,
+        bool overlap = config.drawing.overlap,
+        bool drawnow = config.drawing.drawnow,
+        bool postdrawover = config.drawing.postdrawover
     ) // Constructor
     {
         this.contourpen = contourpen;
         this.smoothfill = smoothfill;
         this.subsetcontourpen = subsetcontourpen;
         this.subsetfill = subsetfill;
-        this.sectionpen = sectionpen;
+        this.overridepen = overridepen;
         this.dashpen = dashpen;
         this.shadepen = shadepen;
         this.elementpen = elementpen;
@@ -1265,7 +1290,7 @@ struct dpar
         pen smoothfill = this.smoothfill,
         pen subsetcontourpen = this.subsetcontourpen,
         pen subsetfill = this.subsetfill,
-        pen sectionpen = this.sectionpen,
+        pen overridepen = this.overridepen,
         pen dashpen = this.dashpen,
         pen shadepen = this.shadepen,
         pen elementpen = this.elementpen,
@@ -1290,7 +1315,7 @@ struct dpar
         this.smoothfill = smoothfill;
         this.subsetcontourpen = subsetcontourpen;
         this.subsetfill = subsetfill;
-        this.sectionpen = sectionpen;
+        this.overridepen = overridepen;
         this.dashpen = dashpen;
         this.shadepen = shadepen;
         this.elementpen = elementpen;
@@ -1459,7 +1484,7 @@ struct smooth
         {
             if (this.subsets[i].label == label)
             {
-                if (!currentSyRL) return i;
+                if (!config.system.repeatlabels) return i;
                 if (found) write("> ? More than one local subset with label \"" + label + "\". Returning the last one. [ findlocalsubsetindex() ]");
                 found = true;
                 res = i;
@@ -1479,7 +1504,7 @@ struct smooth
         {
             if (this.elements[i].label == label)
             {
-                if (!currentSyRL) return i;
+                if (!config.system.repeatlabels) return i;
                 if (found) write("> ? More than one local element with label \"" + label + "\". Returning the last one. [ findlocalelementindex() ]");
                 found = true;
                 res = i;
@@ -1575,13 +1600,13 @@ struct smooth
         {
             int count = 0;
             real[] curratios = horiz ? this.hratios : this.vratios;
-            int bound = floor((1 - 2*defaultSmCEM)/currentSmCSD) + 1;
+            int bound = floor((1 - 2*config.smooth.edgemargin)/config.smooth.stepdistance) + 1;
 
-            real r = defaultSmCEM;
+            real r = config.smooth.edgemargin;
             for (int i = 0; i < bound; ++i)
             {
                 curratios.push(r);
-                r += currentSmCSD;
+                r += config.smooth.stepdistance;
             }
 
             return this;
@@ -1600,8 +1625,8 @@ struct smooth
 
     smooth setcenter (
         int index = -1,
-        pair center = defaultSyDP,
-        bool unit = currentSmU
+        pair center = config.system.dummypair,
+        bool unit = config.smooth.unit
     ) // Sets the center of the object or one of its subsets. The center is used for cross section positioning and arrows.
     {
         this.checksubsetindex(index, "setcenter");
@@ -1635,19 +1660,19 @@ struct smooth
     smooth setcenter (
         string destlabel,
         pair center,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     ) { return this.setcenter(findlocalsubsetindex(destlabel), center, unit); }
 
     smooth setlabel (
         int index = -1,
-        string label = defaultSyDS,
-        pair dir = defaultSyDP,
-        pair align = defaultSyDP
+        string label = config.system.dummystring,
+        pair dir = config.system.dummypair,
+        pair align = config.system.dummypair
     ) // Controls the label of the object, or one of its subsets under `indexpath`.
     {
         this.checksubsetindex(index, "setlabel");
 
-        if (!currentSyRL && repeats(label))
+        if (!config.system.repeatlabels && repeats(label))
         { halt("Could not set label: label \""+label+"\" already assigned. [ setlabel() ]"); }
 
         if (index == -1)
@@ -1670,8 +1695,8 @@ struct smooth
     smooth setlabel (
         string destlabel,
         string label,
-        pair dir = defaultSyDP,
-        pair align = defaultSyDP
+        pair dir = config.system.dummypair,
+        pair align = config.system.dummypair
     ) { return this.setlabel(findlocalsubsetindex(destlabel), label, dir, align); }
 
     // -- Methods for manipulating elements -- //
@@ -1679,12 +1704,12 @@ struct smooth
     smooth addelement (
         element elt,
         int index = -1,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     )
     {
         this.checksubsetindex(index, "addelement");
 
-        if (!currentSyRL && repeats(elt.label))
+        if (!config.system.repeatlabels && repeats(elt.label))
         { halt("Could not add element: label \""+elt.label+"\" already assigned. [ addelement() ]"); }
         
         if (unit) { elt.pos = this.adjust(index)*elt.pos; }
@@ -1701,7 +1726,7 @@ struct smooth
         string label = "",
         pair align = 1.5*S,
         int index = -1,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     )
     { return this.addelement(element(pos, label, align), index, unit); }
 
@@ -1709,10 +1734,10 @@ struct smooth
         int index,
         element elt,
         int sbindex = -1,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     )
     {
-        if (!currentSyRL && repeats(elt.label))
+        if (!config.system.repeatlabels && repeats(elt.label))
         { halt("Could not set element: label \""+elt.label+"\" already assigned. [ setelement() ]"); }
         
         if (unit) { elt.pos = this.adjust(sbindex)*elt.pos; }
@@ -1723,14 +1748,14 @@ struct smooth
 
     smooth setelement (
         int index,
-        pair pos = defaultSyDP,
-        string label = defaultSyDS,
-        pair labelalign = defaultSyDP,
+        pair pos = config.system.dummypair,
+        string label = config.system.dummystring,
+        pair labelalign = config.system.dummypair,
         int sbindex = -1,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     )
     {
-        if (!currentSyRL && repeats(label))
+        if (!config.system.repeatlabels && repeats(label))
         { halt("Could not set element: label \""+label+"\" already assigned. [ setelement() ]"); }
         
         if (!dummy(pos))
@@ -1747,15 +1772,15 @@ struct smooth
     smooth setelement (
         string destlabel,
         element elt,
-        bool unit = currentSmU
+        bool unit = config.smooth.unit
     ) { return this.setelement(findlocalelementindex(destlabel), elt, unit); }
 
     smooth setelement (
         string destlabel,
-        pair pos = defaultSyDP,
-        string label = defaultSyDS,
-        pair labelalign = defaultSyDP,
-        bool unit = currentSmU
+        pair pos = config.system.dummypair,
+        string label = config.system.dummystring,
+        pair labelalign = config.system.dummypair,
+        bool unit = config.smooth.unit
     ) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
 
     smooth rmelement (int index)
@@ -1781,8 +1806,8 @@ struct smooth
     smooth addhole (
         hole hl,
         int insertindex = this.holes.length,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         if (unit)
@@ -1800,7 +1825,7 @@ struct smooth
         {
             if (!meet(this.contour, hl.contour))
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: contour out of bounds. It will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1812,7 +1837,7 @@ struct smooth
             }
             else
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: contour out of bounds. It will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1822,7 +1847,7 @@ struct smooth
         {
             if (insidepath(this.holes[i].contour, hl.contour))
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: contour inside another hole. It will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1835,7 +1860,7 @@ struct smooth
             {
                 if (hlintersects || !clip)
                 {
-                    currentPrDP.push(hl.contour);
+                    debugpaths.push(hl.contour);
                     write("> ? Could not add hole: contour intersecting with more than one hole. It will be drawn in red on the final picture. [ addhole() ]");
                     return this;
                 }
@@ -1851,7 +1876,7 @@ struct smooth
             hlunion = union(this.holes[hlindex].contour, hl.contour);
             if (hlunion.length != 1)
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: non-trivial union of holes. The contour will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1862,7 +1887,7 @@ struct smooth
             mdiff = difference(this.contour, hl.contour);
             if (mdiff.length != 1)
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: contour disects the object in more than one part. It will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1874,7 +1899,7 @@ struct smooth
         {
             if (insidepath(this.subsets[layer0[i]].contour, hl.contour))
             {
-                currentPrDP.push(hl.contour);
+                debugpaths.push(hl.contour);
                 write("> ? Could not add hole: contour inside subset. It will be drawn in red on the final picture. [ addhole() ]");
                 return this;
             }
@@ -1911,7 +1936,7 @@ struct smooth
 
         if (abort)
         {
-            currentPrDP.push(hl.contour);
+            debugpaths.push(hl.contour);
             write("> ? Could not add hole: contour intervening with subsets. It will be drawn in red on the final picture. [ addhole() ]");
             return this;
         }
@@ -1921,20 +1946,20 @@ struct smooth
         if (mainintersects)
         {
             this.contour = mdiff[0];
-            if (!hlintersects && currentSmSC) this.center = center(this.contour);
+            if (!hlintersects && config.smooth.setcenter) this.center = center(this.contour);
         }
         if (hlintersects)
         {
             if (mainintersects)
             {
                 this.contour = difference(this.contour, this.holes[hlindex].contour)[0];
-                if (currentSmSC) this.center = center(this.contour);
+                if (config.smooth.setcenter) this.center = center(this.contour);
                 this.holes.delete(hlindex);
             }
             else
             {
                 this.holes[hlindex].contour = hlunion[0];
-                if (currentSmSC) this.holes[hlindex].center = center(this.holes[hlindex].contour);
+                if (config.smooth.setcenter) this.holes[hlindex].center = center(this.holes[hlindex].contour);
             }
         }
         for (int i = 0; i < this.subsets.length; ++i)
@@ -1942,7 +1967,7 @@ struct smooth
             if (sdiff[i].length > 0)
             {
                 this.subsets[i].contour = sdiff[i][0];
-                if (currentSmSC) this.subsets[i].center = center(this.subsets[i].contour);
+                if (config.smooth.setcenter) this.subsets[i].center = center(this.subsets[i].contour);
                 this.subsets[i].isonboundary = true;
             }
         }
@@ -1959,8 +1984,8 @@ struct smooth
                 hl.sections[i][0] = (rotate(360*i/hl.sections.length)*holedir).x;
                 hl.sections[i][1] = (rotate(360*i/hl.sections.length)*holedir).y;
             }
-            if (dummy(hl.sections[i][2]) || hl.sections[i][2] <= 0) hl.sections[i][2] = currentsection[2];
-            if (dummy(hl.sections[i][3]) || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = currentsection[3];
+            if (dummy(hl.sections[i][2]) || hl.sections[i][2] <= 0) hl.sections[i][2] = config.section.default[2];
+            if (dummy(hl.sections[i][3]) || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = config.section.default[3];
         }
 
         this.holes.insert(i = insertindex, hl);
@@ -1969,14 +1994,14 @@ struct smooth
 
     smooth addhole (
         path contour,
-        pair center = defaultSyDP,
+        pair center = config.system.dummypair,
         real[][] sections = {},
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         return this.addhole(hole(contour = contour, center = center, sections = sections, shift = shift, scale = scale, rotate = rotate, point = point), clip = clip, unit = unit);
@@ -1984,8 +2009,8 @@ struct smooth
 
     smooth addholes (
         hole[] holes,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         for (int i = 0; i < holes.length; ++i)
@@ -1994,24 +2019,24 @@ struct smooth
     }
 
     smooth addholes (
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... hole[] holes
     )
     { return this.addholes(holes, clip = clip, unit = unit); }
 
     smooth addholes (
         path[] contours,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         return this.addholes(holes = sequence(new hole (int i) { return hole(contours[i]); }, contours.length), clip = clip, unit = unit);
     }
 
     smooth addholes (
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... path[] contours
     )
     { return this.addholes(contours, clip = clip, unit = unit); }
@@ -2066,7 +2091,7 @@ struct smooth
 
         if (outofbounds)
         {
-            currentPrDP.push(newcontour);
+            debugpaths.push(newcontour);
             write("> ? Could not move hole: new contour out of bounds. It will be drawn in red on the final picture. [ movehole() ]");
             return this;
         }
@@ -2098,9 +2123,9 @@ struct smooth
             return this;
         }
         for (int i = 2; i < section.length; ++i)
-        { if (dummy(section[i])) section[i] = currentsection[i]; }
-        while (section.length < currentsection.length)
-        { section.push(currentsection[section.length]); }
+        { if (dummy(section[i])) section[i] = config.section.default[i]; }
+        while (section.length < config.section.default.length)
+        { section.push(config.section.default[section.length]); }
         pair holedir = (this.holes[index].center == this.center) ? (-1,0) : unit(this.holes[index].center - this.center);
         if (dummy(section[0]) || dummy(section[1]))
         {
@@ -2141,15 +2166,15 @@ struct smooth
     smooth addsubset (
         subset sb,
         int index = -1, // the index of parent subset (or the entire smooth object, if index == -1).
-        bool inferlabels = currentSmIL, // whether to create intersection labels.
-        bool clip = currentSmC, // whether to complain if subset is out of bounds, or clip its contour instead.
-        bool unit = currentSmU, // whether to fit the subset to the smooth object
+        bool inferlabels = config.smooth.inferlabels, // whether to create intersection labels.
+        bool clip = config.smooth.clip, // whether to complain if subset is out of bounds, or clip its contour instead.
+        bool unit = config.smooth.unit, // whether to fit the subset to the smooth object
         bool checkintersection = true
     ) // Add a subset to the smooth object.
     {
         this.checksubsetindex(index, "addsubset");
 
-        if (!currentSyRL && repeats(sb.label))
+        if (!config.system.repeatlabels && repeats(sb.label))
         { halt("Could not add subset: label \""+sb.label+"\" already assigned. [ addsubset() ]"); }
 
         if (unit)
@@ -2227,7 +2252,7 @@ struct smooth
                 }
                 else
                 {
-                    currentPrDP.push(sb.contour);
+                    debugpaths.push(sb.contour);
                     write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
                     return this;
                 }
@@ -2245,14 +2270,14 @@ struct smooth
                     }
                     else
                     {
-                        currentPrDP.push(sb.contour);
+                        debugpaths.push(sb.contour);
                         write("> ? Could not add subset: contour out of bounds. It will be drawn in red on the final picture. [ addsubset() ]");
                         return this;
                     }
                 }
                 else if (inside(this.holes[i].contour, inside(sb.contour)))
                 {
-                    currentPrDP.push(sb.contour);
+                    debugpaths.push(sb.contour);
                     write("> ? Could not add subset: contour contained in a hole. It will be drawn in red on the final picture. [ addsubset() ]");
                     return this;
                 }
@@ -2263,7 +2288,7 @@ struct smooth
         {
             if (insidepath(this.subsets[range[i]].contour, sb.contour))
             {
-                currentPrDP.push(sb.contour);
+                debugpaths.push(sb.contour);
                 write("> ? Could not add subset: contour is contained in another subset under index "+(string)range[i]+". The contour will be drawn in red on the final picture. [ addsubset() ]");
                 return this;
             }
@@ -2353,17 +2378,17 @@ struct smooth
     smooth addsubset (
         int index = -1,
         path contour,
-        pair center = defaultSyDP,
+        pair center = config.system.dummypair,
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
         string label = "",
-        pair dir = defaultSyDP,
-        pair align = defaultSyDP,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        pair dir = config.system.dummypair,
+        pair align = config.system.dummypair,
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         return this.addsubset(sb = subset(contour = contour, center = center, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), index, inferlabels, clip, unit);
@@ -2372,9 +2397,9 @@ struct smooth
     smooth addsubset (
         string destlabel,
         subset sb,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     ) { return this.addsubset(sb, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubset (
@@ -2385,11 +2410,11 @@ struct smooth
         real rotate = 0,
         pair point = center(contour),
         string label = "",
-        pair dir = defaultSyDP,
-        pair align = defaultSyDP,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        pair dir = config.system.dummypair,
+        pair align = config.system.dummypair,
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         return this.addsubset(destlabel, sb = subset(contour = contour, label = label, labeldir = dir, labelalign = align, shift = shift, scale = scale, rotate = rotate, point = point), inferlabels, clip, unit);
@@ -2398,9 +2423,9 @@ struct smooth
     smooth addsubsets (
         subset[] sbs,
         int index = -1,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     )
     {
         for (int i = 0; i < sbs.length; ++i)
@@ -2411,17 +2436,17 @@ struct smooth
 
     smooth addsubsets (
         int index = -1,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... subset[] sbs
     ) { return this.addsubsets(sbs, index, inferlabels, clip, unit); }
 
     smooth addsubsets (
         int index = -1,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... path[] contours
     )
     {
@@ -2431,24 +2456,24 @@ struct smooth
     smooth addsubsets (
         string destlabel,
         subset[] sbs,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
     ) { return this.addsubsets(sbs, findlocalsubsetindex(destlabel), inferlabels, clip, unit); }
 
     smooth addsubsets (
         string destlabel,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... subset[] sbs
     ) { return this.addsubsets(destlabel, sbs, inferlabels, clip, unit); }
 
     smooth addsubsets (
         string destlabel,
-        bool inferlabels = currentSmIL,
-        bool clip = currentSmC,
-        bool unit = currentSmU
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
         ... path[] contours
     )
     {
@@ -2546,12 +2571,12 @@ struct smooth
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
-        pair point = defaultSyDP,
+        pair point = config.system.dummypair,
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
-        bool clip = currentSmC,
-        bool inferlabels = currentSmIL,
+        bool clip = config.smooth.clip,
+        bool inferlabels = config.smooth.inferlabels,
         bool keepview = true
     )
     {
@@ -2637,7 +2662,7 @@ struct smooth
 
             if (outofbounds)
             {
-                currentPrDP.push(newcontour);
+                debugpaths.push(newcontour);
                 write("> ? Could not move subset: new contour out of bounds. It will be drawn in red on the final picture. [ movesubset() ]");
                 return this;
             }
@@ -2657,7 +2682,7 @@ struct smooth
                 
                 if (meet(newcontour, this.subsets[range[i]].contour) || insidepath(newcontour, this.subsets[range[i]].contour) || insidepath(this.subsets[range[i]].contour, newcontour))
                 {
-                    currentPrDP.push(newcontour);
+                    debugpaths.push(newcontour);
                     write("> ? Could not move subset: new contour intersects with other subsets. It will be drawn in red on the final picture. [ movesubset() ]");
                     return this;
                 }
@@ -2676,7 +2701,7 @@ struct smooth
                 {
                     if (!insidepath(newcontour, this.subsets[cursb.subsets[i]].contour))
                     {
-                        currentPrDP.push(newcontour);
+                        debugpaths.push(newcontour);
                         write("> ? Could not move subset: new contour makes existing subsets out-of-bounds. It will be drawn in red on the final picture. [ movesubset() ]");
                         return this;
                     }
@@ -2696,12 +2721,12 @@ struct smooth
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
-        pair point = defaultSyDP,
+        pair point = config.system.dummypair,
         bool movelabel = false,
         bool recursive = true,
         bool bounded = true,
-        bool clip = currentSmC,
-        bool inferlabels = currentSmIL,
+        bool clip = config.smooth.clip,
+        bool inferlabels = config.smooth.inferlabels,
         bool keepview = true
     )
     {
@@ -2738,24 +2763,24 @@ struct smooth
         pair center = center(contour),
         string label = "",
         pair labeldir = N,
-        pair labelalign = defaultSyDP,
+        pair labelalign = config.system.dummypair,
         hole[] holes = {},
         subset[] subsets = {},
         element[] elements = {},
-        real[] hratios = r(defaultSyDN),
-        real[] vratios = r(defaultSyDN),
+        real[] hratios = r(config.system.dummynumber),
+        real[] vratios = r(config.system.dummynumber),
         pair shift = (0,0),
         real scale = 1,
         real rotate = 0,
         pair point = center,
-        pair viewdir = currentSmVD,
+        pair viewdir = config.smooth.viewdir,
         bool distort = true,
         smooth[] attached = {},
-        bool correct = currentSmCC,
+        bool correct = config.smooth.correct,
         bool copy = false,
-        bool shiftsubsets = currentSmSS,
+        bool shiftsubsets = config.smooth.shiftsubsets,
         bool isderivative = false,
-        bool unit = currentSmU,
+        bool unit = config.smooth.unit,
         void postdraw (dpar ds, smooth sm) = new void (dpar, smooth) {} 
     )
     {
@@ -2781,7 +2806,7 @@ struct smooth
             
             this.contour = shift(shift)*srap(scale, rotate, point)*((!clockwise(contour) && correct) ? reverse(contour) : contour);
             this.center = shift(shift)*center;
-            if (!currentSyRL && label != "" && smooth.repeats(label))
+            if (!config.system.repeatlabels && label != "" && smooth.repeats(label))
             {
                 halt("Could not build smooth object: entities with label \""+label+"\" already present. [ smooth() ]");
             }
@@ -2880,7 +2905,7 @@ private int findsmoothindex (string label)
         {
             if (found) halt("Cannot identify smooth set: ambiguous label \""+label+"\". [ findsetindex() ]");
             found = true;
-            if (!currentSyRL) return i;
+            if (!config.system.repeatlabels) return i;
             smres = i;
         }
     }
@@ -2922,7 +2947,7 @@ private int[] findsubsetindex (string label)
             {
                 if (found) halt("Cannot identify set: ambiguous label \""+label+"\". [ findsetindex() ]");
                 found = true;
-                if (!currentSyRL) return i(i, j);
+                if (!config.system.repeatlabels) return i(i, j);
                 smres = i;
                 sbres = j;
             }   
@@ -2966,7 +2991,7 @@ private int[] findelementindex (string label)
             {
                 if (found) halt("Cannot identify element: ambiguous label \""+label+"\". [ findelementindex() ]");
                 found = true;
-                if (!currentSyRL) return i(i, j);
+                if (!config.system.repeatlabels) return i(i, j);
                 smres = i;
                 eltres = j;
             }   
@@ -3010,7 +3035,7 @@ private int[] findbylabel (string label)
         if (smooth.cache[i].label == label)
         {
             if (found) halt("Cannot identify smooth set: ambiguous label \""+label+"\". [ findsetindex() ]");
-            if (!currentSyRL) return i(i, -1, -1);
+            if (!config.system.repeatlabels) return i(i, -1, -1);
             found = true;
             smres = i;
             type = -1;
@@ -3022,7 +3047,7 @@ private int[] findbylabel (string label)
             {
                 if (found) halt("Cannot identify set: ambiguous label \""+label+"\". [ findsetindex() ]");
                 found = true;
-                if (!currentSyRL) return i(i, 0, j);
+                if (!config.system.repeatlabels) return i(i, 0, j);
                 smres = i;
                 type = 0;
                 sbres = j;
@@ -3035,7 +3060,7 @@ private int[] findbylabel (string label)
             {
                 if (found) halt("Cannot identify element: ambiguous label \""+label+"\". [ findelementindex() ]");
                 found = true;
-                if (!currentSyRL) return i(i, 1, j);
+                if (!config.system.repeatlabels) return i(i, 1, j);
                 smres = i;
                 type = 1;
                 eltres = j;
@@ -3179,7 +3204,7 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
         deferredPaths.push(res);
         pic.nodes.insert(0, node(
             d = new void (frame f, transform t, transform T, pair lb, pair rt) {},
-            key = defaultSyDS+" "+(string)(deferredPaths.length-1)
+            key = config.system.dummystring+" "+(string)(deferredPaths.length-1)
         ));
     }
     return res;
@@ -3266,7 +3291,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 holes = new hole[] {
                     hole(
                         contour = defaultPaCV[2],
-                        sections = rr(defaultSyDN, defaultSyDN, 260, defaultSyDN),
+                        sections = rr(config.system.dummynumber, config.system.dummynumber, 260, config.system.dummynumber),
                         shift = (-.65, .25),
                         scale = .5
                     )
@@ -3349,7 +3374,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = defaultPaCV[3],
                         sections = new real[][] {
-                            new real[] {defaultSyDN, defaultSyDN, 230, 10}
+                            new real[] {config.system.dummynumber, config.system.dummynumber, 230, 10}
                         },
                         shift = (.57,.52),
                         scale = .47,
@@ -3535,7 +3560,7 @@ dpar rnpar ()
 smooth node (
     string label,
     pair pos = (0,0),
-    real size = currentSmNS
+    real size = config.smooth.nodesize
 )
 {
     frame f;
@@ -3570,7 +3595,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
+    bool addsubsets = config.smooth.addsubsets
 ) // Constructs the intersection of two given smooth objects.
 {
     path[] contours = intersection(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
@@ -3665,7 +3690,7 @@ smooth[] intersection (
 
         smooth cursm = smooth(
             contour = curcontour,
-            label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
+            label = (config.smooth.inferlabels && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
             labeldir = rotate(90)*unit(sm1.center - sm2.center),
             isderivative = true,
             copy = true
@@ -3739,7 +3764,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
+    bool addsubsets = config.smooth.addsubsets
 )
 {
     sms = sequence(new smooth (int i){return sms[i];}, sms.length);
@@ -3767,7 +3792,7 @@ smooth[] intersection (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
+    bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
 
@@ -3782,7 +3807,7 @@ smooth[] operator ^^ (smooth sm1, smooth sm2)
 //     bool keepdata = true,
 //     bool round = false,
 //     real roundcoeff = currentSyRPC,
-//     bool addsubsets = currentSmAS
+//     bool addsubsets = config.smooth.addsubsets
 // ) // an alternative to `intersection` that only returns one smooth object.
 // {
 //     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff, addsubsets);
@@ -3798,7 +3823,7 @@ smooth intersect (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
+    bool addsubsets = config.smooth.addsubsets
 )
 {
     smooth[] intersection = intersection(sms, keepdata, round, roundcoeff, addsubsets);
@@ -3813,7 +3838,7 @@ smooth intersect (
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
-    bool addsubsets = currentSmAS
+    bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
 
@@ -3960,7 +3985,7 @@ smooth[] union (
 
     smooth res = smooth(
         contour = contour,
-        label = (currentSmIL && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cup "+sm2.label) : "",
+        label = (config.smooth.inferlabels && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cup "+sm2.label) : "",
         labeldir = unit(sm1.center - sm2.center),
         isderivative = true
     );
@@ -4065,7 +4090,7 @@ smooth operator + (smooth sm1, smooth sm2)
 smooth tangentspace (
     smooth sm,
     int hlindex = -1,
-    pair center = defaultSyDP,
+    pair center = config.system.dummypair,
     real angle,
     real ratio,
     real size = 1,
@@ -4127,8 +4152,8 @@ The `covermode` parameter needs additional explanation. It determines what happe
     2: The path going under is erased.
 */
 {
-    if (currentSyID && length(L.s) > 0) L.s = "$"+L.s+"$";
-    if (currentDrDL && length(L.s) > 0)
+    if (config.system.insertdollars && length(L.s) > 0) L.s = "$"+L.s+"$";
+    if (config.drawing.labels && length(L.s) > 0)
     { label(pic = pic, gs, L = L, p = p); }
 
     deferredPath[] curdp = extractdeferredpaths(pic, true);
@@ -4193,8 +4218,8 @@ The `covermode` parameter needs additional explanation. It determines what happe
                     
                     real cross = cross(gjd, gsd);
                     real sang = max(abs(cross), .3);
-                    t1 = relarctime(g[j], times[k][0], -currentDrGL/sang*.5);
-                    t2 = relarctime(g[j], times[k][0], currentDrGL/sang*.5);
+                    t1 = relarctime(g[j], times[k][0], -config.drawing.gaplength/sang*.5);
+                    t2 = relarctime(g[j], times[k][0], config.drawing.gaplength/sang*.5);
                     if (t1 < cuttimes[cuttimes.length-1])
                     {
                         cuttimes[cuttimes.length-1] = t2;
@@ -4238,12 +4263,12 @@ The `covermode` parameter needs additional explanation. It determines what happe
 
             if (newg.length > 0 || newunder.length > 0)
             {
-                if (newg.length > 0 && abs(beginpoint(newg[0]) - beginpoint(g[0])) > currentDrGL)
+                if (newg.length > 0 && abs(beginpoint(newg[0]) - beginpoint(g[0])) > config.drawing.gaplength)
                 {
                     curdp[i].beginarrow = false;
                     curdp[i].beginbar = false;
                 }
-                if (newg.length > 0 && abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > currentDrGL)
+                if (newg.length > 0 && abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > config.drawing.gaplength)
                 {
                     curdp[i].endarrow = false;
                     curdp[i].endbar = false;
@@ -4345,31 +4370,31 @@ void fillfitpath (
     { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
 }
 
-private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen overridepen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
     {
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir);
-        if (shade && currentDrF && section.length > 1) { fill(pic = pic, section[0]--section[1]--cycle, shadepen); }
+        if (shade && config.drawing.fill && section.length > 1) { fill(pic = pic, section[0]--section[1]--cycle, shadepen); }
         if (section.length > 1 && dash) { draw(pic, section[1], dashpen); }
-        draw(pic, section[0], sectionpen);
+        draw(pic, section[0], overridepen);
         if (help)
         {
             dot(pic, point(section[0], arctime(section[0], arclength(section[0])*.5)), red+1);
             dot(pic, sections[k][0], blue+1.5);
             dot(pic, sections[k][1], blue+1);
-            draw(pic, sections[k][0] -- sections[k][1], deepgreen + defaultHlLW);
-            draw(pic, sections[k][0]-.5*defaultHlAL*scale*sections[k][2] -- sections[k][0]+.5*defaultHlAL*scale*sections[k][2], deepgreen+defaultHlLW, arrow = Arrow(SimpleHead));
-            draw(pic, sections[k][1]-.5*defaultHlAL*scale*sections[k][3] -- sections[k][1]+.5*defaultHlAL*scale*sections[k][3], deepgreen+defaultHlLW, arrow = Arrow(SimpleHead));
+            draw(pic, sections[k][0] -- sections[k][1], deepgreen + config.help.linewidth);
+            draw(pic, sections[k][0]-.5*config.help.arrowlength*scale*sections[k][2] -- sections[k][0]+.5*config.help.arrowlength*scale*sections[k][2], deepgreen+config.help.linewidth, arrow = Arrow(SimpleHead));
+            draw(pic, sections[k][1]-.5*config.help.arrowlength*scale*sections[k][3] -- sections[k][1]+.5*config.help.arrowlength*scale*sections[k][3], deepgreen+config.help.linewidth, arrow = Arrow(SimpleHead));
         }
     }
 }
 
-private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen overridepen, pen dashpen, pen shadepen)
 // Draw vertical and horizontal cross sections.
 {
-    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
+    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, overridepen, dashpen, shadepen);
 }
 
 void draw (
@@ -4382,8 +4407,8 @@ void draw (
 
     if (dspec == null) dspec = dpar();
 
-    pair viewdir = currentSmVS*dspec.viewdir;
-    if (currentSmMSLR > 0) currentSmMSL = currentSmMSLR*min(xsize(sm.contour), ysize(sm.contour));
+    pair viewdir = config.smooth.viewscale*dspec.viewdir;
+    if (config.smooth.maxsectionlength > 0) config.smooth.maxlength = config.smooth.maxsectionlength*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] holes = holecontours(sm.holes);
     path[] contour = reverse(sm.contour) ^^ holes;
@@ -4402,7 +4427,7 @@ void draw (
         {
             if (dspec.help && (i == 0 ? clockwise(contour[i]) : !clockwise(contour[i])))
             {
-                currentPrDP.push(contour[i]);
+                debugpaths.push(contour[i]);
             }
             fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = 1-2*sgn(i), dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
         }
@@ -4434,30 +4459,30 @@ void draw (
                 {
                     pair hlstart = point(curhlcontour, 0);
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
-                    pair hlvec = defaultHlAR * radius(hl.contour) * unit(hlstart - hl.center);
-                    draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + defaultHlLW);
-                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- hlfinish, yellow + defaultHlLW);
-                    draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+defaultHlLW);
+                    pair hlvec = config.help.arcratio * radius(hl.contour) * unit(hlstart - hl.center);
+                    draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + config.help.linewidth);
+                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- hlfinish, yellow + config.help.linewidth);
+                    draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+config.help.linewidth);
                 }
 
-                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), currentSeF, defaultSeP), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
             }
 
             // Drawing sections between holes
-            if (currentSmIHSN > 0)
+            if (config.smooth.interholenumber > 0)
             {   
                 for (int j = 0; j < sm.holes.length; ++j)
                 {
                     if (holeconnected[i][j] || holeconnected[j][i]) continue;                    
 
-                    if (meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmSRC)) || meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmSRC))) continue;
+                    if (meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = config.smooth.rejectcurve)) || meet(sm.contour, curvedpath(hl.center, sm.holes[j].center, curve = -config.smooth.rejectcurve))) continue;
                     
                     bool near = true;
                     for (int k = 0; k < sm.holes.length; ++k)
                     {
                         if (k == i || k == j) continue;
 
-                        if (intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = defaultSmSRC)).length > 0 || intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = -defaultSmSRC)).length > 0)
+                        if (intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = config.smooth.rejectcurve)).length > 0 || intersect(sm.holes[k].contour, curvedpath(hl.center, sm.holes[j].center, curve = -config.smooth.rejectcurve)).length > 0)
                         {
                             near = false;
                             break;
@@ -4469,8 +4494,8 @@ void draw (
                     hole hl1 = hl;
                     hole hl2 = sm.holes[j];
 
-                    pair hl1times = range(hl1.contour, hl1.center, hl2.center-hl1.center, currentSmIHSA);
-                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, currentSmIHSA, -1);
+                    pair hl1times = range(hl1.contour, hl1.center, hl2.center-hl1.center, config.smooth.interholeangle);
+                    pair hl2times = range(reverse(hl2.contour), hl2.center, hl1.center-hl2.center, config.smooth.interholeangle, -1);
                     path curhl1contour = subcyclic(hl1.contour, hl1times);
                     path curhl2contour = subcyclic(reverse(hl2.contour), hl2times);
 
@@ -4480,17 +4505,17 @@ void draw (
                         pair hl1finish = point(curhl1contour, length(curhl1contour));
                         pair hl2start = point(curhl2contour, 0);
                         pair hl2finish = point(curhl2contour, length(curhl2contour));
-                        pair hl1vec = defaultHlAR * radius(hl1.contour) * unit(hl1start - hl1.center);
-                        pair hl2vec = defaultHlAR * radius(hl2.contour) * unit(hl2start - hl2.center);
-                        draw(pic, (hl1.center + hl1vec)--hl1start, yellow+defaultHlLW);
-                        draw(pic, (hl1.center + rotate(-currentSmIHSA)*hl1vec)--hl1finish, yellow+defaultHlLW);
-                        draw(pic, (hl2.center + hl2vec)--hl2start, yellow+defaultHlLW);
-                        draw(pic, (hl2.center + rotate(currentSmIHSA)*hl2vec)--hl2finish, yellow+defaultHlLW);
-                        draw(pic = pic, arc(hl1.center, hl1.center + hl1vec, hl1finish, direction = CW), blue+defaultHlLW);
-                        draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+defaultHlLW);
+                        pair hl1vec = config.help.arcratio * radius(hl1.contour) * unit(hl1start - hl1.center);
+                        pair hl2vec = config.help.arcratio * radius(hl2.contour) * unit(hl2start - hl2.center);
+                        draw(pic, (hl1.center + hl1vec)--hl1start, yellow+config.help.linewidth);
+                        draw(pic, (hl1.center + rotate(-config.smooth.interholeangle)*hl1vec)--hl1finish, yellow+config.help.linewidth);
+                        draw(pic, (hl2.center + hl2vec)--hl2start, yellow+config.help.linewidth);
+                        draw(pic, (hl2.center + rotate(config.smooth.interholeangle)*hl2vec)--hl2finish, yellow+config.help.linewidth);
+                        draw(pic = pic, arc(hl1.center, hl1.center + hl1vec, hl1finish, direction = CW), blue+config.help.linewidth);
+                        draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+config.help.linewidth);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, abs(min(hl1.scnumber, hl2.scnumber)), currentSeF, defaultSeP), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, abs(min(hl1.scnumber, hl2.scnumber)), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -4502,11 +4527,11 @@ void draw (
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
         }
     }
 
@@ -4515,7 +4540,7 @@ void draw (
     if (dspec.fillsubsets)
     {
         int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
-        real penscale = (maxlayer > 0) ? currentDrSPM^(1/maxlayer) : 1;
+        real penscale = (maxlayer > 0) ? config.drawing.subpenfactor^(1/maxlayer) : 1;
         pen[] subsetpens = {dspec.subsetfill};
         for (int i = 1; i < maxlayer+1; ++i)
         { subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
@@ -4534,9 +4559,9 @@ void draw (
             {
                 if (dspec.help && !clockwise(sm.subsets[i].contour))
                 {
-                    currentPrDP.push(sm.subsets[i].contour);
+                    debugpaths.push(sm.subsets[i].contour);
                 }
-                fitpath(pic = pic, dspec.overlap = dspec.overlap || currentDrSCO || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
     }
@@ -4544,7 +4569,7 @@ void draw (
     // Drawing the attached smooth objects
 
     for (int i = 0; i < sm.attached.length; ++i)
-    { draw(pic = pic, sm = sm.attached[i], dspec = dspec.subs(smoothfill = dspec.smoothfill+opacity(currentDrAO))); }
+    { draw(pic = pic, sm = sm.attached[i], dspec = dspec.subs(smoothfill = dspec.smoothfill+opacity(config.drawing.attachedopacity))); }
 
     // Labels and help drawings
 
@@ -4553,7 +4578,7 @@ void draw (
         element elt = sm.elements[i];
         if (dspec.drawlabels && elt.label != "")
         {
-            label(pic = pic, position = elt.pos, L = Label((currentSyID ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign));
+            label(pic = pic, position = elt.pos, L = Label((config.system.insertdollars ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign));
         }
         dot(pic = pic, elt.pos, dspec.elementpen);
     }
@@ -4566,11 +4591,11 @@ void draw (
             if (abs(sm.labeldir) == 0) align = (0,0);
             else align = rotate(90)*dir(sm.contour, intersectiontime(sm.contour, sm.center, sm.labeldir));
         }
-        label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sm.label+"$") : sm.label), align = align));
+        label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sm.label+"$") : sm.label), align = align));
         if (dspec.help && abs(sm.labeldir) > 0)
         {
-            draw(pic = pic, sm.center -- pos, purple+defaultHlLW);
-            draw(pic = pic, pos -- pos+scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
+            draw(pic = pic, sm.center -- pos, purple+config.help.linewidth);
+            draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
         }
     }
 
@@ -4586,11 +4611,11 @@ void draw (
                 if (abs(sb.labeldir) == 0) align = (0,0);
                 else align = rotate(90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
             }
-            label(pic = pic, position = pos, L = Label((currentSyID ? ("$"+sb.label+"$") : sb.label), align = align));
+            label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sb.label+"$") : sb.label), align = align));
             if (dspec.help && abs(sb.labeldir) > 0)
             {
-                draw(pic = pic, sb.center -- pos, purple+defaultHlLW);
-                draw(pic = pic, pos -- pos+scale*defaultHlAL*align, purple+defaultHlLW, arrow = Arrow(SimpleHead));
+                draw(pic = pic, sb.center -- pos, purple+config.help.linewidth);
+                draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
             }
         }
 
@@ -4598,11 +4623,11 @@ void draw (
     }
     if (dspec.help)
     {
-        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*defaultHlAL, purple+defaultHlLW, arrow = Arrow(SimpleHead));
+        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*config.help.arrowlength, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
         dot(pic = pic, sm.center, red+1);
         if (dspec.drawlabels) for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
-        draw(sm.adjust(-1)*unitcircle, blue+defaultHlLW);
+        draw(sm.adjust(-1)*unitcircle, blue+config.help.linewidth);
     }
 
     // Applying the postdraw function if specified
@@ -4640,9 +4665,9 @@ smooth[] drawintersect (
     picture pic = currentpicture,
     smooth sm1,
     smooth sm2,
-    string label = defaultSyDS,
-    pair labeldir = defaultSyDP,
-    pair labelalign = defaultSyDP,
+    string label = config.system.dummystring,
+    pair labeldir = config.system.dummypair,
+    pair labelalign = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
@@ -4674,9 +4699,9 @@ smooth[] drawintersect (
 smooth[] drawintersect (
     picture pic = currentpicture,
     smooth[] sms,
-    string label = defaultSyDS,
-    pair dir = defaultSyDP,
-    pair align = defaultSyDP,
+    string label = config.system.dummystring,
+    pair dir = config.system.dummypair,
+    pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
@@ -4705,9 +4730,9 @@ smooth[] drawintersect (
 
 smooth[] drawintersect (
     picture pic = currentpicture,
-    string label = defaultSyDS,
-    pair dir = defaultSyDP,
-    pair align = defaultSyDP,
+    string label = config.system.dummystring,
+    pair dir = config.system.dummypair,
+    pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
     real roundcoeff = currentSyRPC,
@@ -4720,14 +4745,14 @@ smooth[] drawintersect (
 void drawarrow (
     picture pic = currentpicture,
     smooth sm1 = null,
-    int index1 = defaultSyDN,
-    pair start = defaultSyDP,
+    int index1 = config.system.dummynumber,
+    pair start = config.system.dummypair,
     smooth sm2 = sm1,
-    int index2 = defaultSyDN,
-    pair finish = defaultSyDP,
+    int index2 = config.system.dummynumber,
+    pair finish = config.system.dummypair,
     real curve = 0,
     real angle = 0,
-    real radius = defaultSyDN,
+    real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
@@ -4738,12 +4763,12 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
-    bool help = currentDrH,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
-    real margin = defaultSyDN,
-    real margin1 = currentArM,
-    real margin2 = currentArM
+    bool help = config.drawing.help,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow,
+    real margin = config.system.dummynumber,
+    real margin1 = config.arrow.margin,
+    real margin2 = config.arrow.margin
 ) // Draws an arrow between two given smooth objects, or their subsets.
 {
     bool onself = false;
@@ -4752,13 +4777,13 @@ void drawarrow (
     bool hasenclosure2 = false;
     path g2;
 
-    if (margin != defaultSyDN)
+    if (margin != config.system.dummynumber)
     {
         margin1 = margin;
         margin2 = margin;
     }
     
-    if (start == defaultSyDP)
+    if (start == config.system.dummypair)
     {
         if (sm1 == null)
         {
@@ -4766,7 +4791,7 @@ void drawarrow (
         }
 
         hasenclosure1 = true;
-        if (index1 == defaultSyDN) index1 = -1;
+        if (index1 == config.system.dummynumber) index1 = -1;
         if (index1 > -1)
         {
             sm1.checksubsetindex(index1, "drawarrow");
@@ -4781,7 +4806,7 @@ void drawarrow (
         }
     }
 
-    if (finish == defaultSyDP)
+    if (finish == config.system.dummypair)
     {
         if (sm2 == null)
         {
@@ -4789,7 +4814,7 @@ void drawarrow (
         }
 
         hasenclosure2 = true;
-        if (index2 == defaultSyDN)
+        if (index2 == config.system.dummynumber)
         {
             if (sm1 == sm2) index2 = index1;
             else index2 = -1;
@@ -4834,7 +4859,7 @@ void drawarrow (
     if (hasenclosure2) intersection2 = onself ? intersection1 : intersections(g, g2);
 
     real length = arclength(g);
-    if (!currentArAM)
+    if (!config.arrow.absmargins)
     {
         margin1 *= length;    
         margin2 *= length;    
@@ -4869,7 +4894,7 @@ void drawarrow (
     string destlabel2 = destlabel1,
     real curve = 0,
     real angle = 0,
-    real radius = defaultSyDN,
+    real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
@@ -4880,16 +4905,16 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
-    bool help = currentDrH,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN,
-    real margin1 = currentArM,
-    real margin2 = currentArM
+    bool help = config.drawing.help,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow,
+    real margin1 = config.arrow.margin,
+    real margin2 = config.arrow.margin
 )
 {
     smooth sm1 = null, sm2 = null;
-    int index1 = defaultSyDN, index2 = defaultSyDN;
-    pair start = defaultSyDP, finish = defaultSyDP;
+    int index1 = config.system.dummynumber, index2 = config.system.dummynumber;
+    pair start = config.system.dummypair, finish = config.system.dummypair;
 
     int[] indices1 = findbylabel(destlabel1);
     sm1 = smooth.cache[indices1[0]];
@@ -4922,16 +4947,16 @@ void drawpath (
     smooth sm2 = sm1,
     int index2 = index1,
     real range = currentSyRPR,
-    real angle = defaultSyDN,
-    real radius = defaultSyDN,
+    real angle = config.system.dummynumber,
+    real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    bool help = currentDrH,
-    bool random = currentDrPR,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool help = config.drawing.help,
+    bool random = config.drawing.pathrandom,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow
 )
 {
     bool onself = sm2 == sm1 && index1 == index2;
@@ -4982,16 +5007,16 @@ void drawpath (
     string destlabel1,
     string destlabel2 = destlabel1,
     real range = currentSyRPR,
-    real angle = defaultSyDN,
-    real radius = defaultSyDN,
+    real angle = config.system.dummynumber,
+    real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    bool help = currentDrH,
-    bool random = currentDrPR,
-    bool overlap = currentDrO,
-    bool drawnow = currentDrDN
+    bool help = config.drawing.help,
+    bool random = config.drawing.pathrandom,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow
 )
 {
     int[] indices1 = findelementindex(destlabel1);
@@ -5017,7 +5042,7 @@ void drawpath (
 void drawcommuting (
     picture pic = currentpicture,
     smooth[] sms,
-    real size = currentSmNS*.5,
+    real size = config.smooth.nodesize*.5,
     pen p = currentpen,
     bool direction = CW
 )
@@ -5037,7 +5062,7 @@ void drawcommuting (
 
 void drawcommuting (
     picture pic = currentpicture,
-    real size = currentSmNS*.5,
+    real size = config.smooth.nodesize*.5,
     pen p = currentpen,
     bool direction = CW
     ... smooth[] sms
@@ -5049,7 +5074,7 @@ void drawdeferred (
 )
 {
     deferredPath[] curdp = extractdeferredpaths(pic, false);
-    if (!currentDrDUD) { purgedeferredunder(curdp); }
+    if (!config.drawing.underdashes) { purgedeferredunder(curdp); }
 
     void auxdraw (deferredPath p)
     {
@@ -5142,7 +5167,7 @@ shipout = new void (
 )
 {
     drawdeferred(pic = pic, flush = false);
-    draw(pic = pic, currentPrDP, red+1);
+    draw(pic = pic, debugpaths, red+1);
     plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
 
@@ -5231,7 +5256,7 @@ void restore ()
         {
             currentpicture.nodes.insert(0, node(
                 d = new void (frame f, transform t, transform T, pair lb, pair rt) {},
-                key = (string)defaultSyDN+" "+(string)ind
+                key = (string) config.system.dummynumber+" "+(string)ind
             ));
         }
     }
