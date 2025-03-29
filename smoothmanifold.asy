@@ -390,122 +390,137 @@ private pen underpen (pen p)
 
 // -- User setting functions -- //
 
-void smpar (
-    pair viewdir = config.smooth.viewdir,
-    real viewscale = config.smooth.viewscale,
-    real[] section = config.section.default,
-    real scmaxbreadth = config.section.maxbreadth,
-    real freedom = config.section.freedom,
-    int interholenumber = config.smooth.interholenumber,
-    real interholeangle = config.smooth.interholeangle,
-    real elprecision = config.section.elprecision,
-    real maxsectionlength = config.smooth.maxsectionlength,
-    real stepdistance = config.smooth.stepdistance,
-    bool avoidsubsets = config.section.avoidsubsets,
-    real subpenfactor = config.drawing.subpenfactor,
-    real sectpenscale = config.drawing.sectpenscale,
-    pen overridepen = config.drawing.overridepen,
-    real elementwidth = config.drawing.elpenwidth,
-    bool inferlabels = config.smooth.inferlabels,
-    bool shiftsubsets = config.smooth.shiftsubsets,
-    bool addsubsets = config.smooth.addsubsets,
-    bool correct = config.smooth.correct,
-    bool clip = config.smooth.clip,
-    bool unit = config.smooth.unit,
-    bool setcenter = config.smooth.setcenter,
-    real gaplength = config.drawing.gaplength,
-    real arrowmargin = config.arrow.margin,
-    bool arrowabsmargin = config.arrow.absmargins,
-    bool repeatlabels = config.system.repeatlabels,
-    bool insertdollars = config.system.insertdollars,
-    pen helplinewidth = config.help.linewidth,
-    real attachedopacity = config.drawing.attachedopacity,
-    real nodesize = config.smooth.nodesize,
-    pen smoothfill = config.drawing.smoothfill,
-    pen subsetfill = config.drawing.subsetfill,
-    int mode = config.drawing.mode,
-    bool drawlabels = config.drawing.labels,
-    bool fill = config.drawing.fill,
-    bool fillsubsets = config.drawing.fillsubsets,
-    bool drawcontour = config.drawing.drawcontour,
-    bool drawsubsetcontour = config.drawing.drawsubsetcontour,
-    bool help = config.drawing.help,
-    bool dash = config.drawing.dashes,
-    bool underdash = config.drawing.underdashes,
-    bool useopacity = config.drawing.useopacity,
-    real dashscale = config.drawing.dashpenscale,
-    real dashop = config.drawing.dashpenopacity,
-    bool shade = config.drawing.shade,
-    bool pathrandom = config.drawing.pathrandom,
-    bool overlap = config.drawing.overlap,
-    bool subsetoverlap = config.drawing.subsetoverlap,
-    bool drawnow = config.drawing.drawnow,
-    bool postdrawover = config.drawing.postdrawover
-) // The main configuration function. It is called by the user to set all global system variables.
-{
-    if (!inside(0,2, mode))
-    { halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
-    if (!inside(0,1, subpenfactor))
-    { halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
-    if (!inside(0,1, attachedopacity))
-    { halt("Could not set attached opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
-    if (!checksection(section) || freedom >= 1 || interholenumber < 0 || !inside(0, 180, interholeangle))
-    { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
-    for (int i = 0; i < section.length; ++i)
-    { if (!dummy(section[i])) config.section.default[i] = section[i]; }
-
-    config.smooth.viewdir = viewdir;
-    config.smooth.viewscale = viewscale;
-    config.section.maxbreadth = scmaxbreadth;
-    config.section.freedom = freedom;
-    config.smooth.interholenumber = interholenumber;
-    config.smooth.interholeangle = interholeangle;
-    config.section.elprecision = elprecision;
-    config.smooth.maxsectionlength = maxsectionlength;
-    config.smooth.stepdistance = stepdistance;
-    config.section.avoidsubsets = avoidsubsets;
-    config.drawing.subpenfactor = subpenfactor;
-    config.drawing.sectpenscale = sectpenscale;
-    config.drawing.overridepen = overridepen;
-    config.drawing.elpenwidth = elementwidth;
-    config.smooth.inferlabels = inferlabels;
-    config.smooth.shiftsubsets = shiftsubsets;
-    config.smooth.addsubsets = addsubsets;
-    config.smooth.correct = correct;
-    config.smooth.clip = clip;
-    config.smooth.unit = unit;
-    config.smooth.setcenter = setcenter;
-    config.drawing.gaplength = gaplength;
-    config.arrow.margin = arrowmargin;
-    config.arrow.absmargins = arrowabsmargin;
-    config.system.repeatlabels = repeatlabels;
-    config.system.insertdollars = insertdollars;
-    config.help.linewidth = helplinewidth;
-    config.drawing.attachedopacity = attachedopacity;
-    config.smooth.nodesize = nodesize;
-    config.drawing.smoothfill = smoothfill;
-    config.drawing.subsetfill = subsetfill;
-    config.drawing.mode = mode;
-    config.drawing.labels = drawlabels;
-    config.drawing.fill = fill;
-    config.drawing.fillsubsets = fillsubsets;
-    config.drawing.drawcontour = drawcontour;
-    config.drawing.drawsubsetcontour = drawsubsetcontour;
-    config.drawing.help = help;
-    config.drawing.dashes = dash;
-    config.drawing.underdashes = underdash;
-    config.drawing.useopacity = useopacity;
-    config.drawing.dashpenscale = dashscale;
-    config.drawing.dashpenopacity = dashop;
-    config.drawing.shade = shade;
-    config.drawing.pathrandom = pathrandom;
-    config.drawing.overlap = overlap;
-    config.drawing.subsetoverlap = subsetoverlap;
-    config.drawing.drawnow = drawnow;
-    config.drawing.postdrawover = postdrawover;
-
-    if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
-}
+// void smpar (
+//     pair viewdir = config.smooth.viewdir,
+//     real viewscale = config.smooth.viewscale,
+//     real[] section = config.section.default,
+//     real scmaxbreadth = config.section.maxbreadth,
+//     real freedom = config.section.freedom,
+//     int interholenumber = config.smooth.interholenumber,
+//     real interholeangle = config.smooth.interholeangle,
+//     real elprecision = config.section.elprecision,
+//     real maxsectionlength = config.smooth.maxsectionlength,
+//     real stepdistance = config.smooth.stepdistance,
+//     bool avoidsubsets = config.section.avoidsubsets,
+//     real subpenfactor = config.drawing.subpenfactor,
+//     real sectpenscale = config.drawing.sectpenscale,
+//     pen overridepen = config.drawing.overridepen,
+//     real elementwidth = config.drawing.elpenwidth,
+//     bool inferlabels = config.smooth.inferlabels,
+//     bool shiftsubsets = config.smooth.shiftsubsets,
+//     bool addsubsets = config.smooth.addsubsets,
+//     bool correct = config.smooth.correct,
+//     bool clip = config.smooth.clip,
+//     bool unit = config.smooth.unit,
+//     bool setcenter = config.smooth.setcenter,
+//     real gaplength = config.drawing.gaplength,
+//     real arrowmargin = config.arrow.margin,
+//     bool arrowabsmargin = config.arrow.absmargins,
+//     bool repeatlabels = config.system.repeatlabels,
+//     bool insertdollars = config.system.insertdollars,
+//     pen helplinewidth = config.help.linewidth,
+//     real attachedopacity = config.drawing.attachedopacity,
+//     real nodesize = config.smooth.nodesize,
+//     pen smoothfill = config.drawing.smoothfill,
+//     pen subsetfill = config.drawing.subsetfill,
+//     int mode = config.drawing.mode,
+//     bool drawlabels = config.drawing.labels,
+//     bool fill = config.drawing.fill,
+//     bool fillsubsets = config.drawing.fillsubsets,
+//     bool drawcontour = config.drawing.drawcontour,
+//     bool drawsubsetcontour = config.drawing.drawsubsetcontour,
+//     bool help = config.drawing.help,
+//     bool dash = config.drawing.dashes,
+//     bool underdash = config.drawing.underdashes,
+//     bool useopacity = config.drawing.useopacity,
+//     real dashscale = config.drawing.dashpenscale,
+//     real dashop = config.drawing.dashpenopacity,
+//     bool shade = config.drawing.shade,
+//     bool pathrandom = config.drawing.pathrandom,
+//     bool overlap = config.drawing.overlap,
+//     bool subsetoverlap = config.drawing.subsetoverlap,
+//     bool drawnow = config.drawing.drawnow,
+//     bool postdrawover = config.drawing.postdrawover,
+//     int precision = config.section.precision,
+//     real rejectcurve = config.smooth.rejectcurve,
+//     real edgemargin = config.smooth.edgemargin,
+//     real maxlength = config.smooth.maxlength,
+//     real shadescale = config.drawing.shadescale,
+//     real helparcratio = config.help.arcratio,
+//     real helparrowlength = config.help.arrowlength
+// )
+// {
+//     // Existing parameter checks and assignments
+//     if (!inside(0,2, mode))
+//     { halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
+//     if (!inside(0,1, subpenfactor))
+//     { halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
+//     if (!inside(0,1, attachedopacity))
+//     { halt("Could not set attached opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
+//     if (!checksection(section) || freedom >= 1 || interholenumber < 0 || !inside(0, 180, interholeangle))
+//     { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
+//     for (int i = 0; i < section.length; ++i)
+//     { if (!dummy(section[i])) config.section.default[i] = section[i]; }
+//
+//     config.smooth.viewdir = viewdir;
+//     config.smooth.viewscale = viewscale;
+//     config.section.maxbreadth = scmaxbreadth;
+//     config.section.freedom = freedom;
+//     config.smooth.interholenumber = interholenumber;
+//     config.smooth.interholeangle = interholeangle;
+//     config.section.elprecision = elprecision;
+//     config.smooth.maxsectionlength = maxsectionlength;
+//     config.smooth.stepdistance = stepdistance;
+//     config.section.avoidsubsets = avoidsubsets;
+//     config.drawing.subpenfactor = subpenfactor;
+//     config.drawing.sectpenscale = sectpenscale;
+//     config.drawing.overridepen = overridepen;
+//     config.drawing.elpenwidth = elementwidth;
+//     config.smooth.inferlabels = inferlabels;
+//     config.smooth.shiftsubsets = shiftsubsets;
+//     config.smooth.addsubsets = addsubsets;
+//     config.smooth.correct = correct;
+//     config.smooth.clip = clip;
+//     config.smooth.unit = unit;
+//     config.smooth.setcenter = setcenter;
+//     config.drawing.gaplength = gaplength;
+//     config.arrow.margin = arrowmargin;
+//     config.arrow.absmargins = arrowabsmargin;
+//     config.system.repeatlabels = repeatlabels;
+//     config.system.insertdollars = insertdollars;
+//     config.help.linewidth = helplinewidth;
+//     config.drawing.attachedopacity = attachedopacity;
+//     config.smooth.nodesize = nodesize;
+//     config.drawing.smoothfill = smoothfill;
+//     config.drawing.subsetfill = subsetfill;
+//     config.drawing.mode = mode;
+//     config.drawing.labels = drawlabels;
+//     config.drawing.fill = fill;
+//     config.drawing.fillsubsets = fillsubsets;
+//     config.drawing.drawcontour = drawcontour;
+//     config.drawing.drawsubsetcontour = drawsubsetcontour;
+//     config.drawing.help = help;
+//     config.drawing.dashes = dash;
+//     config.drawing.underdashes = underdash;
+//     config.drawing.useopacity = useopacity;
+//     config.drawing.dashpenscale = dashscale;
+//     config.drawing.dashpenopacity = dashop;
+//     config.drawing.shade = shade;
+//     config.drawing.pathrandom = pathrandom;
+//     config.drawing.overlap = overlap;
+//     config.drawing.subsetoverlap = subsetoverlap;
+//     config.drawing.drawnow = drawnow;
+//     config.drawing.postdrawover = postdrawover;
+//     config.section.precision = precision;
+//     config.smooth.rejectcurve = rejectcurve;
+//     config.smooth.edgemargin = edgemargin;
+//     config.smooth.maxlength = maxlength;
+//     config.drawing.shadescale = shadescale;
+//     config.help.arcratio = helparcratio;
+//     config.help.arrowlength = helparrowlength;
+//
+//     if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
+// }
 
 void defaults ()
 // Revert global settings to the defaults.
@@ -517,7 +532,6 @@ void defaults ()
     config.system.dummypair = defaultconfig.system.dummypair;
     config.system.repeatlabels = defaultconfig.system.repeatlabels;
     config.system.insertdollars = defaultconfig.system.insertdollars;
-
     // Section config
     config.section.maxbreadth = defaultconfig.section.maxbreadth;
     config.section.freedom = defaultconfig.section.freedom;
@@ -525,7 +539,6 @@ void defaults ()
     config.section.elprecision = defaultconfig.section.elprecision;
     config.section.avoidsubsets = defaultconfig.section.avoidsubsets;
     config.section.default = copy(defaultconfig.section.default);
-
     // Smooth config
     config.smooth.interholenumber = defaultconfig.smooth.interholenumber;
     config.smooth.interholeangle = defaultconfig.smooth.interholeangle;
@@ -544,7 +557,6 @@ void defaults ()
     config.smooth.clip = defaultconfig.smooth.clip;
     config.smooth.unit = defaultconfig.smooth.unit;
     config.smooth.setcenter = defaultconfig.smooth.setcenter;
-
     // Drawing config
     config.drawing.gaplength = defaultconfig.drawing.gaplength;
     config.drawing.smoothfill = defaultconfig.drawing.smoothfill;
@@ -573,12 +585,10 @@ void defaults ()
     config.drawing.subsetoverlap = defaultconfig.drawing.subsetoverlap;
     config.drawing.drawnow = defaultconfig.drawing.drawnow;
     config.drawing.postdrawover = defaultconfig.drawing.postdrawover;
-
     // Help config
     config.help.arcratio = defaultconfig.help.arcratio;
     config.help.arrowlength = defaultconfig.help.arrowlength;
     config.help.linewidth = defaultconfig.help.linewidth;
-
     // Arrow config
     config.arrow.margin = defaultconfig.arrow.margin;
     config.arrow.absmargins = defaultconfig.arrow.absmargins;
