@@ -3,14 +3,14 @@ settings.render = 16;
 
 size(20 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow);
-smpar(
-    arrowmargin = .02,
-    arrowabsolutemargin = true,
-    dash = false,
-    gaplength = .2,
-    viewdir = dir(-50)
-);
+
+export.background = paleyellow;
+
+config.drawing.viewdir = dir(-50);
+config.drawing.dashes = false;
+config.drawing.gaplength = .2;
+config.arrow.margin = .02;
+config.arrow.absmargins = true;
 
 smooth sm1 = samplesmooth(1,2).move(scale = 2);
 sm1.setlabel(0, "U", dir = S);

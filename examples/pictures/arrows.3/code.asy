@@ -3,18 +3,19 @@ settings.render = 16;
 
 size(25 cm);
 defaultpen(.5);
-smpar(
-    gaplength = .07,
-	shiftsubsets = true,
-    arrowabsolutemargin = true,
-	fill = true,
-	unit = true,
-	mode = free,
-	viewdir = dir(15),
-	scfreedom = .15,
-	help = false
-);
-expar(bgpen = paleyellow, margin = 2 cm);
+
+config.drawing.gaplength = .07;
+config.smooth.shiftsubsets = true;
+config.arrow.absmargins = true;
+config.drawing.fill = true;
+config.smooth.unit = true;
+config.drawing.mode = free;
+config.drawing.viewdir = dir(15);
+config.section.freedom = 0.15;
+config.help.enable = false;
+
+export.background = paleyellow;
+export.margin = 2cm;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)

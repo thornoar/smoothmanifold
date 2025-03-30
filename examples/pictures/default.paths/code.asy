@@ -4,7 +4,8 @@ settings.render = 8;
 
 size(15cm);
 defaultpen(.7);
-expar(bgpen = paleyellow);
+
+export.background = paleyellow;
 
 real x = 3.5;
 real y = -1.6;

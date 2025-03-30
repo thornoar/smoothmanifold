@@ -1,9 +1,8 @@
 import export;
 size(8cm);
-smpar(
-    arrowabsolutemargin = true,
-    nodesize = .8
-);
+
+config.arrow.absmargins = true;
+config.smooth.nodesize = .8;
 
 smooth a = node("A", pos = (0,0));
 smooth fa = node("F(A)", (5,2));

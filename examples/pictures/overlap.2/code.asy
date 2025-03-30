@@ -2,7 +2,9 @@ import export;
 size(15cm);
 
 defaultpen(.7);
-smpar(gaplength = .03, underdash = true);
+
+config.drawing.gaplength = .03;
+config.drawing.underdashes = true;
 
 fitpath((0,0){up}..{down}(1,0), beginarrow = true, endarrow = true, beginbar = true, endbar = true, barsize = 10, p = blue);
 fitpath((.5,-1.3){up}..(.6,.7), endarrow = true, arrow = TeXHead);

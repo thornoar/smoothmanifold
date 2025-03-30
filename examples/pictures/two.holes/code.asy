@@ -4,7 +4,9 @@ settings.render = 8;
 
 size(10 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow, margin = 1 cm);
+
+export.background = paleyellow;
+export.margin = 1cm;
 
 smooth sm = samplesmooth(2);
 

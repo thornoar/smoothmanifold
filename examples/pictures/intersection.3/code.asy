@@ -3,8 +3,13 @@ import export;
 settings.render = 16;
 size(15 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow);
-smpar(smoothfill = cyan, mode = plain, drawnow = true, addsubsets = false);
+
+export.background = paleyellow;
+
+config.drawing.smoothfill = cyan;
+config.drawing.mode = free;
+config.drawing.drawnow = true;
+config.smooth.addsubsets = false;
 
 smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);
 smooth sm2 = samplesmooth(1,1).move(shift = (.7,-.15), rotate = -20);

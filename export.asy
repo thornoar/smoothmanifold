@@ -24,109 +24,55 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // Variable names are abbreviated to avoid really long names. Naming is hard...
 
 // [Pr]ogress
-private int defaultPrML = 50; // [M]essage [L]ength
 
 // [An]imations
-private string listfilename = ".animation_input_list.txt";
+// private string listfilename = ".animation_input_list.txt";
 
-// Configuration structures
-// struct systemconfig {
-//     int dummynumber = -10000;
-//     string dummystring = (string) dummynumber;
-//     int messageLength = 50;
-//     string listfilename = ".animation_input_list.txt";
-// }
-
-struct exportformatconfig {
-    string prefix = outname();
-    bool exitonexport = false;
-    int rasterdensity = 300;
-    pen background = nullpen;
-    pen framepen = nullpen;
-    real margin = 0;
-    bool restore = true;
-    bool exitflag = false;
-    bool forcenative = false;
-}
-
-// // -- Current values (can be changed by the user, though not directly) -- //
-//
-// // [Ex]port
-// private string export.format.prefix = outname(); // [P]refix
-// private bool export.format.exitonexport = false; // [E]xit [O]n [E]xport
-// private int currentExRID = 300; // [R]asterized [I]mage [D]ensity
-// private pen export.format.background = nullpen; // [B]ack[G]round
-// private pen export.format.framepen = nullpen; // [F]rame [P]en
-// private real currentExM = 0; // [M]argin
-// private bool currentExR = true; // [R]estore
-// private bool currentExEF = false; // [E]xit [F]lag
-// private bool currentExFN = false; // [F]orce [N]ative
-
-struct exportframeconfig {
-    bool enclose = false;
-    bool clip = false;
-    pair corner = (0,0);
-}
-//
-// // [Fr]ame
-// private bool export.frame.enclose = false; // [E]nclose [P]icture
-// private bool export.frame.clip = false; // [C]lip [P]icture
-// private pair export.frame.corner = (0,0); // [F]rame [C]orner
+// -- Configuration structures -- //
 
 struct exportanimationconfig {
     int fps = 30;
     int callcount = 0;
     bool preclean = true;
     string directory = "animation/";
-    string inputformat = "jpg";
-    string outputprefix = outname();
-    string outputformat = "mp4";
+    string informat = "jpg";
+    string outprefix = outname();
+    string outformat = "mp4";
     bool close = true;
+    int messagelength = 50;
     string listfilename = ".animation_input_list.txt";
 }
-//
-// // [An]imations
-// private int export.animation.fps = 30; // [FPS]
-// private int export.animation.callcount = 0; // [C]all [C]ount
-// private bool currentAnPC = true; // [P]re-[C]lean
-// private string currentAnDN = "animation/";
-// private string currentAnIF = "jpg"; // [I]nput [F]ormat
-// private string currentAnOP = outname(); // [O]otput [P]refix
-// private string currentAnOF = "mp4"; // [O]utput [F]ormat
-// private bool currentAnC = true; // [C]lose
 
-struct exportdrawingconfig {
+struct exportconfig {
+    string prefix = outname();
+    // string format = settings.outformat;
+    bool exitonexport = false;
+    int rasterdensity = 300;
+    pen background = nullpen;
+    pen framepen = nullpen;
+    real margin = 0;
+    bool restore = true;
+    bool autoexport = false;
+    bool forcenative = false;
+    bool enclose = false;
+    bool clip = false;
+    pair corner = (0,0);
     bool invertcolors = false;
     bool drawgrid = false;
     int gridnumber = 10;
     int gridplaces = 1;
-}
-//
-// // [Dr]awing
-// private bool export.drawing.invertcolors = false; // [I]nvert [C]olors
-// private bool export.drawing.drawgrid = false; // [D]raw [G]rid
-// private int export.help.gridnumber = 10; // [H]elp [G]rid [N]umber
-// private int export.help.gridnumber = 1; // [H]elp [G]rid [N]umber
-
-struct exporthelpconfig {
     int gridnumber = 10;
     int gridplaces = 1;
-}
 
-struct exportconfig {
-    exportformatconfig format;
-    exportframeconfig frame;
-    exportanimationconfig animation;
-    exportdrawingconfig drawing;
-    exporthelpconfig help;
+    exportanimationconfig animations;
     string[] natives;
 }
 
 // Global configuration instances
-private exportconfig defaultconfig;
+private exportconfig defaultexport;
 exportconfig export;
 
-string[] currentnatives = new string[]{};
+// string[] export.natives = new string[]{};
 
 void linux (string cmd)
 // Run an arbitrary Linux command.
@@ -150,34 +96,34 @@ private bool contains (string[] strs, string s)
 
 private bool native (string format)
 // Check if the format is supported by Asymptote natively.
-{ return format == "" || format == "eps" || format == "pdf" || contains(currentnatives, format); }
+{ return format == "" || format == "eps" || format == "pdf" || contains(export.natives, format); }
 
 include smoothmanifold;
 
 // void expar (
-//     string prefix = export.format.prefix,
+//     string prefix = export.prefix,
 //     string format = settings.outformat,
-//     int dpi = export.format.rasterdensity,
-//     bool exit = export.format.exitonexport,
-//     bool autoexport = !export.format.exitflag,
-//     bool restore = export.format.restore,
-//     bool drawgrid = export.drawing.drawgrid,
-//     int gridnumber = export.drawing.gridnumber,
-//     int gridplaces = export.drawing.gridplaces,
-//     string dirname = export.animation.directory,
-//     string informat = export.animation.inputformat,
-//     string outprefix = export.animation.outputprefix,
-//     string outformat = export.animation.outputformat,
+//     int dpi = export.rasterdensity,
+//     bool exit = export.exitonexport,
+//     bool autoexport = !export.autoexport,
+//     bool restore = export.restore,
+//     bool drawgrid = export.drawgrid,
+//     int gridnumber = export.gridnumber,
+//     int gridplaces = export.gridplaces,
+//     string dirname = export.animations.directory,
+//     string informat = export.animations.informat,
+//     string outprefix = export.animations.outprefix,
+//     string outformat = export.animations.outformat,
 //     string[] natives = export.natives,
-//     bool forcenative = export.format.forcenative,
-//     bool close = export.animation.close,
-//     bool preclean = export.animation.preclean,
+//     bool forcenative = export.forcenative,
+//     bool close = export.animations.close,
+//     bool preclean = export.animations.preclean,
 //     real ymax = -1,
 //     real ratio = 1.777777777,
-//     bool clip = export.frame.clip,
-//     pen bgpen = export.format.background,
-//     pen framepen = export.format.framepen,
-//     real margin = export.format.margin,
+//     bool clip = export.clip,
+//     pen bgpen = export.background,
+//     pen framepen = export.framepen,
+//     real margin = export.margin,
 //     pair size = (defaultSyDN,defaultSyDN)
 // ) // The main configuration function. It is called by the user to set all global system variables.
 // {
@@ -196,46 +142,46 @@ include smoothmanifold;
 // 	if (margin < 0)
 // 	{ halt("Could not set margin: value must be positive."); }
 //
-//     export.format.prefix = prefix;
+//     export.prefix = prefix;
 //     settings.outformat = format;
-//     export.format.rasterdensity = dpi;
-//     export.format.exitonexport = exit;
-//     export.format.exitflag = !autoexport;
-//     export.format.restore = restore;
-//     export.drawing.drawgrid = drawgrid;
-//     export.drawing.gridnumber = gridnumber;
-//     export.drawing.gridplaces = gridplaces;
+//     export.rasterdensity = dpi;
+//     export.exitonexport = exit;
+//     export.autoexport = !autoexport;
+//     export.restore = restore;
+//     export.drawgrid = drawgrid;
+//     export.gridnumber = gridnumber;
+//     export.gridplaces = gridplaces;
 //
-//     export.animation.directory = dirname;
-//     export.animation.inputformat = informat;
-//     export.animation.outputprefix = outprefix;
-//     export.animation.outputformat = outformat;
+//     export.animations.directory = dirname;
+//     export.animations.informat = informat;
+//     export.animations.outprefix = outprefix;
+//     export.animations.outformat = outformat;
 //     export.natives = natives;
-//     export.format.forcenative = forcenative;
-//     export.animation.close = close;
-//     export.format.exitonexport = exit;
-//     export.animation.preclean = preclean;
+//     export.forcenative = forcenative;
+//     export.animations.close = close;
+//     export.exitonexport = exit;
+//     export.animations.preclean = preclean;
 //
-//     export.format.margin = margin;
+//     export.margin = margin;
 //     if (size.x >= 0 && size.y >= 0) size(size.x, size.y);
-//     export.format.background = bgpen;
-//     export.format.framepen = framepen;
+//     export.background = bgpen;
+//     export.framepen = framepen;
 //     if (ymax > 0)
 //     {
-//         export.frame.enclose = true;
-//         export.frame.corner = (ymax*ratio, ymax);
-//         export.frame.clip = clip;
+//         export.enclose = true;
+//         export.corner = (ymax*ratio, ymax);
+//         export.clip = clip;
 //     }
 // }
 
 void invertcolors ()
 // Invert most colors (white -> black, blue -> yellow, etc.), e.g. the background of the picture, the contour and fill colors, etc. Must be called after all colors have been set, for correct working.
 {
-	export.format.background = inverse(export.format.background);
+	export.background = inverse(export.background);
 	currentpen = inverse(currentpen);
 	config.drawing.smoothfill = inverse(config.drawing.smoothfill);
 	config.drawing.subsetfill = inverse(config.drawing.subsetfill);
-	export.drawing.invertcolors = !export.drawing.invertcolors;
+	export.invertcolors = !export.invertcolors;
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpenscale = new pen (pen p) { return .3*p+dashed; };
     shadepen = new pen (pen p) { return inverse(config.drawing.shadescale*inverse(p)); };
@@ -252,8 +198,8 @@ bool exists (string filename)
 
 private void drawgrid (
     picture pic = currentpicture,
-    int places = export.help.gridplaces,
-    int number = export.help.gridnumber,
+    int places = export.gridplaces,
+    int number = export.gridnumber,
     pair min = pic.userMin2(),
     pair max = pic.userMax2()
 ) // Draws an auxiliary coordinate grid on the given picture. It helps understand what coordinates paths have.
@@ -329,14 +275,14 @@ private void drawgrid (
 private void framepicture (picture pic)
 // Enclose the given picture in a frame, and clip if if necessary.
 {
-    dot(pic, -export.frame.corner, linewidth(0)+invisible);
-    dot(pic, export.frame.corner, linewidth(0)+invisible);
-    if (export.frame.clip) clip(pic, (-export.frame.corner -- (export.frame.corner.x, -export.frame.corner.y) -- export.frame.corner -- (-export.frame.corner.x, export.frame.corner.y) -- cycle));
+    dot(pic, -export.corner, linewidth(0)+invisible);
+    dot(pic, export.corner, linewidth(0)+invisible);
+    if (export.clip) clip(pic, (-export.corner -- (export.corner.x, -export.corner.y) -- export.corner -- (-export.corner.x, export.corner.y) -- cycle));
 }
 
-void export (
+void export(
     // Base parameters hadled by `shipout`:
-    string prefix = export.format.prefix,
+    string prefix = export.prefix,
     picture pic = currentpicture,
     orientation orientation = orientation,
     string format = settings.outformat,
@@ -347,21 +293,21 @@ void export (
     light light = currentlight,
     projection P = currentprojection,
         // Additional settings -- background, quality control, deferred drawing, file conversion:
-        pen bgpen = export.format.background,
-        real margin = export.format.margin,
-        pen framepen = export.format.framepen,
-        int density = export.format.rasterdensity,
-        bool exit = export.format.exitonexport,
+        pen bgpen = export.background,
+        real margin = export.margin,
+        pen framepen = export.framepen,
+        int density = export.rasterdensity,
+        bool exit = export.exitonexport,
         bool plainforce = false,
         bool drawdeferred = true,
-        bool restore = export.format.restore,
-        bool forcenative = export.format.forcenative
+        bool restore = export.restore,
+        bool forcenative = export.forcenative
 ) // The main function of the module. Analogous to the base `shipout`, but has more sophisticated settings.
 {
     string oldformat = settings.outformat;
 	bool native = forcenative || native(format);
 	settings.outformat = native ? format : "pdf";
-    restore = restore || export.frame.enclose;
+    restore = restore || export.enclose;
 
     picture pic1 = restore ? pic.copy() : pic;
 
@@ -381,8 +327,8 @@ void export (
 
     if (drawdeferred) drawdeferred(pic1, flush = !restore);
     if (debugpaths.length > 0) draw(pic = pic1, debugpaths, red+1);
-    if (export.drawing.drawgrid) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
-	if (export.frame.enclose) framepicture(pic1);
+    if (export.drawgrid) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
+	if (export.enclose) framepicture(pic1);
 
     if (native) localshipout(prefix);
     else
@@ -396,7 +342,8 @@ void export (
         }
         else
         {
-            convert(args = "-density "+(string)density+" "+tempprefix+".pdf", file = prefix+"."+format, format = format);
+            // convert(args = "-density "+(string)density+" "+tempprefix+".pdf", file = prefix+"."+format, format = format);
+            system("magick -density "+(string)density+" "+tempprefix+".pdf"+" "+prefix+"."+format);
             delete(tempprefix+".pdf");
         }
     }
@@ -404,7 +351,7 @@ void export (
     settings.outformat = oldformat;
     if (exit) exit();
     if (restore) pic1.clear();
-    export.format.exitflag = true;
+    export.autoexport = true;
 }
 
 int numberoffiles (string dirname)
@@ -420,7 +367,7 @@ int numberoffiles (string dirname)
 void clean ()
 // Clean the cached animation frames.
 {
-    file f = input(name = export.animation.listfilename, check = false);
+    file f = input(name = export.animations.listfilename, check = false);
     if (error(f)) return;
     while (true)
     {
@@ -429,17 +376,17 @@ void clean ()
         delete(fname);
     }
     close(f);
-    delete(export.animation.listfilename);
+    delete(export.animations.listfilename);
 }
 
 void compile (
-    int fps = export.animation.fps,
-    string informat = export.animation.inputformat,
-    string outprefix = export.animation.outputprefix,
-    string outformat = export.animation.outputformat,
+    int fps = export.animations.fps,
+    string informat = export.animations.informat,
+    string outprefix = export.animations.outprefix,
+    string outformat = export.animations.outformat,
     bool clean = true,
     bool exit = true,
-    int density = export.format.rasterdensity
+    int density = export.rasterdensity
 ) // Compile an animation from a list of frame pictures.
 {
 	write("> Compiling... ", suffix = none);
@@ -451,14 +398,14 @@ void compile (
             halt("Could not compile: "+informat+" input format is incompatible with "+outformat+" output format. [ compile() ]");
         }
 
-        string args="-loop 0 -delay "+(string)(100/fps)+" -density "+(string)density+" -alpha Off -dispose Background @"+export.animation.listfilename;
+        string args="-loop 0 -delay "+(string)(100/fps)+" -density "+(string)density+" -alpha Off -dispose Background @"+export.animations.listfilename;
         int rc=convert(args, outprefix+".gif", format=outformat);
         if(rc == 0) animate(file = outprefix+"."+outformat, format=outformat);
     }
 	else
     {
         string input = "";
-        file f = input(name = export.animation.listfilename, check = false);
+        file f = input(name = export.animations.listfilename, check = false);
         if (error(f))
         { halt("Could not compile: input list text file not found. Try recompiling the program. [ compile() ]"); }
         int counter = 0;
@@ -469,9 +416,9 @@ void compile (
             rename(str, "ffmpeg_frame_"+(string)counter+"."+informat);
             counter += 1;
         }
-        string cmd = "nohup ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i ./ffmpeg_frame_%d."+informat+" "+outprefix+"."+outformat;
+        string cmd = "ffmpeg -y -hide_banner -loglevel error -framerate "+(string)fps+" -i ./ffmpeg_frame_%d."+informat+" "+outprefix+"."+outformat;
         system(cmd);
-        f = input(name = export.animation.listfilename, check = false);
+        f = input(name = export.animations.listfilename, check = false);
         for (int i = 0; i <= counter; ++i)
         {
             string str = f;
@@ -489,31 +436,31 @@ void animate (
     void update (int),
     int n,
     bool back = false,
-        pen bgpen = export.format.background,
-        real margin = export.format.margin,
-        pen framepen = export.format.framepen,
-    int density = export.format.rasterdensity,
+        pen bgpen = export.background,
+        real margin = export.margin,
+        pen framepen = export.framepen,
+    int density = export.rasterdensity,
     bool compile = false,
-    string informat = export.animation.inputformat,
-    string outprefix = export.animation.outputprefix,
-    string outformat = export.animation.outputformat,
-    int fps = export.animation.fps,
+    string informat = export.animations.informat,
+    string outprefix = export.animations.outprefix,
+    string outformat = export.animations.outformat,
+    int fps = export.animations.fps,
     bool clean = true,
-    bool exit = export.format.exitonexport
+    bool exit = export.exitonexport
 ) // Produce a list of animation frames from an update function. These frames can later be compiled to an animation.
 {
 	string s = "> Writing animation...";
-	write(s + repeatstring(" ", defaultPrML-2-length(s)) + "->|");
+	write(s + repeatstring(" ", export.animations.messagelength-2-length(s)) + "->|");
     write("|", suffix = none);
-    if (export.animation.preclean && export.animation.callcount == 0) clean();
+    if (export.animations.preclean && export.animations.callcount == 0) clean();
     if (!native(informat)) config.drawing.useopacity = false;
     if (!native(informat) && bgpen == nullpen) bgpen = white;
     
-    string hash = (string)export.animation.callcount + (string)seconds();
-    export.animation.callcount += 1;
-    file f = output(name = export.animation.listfilename, update = true);
+    string hash = (string)export.animations.callcount + (string)seconds();
+    export.animations.callcount += 1;
+    file f = output(name = export.animations.listfilename, update = true);
 
-	real ool = 1/(defaultPrML-1) - 0.000001;
+	real ool = 1/(export.animations.messagelength-1) - 0.000001;
 	real oon = 1/n;
 	real residue = 0;
 
@@ -553,17 +500,17 @@ void animate (
 
 void addframe (
     picture pic = currentpicture,
-    string informat = export.animation.inputformat,
-        pen bgpen = export.format.background,
-        real margin = export.format.margin,
-        pen framepen = export.format.framepen
+    string informat = export.animations.informat,
+        pen bgpen = export.background,
+        real margin = export.margin,
+        pen framepen = export.framepen
 ) // Add a single frame to the current frame pool.
 {
-    string hash = (string)export.animation.callcount + (string)seconds();
-    export.animation.callcount += 1;
+    string hash = (string)export.animations.callcount + (string)seconds();
+    export.animations.callcount += 1;
     drawdeferred(pic, false);
     export(pic = pic, prefix = hash, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false);
-    file f = output(name = export.animation.listfilename, update = true);
+    file f = output(name = export.animations.listfilename, update = true);
     write(f, s = hash+"."+informat, suffix = endl);
     close(f);
 }
@@ -579,11 +526,11 @@ void move (
     bool drag = true,
     dpar dspec = null,
     bool back = true,
-    real margin = export.format.margin,
-    int density = export.format.rasterdensity,
+    real margin = export.margin,
+    int density = export.rasterdensity,
     bool compile = false,
-    int fps = export.animation.fps,
-    bool close = export.animation.close
+    int fps = export.animations.fps,
+    bool close = export.animations.close
 ) // Animate the process of shifting, scaling and rotating a given smooth object.
 {
     smooth smp;
@@ -611,11 +558,11 @@ void revolve (
     dpar dspec = null,
     bool back = true,
     bool arc = false,
-    real margin = export.format.margin,
-    int density = export.format.rasterdensity,
+    real margin = export.margin,
+    int density = export.rasterdensity,
     bool compile = false,
-    int fps = export.animation.fps,
-    bool close = export.animation.close
+    int fps = export.animations.fps,
+    bool close = export.animations.close
 ) // Create the illusion of a given smooth objects being rotated in an axis perpendicular to the view direction (turning "to the left" and "to the right") by altering the `viewdir` parameter and stretching the object.
 {
     smooth smp;
@@ -645,7 +592,7 @@ void revolve (
 // Redefining the `shipout` function to default to `export`.
 
 shipout = new void (
-    string prefix=export.format.prefix,
+    string prefix=export.prefix,
 	picture pic=currentpicture,
     orientation orientation=orientation,
     string format=settings.outformat,
@@ -657,6 +604,6 @@ shipout = new void (
 	projection P=currentprojection
 )
 {
-    if (!export.format.exitflag)
+    if (!export.autoexport)
     { export(prefix, pic, orientation, format, wait, view, options, script, light, P); }
 };

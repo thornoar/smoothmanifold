@@ -2,11 +2,14 @@ import export;
 
 settings.render = 8;
 settings.outformat = "pdf";
+export.background = paleyellow;
+export.exitonexport = false;
+export.margin = 1cm;
 
 size(10cm);
 defaultpen(.7);
-expar(bgpen = paleyellow, margin = 1 cm, exit = false);
-smpar(scavoidsubsets = true);
+
+config.section.avoidsubsets = true;
 
 smooth sm = samplesmooth(1);
 dpar ds = dpar(help = true, dash = true, viewdir = dir(-40), sectionpen = linewidth(.5));

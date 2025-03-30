@@ -2,15 +2,17 @@ import export;
 size(17cm);
 
 defaultpen(.8);
-expar(margin = 1.5cm, bgpen = paleyellow, autoexport = true);
-smpar(
-    scholeangle = 30,
-	scfreedom = .3,
-	gaplength = .1,
-	subsetoverlap = true,
-    pathrandom = true,
-	unit = true
-);
+
+export.background = paleyellow;
+export.margin = 1.5cm;
+export.autoexport = true;
+
+config.smooth.interholeangle = 30;
+config.section.freedom = .3;
+config.drawing.gaplength = .1;
+config.drawing.subsetoverlap = true;
+config.drawing.pathrandom = true;
+config.smooth.unit = true;
 
 smooth sm1 = samplesmooth(0)
     .setlabel("\mathcal{S}^2")

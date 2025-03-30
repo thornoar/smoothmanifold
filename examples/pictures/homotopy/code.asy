@@ -1,13 +1,11 @@
 import export;
 
-expar(
-    drawgrid = false,
-	gridnumber = 20,
-	margin = .5cm,
-	bgpen = paleyellow,
-    prefix = "picture",
-    format = "pdf"
-);
+export.background = paleyellow;
+export.drawgrid = false;
+export.gridnumber = 20;
+export.margin = .5cm;
+export.prefix = "picture";
+settings.outformat = "pdf";
 
 size(12cm);
 

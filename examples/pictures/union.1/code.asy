@@ -4,8 +4,13 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow, margin = 1.5 cm);
-smpar(dash = false, viewdir = dir(40), mode = free);
+
+export.background = paleyellow;
+export.margin = 1.5cm;
+
+config.drawing.viewdir = dir(40);
+config.drawing.mode = free;
+config.drawing.dashes = false;
 
 smooth sm1 = samplesmooth(3).setlabel("M", dir(140));
 smooth sm2 = samplesmooth(2).setlabel("N", dir(-30));

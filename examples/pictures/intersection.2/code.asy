@@ -5,8 +5,14 @@ settings.outformat = "pdf";
 
 size(15 cm);
 defaultpen(.7);
-expar(bgpen = paleyellow, margin = 1cm, autoexport = false);
-smpar(scfreedom = .8, scholenumber = 2, scholeangle = 50);
+
+export.background = paleyellow;
+export.margin = 1cm;
+export.autoexport = false;
+
+config.section.freedom = .8;
+config.smooth.interholenumber = 2;
+config.smooth.interholeangle = 50;
 
 smooth sm1 = samplesmooth(3,1)
     .move(scale = 1.1);

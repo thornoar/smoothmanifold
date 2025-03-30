@@ -20,25 +20,32 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-private path defaultPaUC = reverse(unitcircle); // [U]nit [C]ircle
-private path defaultPaUS = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
-path ucircle = defaultPaUC;
-path usquare = defaultPaUS;
-real defaultSyRPC = .03; // [R]ounded [P]ath [C]oefficient (how rounded to make the path)
-real currentSyRPC = defaultSyRPC;
-real defaultSyRPR = 30; // [R]andom [P]ath [R]ange (how random to make the path)
-real currentSyRPR = defaultSyRPR;
+restricted path ucircle = reverse(unitcircle); // [U]nit [C]ircle
+restricted path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 
-void pathpar (
-    real roundcoeff = currentSyRPC,
-    real range = currentSyRPR
-) // The configuration function.
-{
-    if (roundcoeff > .5)
-    { write("> ? Number provided for the rounding coefficient ("+(string)roundcoeff+") seems too big. Values below 0.1 are ideal. Just saying."); }
-    currentSyRPC = roundcoeff;
-    currentSyRPR = range;
+struct pathconfig {
+    real roundcoeff = .03;
+    real range = 30;
 }
+
+private pathconfig defaultps;
+pathconfig paths;
+
+// real paths.roundcoeff = .03; // [R]ounded [P]ath [C]oefficient (how rounded to make the path)
+// real paths.roundcoeff = paths.roundcoeff;
+// real paths.range = 30; // [R]andom [P]ath [R]ange (how random to make the path)
+// real paths.range = paths.range;
+
+// void pathpar (
+//     real roundcoeff = paths.roundcoeff,
+//     real range = paths.range
+// ) // The configuration function.
+// {
+//     if (roundcoeff > .5)
+//     { write("> ? Number provided for the rounding coefficient ("+(string)roundcoeff+") seems too big. Values below 0.1 are ideal. Just saying."); }
+//     paths.roundcoeff = roundcoeff;
+//     paths.range = range;
+// }
 
 real mod (real a, real b)
 // Calculate a % b.
@@ -236,7 +243,7 @@ path turn (path g, pair point, pair dir)
 { return reorient(g, intersectiontime(g, point, dir)); }
 
 path subcyclic (path p, pair t)
-// An improved `subpath` made for cyclic paths.
+// An improved `subpath` made for cyclic ps.
 {
     if (t.x <= t.y) return subpath(p, t.x, t.y);
     return (subpath(p, t.x, length(p)) & subpath(p, 0, t.y));
@@ -247,7 +254,7 @@ bool clockwise (path p)
 { return (windingnumber(p, inside(p)) == -1); }
 
 bool meet (path p, path q)
-// A shorthand to check if paths intersect.
+// A shorthand to check if ps intersect.
 { return (intersect(p, q).length > 0); }
 
 bool meet (path p, path[] q)
@@ -310,7 +317,7 @@ bool outsidepath (path p, path q)
 { return !meet(p,q) && !insidepath(p,q); }
 
 path midpath (path g, path h, int n = 20)
-// Construct the "mean" path between two given paths.
+// Construct the "mean" path between two given ps.
 {
     path res;
     for (int i = 0; i < n; ++i)
@@ -341,7 +348,7 @@ path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
 // Connect points around the origin with a path.
 {
     if (nums.length == 0) return nullpath;
-    if (nums.length == 1) return scale(nums[0])*defaultPaUC;
+    if (nums.length == 1) return scale(nums[0])*ucircle;
     
     pair[] points = sequence(new pair (int i) { return nums[i]*dir(-360*(i/nums.length)); }, nums.length);
 
@@ -397,7 +404,7 @@ path connect (path p, path q)
 { return p{dir(p, length(p))}..{dir(q,0)}q; }
 
 path[] combination (path p, path q, int mode, bool round, real roundcoeff)
-// A general way to "combine" two paths based on their intersection points.
+// A general way to "combine" two ps based on their intersection points.
 {
     if (!meet(p, q)) return new path[];
 
@@ -507,7 +514,7 @@ path[] difference (
     path q,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // Construct the set difference between two path-enclosed areas.
 {
     if (correct)
@@ -526,21 +533,21 @@ path[] difference (
 }
 
 path[] difference (
-    path[] paths,
+    path[] ps,
     path q,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 )
 {
     if (correct)
     {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
         if (!clockwise(q)) q = reverse(q);
     }
 
-    return concat(sequence(new path[] (int i){return difference(paths[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, paths.length));
+    return concat(sequence(new path[] (int i){return difference(ps[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, ps.length));
 }
 
 path[] operator - (path p, path q)
@@ -554,7 +561,7 @@ path[] symmetric (
     path q,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // Construct the set symmetric difference between two path-enclosed areas.
 {
     if (correct)
@@ -582,7 +589,7 @@ path[] intersection (
     path q,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // Construct the intersection of two path-enclosed areas.
 {
     if (correct)
@@ -601,25 +608,25 @@ path[] intersection (
 }
 
 path[] intersection (
-    path[] paths,
+    path[] ps,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 )
 {
     if (correct)
     {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
     }
-    if (paths.length == 0) return new path[];
-    if (paths.length == 1) return paths;
-    if (paths.length == 2) return intersection(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
+    if (ps.length == 0) return new path[];
+    if (ps.length == 1) return ps;
+    if (ps.length == 2) return intersection(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
     
-    paths = sequence(new path (int i){return paths[i];}, paths.length);
+    ps = sequence(new path (int i){return ps[i];}, ps.length);
     
-    path p = paths.pop();
-    path[] prev = intersection(paths, correct = false, round = round, roundcoeff = roundcoeff);
+    path p = ps.pop();
+    path[] prev = intersection(ps, correct = false, round = round, roundcoeff = roundcoeff);
     
     return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
 }
@@ -627,9 +634,9 @@ path[] intersection (
 path[] intersection (
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
-    ... path[] paths
-) {return intersection(paths, correct, round, roundcoeff);}
+    real roundcoeff = paths.roundcoeff
+    ... path[] ps
+) {return intersection(ps, correct, round, roundcoeff);}
 
 path[] intersection (
     path p,
@@ -637,7 +644,7 @@ path[] intersection (
     path[] holes,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 )
 {
     if (correct)
@@ -663,7 +670,7 @@ path[] union (
     path q,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // Construct the union of two path-enclosed areas.
 {
     if (correct)
@@ -682,44 +689,44 @@ path[] union (
 }
 
 path[] union (
-    path[] paths,
+    path[] ps,
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
+    real roundcoeff = paths.roundcoeff
 )
 {
     if (correct)
     {
-        for (int i = 0; i < paths.length; ++i)
-        { if (!clockwise(paths[i])) paths[i] = reverse(paths[i]); }
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
     }
     
-    if (paths.length == 0) return new path[];
-    if (paths.length == 1) return paths;
-    if (paths.length == 2) return union(paths[0], paths[1], correct = false, round = round, roundcoeff = roundcoeff);
+    if (ps.length == 0) return new path[];
+    if (ps.length == 1) return ps;
+    if (ps.length == 2) return union(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
     
-    for (int i = 0; i < paths.length; ++i)
+    for (int i = 0; i < ps.length; ++i)
     {
-        for (int j = i+1; j < paths.length; ++j)
+        for (int j = i+1; j < ps.length; ++j)
         {
-            if (meet(paths[i], paths[j]))
+            if (meet(ps[i], ps[j]))
             {
-                paths[i] = union(paths[i], paths[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
-                paths.delete(j);
+                ps[i] = union(ps[i], ps[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
+                ps.delete(j);
                 j = i;
             }
         }
     }
     
-    return paths;
+    return ps;
 }
 
 path[] union (
     bool correct = true,
     bool round = false,
-    real roundcoeff = defaultSyRPC
-    ... path[] paths
-) { return union(paths, correct, round, roundcoeff); }
+    real roundcoeff = paths.roundcoeff
+    ... path[] ps
+) { return union(ps, correct, round, roundcoeff); }
 
 path[] operator | (path p, path q)
 { return union(p, q); }

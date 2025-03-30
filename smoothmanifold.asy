@@ -44,8 +44,6 @@ struct smoothconfig {
     real interholeangle = 25; // [I]nter[h]ole [S]ection [A]ngle -- range to be used for interhole sections.
     real maxsectionlength = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) a section can be, compared to the size of parent object. A value of -1 means no restriction.
     real rejectcurve = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
-    pair viewdir = (0,0); // [V]iew [D]irection -- the default direction of the view.
-    real viewscale = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
     real edgemargin = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
     real stepdistance = .15; // [C]art [S]tep [D]istance --||--
     real nodesize = 1; // [N]ode [S]ize -- the size of nodes.
@@ -60,6 +58,8 @@ struct smoothconfig {
 }
 
 struct drawingconfig {
+    pair viewdir = (0,0); // [V]iew [D]irection -- the default direction of the view.
+    real viewscale = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
     real gaplength = .05; // [G]ap [L]ength -- the length of the gap made on path overlaps.
     pen smoothfill = lightgrey; // [Sm]ooth [C]olor -- the filling color of smooth objects.
     pen subsetfill = grey; // [S]u[b]set [C]olor -- the filling color of layer 0 subsets.
@@ -67,15 +67,14 @@ struct drawingconfig {
     real elpenwidth = 3.0; // [El]ement [P]en [W]idth -- pen width to draw element dots.
     real shadescale = .85; // [S]hade [S]cale -- how darker shaded areas are compared to object filling color.
     real dashpenscale = .4; // [D]ash [P]en [S]cale -- how lighter dashed lines are compared to regular ones.
-    real dashpenopacity = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
+    real dashopacity = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
     real attachedopacity = .8; // [D]rag [O]pacity -- opacity of smooth objects attached to main object.
     real subpenfactor = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
-    pen overridepen = nullpen; // [Se]ction [O]verride [P]en
+    pen sectionpen = nullpen; // [Se]ction [O]verride [P]en
     int mode = 0; // [M]ode
     bool useopacity = false; // [U]se [O]pacity
     bool dashes = true; // [D]raw [D]ashes
     bool underdashes = false; // [D]raw [U]nder [D]ashes
-    bool help = false; // [H]elp
     bool shade = false; // [D]raw [S]hade
     bool labels = true; // [D]raw [L]abels
     bool fill = true; // [F]ill
@@ -90,6 +89,7 @@ struct drawingconfig {
 }
 
 struct helpconfig {
+    bool enable = false;
     real arcratio = 0.2; // [A]rc [R]atio -- the radius of the arc around the center of a hole
     real arrowlength = .2; // [A]rrow [L]ength -- the length of help arrows
     pen linewidth = linewidth(.3); // [L]ine [W]idth -- the width of help lines
@@ -352,11 +352,11 @@ private pen inverse (pen p)
     return colorless(p);
 }
 
-private pen overridepen (pen p)
+private pen sectionpen (pen p)
 // Derives a pen to draw cross sections
 {
-    if (config.drawing.overridepen == nullpen) return p+linewidth(config.drawing.sectpenscale*linewidth(p));
-    else return config.drawing.overridepen;
+    if (config.drawing.sectionpen == nullpen) return p+linewidth(config.drawing.sectpenscale*linewidth(p));
+    else return config.drawing.sectionpen;
 }
 
 private pen nextsubsetpen (pen p, real scale)
@@ -366,13 +366,13 @@ private pen nextsubsetpen (pen p, real scale)
 private pen dashpenscale (pen p)
 { return inverse(config.drawing.dashpenscale*inverse(p))+dashed; }
 
-private pen dashpenopacity (pen p)
-{ return p+dashed+opacity(config.drawing.dashpenopacity); }
+private pen dashopacity (pen p)
+{ return p+dashed+opacity(config.drawing.dashopacity); }
 
 private pen dashpen (pen p)
 // Derives a pen to draw dashed lines, using either color dimming or opacity.
 {
-    if (config.drawing.useopacity) return dashpenopacity(p);
+    if (config.drawing.useopacity) return dashopacity(p);
     else return dashpenscale(p);
 }
 
@@ -391,8 +391,8 @@ private pen underpen (pen p)
 // -- User setting functions -- //
 
 // void smpar (
-//     pair viewdir = config.smooth.viewdir,
-//     real viewscale = config.smooth.viewscale,
+//     pair viewdir = config.drawing.viewdir,
+//     real viewscale = config.drawing.viewscale,
 //     real[] section = config.section.default,
 //     real scmaxbreadth = config.section.maxbreadth,
 //     real freedom = config.section.freedom,
@@ -404,7 +404,7 @@ private pen underpen (pen p)
 //     bool avoidsubsets = config.section.avoidsubsets,
 //     real subpenfactor = config.drawing.subpenfactor,
 //     real sectpenscale = config.drawing.sectpenscale,
-//     pen overridepen = config.drawing.overridepen,
+//     pen sectionpen = config.drawing.sectionpen,
 //     real elementwidth = config.drawing.elpenwidth,
 //     bool inferlabels = config.smooth.inferlabels,
 //     bool shiftsubsets = config.smooth.shiftsubsets,
@@ -429,12 +429,12 @@ private pen underpen (pen p)
 //     bool fillsubsets = config.drawing.fillsubsets,
 //     bool drawcontour = config.drawing.drawcontour,
 //     bool drawsubsetcontour = config.drawing.drawsubsetcontour,
-//     bool help = config.drawing.help,
+//     bool help = config.help.enable,
 //     bool dash = config.drawing.dashes,
 //     bool underdash = config.drawing.underdashes,
 //     bool useopacity = config.drawing.useopacity,
 //     real dashscale = config.drawing.dashpenscale,
-//     real dashop = config.drawing.dashpenopacity,
+//     real dashop = config.drawing.dashopacity,
 //     bool shade = config.drawing.shade,
 //     bool pathrandom = config.drawing.pathrandom,
 //     bool overlap = config.drawing.overlap,
@@ -462,8 +462,8 @@ private pen underpen (pen p)
 //     for (int i = 0; i < section.length; ++i)
 //     { if (!dummy(section[i])) config.section.default[i] = section[i]; }
 //
-//     config.smooth.viewdir = viewdir;
-//     config.smooth.viewscale = viewscale;
+//     config.drawing.viewdir = viewdir;
+//     config.drawing.viewscale = viewscale;
 //     config.section.maxbreadth = scmaxbreadth;
 //     config.section.freedom = freedom;
 //     config.smooth.interholenumber = interholenumber;
@@ -474,7 +474,7 @@ private pen underpen (pen p)
 //     config.section.avoidsubsets = avoidsubsets;
 //     config.drawing.subpenfactor = subpenfactor;
 //     config.drawing.sectpenscale = sectpenscale;
-//     config.drawing.overridepen = overridepen;
+//     config.drawing.sectionpen = sectionpen;
 //     config.drawing.elpenwidth = elementwidth;
 //     config.smooth.inferlabels = inferlabels;
 //     config.smooth.shiftsubsets = shiftsubsets;
@@ -499,12 +499,12 @@ private pen underpen (pen p)
 //     config.drawing.fillsubsets = fillsubsets;
 //     config.drawing.drawcontour = drawcontour;
 //     config.drawing.drawsubsetcontour = drawsubsetcontour;
-//     config.drawing.help = help;
+//     config.help.enable = help;
 //     config.drawing.dashes = dash;
 //     config.drawing.underdashes = underdash;
 //     config.drawing.useopacity = useopacity;
 //     config.drawing.dashpenscale = dashscale;
-//     config.drawing.dashpenopacity = dashop;
+//     config.drawing.dashopacity = dashop;
 //     config.drawing.shade = shade;
 //     config.drawing.pathrandom = pathrandom;
 //     config.drawing.overlap = overlap;
@@ -544,8 +544,8 @@ void defaults ()
     config.smooth.interholeangle = defaultconfig.smooth.interholeangle;
     config.smooth.maxsectionlength = defaultconfig.smooth.maxsectionlength;
     config.smooth.rejectcurve = defaultconfig.smooth.rejectcurve;
-    config.smooth.viewdir = defaultconfig.smooth.viewdir;
-    config.smooth.viewscale = defaultconfig.smooth.viewscale;
+    config.drawing.viewdir = defaultconfig.drawing.viewdir;
+    config.drawing.viewscale = defaultconfig.drawing.viewscale;
     config.smooth.edgemargin = defaultconfig.smooth.edgemargin;
     config.smooth.stepdistance = defaultconfig.smooth.stepdistance;
     config.smooth.nodesize = defaultconfig.smooth.nodesize;
@@ -565,15 +565,15 @@ void defaults ()
     config.drawing.elpenwidth = defaultconfig.drawing.elpenwidth;
     config.drawing.shadescale = defaultconfig.drawing.shadescale;
     config.drawing.dashpenscale = defaultconfig.drawing.dashpenscale;
-    config.drawing.dashpenopacity = defaultconfig.drawing.dashpenopacity;
+    config.drawing.dashopacity = defaultconfig.drawing.dashopacity;
     config.drawing.attachedopacity = defaultconfig.drawing.attachedopacity;
     config.drawing.subpenfactor = defaultconfig.drawing.subpenfactor;
-    config.drawing.overridepen = defaultconfig.drawing.overridepen;
+    config.drawing.sectionpen = defaultconfig.drawing.sectionpen;
     config.drawing.mode = defaultconfig.drawing.mode;
     config.drawing.useopacity = defaultconfig.drawing.useopacity;
     config.drawing.dashes = defaultconfig.drawing.dashes;
     config.drawing.underdashes = defaultconfig.drawing.underdashes;
-    config.drawing.help = defaultconfig.drawing.help;
+    config.help.enable = defaultconfig.help.enable;
     config.drawing.shade = defaultconfig.drawing.shade;
     config.drawing.labels = defaultconfig.drawing.labels;
     config.drawing.fill = defaultconfig.drawing.fill;
@@ -1222,7 +1222,7 @@ struct dpar
     pen smoothfill;         // The pen used to fill the smooth object.
     pen subsetcontourpen;   // The pen used to draw the contour of the subsets.
     pen subsetfill;         // The pen used to fill the subsets.
-    pen overridepen;         // The pen used to draw the cross sections.
+    pen sectionpen;        // The pen used to draw the cross sections.
     pen dashpen;            // The pen used to draw dashed lines on cross sections.
     pen shadepen;           // The pen used to fill shaded regions.
     pen elementpen;         // The pen used to dot elements.
@@ -1249,19 +1249,19 @@ struct dpar
         pen smoothfill = config.drawing.smoothfill,
         pen subsetcontourpen = contourpen,
         pen subsetfill = config.drawing.subsetfill,
-        pen overridepen = overridepen(contourpen),
-        pen dashpen = dashpen(overridepen),
+        pen sectionpen = sectionpen(contourpen),
+        pen dashpen = dashpen(sectionpen),
         pen shadepen = shadepen(smoothfill),
         pen elementpen = elementpen(contourpen),
         pen labelpen = currentpen,
         int mode = config.drawing.mode,
-        pair viewdir = config.smooth.viewdir,
+        pair viewdir = config.drawing.viewdir,
         bool drawlabels = config.drawing.labels,
         bool fill = config.drawing.fill,
         bool fillsubsets = config.drawing.fillsubsets,
         bool drawcontour = config.drawing.drawcontour,
         bool drawsubsetcontour = config.drawing.drawsubsetcontour,
-        bool help = config.drawing.help,
+        bool help = config.help.enable,
         bool dash = config.drawing.dashes,
         bool shade = config.drawing.shade,
         bool avoidsubsets = config.section.avoidsubsets,
@@ -1274,7 +1274,7 @@ struct dpar
         this.smoothfill = smoothfill;
         this.subsetcontourpen = subsetcontourpen;
         this.subsetfill = subsetfill;
-        this.overridepen = overridepen;
+        this.sectionpen = sectionpen;
         this.dashpen = dashpen;
         this.shadepen = shadepen;
         this.elementpen = elementpen;
@@ -1300,7 +1300,7 @@ struct dpar
         pen smoothfill = this.smoothfill,
         pen subsetcontourpen = this.subsetcontourpen,
         pen subsetfill = this.subsetfill,
-        pen overridepen = this.overridepen,
+        pen sectionpen = this.sectionpen,
         pen dashpen = this.dashpen,
         pen shadepen = this.shadepen,
         pen elementpen = this.elementpen,
@@ -1325,7 +1325,7 @@ struct dpar
         this.smoothfill = smoothfill;
         this.subsetcontourpen = subsetcontourpen;
         this.subsetfill = subsetfill;
-        this.overridepen = overridepen;
+        this.sectionpen = sectionpen;
         this.dashpen = dashpen;
         this.shadepen = shadepen;
         this.elementpen = elementpen;
@@ -2783,7 +2783,7 @@ struct smooth
         real scale = 1,
         real rotate = 0,
         pair point = center,
-        pair viewdir = config.smooth.viewdir,
+        pair viewdir = config.drawing.viewdir,
         bool distort = true,
         smooth[] attached = {},
         bool correct = config.smooth.correct,
@@ -3604,7 +3604,7 @@ smooth[] intersection (
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 ) // Constructs the intersection of two given smooth objects.
 {
@@ -3773,7 +3773,7 @@ smooth[] intersection (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
 {
@@ -3801,7 +3801,7 @@ smooth[] intersection (
 smooth[] intersection (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3816,7 +3816,7 @@ smooth[] operator ^^ (smooth sm1, smooth sm2)
 //     smooth sm2,
 //     bool keepdata = true,
 //     bool round = false,
-//     real roundcoeff = currentSyRPC,
+//     real roundcoeff = paths.roundcoeff,
 //     bool addsubsets = config.smooth.addsubsets
 // ) // an alternative to `intersection` that only returns one smooth object.
 // {
@@ -3832,7 +3832,7 @@ smooth intersect (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
 {
@@ -3847,7 +3847,7 @@ smooth intersect (
 smooth intersect (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3862,7 +3862,7 @@ smooth[] union (
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // Constructs the union of two given smooth objects.
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
@@ -4034,7 +4034,7 @@ smooth[] union (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC
+    real roundcoeff = paths.roundcoeff
 )
 {
     sms = sequence(new smooth (int i){return sms[i];}, sms.length);
@@ -4067,7 +4067,7 @@ smooth[] union (
 smooth[] union (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC
+    real roundcoeff = paths.roundcoeff
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff); }
 
@@ -4078,7 +4078,7 @@ smooth unite (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC
+    real roundcoeff = paths.roundcoeff
 ) // An alternative to `union` that only returns one smooth object, if there is only one.
 {
     smooth[] union = union(sms, keepdata, round, roundcoeff);
@@ -4090,7 +4090,7 @@ smooth unite (
 smooth unite (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC
+    real roundcoeff = paths.roundcoeff
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff)[0]; }
 
@@ -4380,7 +4380,7 @@ void fillfitpath (
     { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
 }
 
-private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen overridepen, pen dashpen, pen shadepen)
+private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -4388,7 +4388,7 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
         path[] section = sectionellipse(sections[k][0], sections[k][1], sections[k][2], sections[k][3], viewdir);
         if (shade && config.drawing.fill && section.length > 1) { fill(pic = pic, section[0]--section[1]--cycle, shadepen); }
         if (section.length > 1 && dash) { draw(pic, section[1], dashpen); }
-        draw(pic, section[0], overridepen);
+        draw(pic, section[0], sectionpen);
         if (help)
         {
             dot(pic, point(section[0], arctime(section[0], arclength(section[0])*.5)), red+1);
@@ -4401,10 +4401,10 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
     }
 }
 
-private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen overridepen, pen dashpen, pen shadepen)
+private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Draw vertical and horizontal cross sections.
 {
-    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, overridepen, dashpen, shadepen);
+    drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
 }
 
 void draw (
@@ -4417,7 +4417,7 @@ void draw (
 
     if (dspec == null) dspec = dpar();
 
-    pair viewdir = config.smooth.viewscale*dspec.viewdir;
+    pair viewdir = config.drawing.viewscale*dspec.viewdir;
     if (config.smooth.maxsectionlength > 0) config.smooth.maxlength = config.smooth.maxsectionlength*min(xsize(sm.contour), ysize(sm.contour));
 
     path[] holes = holecontours(sm.holes);
@@ -4475,7 +4475,7 @@ void draw (
                     draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+config.help.linewidth);
                 }
 
-                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
+                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
             }
 
             // Drawing sections between holes
@@ -4525,7 +4525,7 @@ void draw (
                         draw(pic = pic, arc(hl2.center, hl2.center + hl2vec, hl2finish, direction = CCW), blue+config.help.linewidth);
                     }
 
-                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, abs(min(hl1.scnumber, hl2.scnumber)), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
+                    drawsections(pic, sectionparams(curhl1contour, curhl2contour, abs(min(hl1.scnumber, hl2.scnumber)), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
 
                     holeconnected[i][j] = true;
                     holeconnected[j][i] = true;
@@ -4537,11 +4537,11 @@ void draw (
     {
         for (int i = 0; i < sm.hratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.hratios[i], true, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
         }
         for (int i = 0; i < sm.vratios.length; ++i)
         {
-            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.overridepen, dspec.dashpen, dspec.shadepen);
+            drawcartsections(pic, contour, (dspec.avoidsubsets ? sequence(new path (int j){return sm.subsets[j].contour;}, sm.subsets.length) : new path[] {}), sm.vratios[i], false, viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
         }
     }
 
@@ -4680,7 +4680,7 @@ smooth[] drawintersect (
     pair labelalign = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
 ) // Draws the intersection of two smooth objects, as well as their dim contours for comparison
@@ -4714,7 +4714,7 @@ smooth[] drawintersect (
     pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
 )
@@ -4745,7 +4745,7 @@ smooth[] drawintersect (
     pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = currentSyRPC,
+    real roundcoeff = paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
     ... smooth[] sms
@@ -4773,7 +4773,7 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
-    bool help = config.drawing.help,
+    bool help = config.help.enable,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow,
     real margin = config.system.dummynumber,
@@ -4915,7 +4915,7 @@ void drawarrow (
     real barsize = 0,
     bool beginbar = false,
     bool endbar = false,
-    bool help = config.drawing.help,
+    bool help = config.help.enable,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow,
     real margin1 = config.arrow.margin,
@@ -4956,14 +4956,14 @@ void drawpath (
     int index1,
     smooth sm2 = sm1,
     int index2 = index1,
-    real range = currentSyRPR,
+    real range = paths.range,
     real angle = config.system.dummynumber,
     real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    bool help = config.drawing.help,
+    bool help = config.help.enable,
     bool random = config.drawing.pathrandom,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow
@@ -5016,14 +5016,14 @@ void drawpath (
     picture pic = currentpicture,
     string destlabel1,
     string destlabel2 = destlabel1,
-    real range = currentSyRPR,
+    real range = paths.range,
     real angle = config.system.dummynumber,
     real radius = config.system.dummynumber,
     bool reverse = false,
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    bool help = config.drawing.help,
+    bool help = config.help.enable,
     bool random = config.drawing.pathrandom,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow

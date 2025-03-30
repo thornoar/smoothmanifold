@@ -4,7 +4,14 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-smpar(minscale = .05, subsetoverlap = false, gaplength = .03, smoothfill = lightgreen, subsetfill = cyan, unit = false);
+// smpar(minscale = .05, subsetoverlap = false, gaplength = .03, smoothfill = lightgreen, subsetfill = cyan, unit = false);
+
+config.drawing.subsetoverlap = false;
+config.drawing.gaplength = .03;
+config.drawing.smoothfill = lightgreen;
+config.drawing.subsetfill = cyan;
+config.drawing.subpenfactor = .05;
+config.smooth.unit = false;
 
 smooth sm = samplesmooth(0);
 

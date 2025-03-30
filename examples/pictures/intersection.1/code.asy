@@ -3,8 +3,12 @@ settings.render = 16;
 
 size(15cm);
 defaultpen(.7);
-smpar(scfreedom = .5, viewdir = dir(45), mode = free);
-expar(bgpen = paleyellow);
+
+config.section.freedom = .5;
+config.drawing.viewdir = dir(45);
+config.drawing.mode = free;
+
+export.background = paleyellow;
 
 smooth sm1 = samplesmooth(1).setlabel("M", dir(140));
 sm1.subsets.delete();

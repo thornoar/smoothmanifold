@@ -2,18 +2,32 @@ import export;
 size(15cm);
 
 defaultpen(.7);
-expar(margin = 1cm, bgpen = paleyellow);
-smpar(
-    scholeangle = 30,
-	scfreedom = .3,
-	gaplength = .1,
-	arrowmargin = .02,
-    arrowabsolutemargin = true,
-	unit = true,
-	mode = cartesian,
-	scavoidsubsets = false,
-	viewdir = dir(-20)
-);
+// expar(margin = 1cm, bgpen = paleyellow);
+
+export.margin = 1cm;
+export.background = paleyellow;
+
+// smpar(
+//     scholeangle = 30,
+// 	scfreedom = .3,
+// 	gaplength = .1,
+// 	arrowmargin = .02,
+//     arrowabsolutemargin = true,
+// 	unit = true,
+// 	mode = cartesian,
+// 	scavoidsubsets = false,
+// 	viewdir = dir(-20)
+// );
+
+config.section.avoidsubsets = false;
+config.section.freedom = .3;
+config.smooth.interholeangle = 30;
+config.smooth.unit = true;
+config.drawing.gaplength = .1;
+config.drawing.mode = cartesian;
+config.drawing.viewdir = dir(-20);
+config.arrow.margin = .02;
+config.arrow.absmargins = true;
 
 smooth sm1 = samplesmooth(3, 1).move(scale = 1.3).setlabel("M", dir(150));
 sm1.addelement((-.45,.0), "x", align = W);

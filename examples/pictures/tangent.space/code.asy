@@ -4,17 +4,14 @@ settings.render = 8;
 
 size(17 cm);
 defaultpen(.7);
-expar(
-    bgpen = paleyellow,
-	drawgrid = true
-);
-smpar(
-    arrowabsolutemargin = true,
-    gaplength = .09,
-	attachedop = .9,
-	help = true,
-	viewdir = dir(-40)
-);
+
+export.background = paleyellow;
+export.drawgrid = true;
+
+config.arrow.absmargins = true;
+config.drawing.gaplength = .09;
+config.drawing.attachedopacity = .9;
+config.help.enable = true;
 
 smooth sm = samplesmooth(1)
     .setlabel("M")

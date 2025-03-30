@@ -1,14 +1,15 @@
 import export;
-expar(margin = .2cm, prefix = "picture", format = "pdf");
+
+export.margin = .2cm;
+export.prefix = "picture";
+settings.outformat = "pdf";
 
 size(11cm);
-settings.outformat = "pdf";
 defaultpen(linewidth(.7pt));
-smpar(
-    arrowabsolutemargin = true,
-    drawlabels = false,
-    underdash = false
-);
+
+config.arrow.absmargins = true;
+config.drawing.labels = false;
+config.drawing.underdashes = false;
 
 smooth sm1 = smooth(
     contour = wavypath(r(.9,2,1.1,2,1.1,2), true),
