@@ -12,10 +12,10 @@ size(12cm);
 pen pathpen = linewidth(.9pt);
 
 smooth sm = smooth(
-    contour = rotate(150)*convexpath[3],
+    contour = rotate(150)*convexpaths[3],
     holes = new hole[] {
     hole(
-        contour = concavepath[6],
+        contour = concavepaths[6],
         shift = (-.25,.2),
         scale = .5,
         rotate = -50,

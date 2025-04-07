@@ -26,31 +26,31 @@ struct systemconfig {
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
-    bool repeatlabels = false; // [R]epeat [L]abels -- whether to allow two entities to have one label.
-    bool insertdollars = true; // [I]nsert [D]ollars -- whether to automatically insert dollars in labels.
+    bool repeatlabels = false; // whether to allow two entities to have one label.
+    bool insertdollars = true; // whether to automatically insert dollars in labels.
 }
 
 struct sectionconfig {
-    real maxbreadth = .65; // [M]aximum [B]readth -- how wide the section can be.
-    real freedom = .3; // [F]reedom -- how freely sections can deviate from their target positions.
-    int precision = 20; // [P]recision -- how many points to sample in search for good section position.
-    real elprecision = -1; // [E]llipse [P]recision -- precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
+    real maxbreadth = .65; // how wide the section can be.
+    real freedom = .3; // how freely sections can deviate from their target positions.
+    int precision = 20; // how many points to sample in search for good section position.
+    real elprecision = -1; // precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
     bool avoidsubsets = false; // [A]void [S]ubsets
-    real[] default = new real[] {-10000,-10000,235,5}; // -- default expressed in section notation.
+    real[] default = new real[] {-10000,-10000,235,5}; // default expressed in section notation.
 }
 
 struct smoothconfig {
-    int interholenumber = 1; // [I]nter[h]ole [S]ection [N]umber -- default # of sections between holes.
-    real interholeangle = 25; // [I]nter[h]ole [S]ection [A]ngle -- range to be used for interhole sections.
-    real maxsectionlength = -1; // [M]aximum [S]ection [L]ength [R]atio -- how long (in diameter) a section can be, compared to the size of parent object. A value of -1 means no restriction.
-    real rejectcurve = .15; // [S]ection [R]ejection [C]urve -- defines the condition for drawing sections between two holes (or in cartesian mode).
-    real edgemargin = .07; // [C]artesian [E]dge [M]argin -- no point in explaining, see the use cases.
-    real stepdistance = .15; // [C]art [S]tep [D]istance --||--
-    real nodesize = 1; // [N]ode [S]ize -- the size of nodes.
+    int interholenumber = 1; // default # of sections between holes.
+    real interholeangle = 25; // range to be used for interhole sections.
+    real maxsectionlength = -1; // how long (in diameter) a section can be, compared to the size of parent object. A value of -1 means no restriction.
+    real rejectcurve = .15; // defines the condition for drawing sections between two holes (or in cartesian mode).
+    real edgemargin = .07; // no point in explaining, see the use cases.
+    real stepdistance = .15; //||--
+    real nodesize = 1; // the size of nodes.
     real maxlength; // [M]aximum [L]ength
-    bool inferlabels = true; // [I]nfer [L]abels -- whether to create labels like "A \cap B" on intersection.
-    bool shiftsubsets = false; // [S]hift [S]ubsets -- whether to shift subsets on view.
-    bool addsubsets = true; // [A]dd [S]ubsets -- whether to intersect subsets in smooth object intersections.
+    bool inferlabels = true; // whether to create labels like "A \cap B" on intersection.
+    bool shiftsubsets = false; // whether to shift subsets on view.
+    bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
     bool correct = true; // [C]orrect [C]ontour
     bool clip = false; // [C]lip
     bool unit = false; // [U]nit
@@ -58,18 +58,18 @@ struct smoothconfig {
 }
 
 struct drawingconfig {
-    pair viewdir = (0,0); // [V]iew [D]irection -- the default direction of the view.
-    real viewscale = 0.12; // [V]iew [S]cale -- how much the `viewdir` parameter is scaled down.
-    real gaplength = .05; // [G]ap [L]ength -- the length of the gap made on path overlaps.
-    pen smoothfill = lightgrey; // [Sm]ooth [C]olor -- the filling color of smooth objects.
-    pen subsetfill = grey; // [S]u[b]set [C]olor -- the filling color of layer 0 subsets.
-    real sectpenscale = .6; // [Se]ction [P]en [S]cale -- how thinner the section pen is compared to the contour pen.
-    real elpenwidth = 3.0; // [El]ement [P]en [W]idth -- pen width to draw element dots.
-    real shadescale = .85; // [S]hade [S]cale -- how darker shaded areas are compared to object filling color.
-    real dashpenscale = .4; // [D]ash [P]en [S]cale -- how lighter dashed lines are compared to regular ones.
-    real dashopacity = .4; // [D]ash [P]en [O]pacity -- opacity of dashed pens.
-    real attachedopacity = .8; // [D]rag [O]pacity -- opacity of smooth objects attached to main object.
-    real subpenfactor = .4; // [S]ubset [P]en [M]ultiplier -- how darker subsets get with each new layer.
+    pair viewdir = (0,0); // the default direction of the view.
+    real viewscale = 0.12; // how much the `viewdir` parameter is scaled down.
+    real gaplength = .05; // the length of the gap made on path overlaps.
+    pen smoothfill = lightgrey; // the filling color of smooth objects.
+    pen subsetfill = grey; // the filling color of layer 0 subsets.
+    real sectpenscale = .6; // how thinner the section pen is compared to the contour pen.
+    real elpenwidth = 3.0; // pen width to draw element dots.
+    real shadescale = .85; // how darker shaded areas are compared to object filling color.
+    real dashpenscale = .4; // how lighter dashed lines are compared to regular ones.
+    real dashopacity = .4; // opacity of dashed pens.
+    real attachedopacity = .8; // opacity of smooth objects attached to main object.
+    real subpenfactor = .4; // how darker subsets get with each new layer.
     pen sectionpen = nullpen; // [Se]ction [O]verride [P]en
     int mode = 0; // [M]ode
     bool useopacity = false; // [U]se [O]pacity
@@ -90,14 +90,14 @@ struct drawingconfig {
 
 struct helpconfig {
     bool enable = false;
-    real arcratio = 0.2; // [A]rc [R]atio -- the radius of the arc around the center of a hole
-    real arrowlength = .2; // [A]rrow [L]ength -- the length of help arrows
-    pen linewidth = linewidth(.3); // [L]ine [W]idth -- the width of help lines
+    real arcratio = 0.2; // the radius of the arc around the center of a hole
+    real arrowlength = .2; // the length of help arrows
+    pen linewidth = linewidth(.3); // the width of help lines
 }
 
 struct arrowconfig {
-    real margin = 0.03; // [M]argin -- the margin of arrows from the edge of the object.
-    bool absmargins = false; // [A]bsolute [M]argin -- whether margins should be absolute.
+    real margin = 0.03; // the margin of arrows from the edge of the object.
+    bool absmargins = false; // whether arrow margins should be absolute.
 }
 
 struct globalconfig {
@@ -113,7 +113,7 @@ private globalconfig defaultconfig;
 globalconfig config;
 
 // [Pa]ths -- a collection of default paths to be used in smooth objects.
-path[] defaultPaCV = new path[] { // [C]on[V]ex
+restricted path[] convexpaths = new path[] { // [C]on[V]ex
     (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
     (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
     (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
@@ -130,7 +130,7 @@ path[] defaultPaCV = new path[] { // [C]on[V]ex
     (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
 
-path[] defaultPaCC = new path[] { // [C]on[C]ave
+restricted path[] concavepaths = new path[] { // [C]on[C]ave
     (
         (-0.9,0).. controls
         (-1.07649842837266,0.638748977821067) and
@@ -258,25 +258,23 @@ path[] defaultPaCC = new path[] { // [C]on[C]ave
     )
 };
 
-path randomconvex ()
-{ return defaultPaCV[rand()%defaultPaCV.length]; }
+restricted path randomconvex ()
+{ return convexpaths[rand()%convexpaths.length]; }
 
-path randomconcave ()
-{ return defaultPaCC[rand()%defaultPaCC.length]; }
+restricted path randomconcave ()
+{ return concavepaths[rand()%concavepaths.length]; }
 
 // [Pr]ogress
 private path[] debugpaths; // [D]ebug [P]aths
 
 // User convenience variables
-path[] convexpath = defaultPaCV;
-path[] concavepath = defaultPaCC;
-int plain = 0;
-int free = 1;
-int cartesian = 2;
-int combined = 3;
-int dn = config.system.dummynumber;
-arrowbar simple = Arrow(SimpleHead);
-arrowbar simples = Arrows(SimpleHead);
+restricted int plain = 0;
+restricted int free = 1;
+restricted int cartesian = 2;
+restricted int combined = 3;
+restricted int dn = config.system.dummynumber;
+restricted arrowbar simple = Arrow(SimpleHead);
+restricted arrowbar simples = Arrows(SimpleHead);
 
 // -- Supporting utilities -- //
 
@@ -286,7 +284,7 @@ usepackage("amssymb"); // LaTeX package for mathematical symbols
 
 // -- System functions -- //
 
-void halt (string msg)
+restricted void halt (string msg)
 // Writes error message and exits compilation.
 {
     write();
@@ -294,7 +292,7 @@ void halt (string msg)
     abort("");
 }
 
-string mode (int md)
+restricted string mode (int md)
 // Extracts the name of given draw mode.
 {
     if (md == 0) return "plain";
@@ -390,139 +388,7 @@ private pen underpen (pen p)
 
 // -- User setting functions -- //
 
-// void smpar (
-//     pair viewdir = config.drawing.viewdir,
-//     real viewscale = config.drawing.viewscale,
-//     real[] section = config.section.default,
-//     real scmaxbreadth = config.section.maxbreadth,
-//     real freedom = config.section.freedom,
-//     int interholenumber = config.smooth.interholenumber,
-//     real interholeangle = config.smooth.interholeangle,
-//     real elprecision = config.section.elprecision,
-//     real maxsectionlength = config.smooth.maxsectionlength,
-//     real stepdistance = config.smooth.stepdistance,
-//     bool avoidsubsets = config.section.avoidsubsets,
-//     real subpenfactor = config.drawing.subpenfactor,
-//     real sectpenscale = config.drawing.sectpenscale,
-//     pen sectionpen = config.drawing.sectionpen,
-//     real elementwidth = config.drawing.elpenwidth,
-//     bool inferlabels = config.smooth.inferlabels,
-//     bool shiftsubsets = config.smooth.shiftsubsets,
-//     bool addsubsets = config.smooth.addsubsets,
-//     bool correct = config.smooth.correct,
-//     bool clip = config.smooth.clip,
-//     bool unit = config.smooth.unit,
-//     bool setcenter = config.smooth.setcenter,
-//     real gaplength = config.drawing.gaplength,
-//     real arrowmargin = config.arrow.margin,
-//     bool arrowabsmargin = config.arrow.absmargins,
-//     bool repeatlabels = config.system.repeatlabels,
-//     bool insertdollars = config.system.insertdollars,
-//     pen helplinewidth = config.help.linewidth,
-//     real attachedopacity = config.drawing.attachedopacity,
-//     real nodesize = config.smooth.nodesize,
-//     pen smoothfill = config.drawing.smoothfill,
-//     pen subsetfill = config.drawing.subsetfill,
-//     int mode = config.drawing.mode,
-//     bool drawlabels = config.drawing.labels,
-//     bool fill = config.drawing.fill,
-//     bool fillsubsets = config.drawing.fillsubsets,
-//     bool drawcontour = config.drawing.drawcontour,
-//     bool drawsubsetcontour = config.drawing.drawsubsetcontour,
-//     bool help = config.help.enable,
-//     bool dash = config.drawing.dashes,
-//     bool underdash = config.drawing.underdashes,
-//     bool useopacity = config.drawing.useopacity,
-//     real dashscale = config.drawing.dashpenscale,
-//     real dashop = config.drawing.dashopacity,
-//     bool shade = config.drawing.shade,
-//     bool pathrandom = config.drawing.pathrandom,
-//     bool overlap = config.drawing.overlap,
-//     bool subsetoverlap = config.drawing.subsetoverlap,
-//     bool drawnow = config.drawing.drawnow,
-//     bool postdrawover = config.drawing.postdrawover,
-//     int precision = config.section.precision,
-//     real rejectcurve = config.smooth.rejectcurve,
-//     real edgemargin = config.smooth.edgemargin,
-//     real maxlength = config.smooth.maxlength,
-//     real shadescale = config.drawing.shadescale,
-//     real helparcratio = config.help.arcratio,
-//     real helparrowlength = config.help.arrowlength
-// )
-// {
-//     // Existing parameter checks and assignments
-//     if (!inside(0,2, mode))
-//     { halt("Could not set mode: invalid entry provided. [ smpar() ]"); }
-//     if (!inside(0,1, subpenfactor))
-//     { halt("Could not apply changes: subset color scale argument out of range: must be between 0 and 1. [ smpar() ]"); }
-//     if (!inside(0,1, attachedopacity))
-//     { halt("Could not set attached opacity: entry out of bounds: must be between 0 and 1. [ smpar() ]"); }
-//     if (!checksection(section) || freedom >= 1 || interholenumber < 0 || !inside(0, 180, interholeangle))
-//     { halt("Could not change default section parameters: invalid intries. [ smpar() ]"); }
-//     for (int i = 0; i < section.length; ++i)
-//     { if (!dummy(section[i])) config.section.default[i] = section[i]; }
-//
-//     config.drawing.viewdir = viewdir;
-//     config.drawing.viewscale = viewscale;
-//     config.section.maxbreadth = scmaxbreadth;
-//     config.section.freedom = freedom;
-//     config.smooth.interholenumber = interholenumber;
-//     config.smooth.interholeangle = interholeangle;
-//     config.section.elprecision = elprecision;
-//     config.smooth.maxsectionlength = maxsectionlength;
-//     config.smooth.stepdistance = stepdistance;
-//     config.section.avoidsubsets = avoidsubsets;
-//     config.drawing.subpenfactor = subpenfactor;
-//     config.drawing.sectpenscale = sectpenscale;
-//     config.drawing.sectionpen = sectionpen;
-//     config.drawing.elpenwidth = elementwidth;
-//     config.smooth.inferlabels = inferlabels;
-//     config.smooth.shiftsubsets = shiftsubsets;
-//     config.smooth.addsubsets = addsubsets;
-//     config.smooth.correct = correct;
-//     config.smooth.clip = clip;
-//     config.smooth.unit = unit;
-//     config.smooth.setcenter = setcenter;
-//     config.drawing.gaplength = gaplength;
-//     config.arrow.margin = arrowmargin;
-//     config.arrow.absmargins = arrowabsmargin;
-//     config.system.repeatlabels = repeatlabels;
-//     config.system.insertdollars = insertdollars;
-//     config.help.linewidth = helplinewidth;
-//     config.drawing.attachedopacity = attachedopacity;
-//     config.smooth.nodesize = nodesize;
-//     config.drawing.smoothfill = smoothfill;
-//     config.drawing.subsetfill = subsetfill;
-//     config.drawing.mode = mode;
-//     config.drawing.labels = drawlabels;
-//     config.drawing.fill = fill;
-//     config.drawing.fillsubsets = fillsubsets;
-//     config.drawing.drawcontour = drawcontour;
-//     config.drawing.drawsubsetcontour = drawsubsetcontour;
-//     config.help.enable = help;
-//     config.drawing.dashes = dash;
-//     config.drawing.underdashes = underdash;
-//     config.drawing.useopacity = useopacity;
-//     config.drawing.dashpenscale = dashscale;
-//     config.drawing.dashopacity = dashop;
-//     config.drawing.shade = shade;
-//     config.drawing.pathrandom = pathrandom;
-//     config.drawing.overlap = overlap;
-//     config.drawing.subsetoverlap = subsetoverlap;
-//     config.drawing.drawnow = drawnow;
-//     config.drawing.postdrawover = postdrawover;
-//     config.section.precision = precision;
-//     config.smooth.rejectcurve = rejectcurve;
-//     config.smooth.edgemargin = edgemargin;
-//     config.smooth.maxlength = maxlength;
-//     config.drawing.shadescale = shadescale;
-//     config.help.arcratio = helparcratio;
-//     config.help.arrowlength = helparrowlength;
-//
-//     if (gaplength > 1) write("> ? Value for gap length looks too big: the results may be ugly. [ smpar() ]");
-// }
-
-void defaults ()
+restricted void defaults ()
 // Revert global settings to the defaults.
 {
     // System config
@@ -832,7 +698,7 @@ private pair[][] sectionparams (path g, path h, int n, real r, int p)
 
 // -- The structures of the module -- //
 
-struct element
+restricted struct element
 // An 'element' of a set, in a set-theoretical sense.
 {
     // Attributes
@@ -884,7 +750,7 @@ struct element
 private element[] elementcopy (element[] elements)
 { return sequence(new element (int i) { return elements[i].copy(); }, elements.length); }
 
-struct hole
+restricted struct hole
 // A cyclic area 'cut out' of a smooth object.
 {
     // Attributes
@@ -3267,7 +3133,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 1)
         {
             return smooth(
-                contour = defaultPaCC[0],
+                contour = concavepaths[0],
                 unit = false,
                 label = label
             ); 
@@ -3275,10 +3141,10 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 2)
         {
             return smooth(
-                contour = rotate(-90)*defaultPaCC[2],
+                contour = rotate(-90)*concavepaths[2],
                 subsets = new subset[] {
                     subset(
-                        contour = defaultPaCC[3],
+                        contour = concavepaths[3],
                         scale = .48,
                         shift = (.13, -.55),
                         labeldir = dir(140)
@@ -3296,11 +3162,11 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 0)
         {
             return smooth(
-                contour = defaultPaCV[1],
+                contour = convexpaths[1],
                 labeldir = (-2,1),
                 holes = new hole[] {
                     hole(
-                        contour = defaultPaCV[2],
+                        contour = convexpaths[2],
                         sections = rr(config.system.dummynumber, config.system.dummynumber, 260, config.system.dummynumber),
                         shift = (-.65, .25),
                         scale = .5
@@ -3308,7 +3174,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 },
                 subsets = new subset[] {
                     subset(
-                        contour = defaultPaCV[3],
+                        contour = convexpaths[3],
                         labeldir = S,
                         shift = (.43,-.38),
                         scale = .5,
@@ -3322,10 +3188,10 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 1)
         {
             return smooth(
-                contour = rotate(50) * reflect((0,0), (0,1))*defaultPaCC[4],
+                contour = rotate(50) * reflect((0,0), (0,1))*concavepaths[4],
                 holes = new hole[] {
                     hole(
-                        contour = rotate(45) * defaultPaCV[4],
+                        contour = rotate(45) * convexpaths[4],
                         shift = (-.73,-.08),
                         scale = .51,
                         rotate = -60,
@@ -3336,7 +3202,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 },
                 subsets = new subset[] {
                     subset(
-                        contour = defaultPaCV[6],
+                        contour = convexpaths[6],
                         scale = .45,
                         rotate = 20,
                         shift = (.5,.28)
@@ -3351,11 +3217,11 @@ smooth samplesmooth (int type, int num = 0, string label = "")
             return smooth(
                 contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
                 holes = new hole[] {
-                    hole(contour = defaultPaCV[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4.5,1.5,230,8))
+                    hole(contour = convexpaths[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4.5,1.5,230,8))
                 },
                 subsets = new subset[] {
-                    subset(contour = defaultPaCC[3], shift = (-.3,-.35), rotate = -50),
-                    subset(contour = defaultPaCV[3], scale = .9, rotate = 10, shift = (.3,.5))
+                    subset(contour = concavepaths[3], shift = (-.3,-.35), rotate = -50),
+                    subset(contour = convexpaths[3], scale = .9, rotate = 10, shift = (.3,.5))
                 },
                 unit = false,
                 label = label,
@@ -3369,10 +3235,10 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 0)
         {
             return smooth(
-                contour = defaultPaCC[4],
+                contour = concavepaths[4],
                 holes = new hole[] {
                     hole(
-                        contour = defaultPaCV[4],
+                        contour = convexpaths[4],
                         sections = new real[][] {
                             new real[] {-2,1.5, 60, 3},
                             new real[] {0, -1, 80, 4}
@@ -3382,7 +3248,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = 15
                     ),
                     hole(
-                        contour = defaultPaCV[3],
+                        contour = convexpaths[3],
                         sections = new real[][] {
                             new real[] {config.system.dummynumber, config.system.dummynumber, 230, 10}
                         },
@@ -3404,20 +3270,20 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 contour = scale(.35)*wavypath(new real[] {4,2,4,2,3.7,2}),
                 holes = new hole[] {
                     hole(
-                        contour = scale(.35)*defaultPaCV[4],
+                        contour = scale(.35)*convexpaths[4],
                         sections = rr(),
                         scale = .75,
                         shift = (.9,.02),
                         rotate = 5
                     ),
                     hole(
-                        contour = scale(.35)*defaultPaCV[6],
+                        contour = scale(.35)*convexpaths[6],
                         sections = rr(),
                         scale = .75,
                         shift = (-.4,-.75)
                     ),
                     hole(
-                        contour = scale(.35)*defaultPaCV[5],
+                        contour = scale(.35)*convexpaths[5],
                         sections = rr(),
                         scale = .80,
                         shift = (-.35,.6),
@@ -3426,7 +3292,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 },
                 subsets = new subset[] {
                     subset(
-                        contour = scale(.35)*defaultPaCV[2],
+                        contour = scale(.35)*convexpaths[2],
                         shift = (.05, -.1),
                         scale = .95
                     )
@@ -3438,10 +3304,10 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 1)
         {
             return smooth(
-                contour = defaultPaCC[5],
+                contour = concavepaths[5],
                 holes = new hole[] {
                     hole(
-                        contour = defaultPaCV[5],
+                        contour = convexpaths[5],
                         sections = new real[][] {
                             new real[] {3,0, 160, 7}
                         },
@@ -3459,7 +3325,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         scale = .25
                     ),
                     hole(
-                        contour = defaultPaCV[6],
+                        contour = convexpaths[6],
                         sections = new real[][] {
                             new real[] {-3,-2, 190, 6}
                         },
@@ -3482,35 +3348,35 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 contour = wavypath(1.05,2,1.1,2,1.15,2,1.1,2),
                 holes = new hole[] {
                     hole(
-                        contour = convexpath[4],
+                        contour = convexpaths[4],
                         shift = (-.83,-.85),
                         scale = .4,
                         rotate = 60,
                         sections = rr()
                     ),
                     hole(
-                        contour = convexpath[1],
+                        contour = convexpaths[1],
                         shift = (.9,-.8),
                         scale = .38,
                         rotate = -10,
                         sections = rr()
                     ),
                     hole(
-                        contour = convexpath[10],
+                        contour = convexpaths[10],
                         shift = (-.9,.92),
                         scale = .35,
                         rotate = 15,
                         sections = rr()
                     ),
                     hole(
-                        contour = convexpath[3],
+                        contour = convexpaths[3],
                         shift = (.9,.9),
                         scale = .34,
                         rotate = 70,
                         sections = rr()
                     ),
                     hole(
-                        contour = convexpath[2],
+                        contour = convexpaths[2],
                         shift = (-.05,.05),
                         scale = .56
                     )

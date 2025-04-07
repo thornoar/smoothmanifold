@@ -30,14 +30,14 @@ smooth sm2 = samplesmooth(1)
 .rmsubset(0)
 .setsection(0, r(dn,dn,240,5))
 .addsubset(
-    contour = convexpath[4],
+    contour = convexpaths[4],
     label = "V",
     dir = dir(150),
     shift = (.55,.8),
     scale = .23,
     rotate = -20
 ).addsubset(
-    contour = concavepath[2],
+    contour = concavepaths[2],
     label = "W",
     dir = dir(-110),
     shift = (.07,.20),
@@ -45,13 +45,13 @@ smooth sm2 = samplesmooth(1)
     rotate = 150
 ).addsubset(
     1,
-    contour = convexpath[2],
+    contour = convexpaths[2],
     shift = (-.5,.3),
     scale = .4,
     rotate = 0
 ).addsubset(
     1,
-    contour = convexpath[1],
+    contour = convexpaths[1],
     shift = (.7,-.15),
     scale = .32,
     rotate = -20

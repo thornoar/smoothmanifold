@@ -13,7 +13,7 @@ config.smooth.addsubsets = false;
 
 smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);
 smooth sm2 = samplesmooth(1,1).move(shift = (.7,-.15), rotate = -20);
-smooth sm3 = samplesmooth(0).addhole(contour = convexpath[0], scale = .5).move(shift = (1,0));
+smooth sm3 = samplesmooth(0).addhole(contour = convexpaths[0], scale = .5).move(shift = (1,0));
 smooth sm4 = samplesmooth(0,2).rmsubset(0).move(shift = (-1.5,0), scale = .8);
 
 dpar ds = dpar(contourpen = mediumgrey, fill = false, fillsubsets = false, drawsubsetcontour = false);

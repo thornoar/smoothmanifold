@@ -30,7 +30,7 @@ smooth rn = rn(n = 1)
     .move(shift = (2.5, .7), scale = .72)
     .setlabel("\mathbb{R}^n")
     .addsubset(
-        contour = convexpath[9],
+        contour = convexpaths[9],
         label = "V",
         dir = dir(-50),
         shift = (.4,-.2),

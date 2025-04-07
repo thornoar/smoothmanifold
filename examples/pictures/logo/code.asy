@@ -15,7 +15,7 @@ smooth sm1 = smooth(
     contour = wavypath(r(.9,2,1.1,2,1.1,2), true),
     holes = new hole[]{
         hole(
-            contour = convexpath[1],
+            contour = convexpaths[1],
             shift = (-.84,.1),
             scale = .57,
             rotate = 30,
@@ -24,7 +24,7 @@ smooth sm1 = smooth(
     },
     subsets = new subset[]{
         subset(
-            contour = convexpath[4],
+            contour = convexpaths[4],
             shift = (.55,-.95),
             scale = .5,
             rotate = -40
@@ -36,7 +36,7 @@ smooth sm1 = smooth(
 .addelement(index = 0, (-.3,.4), unit = true)
 .addsubset(
     index = 0,
-	contour = convexpath[2],
+	contour = convexpaths[2],
     shift = (.2,-.2),
 	scale = .5,
 	unit = true
@@ -44,16 +44,16 @@ smooth sm1 = smooth(
 .addelement(index = 1, (-.2,.2), unit = true);
 
 smooth sm2 = smooth(
-    contour = concavepath[4],
+    contour = concavepaths[4],
     subsets = new subset[]{
         subset(
-            contour = convexpath[6],
+            contour = convexpaths[6],
             shift = (.55,.55),
             scale = .5,
             rotate = -130
         ),
         subset(
-            contour = reflect((0,0),(0,1))*concavepath[2],
+            contour = reflect((0,0),(0,1))*concavepaths[2],
             shift = (-.15,-.1),
             scale = .6,
             rotate = 30
