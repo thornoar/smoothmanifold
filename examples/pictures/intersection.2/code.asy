@@ -7,7 +7,7 @@ size(15 cm);
 defaultpen(.7);
 
 export.background = paleyellow;
-export.margin = 1cm;
+export.xmargin = 1cm;
 export.autoexport = false;
 
 config.section.freedom = .8;

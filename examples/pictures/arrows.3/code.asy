@@ -15,7 +15,7 @@ config.section.freedom = 0.15;
 config.help.enable = false;
 
 export.background = paleyellow;
-export.margin = 2cm;
+export.xmargin = 2cm;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)

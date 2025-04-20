@@ -4,7 +4,7 @@ size(20 cm);
 defaultpen(.7);
 
 export.background = paleyellow;
-export.margin = 1cm;
+export.xmargin = 1cm;
 
 config.drawing.dashopacity = .2;
 config.drawing.gaplength = .05;

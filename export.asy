@@ -50,7 +50,8 @@ struct exportconfig {
     int rasterdensity = 300;
     pen background = nullpen;
     pen framepen = nullpen;
-    real margin = 0;
+    real xmargin = 0;
+    real ymargin = -1;
     bool restore = true;
     bool autoexport = false;
     bool forcenative = false;
@@ -61,8 +62,7 @@ struct exportconfig {
     bool drawgrid = false;
     int gridnumber = 10;
     int gridplaces = 1;
-    int gridnumber = 10;
-    int gridplaces = 1;
+    pair gridmarginscale = .1;
 
     exportanimationconfig animations;
     string[] natives;
@@ -100,80 +100,6 @@ private bool native (string format)
 
 include smoothmanifold;
 
-// void expar (
-//     string prefix = export.prefix,
-//     string format = settings.outformat,
-//     int dpi = export.rasterdensity,
-//     bool exit = export.exitonexport,
-//     bool autoexport = !export.autoexport,
-//     bool restore = export.restore,
-//     bool drawgrid = export.drawgrid,
-//     int gridnumber = export.gridnumber,
-//     int gridplaces = export.gridplaces,
-//     string dirname = export.animations.directory,
-//     string informat = export.animations.informat,
-//     string outprefix = export.animations.outprefix,
-//     string outformat = export.animations.outformat,
-//     string[] natives = export.natives,
-//     bool forcenative = export.forcenative,
-//     bool close = export.animations.close,
-//     bool preclean = export.animations.preclean,
-//     real ymax = -1,
-//     real ratio = 1.777777777,
-//     bool clip = export.clip,
-//     pen bgpen = export.background,
-//     pen framepen = export.framepen,
-//     real margin = export.margin,
-//     pair size = (defaultSyDN,defaultSyDN)
-// ) // The main configuration function. It is called by the user to set all global system variables.
-// {
-// 	if (dpi < 10)
-// 	{ halt("Could not apply changes: inacceptable quality."); }
-//     if (find(dirname, "/") == -1)
-//     { halt("Could not apply changes: directory name must contain '/' at the end."); }
-//     if (find(dirname, "/") != rfind(dirname, "/"))
-//     { halt("Could not apply changes: directory name must be at depth one."); }
-// 	if (find(outprefix, " ") > -1)
-// 	{ halt("Could not apply changes: prefix should not contain spaces."); }
-// 	if (find("eps|jpg|png|pdf", informat) == -1)
-// 	{ write("> ? You have chosen an unfamiliar input format. Proceed with caution."); }
-// 	if (find("mp4|gif|mkv|avi|flv|caf|wtv|oma", outformat) == -1)
-// 	{ write("> ? You have chosen an unfamiliar output format. Proceed with caution."); }
-// 	if (margin < 0)
-// 	{ halt("Could not set margin: value must be positive."); }
-//
-//     export.prefix = prefix;
-//     settings.outformat = format;
-//     export.rasterdensity = dpi;
-//     export.exitonexport = exit;
-//     export.autoexport = !autoexport;
-//     export.restore = restore;
-//     export.drawgrid = drawgrid;
-//     export.gridnumber = gridnumber;
-//     export.gridplaces = gridplaces;
-//
-//     export.animations.directory = dirname;
-//     export.animations.informat = informat;
-//     export.animations.outprefix = outprefix;
-//     export.animations.outformat = outformat;
-//     export.natives = natives;
-//     export.forcenative = forcenative;
-//     export.animations.close = close;
-//     export.exitonexport = exit;
-//     export.animations.preclean = preclean;
-//
-//     export.margin = margin;
-//     if (size.x >= 0 && size.y >= 0) size(size.x, size.y);
-//     export.background = bgpen;
-//     export.framepen = framepen;
-//     if (ymax > 0)
-//     {
-//         export.enclose = true;
-//         export.corner = (ymax*ratio, ymax);
-//         export.clip = clip;
-//     }
-// }
-
 void invertcolors ()
 // Invert most colors (white -> black, blue -> yellow, etc.), e.g. the background of the picture, the contour and fill colors, etc. Must be called after all colors have been set, for correct working.
 {
@@ -201,10 +127,11 @@ private void drawgrid (
     int places = export.gridplaces,
     int number = export.gridnumber,
     pair min = pic.userMin2(),
-    pair max = pic.userMax2()
+    pair max = pic.userMax2(),
+    pair margin = (max - min)*export.gridmarginscale
 ) // Draws an auxiliary coordinate grid on the given picture. It helps understand what coordinates paths have.
 {
-    pair margin = (max - min)*.1;
+    // pair margin = (max - min)*.1;
     if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
     else margin = (margin.x, margin.x);
     min -= margin;
@@ -294,7 +221,8 @@ void export(
     projection P = currentprojection,
         // Additional settings -- background, quality control, deferred drawing, file conversion:
         pen bgpen = export.background,
-        real margin = export.margin,
+        real xmargin = export.xmargin,
+        real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
         pen framepen = export.framepen,
         int density = export.rasterdensity,
         bool exit = export.exitonexport,
@@ -313,13 +241,13 @@ void export(
 
     void localshipout (string prefix1)
     {
-        if (plainforce || (margin == 0 && bgpen == nullpen && framepen == nullpen))
+        if (plainforce || (xmargin == 0 && ymargin == 0 && bgpen == nullpen && framepen == nullpen))
         { plainshipout(prefix = prefix1, pic1, orientation, wait, view, options, script, light, P); }
         else
         {
             shipout(
                 prefix = prefix1,
-                bbox(pic1, xmargin = margin, p = framepen, filltype = (bgpen == nullpen ? NoFill : Fill(p = bgpen))),
+                bbox(pic1, xmargin = xmargin, ymargin = ymargin, p = framepen, filltype = (bgpen == nullpen ? NoFill : Fill(p = bgpen))),
                 wait, view, options, script, light, P
             );
         }
@@ -437,7 +365,8 @@ void animate (
     int n,
     bool back = false,
         pen bgpen = export.background,
-        real margin = export.margin,
+        real xmargin = export.xmargin,
+        real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
         pen framepen = export.framepen,
     int density = export.rasterdensity,
     bool compile = false,
@@ -473,9 +402,9 @@ void animate (
 
 		string str1 = hash+"_"+(string)(i);
 		string str2 = hash+"_"+(string)(2n - 1 - i);
-		export(prefix = str1, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false, density = density);
+		export(prefix = str1, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false, density = density);
         write(f, s = str1+"."+informat, suffix = endl);
-		if (back) export(prefix = str2, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false, density = density);
+		if (back) export(prefix = str2, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false, density = density);
         
         restore();
 
@@ -502,14 +431,15 @@ void addframe (
     picture pic = currentpicture,
     string informat = export.animations.informat,
         pen bgpen = export.background,
-        real margin = export.margin,
+        real xmargin = export.xmargin,
+        real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
         pen framepen = export.framepen
 ) // Add a single frame to the current frame pool.
 {
     string hash = (string)export.animations.callcount + (string)seconds();
     export.animations.callcount += 1;
     drawdeferred(pic, false);
-    export(pic = pic, prefix = hash, format = informat, bgpen = bgpen, margin = margin, framepen = framepen, exit = false, drawdeferred = false);
+    export(pic = pic, prefix = hash, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false);
     file f = output(name = export.animations.listfilename, update = true);
     write(f, s = hash+"."+informat, suffix = endl);
     close(f);
@@ -526,7 +456,8 @@ void move (
     bool drag = true,
     dpar dspec = null,
     bool back = true,
-    real margin = export.margin,
+    real xmargin = export.xmargin,
+    real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
     int density = export.rasterdensity,
     bool compile = false,
     int fps = export.animations.fps,
@@ -547,7 +478,7 @@ void move (
 	}
 	if (back) sm = smp;
 
-	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
+	animate(update = update, n = n, back = back, xmargin = xmargin, ymargin = ymargin, density = density, compile = compile, fps = fps);
 }
 
 void revolve (
@@ -558,7 +489,8 @@ void revolve (
     dpar dspec = null,
     bool back = true,
     bool arc = false,
-    real margin = export.margin,
+    real xmargin = export.xmargin,
+    real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
     int density = export.rasterdensity,
     bool compile = false,
     int fps = export.animations.fps,
@@ -586,7 +518,7 @@ void revolve (
 	}
 	if (back) sm = smp;
 
-	animate(update = update, n = n, back = back, margin = margin, density = density, compile = compile, fps = fps);
+	animate(update = update, n = n, back = back, xmargin = xmargin, ymargin = ymargin, density = density, compile = compile, fps = fps);
 }
 
 // Redefining the `shipout` function to default to `export`.

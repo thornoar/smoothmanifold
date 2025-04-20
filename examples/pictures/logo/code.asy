@@ -1,6 +1,6 @@
 import export;
 
-export.margin = .2cm;
+export.xmargin = .2cm;
 export.prefix = "picture";
 settings.outformat = "pdf";
 

@@ -2,22 +2,10 @@ import export;
 size(15cm);
 
 defaultpen(.7);
-// expar(margin = 1cm, bgpen = paleyellow);
+// expar(xmargin = 1cm, bgpen = paleyellow);
 
-export.margin = 1cm;
+export.xmargin = 1cm;
 export.background = paleyellow;
-
-// smpar(
-//     scholeangle = 30,
-// 	scfreedom = .3,
-// 	gaplength = .1,
-// 	arrowmargin = .02,
-//     arrowabsolutemargin = true,
-// 	unit = true,
-// 	mode = cartesian,
-// 	scavoidsubsets = false,
-// 	viewdir = dir(-20)
-// );
 
 config.section.avoidsubsets = false;
 config.section.freedom = .3;

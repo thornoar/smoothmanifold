@@ -6,7 +6,7 @@ size(10 cm);
 defaultpen(.7);
 
 export.background = paleyellow;
-export.margin = 1cm;
+export.xmargin = 1cm;
 
 smooth sm = samplesmooth(2);
 

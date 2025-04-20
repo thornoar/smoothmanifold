@@ -4,7 +4,7 @@ settings.render = 8;
 settings.outformat = "pdf";
 export.background = paleyellow;
 export.exitonexport = false;
-export.margin = 1cm;
+export.xmargin = 1cm;
 
 size(10cm);
 defaultpen(.7);

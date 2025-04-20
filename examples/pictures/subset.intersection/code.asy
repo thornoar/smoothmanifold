@@ -27,4 +27,4 @@ sm.addsubset(contour = unitcircle, scale = .12, shift = (.42,-.33));
 
 draw(sm, dpar(plain));
 
-export(prefix = "picture", format = "pdf", margin = 1cm, bgpen = paleyellow);
+export(prefix = "picture", format = "pdf", xmargin = 1cm, bgpen = paleyellow);

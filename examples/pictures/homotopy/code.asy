@@ -3,7 +3,7 @@ import export;
 export.background = paleyellow;
 export.drawgrid = false;
 export.gridnumber = 20;
-export.margin = .5cm;
+export.xmargin = .5cm;
 export.prefix = "picture";
 settings.outformat = "pdf";
 

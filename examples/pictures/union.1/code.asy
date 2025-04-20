@@ -6,7 +6,7 @@ size(20 cm);
 defaultpen(.7);
 
 export.background = paleyellow;
-export.margin = 1.5cm;
+export.xmargin = 1.5cm;
 
 config.drawing.viewdir = dir(40);
 config.drawing.mode = free;

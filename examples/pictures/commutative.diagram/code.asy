@@ -14,4 +14,4 @@ drawarrow(g, a, L = Label("f", align = Relative(W)));
 drawarrow(g, fa, p = dashed, L = Label("\exists!", align = Relative(E)));
 drawcommuting(g, a, fa);
 
-export("picture", margin = 1cm);
+export("picture", xmargin = 1cm);

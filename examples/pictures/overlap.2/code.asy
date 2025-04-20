@@ -14,4 +14,4 @@ fillfitpath(circle((.2,-.15),.4), fillpen = paleblue, covermode = 1);
 fillfitpath(circle((.25,-.15),.22), fillpen = paleyellow, covermode = -1);
 fillfitpath(circle((.8,-.75),.35), fillpen = lightgreen, covermode = 2);
 
-export(prefix = "picture", margin = 1cm, bgpen = paleyellow);
+export(prefix = "picture", xmargin = 1cm, bgpen = paleyellow);

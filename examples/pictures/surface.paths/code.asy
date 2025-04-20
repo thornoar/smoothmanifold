@@ -4,7 +4,7 @@ size(17cm);
 defaultpen(.8);
 
 export.background = paleyellow;
-export.margin = 1.5cm;
+export.xmargin = 1.5cm;
 export.autoexport = true;
 
 config.smooth.interholeangle = 30;
