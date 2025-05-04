@@ -1088,7 +1088,7 @@ struct dpar
     pen smoothfill;         // The pen used to fill the smooth object.
     pen subsetcontourpen;   // The pen used to draw the contour of the subsets.
     pen subsetfill;         // The pen used to fill the subsets.
-    pen sectionpen;        // The pen used to draw the cross sections.
+    pen sectionpen;         // The pen used to draw the cross sections.
     pen dashpen;            // The pen used to draw dashed lines on cross sections.
     pen shadepen;           // The pen used to fill shaded regions.
     pen elementpen;         // The pen used to dot elements.
@@ -3084,6 +3084,15 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
         ));
     }
     return res;
+}
+
+path[] getdeferredpaths (
+    picture pic = currentpicture
+) {
+    deferredPath[] ps = extractdeferredpaths(pic, false);
+    return concat(sequence(new path[] (int i) {
+        return ps[i].g;
+    }, ps.length));
 }
 
 private void purgedeferredunder (deferredPath[] curdeferred)
