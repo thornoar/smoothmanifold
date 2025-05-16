@@ -3884,7 +3884,6 @@ smooth[] union (
 
     for (int i = 0; i < holes.length; ++i)
     {
-        // write(hrefs[i]);
         res.addhole((hrefs[i] == -1) ? hole(holes[i], copy = true) : trueholes[hrefs[i]], unit = false);
     }
 

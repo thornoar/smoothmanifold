@@ -1,7 +1,7 @@
 import export;
 settings.render = 16;
 
-size(25 cm);
+size(20 cm);
 defaultpen(.5);
 
 config.drawing.gaplength = .07;
@@ -15,7 +15,7 @@ config.section.freedom = 0.15;
 config.help.enable = false;
 
 export.background = paleyellow;
-export.xmargin = 2cm;
+export.xmargin = 1cm;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)
