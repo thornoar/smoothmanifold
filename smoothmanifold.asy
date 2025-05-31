@@ -22,7 +22,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v5.21.0-alpha";
+    string version = "v6.0.0-alpha";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
