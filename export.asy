@@ -106,7 +106,7 @@ void invertcolors ()
 	export.background = inverse(export.background);
 	currentpen = inverse(currentpen);
 	config.drawing.smoothfill = inverse(config.drawing.smoothfill);
-	config.drawing.subsetfill = inverse(config.drawing.subsetfill);
+	config.drawing.subsetfill = map(new pen (pen p) {return inverse(p);}, config.drawing.subsetfill);
 	export.invertcolors = !export.invertcolors;
     nextsubsetpen = new pen (pen p, real scale) { return inverse(scale*inverse(p)); };
     dashpenscale = new pen (pen p) { return .3*p+dashed; };

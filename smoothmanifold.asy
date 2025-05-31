@@ -19,7 +19,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// -- Configuration structures -- //
+// >config | Configuration structures
 
 struct systemconfig {
     string version = "v5.21.0-alpha";
@@ -28,6 +28,13 @@ struct systemconfig {
     pair dummypair = (dummynumber, dummynumber);
     bool repeatlabels = false; // whether to allow two entities to have one label.
     bool insertdollars = true; // whether to automatically insert dollars in labels.
+}
+
+struct pathconfig {
+    real roundcoeff = .03;
+    real range = 30;
+    real neighheight = .05;
+    real neighwidth = .01;
 }
 
 struct sectionconfig {
@@ -62,7 +69,7 @@ struct drawingconfig {
     real viewscale = 0.12; // how much the `viewdir` parameter is scaled down.
     real gaplength = .05; // the length of the gap made on path overlaps.
     pen smoothfill = lightgrey; // the filling color of smooth objects.
-    pen subsetfill = grey; // the filling color of layer 0 subsets.
+    pen[] subsetfill = {}; // the filling color of layer 0 subsets.
     real sectpenscale = .6; // how thinner the section pen is compared to the contour pen.
     real elpenwidth = 3.0; // pen width to draw element dots.
     real shadescale = .85; // how darker shaded areas are compared to object filling color.
@@ -70,7 +77,12 @@ struct drawingconfig {
     real dashopacity = .4; // opacity of dashed pens.
     real attachedopacity = .8; // opacity of smooth objects attached to main object.
     real subpenfactor = .4; // how darker subsets get with each new layer.
-    pen sectionpen = nullpen; // [Se]ction [O]verride [P]en
+    real subpenbrighten = .1; // how darker subsets get with each new layer.
+    pen sectionpen = nullpen;
+    real lineshadeangle = 45;
+    real lineshadedensity = 0.15;
+    real lineshademargin = 0.1;
+    pen lineshadepen = lightgrey;
     int mode = 0; // [M]ode
     bool useopacity = false; // [U]se [O]pacity
     bool dashes = true; // [D]raw [D]ashes
@@ -102,6 +114,7 @@ struct arrowconfig {
 
 struct globalconfig {
     systemconfig system;
+    pathconfig paths;
     sectionconfig section;
     smoothconfig smooth;
     drawingconfig drawing;
@@ -112,7 +125,8 @@ struct globalconfig {
 private globalconfig defaultconfig;
 globalconfig config;
 
-// [Pa]ths -- a collection of default paths to be used in smooth objects.
+// >values | A collection of pre-defined convenience values
+
 restricted path[] convexpaths = new path[] { // [C]on[V]ex
     (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
     (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
@@ -129,7 +143,6 @@ restricted path[] convexpaths = new path[] { // [C]on[V]ex
     (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle,
     (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
-
 restricted path[] concavepaths = new path[] { // [C]on[C]ave
     (
         (-0.9,0).. controls
@@ -264,10 +277,8 @@ restricted path randomconvex ()
 restricted path randomconcave ()
 { return concavepaths[rand()%concavepaths.length]; }
 
-// [Pr]ogress
 private path[] debugpaths; // [D]ebug [P]aths
 
-// User convenience variables
 restricted int plain = 0;
 restricted int free = 1;
 restricted int cartesian = 2;
@@ -275,14 +286,745 @@ restricted int combined = 3;
 restricted int dn = config.system.dummynumber;
 restricted arrowbar simple = Arrow(SimpleHead);
 restricted arrowbar simples = Arrows(SimpleHead);
+restricted path ucircle = reverse(unitcircle); // [U]nit [C]ircle
+restricted path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 
-// -- Supporting utilities -- //
+// >support | Supportiong utility functions
 
-include pathmethods; // Basic functions for paths and more.
+real mod (real a, real b)
+// Calculate a % b.
+{
+    if (b < 0) return -1;
+    while (a < 0) a += b;
+    while (a > b) a -= b;
+    return a;
+}
+
+pair center (
+    path p,
+    int n = 10,
+    bool arc = true
+) /*
+    Calculate the center of mass of the area enclosed by the path `p`.
+    The `arc` parameter determines whether arclength should be used
+    instead of path time. If the resulting point is outside of the
+    area, a point inside the area with the same y-coordinate is
+    chosen.
+*/
+{
+    pair sum = (0,0);
+    for (int i = 0; i < n; ++i)
+    { sum += point(p, arc ? arctime(p, arclength(p)*i/n) : (length(p) * i/n)); }
+    if (inside(p, sum/n)) return sum/n;
+    real[] times = times(p, (0, ypart(sum/n)));
+    return (point(p, times[0]) + point(p, times[1])) * .5;
+}
+
+transform srap (real scale, real rotate, pair point)
+// [S]cale [R]otate [A]round [P]oint
+{ return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
+
+bool inside (real a, real b, real c)
+// Check if a <= c <= b.
+{ return (a <= c && c <= b); }
+
+bool insidepath (path p, path q)
+// Check if q is completely inside p (the directions of p and q do not matter). Shorthand for inside(p, q) == 1
+{ return (inside(p, q, evenodd) == 1); }
+
+transform dscale (
+    real scale,
+    pair dir,
+    pair center = (0,0)
+) // Scale in given direction
+{
+    if (length(dir) == 0) return identity;
+    return rotate(degrees(dir), center) * xscale(scale) * rotate(-degrees(dir), center);
+}
+
+pair comb (pair a, pair b, real t)
+// A linear combination.
+{ return t*b + (1-t)*a;}
+
+real round (real a, int places)
+// Leave the given number of decimal places.
+{ return floor(10^places*a)*.1^places; }
+
+pair round (pair a, int places)
+// Leave the given number of decimal places, in each coordinate.
+{ return (round(a.x, places), round(a.y, places)); }
+
+// The following functions make array creation less of a boilerplate, much like in the R language.
+
+real[] r (... real[] source)
+{ return source; }
+real[][] dr (... real[][] source)
+{ return source; }
+real[][] rr (... real[] source)
+{ return new real[][]{source}; }
+
+pair[] p (... pair[] source)
+{ return source; }
+pair[][] dp (... pair[][] source)
+{ return source; }
+pair[][] pp (... pair[] source)
+{ return new pair[][]{source}; }
+
+int[] i (... int[] source)
+{ return source; }
+int[][] di (... int[][] source)
+{ return source; }
+int[][] ii (... int[] source)
+{ return new int[][]{source}; }
+
+path[] c (... path[] source)
+{ return source; }
+path[][] dc (... path[][] source)
+{ return source; }
+path[][] cc (... path[] source)
+{ return new path[][]{source}; }
+
+string[] s (... string[] source)
+{ return source; }
+string[][] ds (... string[][] source)
+{ return source; }
+string[][] ss (... string[] source)
+{ return new string[][]{source}; }
+
+string repeatstring (string str, int n)
+{
+    if (n == 0) return "";
+    return repeatstring(str, n-1) + str;
+}
+
+// Array functions
+
+pair[] concat (pair[][] a)
+// Same as the standard Asymptote `concat` functions, but with more than two arguments.
+{
+    if (a.length == 1) return a[0];
+    pair[] b = a.pop();
+    return concat(concat(a), b);
+}
+path[] concat (path[][] a)
+{
+    if (a.length == 0) return new path[];
+    if (a.length == 1) return a[0];
+    path[] b = a.pop();
+    return concat(concat(a), b);
+}
+
+real[] unitseq (real step)
+{
+    real[] res;
+    real cur = step;
+    while (cur < 1)
+    {
+        res.push(cur);
+        cur += step;
+    }
+    return res;
+}
+
+bool contains (int[] source, int a)
+{
+    bool res = false;
+    for (int i = 0; i < source.length; ++i)
+    {
+        if (source[i] == a)
+        {
+            res = true;
+            break;
+        }
+    }
+    return res;
+}
+
+int[] difference (int[] a, int[] b)
+// Calculate the set difference of two arrays.
+{
+    int[] res = {};
+    for (int i = 0; i < a.length; ++i)
+    { if (!contains(b, a[i])) res.push(a[i]); }
+    return res;
+}
+
+real xsize (path p) { return xpart(max(p)) - xpart(min(p)); }
+real ysize (path p) { return ypart(max(p)) - ypart(min(p)); }
+
+real radius (path p)
+// Calculate the approximate "radius" of a path-enclosed area.
+{ return (xsize(p) + ysize(p))*.25; }
+
+real xsize (picture p) { return xpart(max(p)) - xpart(min(p)); }
+real ysize (picture p) { return ypart(max(p)) - ypart(min(p)); }
+
+real arclength (path g, real a, real b)
+// A more functional version of `arclength`.
+{ return arclength(subpath(g, a, b)); }
+
+real relarctime (path g, real t0, real a)
+// Calculate the time at which arclength `a` will be traveled, starting from time t0.
+{
+    real t0arc = arclength(g, 0, t0);
+    if (t0arc + a < 0 || t0arc + a > arclength(g)) { return -arctime(g, mod(t0arc + a, arclength(g))); }
+    return arctime(g, t0arc+a);
+}
+
+path arcsubpath (path g, real arc1, real arc2) {
+    if (arc2 <= 0) arc2 = arclength(g) + arc2;
+    return subpath(g, arctime(g, arc1), arctime(g, arc2));
+}
+
+real intersectiontime (path g, pair point, pair dir)
+// Returns the time of the intersection of `g` with a beam going from `point` in direction `dir`
+{
+    real[] isect = intersect(g, point -- (point + unit(dir)*(8*radius(g))));
+    if (isect.length > 0) return isect[0];
+    return -1;
+}
+
+pair intersection (path g, pair point, pair dir)
+// Same as `intersectiontime`, but returns the point.
+{ return point(g, intersectiontime(g, point, dir)); }
+
+path reorient (path g, real time)
+// Shift the starting point of a path along the path.
+{ return subpath(g, time, length(g)) & subpath(g, 0, time) & cycle; }
+
+path turn (path g, pair point, pair dir)
+// Reorient in the direction of `dir` from point `point`.
+{ return reorient(g, intersectiontime(g, point, dir)); }
+
+path subcyclic (path p, pair t)
+// An improved `subpath` made for cyclic ps.
+{
+    if (t.x <= t.y) return subpath(p, t.x, t.y);
+    return (subpath(p, t.x, length(p)) & subpath(p, 0, t.y));
+}
+
+bool clockwise (path p)
+// Check if the path is clockwise.
+{ return (windingnumber(p, inside(p)) == -1); }
+
+bool meet (path p, path q)
+// A shorthand to check if ps intersect.
+{ return (intersect(p, q).length > 0); }
+
+bool meet (path p, path[] q)
+{
+    for (int i = 0; i < q.length; ++i)
+    { if (meet(p, q[i])) return true; }
+    return false;
+}
+
+bool meet (path[] p, path[] q)
+{
+    for (int i = 0; i < p.length; ++i)
+    {
+        for (int j = 0; j < q.length; ++j)
+        { if (meet(p[i], q[j])) return true; }
+    }
+    return false;
+}
+
+pair range (path g, pair center, pair dir, real ang, real orient = 1)
+// Calculate the subpath times based on `center`, `dir`, and `ang`.
+{
+    return (
+        intersectiontime(g, center, rotate(orient*ang*.5)*dir),
+        intersectiontime(g, center, rotate(-orient*ang*.5)*dir)
+    );
+}
+
+bool outsidepath (path p, path q)
+// Check if `q` is outside of the area enclosed by `p`.
+{ return !meet(p,q) && !insidepath(p,q); }
+
+path pop (path[] source)
+// Delete the first element and return it.
+{
+    path p = source[0];
+    source.delete(0);
+    return p;
+}
+
+// >generic | Overall useful path utilities
+
+path neigharc (
+    real x = 0,
+    real h = config.paths.neighheight,
+    int dir = 1,
+    real w = dir * config.paths.neighwidth
+) // Draw an arc delimiting a neighborhood
+{
+    return ((x+w, h) .. {(0,-1)}(x, 0) .. (x+w, -h));
+}
+
+path ellipsepath (
+    pair a,
+    pair b,
+    real curve = 0,
+    bool abs = false
+) // Produce half of an ellipse connecting points `a` and `b`. Curvature may be relative or absolute.
+{
+    if (!abs) curve = curve*length(b-a);
+    pair mid = (a+b)*.5;
+    path e = rotate(degrees(a-b), z = mid)*ellipse(mid, length(b-a)*.5, curve);
+    return subpath(e, 0, reltime(e, .5));
+}
+
+path curvedpath (
+    pair a,
+    pair b,
+    real curve = 0,
+    bool abs = false
+) // Constuct a curved path between two points.
+{
+    if (abs) curve = curve/length(b-a);
+    pair mid = (a+b)*.5;
+    return a .. (mid + curve * (rotate(-90) * (b-a))) .. b;
+}
+
+path cyclepath (pair a, real angle, real radius)
+// A circular path starting from `a` and 
+{ return shift(a)*rotate(-180 + angle)*scale(radius)*shift(-1,0)*reverse(unitcircle); }
+
+path midpath (path g, path h, int n = 20)
+// Construct the "mean" path between two given ps.
+{
+    path res;
+    for (int i = 0; i < n; ++i)
+    {
+        res = res .. {(dir(g, reltime(g, i/n)) + dir(h, reltime(h, i/n)))*.5}((point(g, reltime(g, i/n)) + point(h, reltime(h, i/n)))*.5);
+    }
+    return res .. {(dir(g, reltime(g, 1)) + dir(h, reltime(h, 1)))*.5}((point(g, reltime(g, 1)) + point(h, reltime(h, 1)))*.5);
+}
+
+path connect (pair[] points)
+// Connect an array of points into a path
+{
+    guide acc;
+    for (int i = 0; i < points.length; ++i)
+    { acc = acc .. points[i]; }
+    return (path) acc;
+}
+
+path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
+// Connect points around the origin with a path.
+{
+    if (nums.length == 0) return nullpath;
+    if (nums.length == 1) return scale(nums[0])*ucircle;
+    
+    pair[] points = sequence(new pair (int i) { return nums[i]*dir(-360*(i/nums.length)); }, nums.length);
+
+    path res;
+
+    if (normaldir)
+    {
+        guide getpath (pair[] arr)
+        {
+            if (arr.length == 2)
+            {
+                return arr[0]{rotate(-90)*arr[0]} .. 
+                             {rotate(-90)*arr[1]}arr[1];
+            }
+            pair a = arr.pop();
+            return getpath(arr) .. {rotate(-90)*a}a;
+        }
+        res = (path) (getpath(points)..cycle);
+    }
+    else
+    { res = connect(points)..cycle; }
+
+    return adjust ? scale(1/radius(res))*shift(-center(res))*res : res;
+}
+
+path wavypath (... real[] nums)
+{ return wavypath(nums = nums); }
+
+struct gauss
+// A Gaussian integer.
+{
+    int x;
+    int y;
+
+    void operator init (int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+bool operator == (gauss a, gauss b)
+{ return a.x == b.x && a.y == b.y; }
+
+gauss operator cast (pair p)
+{ return gauss(floor(p.x), floor(p.y)); }
+
+pair operator cast (gauss g)
+{ return (g.x, g.y); }
+
+path connect (path p, path q)
+// Connect `p` and `q` smoothly.
+{ return p{dir(p, length(p))}..{dir(q,0)}q; }
+
+pair randomdir (pair dir, real angle)
+{ return dir(degrees(dir) + (unitrand()-.5)*angle); }
+
+path randompath (pair[] controlpoints, real angle)
+// Like `connect`, but the path has some randomness to it.
+{
+    if (controlpoints.length < 2) return nullpath;
+
+    pair outdir = randomdir(controlpoints[1]-controlpoints[0], angle);
+    path res = controlpoints[0];
+
+    for (int i = 1; i < controlpoints.length-1; ++i)
+    {
+        pair indir = randomdir(controlpoints[(i+1)]-controlpoints[i-1], angle);
+        res = res{outdir} .. {indir}controlpoints[i];
+        outdir = indir;
+    }
+    
+    pair indir = randomdir(controlpoints[(controlpoints.length-1)]-controlpoints[controlpoints.length-2], angle);
+    
+    return res{outdir}..{indir}controlpoints[controlpoints.length-1];
+}
+
+// >generic | Set operations on paths
+
+path[] combination (path p, path q, int mode, bool round, real roundcoeff)
+// A general way to "combine" two ps based on their intersection points.
+{
+    if (!meet(p, q)) return new path[];
+
+    real proundlength = roundcoeff*arclength(p);
+    real qroundlength = roundcoeff*arclength(q);
+    
+    real[][] times = intersections(p, q);
+
+    for (int i = 0; i < times.length; ++i)
+    {
+        pair pdi = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = -1) : dir(p, times[i][0]);
+        pair pdo = (times[i][0] == floor(times[i][0])) ? dir(p, floor(times[i][0]), sign = 1) : dir(p, times[i][0]);
+        pair qdi = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = -1) : dir(q, times[i][1]);
+        pair qdo = (times[i][1] == floor(times[i][1])) ? dir(q, floor(times[i][1]), sign = 1) : dir(q, times[i][1]);
+
+        if (sgn(cross(pdi, qdi))*sgn(cross(pdo, qdo)) <= 0)
+        {
+            times.delete(i);
+            --i;
+        }
+    }
+    
+    int n = times.length;
+
+    int[] pinds = sort(sequence(n), new bool (int a, int b){return (times[a][1] <= times[b][1]);});
+    int[] qinds = sort(sequence(n), new bool (int a, int b){return (times[pinds[a]][0] <= times[pinds[b]][0]);});
+    
+    path[] res;
+    
+    gauss start = (0, qinds[0]);
+    gauss[] nextstarts;
+
+    int visited = 0;
+    gauss curind = start;
+    path curpath;
+    
+    while (visited < n)
+    {
+        visited += 1;
+
+        bool pway;
+        gauss newind;
+        pair pdir = (times[curind.x][0] == floor(times[curind.x][0])) ? dir(p, floor(times[curind.x][0]), sign = 1) : dir(p, times[curind.x][0]);
+        pair qdir = (times[curind.x][1] == floor(times[curind.x][1])) ? dir(q, floor(times[curind.x][1]), sign = 1) : dir(q, times[curind.x][1]);
+
+        if (cross(pdir, qdir)*mode < 0) pway = true;
+        else pway = false;
+
+        real curarc = min(pway ? qroundlength : proundlength, arclength(curpath)*.5);
+
+        if (pway)
+        {
+            newind = ((curind.x+1)%n, qinds[(curind.x+1)%n]);
+
+            if ((-(newind.y - curind.y)*windingnumber(q, inside(q)))%n > 1)
+            { nextstarts.insert(i = 0, (pinds[(curind.y+1)%n], (curind.y+1)%n)); }
+        }
+        else
+        {
+            newind = (pinds[(curind.y+1)%n], (curind.y+1)%n);
+
+            if ((-(newind.x - curind.x)*windingnumber(p, inside(p)))%n > 1)
+            { nextstarts.insert(i = 0, ((curind.x+1)%n, qinds[(curind.x+1)%n])); }
+        }
+
+        path addpath = subcyclic(pway ? p : q, (times[curind.x][pway ? 0 : 1], times[newind.x][pway ? 0 : 1]));
+
+        if (!round || curpath == nullpath) curpath = curpath & addpath;
+        else
+        {
+            path subcurpath = subpath(curpath, 0, arctime(curpath, arclength(curpath) - curarc));
+            path subaddpath = subpath(addpath, arctime(addpath, min(pway ? qroundlength : proundlength, arclength(addpath)*.5)), length(addpath));
+
+            curpath = connect(subcurpath, subaddpath);
+        }
+
+        if (newind == start)
+        {
+            path finpath;
+            if (!round) finpath = curpath&cycle;
+            else
+            {
+                real begin = arctime(curpath, curarc);
+                real end = arctime(curpath, arclength(curpath)-curarc);
+                finpath = subpath(curpath, begin, end){dir(curpath, end)}..{dir(curpath, begin)}cycle;
+            }
+            res.push(finpath);
+            curpath = nullpath;
+            if (nextstarts.length == 0) break;
+            start = nextstarts.pop();
+            curind = start;
+        }
+        else curind = newind;
+    }
+
+    res = sort(res, new bool (path i, path j) {
+        if (clockwise(i)) return true;
+        else if (!clockwise(j)) return true;
+        else return false;
+    });
+
+    return res;
+}
+
+path[] difference (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+) // Construct the set difference between two path-enclosed areas.
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+    if (!meet(p, q))
+    {
+        if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
+        if (windingnumber(q, point(p,0)) == -1) return new path[]{};
+        return new path[]{p};
+    }
+
+    return combination(p, reverse(q), mode = -1, round = round, roundcoeff = roundcoeff);
+}
+
+path[] difference (
+    path[] ps,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+{
+    if (correct)
+    {
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
+        if (!clockwise(q)) q = reverse(q);
+    }
+
+    return concat(sequence(new path[] (int i){return difference(ps[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, ps.length));
+}
+
+path[] operator - (path p, path q)
+{ return difference(p, q); }
+
+path[] operator - (path[] p, path q)
+{ return difference(p, q); }
+
+path[] symmetric (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+) // Construct the set symmetric difference between two path-enclosed areas.
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+    if (!meet(p, q))
+    {
+        if (windingnumber(p, point(q,0)) == -1)
+            return new path[] {p, reverse(q)};
+        if (windingnumber(q, point(p,0)) == -1)
+            return new path[] {q, reverse(p)};
+        return new path[] {p,q};
+    }
+
+    return concat(difference(p,q,false,round,roundcoeff), difference(q,p,false,round,roundcoeff));
+}
+
+path[] operator :: (path p, path q)
+{ return symmetric(p, q); }
+
+path[] intersection (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+) // Construct the intersection of two path-enclosed areas.
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+    if (!meet(p, q))
+    {
+        if (insidepath(p,q)) return new path[]{q};
+        if (insidepath(q,p)) return new path[]{p};
+        return new path[];
+    }
+
+    return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
+}
+
+path[] intersection (
+    path[] ps,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+{
+    if (correct)
+    {
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
+    }
+    if (ps.length == 0) return new path[];
+    if (ps.length == 1) return ps;
+    if (ps.length == 2) return intersection(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
+    
+    ps = sequence(new path (int i){return ps[i];}, ps.length);
+    
+    path p = ps.pop();
+    path[] prev = intersection(ps, correct = false, round = round, roundcoeff = roundcoeff);
+    
+    return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
+}
+
+path[] intersection (
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+    ... path[] ps
+) {return intersection(ps, correct, round, roundcoeff);}
+
+path[] intersection (
+    path p,
+    path q,
+    path[] holes,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+        for (int i = 0; i < holes.length; ++i)
+        { if (!clockwise(holes[i])) holes[i] = reverse(holes[i]); }
+    }
+    
+    path[] res = intersection(p, q, correct = false, round = round, roundcoeff = roundcoeff);
+    for (int i = 0; i < holes.length; ++i)
+    { res = difference(res, holes[i], correct = false, round = round, roundcoeff = roundcoeff); }
+    
+    return res;
+}
+
+path[] operator ^ (path p, path q)
+{ return intersection(p, q); }
+
+path[] union (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+) // Construct the union of two path-enclosed areas.
+{
+    if (correct)
+    {
+        if (!clockwise(p)) p = reverse(p);
+        if (!clockwise(q)) q = reverse(q);
+    }
+    if (!meet(p, q))
+    {
+        if (insidepath(p,q)) return new path[]{p};
+        if (insidepath(q,p)) return new path[]{q};
+        return new path[]{p,q};
+    }
+    
+    return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
+}
+
+path[] union (
+    path[] ps,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+{
+    if (correct)
+    {
+        for (int i = 0; i < ps.length; ++i)
+        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
+    }
+    
+    if (ps.length == 0) return new path[];
+    if (ps.length == 1) return ps;
+    if (ps.length == 2) return union(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
+    
+    for (int i = 0; i < ps.length; ++i)
+    {
+        for (int j = i+1; j < ps.length; ++j)
+        {
+            if (meet(ps[i], ps[j]))
+            {
+                ps[i] = union(ps[i], ps[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
+                ps.delete(j);
+                j = i;
+            }
+        }
+    }
+    
+    return ps;
+}
+
+path[] union (
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+    ... path[] ps
+) { return union(ps, correct, round, roundcoeff); }
+
+path[] operator | (path p, path q)
+{ return union(p, q); }
+
+// >system | System functions
 
 usepackage("amssymb"); // LaTeX package for mathematical symbols
-
-// -- System functions -- //
 
 restricted void halt (string msg)
 // Writes error message and exits compilation.
@@ -341,6 +1083,8 @@ private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
     );
 }
 
+// >pens | Manipulating pens
+
 private pen inverse (pen p)
 // Inverts the colors of `p`.
 {
@@ -348,6 +1092,12 @@ private pen inverse (pen p)
     if (colors.length == 1) return colorless(p)+gray(1-colors[0]);
     if (colors.length == 3) return colorless(p)+rgb(1-colors[0], 1-colors[1], 1-colors[2]);
     return colorless(p);
+}
+
+private pen brighten (pen p, real coeff)
+// Makes `p` brighter
+{
+    return inverse(coeff * inverse(p));
 }
 
 private pen sectionpen (pen p)
@@ -386,8 +1136,6 @@ private pen underpen (pen p)
 // Derives a pen to draw paths that go under areas.
 { return dashpen(p); }
 
-// -- User setting functions -- //
-
 restricted void defaults ()
 // Revert global settings to the defaults.
 {
@@ -398,6 +1146,11 @@ restricted void defaults ()
     config.system.dummypair = defaultconfig.system.dummypair;
     config.system.repeatlabels = defaultconfig.system.repeatlabels;
     config.system.insertdollars = defaultconfig.system.insertdollars;
+    // Path config
+    config.paths.roundcoeff = defaultconfig.paths.roundcoeff;
+    config.paths.range = defaultconfig.paths.range;
+    config.paths.neighheight = defaultconfig.paths.neighheight;
+    config.paths.neighwidth = defaultconfig.paths.neighwidth;
     // Section config
     config.section.maxbreadth = defaultconfig.section.maxbreadth;
     config.section.freedom = defaultconfig.section.freedom;
@@ -434,7 +1187,12 @@ restricted void defaults ()
     config.drawing.dashopacity = defaultconfig.drawing.dashopacity;
     config.drawing.attachedopacity = defaultconfig.drawing.attachedopacity;
     config.drawing.subpenfactor = defaultconfig.drawing.subpenfactor;
+    config.drawing.subpenbrighten = defaultconfig.drawing.subpenbrighten;
     config.drawing.sectionpen = defaultconfig.drawing.sectionpen;
+    config.drawing.lineshadeangle = defaultconfig.drawing.lineshadeangle;
+    config.drawing.lineshadedensity = defaultconfig.drawing.lineshadedensity;
+    config.drawing.lineshademargin = defaultconfig.drawing.lineshademargin;
+    config.drawing.lineshadepen = defaultconfig.drawing.lineshadepen;
     config.drawing.mode = defaultconfig.drawing.mode;
     config.drawing.useopacity = defaultconfig.drawing.useopacity;
     config.drawing.dashes = defaultconfig.drawing.dashes;
@@ -460,7 +1218,7 @@ restricted void defaults ()
     config.arrow.absmargins = defaultconfig.arrow.absmargins;
 }
 
-// -- Technical functions to construct horizontal and vertical sections -- //
+// >technical | Low-level path-related functions
 
 private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
 {
@@ -696,7 +1454,7 @@ private pair[][] sectionparams (path g, path h, int n, real r, int p)
     }, pres.length);
 }
 
-// -- The structures of the module -- //
+// >structs | The structures of the module
 
 restricted struct element
 // An 'element' of a set, in a set-theoretical sense.
@@ -750,6 +1508,7 @@ restricted struct element
 private element[] elementcopy (element[] elements)
 { return sequence(new element (int i) { return elements[i].copy(); }, elements.length); }
 
+// >hole
 restricted struct hole
 // A cyclic area 'cut out' of a smooth object.
 {
@@ -837,13 +1596,16 @@ restricted struct hole
     }
 }
 
+// >hole | Utilities for holes
+
 private hole[] holecopy (hole[] holes)
 { return sequence(new hole (int i){return holes[i].copy();}, holes.length); }
 
 private path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
-struct subset
+// >subset
+restricted struct subset
 // A structure representing a subset of a given object (see "smooth")
 {
     // Attributes
@@ -947,6 +1709,8 @@ struct subset
         return this;
     }
 }
+
+// >subset | Utilities for subsets
 
 private subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
@@ -1080,14 +1844,15 @@ private void subsetcleanreferences (subset[] subsets)
     for (int i = 0; i < subsets.length; ++i) { clean(i); }
 }
 
+// >dpar
 struct dpar
 {
     // Attributes
 
     pen contourpen;         // The pen used to draw the contour of the smooth object.
     pen smoothfill;         // The pen used to fill the smooth object.
-    pen subsetcontourpen;   // The pen used to draw the contour of the subsets.
-    pen subsetfill;         // The pen used to fill the subsets.
+    pen[] subsetcontourpens;// An array of pens for subsets of different levels.
+    pen[] subsetfill;       // The pen used to fill the subsets.
     pen sectionpen;         // The pen used to draw the cross sections.
     pen dashpen;            // The pen used to draw dashed lines on cross sections.
     pen shadepen;           // The pen used to fill shaded regions.
@@ -1113,8 +1878,8 @@ struct dpar
     void operator init (
         pen contourpen = currentpen,
         pen smoothfill = config.drawing.smoothfill,
-        pen subsetcontourpen = contourpen,
-        pen subsetfill = config.drawing.subsetfill,
+        pen[] subsetcontourpens = {contourpen},
+        pen[] subsetfill = config.drawing.subsetfill,
         pen sectionpen = sectionpen(contourpen),
         pen dashpen = dashpen(sectionpen),
         pen shadepen = shadepen(smoothfill),
@@ -1138,7 +1903,7 @@ struct dpar
     {
         this.contourpen = contourpen;
         this.smoothfill = smoothfill;
-        this.subsetcontourpen = subsetcontourpen;
+        this.subsetcontourpens = subsetcontourpens;
         this.subsetfill = subsetfill;
         this.sectionpen = sectionpen;
         this.dashpen = dashpen;
@@ -1164,8 +1929,8 @@ struct dpar
     dpar subs (
         pen contourpen = this.contourpen,
         pen smoothfill = this.smoothfill,
-        pen subsetcontourpen = this.subsetcontourpen,
-        pen subsetfill = this.subsetfill,
+        pen[] subsetcontourpens = this.subsetcontourpens,
+        pen[] subsetfill = this.subsetfill,
         pen sectionpen = this.sectionpen,
         pen dashpen = this.dashpen,
         pen shadepen = this.shadepen,
@@ -1189,7 +1954,7 @@ struct dpar
     {
         this.contourpen = contourpen;
         this.smoothfill = smoothfill;
-        this.subsetcontourpen = subsetcontourpen;
+        this.subsetcontourpens = subsetcontourpens;
         this.subsetfill = subsetfill;
         this.sectionpen = sectionpen;
         this.dashpen = dashpen;
@@ -1215,6 +1980,8 @@ struct dpar
     }
 }
 
+// >dpar | Utilities for dpar
+
 dpar ghostpar (pen contourpen = currentpen)
 {
     return dpar(
@@ -1232,10 +1999,11 @@ dpar emptypar ()
     return dpar(
         contourpen = nullpen,
         smoothfill = nullpen,
-        subsetfill = nullpen
+        subsetfill = new pen[]{nullpen}
     );
 }
 
+// >smooth
 struct smooth
 // The main structure in the module. Represents the way a "smooth manifold" would be drawn on a piece of paper.
 {
@@ -2762,6 +3530,8 @@ struct smooth
     { return this.move(rotate = rotate); }
 }
 
+// >smooth | Utilities for smooth objects
+
 smooth[] concat (smooth[][] smss)
 {
     if (smss.length == 0) return new smooth[];
@@ -2769,6 +3539,85 @@ smooth[] concat (smooth[][] smss)
     smooth[] sms = smss.pop();
     return concat(concat(smss), sms);
 }
+
+void print (smooth sm)
+// Print information about a given smooth object. Could be useful when drawing the object is too resource-consuming.
+{
+    string[] msg;
+    msg.push("> SMOOTH OBJECT: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label));
+    msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (dummy(sm.labelalign) ? "[normal]" : (string)round(sm.labelalign, 2)));
+    msg.push("> CENTER: " + (string)round(sm.center, 2));
+
+    msg.push("");
+    msg.push("> HOLES: " + (string)sm.holes.length);
+    if (sm.holes.length > 0)
+    {
+        int holeindexlength = length((string)(sm.holes.length - 1));
+        int holecenterlength = max(sequence(
+            new int (int i) { return length((string)round(sm.holes[i].center, 2)); },
+            sm.holes.length
+        ));
+        for (int i = 0; i < sm.holes.length; ++i)
+        {
+            string index = (string)i + repeatstring(" ", holeindexlength - length((string)i));
+            string center = (string)round(sm.holes[i].center, 2);
+            center = center + repeatstring(" ", holecenterlength - length(center));
+
+            msg.push("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
+        }
+    }
+
+    msg.push("");
+    msg.push("> SUBSETS: " + (string)sm.subsets.length);
+    if (sm.subsets.length > 0)
+    {
+        int subsetindexlength = length((string)(sm.subsets.length - 1));
+        int subsetcenterlength = max(sequence(
+            new int (int i) { return length((string)round(sm.subsets[i].center, 2)); },
+            sm.subsets.length
+        ));
+        int subsetlabellength = max(sequence(
+            new int (int i) {
+                if (sm.subsets[i].label == "") return length("[unlabeled]");
+                return length(sm.subsets[i].label);
+            },
+            sm.subsets.length
+        ));
+        for (int i = 0; i < sm.subsets.length; ++i)
+        {
+            string index = (string)i + repeatstring(" ", subsetindexlength - length((string)i));
+            string center = (string)round(sm.subsets[i].center, 2);
+            center = center + repeatstring(" ", subsetcenterlength - length(center));
+            string label = sm.subsets[i].label == "" ? "[unlabeled]" : sm.subsets[i].label;
+            label = label + repeatstring(" ", subsetlabellength - length(label));
+        
+            string curmsg = "| " + index + " | CENTER: " + center + " | LABEL: " + label + " | SUBSETS: [";
+            for (int j = 0; j < sm.subsets[i].subsets.length; ++j)
+            { curmsg += ((string)sm.subsets[i].subsets[j] + (j < sm.subsets[i].subsets.length - 1 ? ", " : "")); }
+            curmsg += "]";
+
+            msg.push(curmsg);
+        }
+    }
+
+    write("");
+    string line = repeatstring("-", max(sequence(
+        new int (int i) { return length(msg[i]); },
+        msg.length
+    )));
+    write(line);
+    for (int i = 0; i < msg.length; ++i)
+    { write(msg[i]); }
+    write(line);
+}
+
+void printall ()
+{
+    for (int i = 0; i < smooth.cache.length; ++i)
+    { print(smooth.cache[i]); }
+}
+
+// >finding | Identifying objects by label
 
 private int findsmoothindex (string label)
 {
@@ -2948,89 +3797,7 @@ private int[] findbylabel (string label)
     return i(smres, type, (type == 1) ? eltres : sbres);
 }
 
-private string repeatstring (string str, int n)
-{
-    if (n == 0) return "";
-    return repeatstring(str, n-1) + str;
-}
-
-void print (smooth sm)
-// Print information about a given smooth object. Could be useful when drawing the object is too resource-consuming.
-{
-    string[] msg;
-    msg.push("> SMOOTH OBJECT: " + ((length(sm.label) == 0) ? "[unlabeled]" : sm.label));
-    msg.push("> DIRECTION: " + (string)round(sm.labeldir, 2) + " | ALIGN: " + (dummy(sm.labelalign) ? "[normal]" : (string)round(sm.labelalign, 2)));
-    msg.push("> CENTER: " + (string)round(sm.center, 2));
-
-    msg.push("");
-    msg.push("> HOLES: " + (string)sm.holes.length);
-    if (sm.holes.length > 0)
-    {
-        int holeindexlength = length((string)(sm.holes.length - 1));
-        int holecenterlength = max(sequence(
-            new int (int i) { return length((string)round(sm.holes[i].center, 2)); },
-            sm.holes.length
-        ));
-        for (int i = 0; i < sm.holes.length; ++i)
-        {
-            string index = (string)i + repeatstring(" ", holeindexlength - length((string)i));
-            string center = (string)round(sm.holes[i].center, 2);
-            center = center + repeatstring(" ", holecenterlength - length(center));
-
-            msg.push("| " + index + " | CENTER: " + center + " | SECTIONS: " + (string)sm.holes[i].sections.length);
-        }
-    }
-
-    msg.push("");
-    msg.push("> SUBSETS: " + (string)sm.subsets.length);
-    if (sm.subsets.length > 0)
-    {
-        int subsetindexlength = length((string)(sm.subsets.length - 1));
-        int subsetcenterlength = max(sequence(
-            new int (int i) { return length((string)round(sm.subsets[i].center, 2)); },
-            sm.subsets.length
-        ));
-        int subsetlabellength = max(sequence(
-            new int (int i) {
-                if (sm.subsets[i].label == "") return length("[unlabeled]");
-                return length(sm.subsets[i].label);
-            },
-            sm.subsets.length
-        ));
-        for (int i = 0; i < sm.subsets.length; ++i)
-        {
-            string index = (string)i + repeatstring(" ", subsetindexlength - length((string)i));
-            string center = (string)round(sm.subsets[i].center, 2);
-            center = center + repeatstring(" ", subsetcenterlength - length(center));
-            string label = sm.subsets[i].label == "" ? "[unlabeled]" : sm.subsets[i].label;
-            label = label + repeatstring(" ", subsetlabellength - length(label));
-        
-            string curmsg = "| " + index + " | CENTER: " + center + " | LABEL: " + label + " | SUBSETS: [";
-            for (int j = 0; j < sm.subsets[i].subsets.length; ++j)
-            { curmsg += ((string)sm.subsets[i].subsets[j] + (j < sm.subsets[i].subsets.length - 1 ? ", " : "")); }
-            curmsg += "]";
-
-            msg.push(curmsg);
-        }
-    }
-
-    write("");
-    string line = repeatstring("-", max(sequence(
-        new int (int i) { return length(msg[i]); },
-        msg.length
-    )));
-    write(line);
-    for (int i = 0; i < msg.length; ++i)
-    { write(msg[i]); }
-    write(line);
-}
-
-void printall ()
-{
-    for (int i = 0; i < smooth.cache.length; ++i)
-    { print(smooth.cache[i]); }
-}
-
+// >deferredPath
 private struct deferredPath
 {
     path[] g;
@@ -3058,6 +3825,8 @@ private struct deferredPath
         this.endbar = endbar;
     }
 }
+
+// >deferredPath | Utilities for deferred paths
 
 private deferredPath[][] deferredPaths;
 private deferredPath[][] savedDeferredPaths;
@@ -3122,7 +3891,7 @@ private void purgedeferredunder (deferredPath[] curdeferred)
     }
 }
 
-// -- Default pre-built smooth objects -- //
+// >values | Default smooth objects
 
 smooth samplesmooth (int type, int num = 0, string label = "")
 {
@@ -3470,16 +4239,16 @@ dpar nodepar ()
     );
 }
 
-// -- Set operations with smooth objects -- //
+// >operations | Set operations on smooth objects
 
-// -- Intersections -- //
+// >intersections
 
 smooth[] intersection (
     smooth sm1,
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 ) // Constructs the intersection of two given smooth objects.
 {
@@ -3648,7 +4417,7 @@ smooth[] intersection (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
 {
@@ -3676,7 +4445,7 @@ smooth[] intersection (
 smooth[] intersection (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersection(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3684,30 +4453,11 @@ smooth[] intersection (
 smooth[] operator ^^ (smooth sm1, smooth sm2)
 { return intersection(sm1, sm2); }
 
-// -- Intersects -- //
- 
-// smooth intersect (
-//     smooth sm1,
-//     smooth sm2,
-//     bool keepdata = true,
-//     bool round = false,
-//     real roundcoeff = paths.roundcoeff,
-//     bool addsubsets = config.smooth.addsubsets
-// ) // an alternative to `intersection` that only returns one smooth object.
-// {
-//     smooth[] intersection = intersection(sm1, sm2, keepdata, round, roundcoeff, addsubsets);
-//     if (intersection.length == 0)
-//     { halt("Could not intersect: smooth objects do not intersect. [ intersect() ]"); }
-//     if (intersection.length > 1)
-//     { write("> ? Intersection produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
-//     return intersection[0];
-// }
-
 smooth intersect (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
 {
@@ -3722,7 +4472,7 @@ smooth intersect (
 smooth intersect (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
     ... smooth[] sms
 ) { return intersect(sms, keepdata, round, roundcoeff, addsubsets); }
@@ -3730,14 +4480,14 @@ smooth intersect (
 smooth operator ^ (smooth sm1, smooth sm2)
 { return intersect(sm1, sm2); }
 
-// -- Unions -- //
+// >unions
 
 smooth[] union (
     smooth sm1,
     smooth sm2,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff
+    real roundcoeff = config.paths.roundcoeff
 ) // Constructs the union of two given smooth objects.
 {
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
@@ -3908,7 +4658,7 @@ smooth[] union (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff
+    real roundcoeff = config.paths.roundcoeff
 )
 {
     sms = sequence(new smooth (int i){return sms[i];}, sms.length);
@@ -3941,7 +4691,7 @@ smooth[] union (
 smooth[] union (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff
+    real roundcoeff = config.paths.roundcoeff
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff); }
 
@@ -3952,7 +4702,7 @@ smooth unite (
     smooth[] sms,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff
+    real roundcoeff = config.paths.roundcoeff
 ) // An alternative to `union` that only returns one smooth object, if there is only one.
 {
     smooth[] union = union(sms, keepdata, round, roundcoeff);
@@ -3964,7 +4714,7 @@ smooth unite (
 smooth unite (
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff
+    real roundcoeff = config.paths.roundcoeff
     ... smooth[] sms
 ) { return union(sms, keepdata, round, roundcoeff)[0]; }
 
@@ -4024,7 +4774,7 @@ smooth tangentspace (
     return res;
 }
 
-// -- From here starts the collection of the drawing functions provided by the module. -- //
+// >drawing | Generic drawing functionality
 
 private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, path gs, Label L, pen p, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
 /*
@@ -4254,6 +5004,38 @@ void fillfitpath (
     { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
 }
 
+void shaderegion (
+    picture pic = currentpicture,
+    path g,
+    real angle = config.drawing.lineshadeangle,
+    real density = config.drawing.lineshadedensity,
+    real margin = config.drawing.lineshademargin,
+    pen p = config.drawing.lineshadepen
+) // TODO
+{
+    real vsep = density / Cos(angle);
+    pair min = min(g), max = max(g);
+    pair diag = max - min;
+    g = srap(max((length(diag)-margin)/length(diag), 0.5), 0, center(g)) * g;
+    min -= 0.1*diag;
+    max += 0.1*diag;
+    diag = max - min;
+    real h = xpart(diag) * Tan(angle);
+    for (real y = ypart(min) - h; y <= ypart(max); y += vsep) {
+        real[][] sects = intersections(g, (xpart(min), y) -- (xpart(max), y+h));
+        if (sects.length % 2 == 1) continue;
+        for (int i = 0; i < sects.length; i += 2) {
+            draw(
+                pic,
+                point(g, sects[i][0]) -- point(g, sects[i+1][0]),
+                p = p
+            );
+        }
+    }
+}
+
+// >drawing | Drawing high-level structures
+
 private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
@@ -4421,12 +5203,18 @@ void draw (
 
     // Filling and drawing subsets
 
-    if (dspec.fillsubsets)
+    if (dspec.fillsubsets && (dspec.subsetfill.length > 0 || dspec.subsetcontourpens.length > 0))
     {
         int maxlayer = subsetmaxlayer(sm.subsets, sequence(sm.subsets.length));
-        real penscale = (maxlayer > 0) ? config.drawing.subpenfactor^(1/maxlayer) : 1;
-        pen[] subsetpens = {dspec.subsetfill};
-        for (int i = 1; i < maxlayer+1; ++i)
+        pen[] subsetpens =
+            (dspec.subsetfill.length > 0) ?
+            copy(dspec.subsetfill) : (
+                (dspec.subsetcontourpens.length > 0) ?
+                map(new pen (pen p) { return brighten(p, config.drawing.subpenbrighten); }, dspec.subsetcontourpens) :
+                new pen[]{}
+            );
+        real penscale = (maxlayer - subsetpens.length >= 0) ? config.drawing.subpenfactor^(1/(maxlayer - subsetpens.length + 1)) : 1;
+        for (int i = subsetpens.length; i <= maxlayer; ++i)
         { subsetpens[i] = nextsubsetpen(subsetpens[i-1], penscale); }
         int[] orderindices = sort(sequence(sm.subsets.length), new bool (int i, int j){return sm.subsets[i].layer < sm.subsets[j].layer;});
         for (int i = 0; i < orderindices.length; ++i)
@@ -4445,7 +5233,7 @@ void draw (
                 {
                     debugpaths.push(sm.subsets[i].contour);
                 }
-                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
             }
         }
     }
@@ -4495,7 +5283,7 @@ void draw (
                 if (abs(sb.labeldir) == 0) align = (0,0);
                 else align = rotate(90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
             }
-            label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sb.label+"$") : sb.label), align = align));
+            label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sb.label+"$") : sb.label), align = align, p = dspec.subsetcontourpens[min(sb.layer, dspec.subsetcontourpens.length-1)]));
             if (dspec.help && abs(sb.labeldir) > 0)
             {
                 draw(pic = pic, sb.center -- pos, purple+config.help.linewidth);
@@ -4554,7 +5342,7 @@ smooth[] drawintersect (
     pair labelalign = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
 ) // Draws the intersection of two smooth objects, as well as their dim contours for comparison
@@ -4588,7 +5376,7 @@ smooth[] drawintersect (
     pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
 )
@@ -4619,12 +5407,43 @@ smooth[] drawintersect (
     pair align = config.system.dummypair,
     bool keepdata = true,
     bool round = false,
-    real roundcoeff = paths.roundcoeff,
+    real roundcoeff = config.paths.roundcoeff,
     pair shift = (0,0),
     dpar dspec = null
     ... smooth[] sms
 )
 { return drawintersect(pic, sms, label, dir, align, keepdata, round, roundcoeff, shift, dspec); }
+
+void drawcommuting (
+    picture pic = currentpicture,
+    smooth[] sms,
+    real size = config.smooth.nodesize*.5,
+    pen p = currentpen,
+    bool direction = CW
+)
+{
+    if (sms.length < 3)
+    { halt("Could not draw commutative diagram symbol: too few objects in diagram"); }
+
+    pair center = (1/sms.length)*sum(sequence(new pair (int i){ return sms[i].center; }, sms.length));
+    real angd2 = 40;
+    if (direction == CCW) angd2 - angd2;
+    real deg = degrees(sms[0].center - center);
+    pair vec1 = size*dir(deg - angd2);
+    pair vec2 = dir(deg + angd2);
+
+    draw(pic, arc(center, center+vec1, center+vec2, direction), p = p, arrow = ArcArrow(SimpleHead));
+}
+
+void drawcommuting (
+    picture pic = currentpicture,
+    real size = config.smooth.nodesize*.5,
+    pen p = currentpen,
+    bool direction = CW
+    ... smooth[] sms
+) { drawcommuting(pic, sms, size, p, direction); }
+
+// >drawing | Arrows and paths
 
 void drawarrow (
     picture pic = currentpicture,
@@ -4792,10 +5611,17 @@ void drawarrow (
     bool help = config.help.enable,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow,
+    real margin = config.system.dummynumber,
     real margin1 = config.arrow.margin,
     real margin2 = config.arrow.margin
 )
 {
+    if (margin != config.system.dummynumber)
+    {
+        margin1 = margin;
+        margin2 = margin;
+    }
+
     smooth sm1 = null, sm2 = null;
     int index1 = config.system.dummynumber, index2 = config.system.dummynumber;
     pair start = config.system.dummypair, finish = config.system.dummypair;
@@ -4830,7 +5656,7 @@ void drawpath (
     int index1,
     smooth sm2 = sm1,
     int index2 = index1,
-    real range = paths.range,
+    real range = config.paths.range,
     real angle = config.system.dummynumber,
     real radius = config.system.dummynumber,
     bool reverse = false,
@@ -4841,7 +5667,7 @@ void drawpath (
     bool random = config.drawing.pathrandom,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow
-)
+) // Draw a surface path on a smooth object
 {
     bool onself = sm2 == sm1 && index1 == index2;
 
@@ -4890,7 +5716,7 @@ void drawpath (
     picture pic = currentpicture,
     string destlabel1,
     string destlabel2 = destlabel1,
-    real range = paths.range,
+    real range = config.paths.range,
     real angle = config.system.dummynumber,
     real radius = config.system.dummynumber,
     bool reverse = false,
@@ -4923,34 +5749,7 @@ void drawpath (
     drawpath(pic, sm1, index1, sm2, index2, range, angle, radius, reverse, points, L, p, help, overlap, drawnow);
 }
 
-void drawcommuting (
-    picture pic = currentpicture,
-    smooth[] sms,
-    real size = config.smooth.nodesize*.5,
-    pen p = currentpen,
-    bool direction = CW
-)
-{
-    if (sms.length < 3)
-    { halt("Could not draw commutative diagram symbol: too few objects in diagram"); }
-
-    pair center = (1/sms.length)*sum(sequence(new pair (int i){ return sms[i].center; }, sms.length));
-    real angd2 = 40;
-    if (direction == CCW) angd2 - angd2;
-    real deg = degrees(sms[0].center - center);
-    pair vec1 = size*dir(deg - angd2);
-    pair vec2 = dir(deg + angd2);
-
-    draw(pic, arc(center, center+vec1, center+vec2, direction), p = p, arrow = ArcArrow(SimpleHead));
-}
-
-void drawcommuting (
-    picture pic = currentpicture,
-    real size = config.smooth.nodesize*.5,
-    pen p = currentpen,
-    bool direction = CW
-    ... smooth[] sms
-) { drawcommuting(pic, sms, size, p, direction); }
+// >drawing | Deferred drawing implementation
 
 void drawdeferred (
     picture pic = currentpicture,
@@ -5022,7 +5821,7 @@ void flushdeferred (
     picture pic = currentpicture
 ) { extractdeferredpaths(pic, false).delete(); }
 
-// -- Redefining functions to execute `drawdeferred` and `flushdeferred` at call -- //
+// >redefining | Changing basic Asymptote functions to accomodate for deferred drawing
 
 void plainshipout (
     string prefix=defaultfilename,

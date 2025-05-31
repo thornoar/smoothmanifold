@@ -10,7 +10,7 @@ The module is extremely functional and flexible, while maintaining a simple and 
 
 ## Features
 
-- `smoothmanifold` includes a dependency sub-module `pathmethods.asy` --- a collection of useful path functions essential for the main module, such as `path[] union (...)`, `path[] intersection (...)`, `pair center (...)` and more. In summary, cyclic paths in this sub-module are viewed as boundaries of areas on the plane, and its functions have to do with manipulating those areas (intersecting, finding the center, etc.). `pathmethods` can be very useful outside of `smoothmanifold` as well.
+- `smoothmanifold` includes a collection of useful path functions such as `path[] union (...)`, `path[] intersection (...)`, `pair center (...)` and more. In summary, cyclic paths in this module are viewed as boundaries of areas on the plane, and its functions have to do with manipulating those areas (intersecting, finding the center, etc.).
 
 - The module itself features four main custom structures --- object blueprints that possess particular attributes and represent particular sets of data:
     * `smooth` --- the main structure of the module. It has a bounding cyclical `contour`, a string `label`, and potentially multiple `holes` and `subsets`. The structure does not store information about how it will be drawn --- it is only an abstract object. The drawing is done with the `draw` function. The `smooth` objects can be copied, moved, intersected with each other, and more. See *examples/pictures* for examples.
@@ -38,11 +38,11 @@ All paths that constitute these custom objects are meant to go __clockwise__, be
     Further, an arrow can be drawn between two `smooth` objects or their subsets or their elements (see *examples/pictures/logo*) with the routine `void drawarrow (...)`. The `drawpath` function draws a smooth path between two elements, with adjustable control points. The `drawintersect` function intersects two given `smooth` objects and draws this intersection with dim outlines of the original objects (see *examples/pictures/intersection.1*).
     `smoothmanifold` uses a system of deferred drawing. All paths that constitute the contours of smooth objects, holes and subsets, as well as arrows and paths, are not immediately rendered, but rather remembered to be drawn at shipout time. This allows these paths to be changed "after being drawn". For example, an arrow drawn across a smooth object leaves gaps in the object's contour where it passes, and this is achieved by redefining the "already drawn" contour paths. Or, when a smooth object covers another object, the contour of the latter will be 'redrawn' with a dashed pen, indicating that it is not visible. The `shipout` function is redefined in the module to automatically draw all cached paths, so there is no user input needed. As far as I know, this feature of deferred drawing is unique across Asymptote modules.
 
-- Independence. `smoothmanifold` does not depend on any other Asymptote module, apart from its sub-module `pathmethods`.
+- Independence. `smoothmanifold` does not depend on any other Asymptote module.
 
 ## Installation
 
-Download the `smoothmanifold.asy`, `pathmethods.asy`, and (optionally) `export.asy` files and insert this line in your code:
+Download the `smoothmanifold.asy` and (optionally) `export.asy` files and insert this line in your code:
 
 ```asymptote
 import smoothmanifold;

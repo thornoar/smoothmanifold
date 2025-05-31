@@ -9,8 +9,8 @@ defaultpen(1);
 config.drawing.subsetoverlap = false;
 config.drawing.gaplength = .03;
 config.drawing.smoothfill = lightgreen;
-config.drawing.subsetfill = cyan;
-config.drawing.subpenfactor = .05;
+config.drawing.subsetfill = new pen[]{cyan, yellow, red};
+config.drawing.subpenfactor = .4;
 config.smooth.unit = false;
 
 smooth sm = samplesmooth(0);
