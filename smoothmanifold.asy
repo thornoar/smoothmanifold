@@ -109,7 +109,7 @@ struct helpconfig {
 
 struct arrowconfig {
     real margin = 0.03; // the margin of arrows from the edge of the object.
-    bool absmargins = false; // whether arrow margins should be absolute.
+    bool absmargins = true; // whether arrow margins should be absolute.
 }
 
 struct globalconfig {
@@ -4776,7 +4776,23 @@ smooth tangentspace (
 
 // >drawing | Generic drawing functionality
 
-private void fitpath (picture pic, bool overlap, int covermode, bool drawnow, path gs, Label L, pen p, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
+private void fitpath (
+    picture pic,
+    bool overlap,
+    int covermode,
+    bool drawnow,
+    path gs,
+    Label L,
+    pen p,
+    // arrowbar arrow,
+    // arrowbar bar
+    arrowhead arrow,
+    bool beginarrow,
+    bool endarrow,
+    real barsize,
+    bool beginbar,
+    bool endbar
+)
 /*
 Fit the path on the picture without actually drawing it (unless specified otherwise). The path may then be changed "after it was drawn", and it will finally be rendered to the picture at shipout time.
 The `covermode` parameter needs additional explanation. It determines what happens to the paths that find themselves going 'under' the path `gs`. The possible values are:
@@ -5571,12 +5587,12 @@ void drawarrow (
     real time2; 
 
     if (intersection1.length > 0)
-    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1*length); }
-    else { time1 = arctime(g, margin1*length); }
+    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1); }
+    else { time1 = arctime(g, margin1); }
 
     if (intersection2.length > (onself ? 1 : 0))
-    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2*length); }
-    else { time2 = arctime(g, (1-margin2)*length); }
+    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2); }
+    else { time2 = arctime(g, (length-margin2)); }
 
     path gs = subpath(g, time1, time2);
 
