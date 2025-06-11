@@ -2,11 +2,8 @@ import export;
 
 size(20 cm);
 defaultpen(1);
-// smpar(underdash = true);
 
 config.drawing.underdashes = true;
-
-// expar(ymax = 2, ratio = 1, clip = true, informat = "png", outformat = "mp4");
 
 export.enclose = true;
 export.corner = (2,2);

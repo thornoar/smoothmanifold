@@ -20,14 +20,6 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// -- Default constants -- //
-// Variable names are abbreviated to avoid really long names. Naming is hard...
-
-// [Pr]ogress
-
-// [An]imations
-// private string listfilename = ".animation_input_list.txt";
-
 // -- Configuration structures -- //
 
 struct exportanimationconfig {
@@ -45,7 +37,6 @@ struct exportanimationconfig {
 
 struct exportconfig {
     string prefix = outname();
-    // string format = settings.outformat;
     bool exitonexport = false;
     int rasterdensity = 300;
     pen background = nullpen;
@@ -71,8 +62,6 @@ struct exportconfig {
 // Global configuration instances
 private exportconfig defaultexport;
 exportconfig export;
-
-// string[] export.natives = new string[]{};
 
 void linux (string cmd)
 // Run an arbitrary Linux command.

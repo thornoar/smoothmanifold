@@ -9,7 +9,7 @@ settings.outformat = "pdf";
 
 size(12cm);
 
-pen pathpen = linewidth(.9pt);
+pen pathpen = linewidth(.7pt);
 
 smooth sm = smooth(
     contour = rotate(150)*convexpaths[3],
@@ -51,7 +51,7 @@ drawpath(
     },
     L = Label("\mathrm{Im}\hspace{1pt} f_1", position = Relative(.1), p = currentpen, align = Relative(W)),
     overlap = true,
-    p = linewidth(1.1pt)
+    p = pathpen
 );
 drawpath(
     sm, 0, angle = -15, radius = .15,
@@ -68,18 +68,18 @@ draw(segment, dspec = emptypar());
 
 drawarrow(
     start = segment.relative((-.2,.5)),
-    finish = sm.relative((.45,.35)),
+    finish = sm.relative((.43,.32)),
     curve = .15,
-    margin1 = 0,
-    margin2 = 0,
+    beginmargin = 0,
+    endmargin = 0,
     L = Label("f_1")
 );
 
 drawarrow(
     start = segment.relative((-.2,-.9)),
-    finish = sm.relative((.97,-.3)),
+    finish = sm.relative((.93,-.29)),
     curve = -.15,
-    margin1 = 0,
-    margin2 = 0,
+    beginmargin = 0,
+    endmargin = 0,
     L = Label("f_2", align = Relative(W))
 );

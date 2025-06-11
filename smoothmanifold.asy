@@ -19,10 +19,18 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+// >keywords
+/*  config, tarrow, tbar, values, support,
+    generic, system, pens, technical, structs,
+    hole, subset, dpar, smooth, finding,
+    deferredPath, operations, intersections,
+    unions, drawing, redefining
+*/
+
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.0.1-alpha";
+    string version = "v6.1.0-alpha";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
@@ -31,10 +39,10 @@ struct systemconfig {
 }
 
 struct pathconfig {
-    real roundcoeff = .03;
-    real range = 30;
-    real neighheight = .05;
-    real neighwidth = .01;
+    real roundcoeff = .03; // how much to round the corners when combining paths
+    real range = 30; // angle range for random paths. the more -- the more random
+    real neighheight = .05; // see `path neigharc()`
+    real neighwidth = .01; // see `path neigharc()`
 }
 
 struct sectionconfig {
@@ -76,8 +84,8 @@ struct drawingconfig {
     real dashpenscale = .4; // how lighter dashed lines are compared to regular ones.
     real dashopacity = .4; // opacity of dashed pens.
     real attachedopacity = .8; // opacity of smooth objects attached to main object.
-    real subpenfactor = .4; // how darker subsets get with each new layer.
-    real subpenbrighten = .1; // how darker subsets get with each new layer.
+    real subpenfactor = .5; // how darker subsets get with each new layer.
+    real subpenbrighten = .5; // how darker subsets get with each new layer.
     pen sectionpen = nullpen;
     real lineshadeangle = 45;
     real lineshadedensity = 0.15;
@@ -107,8 +115,30 @@ struct helpconfig {
     pen linewidth = linewidth(.3); // the width of help lines
 }
 
+// >tarrow | A more descriptive analog of `arrowbar` for arrows
+struct tarrow
+{
+    arrowhead head;
+    real size;
+    real angle;
+    filltype ftype;
+    bool begin;
+    bool end;
+    bool arc;
+}
+
+// >tbar | A more descriptive analog of `arrowbar` for bars
+struct tbar
+{
+    real size;
+    bool begin;
+    bool end;
+}
+
 struct arrowconfig {
-    real margin = 0.03; // the margin of arrows from the edge of the object.
+    real mar = 0.03; // the margin of arrows from the edge of the object.
+    tarrow currentarrow = null;
+    tbar currentbar = null;
     bool absmargins = true; // whether arrow margins should be absolute.
 }
 
@@ -692,7 +722,7 @@ path randompath (pair[] controlpoints, real angle)
     return res{outdir}..{indir}controlpoints[controlpoints.length-1];
 }
 
-// >generic | Set operations on paths
+// >generic
 
 path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 // A general way to "combine" two ps based on their intersection points.
@@ -799,6 +829,8 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 
     return res;
 }
+
+// >operations | Set operations on paths
 
 path[] difference (
     path p,
@@ -1214,7 +1246,7 @@ restricted void defaults ()
     config.help.arrowlength = defaultconfig.help.arrowlength;
     config.help.linewidth = defaultconfig.help.linewidth;
     // Arrow config
-    config.arrow.margin = defaultconfig.arrow.margin;
+    config.arrow.mar = defaultconfig.arrow.mar;
     config.arrow.absmargins = defaultconfig.arrow.absmargins;
 }
 
@@ -3797,33 +3829,97 @@ private int[] findbylabel (string label)
     return i(smres, type, (type == 1) ? eltres : sbres);
 }
 
-// >deferredPath
+// >tarrow | Utilities for `tarrow`
+
+tarrow DeferredArrow(
+    arrowhead head = DefaultHead,
+    real size = 0,
+    real angle = arrowangle,
+    bool begin = false,
+    bool end = true,
+    bool arc = false,
+    filltype filltype = null
+)
+{
+    tarrow res;
+    res.head = head;
+    res.size = size;
+    res.angle = angle;
+    res.ftype = filltype;
+    res.begin = begin;
+    res.end = end;
+    res.arc = arc;
+    return res;
+}
+config.arrow.currentarrow = DeferredArrow(SimpleHead);
+
+private arrowbar convertarrow(
+    tarrow arrow,
+    bool overridebegin = false,
+    bool overrideend = false
+)
+{
+    if (overridebegin && overrideend) return None;
+    if (arrow == null) return None;
+    unravel arrow;
+    if (!begin && !end) return None;
+    if (!begin && overridebegin) return None;
+    if (!end && overrideend) return None;
+    if (begin && end && !overridebegin && !overrideend)
+    {
+        return arc ? ArcArrows(head, size, angle, ftype) : Arrows(head, size, angle, ftype);
+    }
+    if (end && !overridebegin)
+    {
+        return arc ? EndArcArrow(head, size, angle, ftype, EndPoint) : EndArrow(head, size, angle, ftype, EndPoint);
+    }
+    else
+    {
+        return arc ? BeginArcArrow(head, size, angle, ftype, BeginPoint) : BeginArrow(head, size, angle, ftype, BeginPoint);
+    }
+}
+
+// >tbar | Utilities for `tbar`
+
+tbar DeferredBar(
+    real size = 0,
+    bool begin = false,
+    bool end = false
+)
+{
+    tbar res;
+    res.size = size;
+    res.begin = begin;
+    res.end = end;
+    return res;
+}
+
+private arrowbar convertbar(
+    tbar bar,
+    bool overridebegin = false,
+    bool overrideend = false
+)
+{
+    if (overridebegin && overrideend) return None;
+    if (bar == null) return None;
+    unravel bar;
+    if (!begin && !end) return None;
+    if (!begin && overridebegin) return None;
+    if (!end && overrideend) return None;
+    if (begin && end && !overridebegin && !overrideend) { return Bars(size); }
+    if (begin && !overrideend) { return BeginBar(size); }
+    if (end) { return EndBar(size); }
+    return None;
+}
+
+// >deferredPath | An auxiliary structure for deferred path drawing
 private struct deferredPath
 {
     path[] g;
     pen p;
     int[] under;
-
-    arrowhead arrow;
-    bool beginarrow;
-    bool endarrow;
-    
-    real barsize;
-    bool beginbar;
-    bool endbar;
-
-    void operator init (path[] g, pen p, int[] under, arrowhead arrow, bool beginarrow, bool endarrow, real barsize, bool beginbar, bool endbar)
-    {
-        this.g = g;
-        this.p = p;
-        this.under = under;
-        this.arrow = arrow;
-        this.beginarrow = beginarrow;
-        this.endarrow = endarrow;
-        this.barsize = barsize;
-        this.beginbar = beginbar;
-        this.endbar = endbar;
-    }
+    tarrow arrow;
+    tbar bar;
 }
 
 // >deferredPath | Utilities for deferred paths
@@ -3866,7 +3962,6 @@ path[] getdeferredpaths (
 
 private void purgedeferredunder (deferredPath[] curdeferred)
 {
-    // deferredPath[] curdeferred = extractdeferredpaths(pic, false);
     for (int i = 0; i < curdeferred.length; ++i)
     {
         for (int j = 0; j < curdeferred[i].g.length; ++j)
@@ -3875,13 +3970,13 @@ private void purgedeferredunder (deferredPath[] curdeferred)
             {
                 if (j == 0)
                 {
-                    curdeferred[i].beginarrow = false;
-                    curdeferred[i].beginbar = false;
+                    if (curdeferred[i].arrow != null) curdeferred[i].arrow.begin = false;
+                    if (curdeferred[i].bar != null) curdeferred[i].bar.begin = false;
                 }
                 if (j == curdeferred[i].g.length-1)
                 {
-                    curdeferred[i].endarrow = false;
-                    curdeferred[i].endbar = false;
+                    if (curdeferred[i].arrow != null) curdeferred[i].arrow.end = false;
+                    if (curdeferred[i].bar != null) curdeferred[i].bar.end = false;
                 }
                 curdeferred[i].g.delete(j);
                 curdeferred[i].under.delete(j);
@@ -4784,14 +4879,8 @@ private void fitpath (
     path gs,
     Label L,
     pen p,
-    // arrowbar arrow,
-    // arrowbar bar
-    arrowhead arrow,
-    bool beginarrow,
-    bool endarrow,
-    real barsize,
-    bool beginbar,
-    bool endbar
+    tarrow arrow,
+    tbar bar
 )
 /*
 Fit the path on the picture without actually drawing it (unless specified otherwise). The path may then be changed "after it was drawn", and it will finally be rendered to the picture at shipout time.
@@ -4915,13 +5004,13 @@ The `covermode` parameter needs additional explanation. It determines what happe
             {
                 if (newg.length > 0 && abs(beginpoint(newg[0]) - beginpoint(g[0])) > config.drawing.gaplength)
                 {
-                    curdp[i].beginarrow = false;
-                    curdp[i].beginbar = false;
+                    if (curdp[i].arrow != null) curdp[i].arrow.begin = false;
+                    if (curdp[i].bar != null) curdp[i].bar.begin = false;
                 }
                 if (newg.length > 0 && abs(endpoint(newg[newg.length-1]) - endpoint(g[g.length-1])) > config.drawing.gaplength)
                 {
-                    curdp[i].endarrow = false;
-                    curdp[i].endbar = false;
+                    if (curdp[i].arrow != null) curdp[i].arrow.end = false;
+                    if (curdp[i].bar != null) curdp[i].bar.end = false;
                 }
                 curdp[i].g = newg;
                 curdp[i].under = newunder;
@@ -4935,32 +5024,15 @@ The `covermode` parameter needs additional explanation. It determines what happe
     }
     if (!drawnow)
     {
-        curdp.push(deferredPath(
-            g = new path[] {gs},
-            p = p,
-            under = new int[] {0},
-            arrow = arrow,
-            beginarrow = beginarrow,
-            endarrow = endarrow,
-            barsize = barsize,
-            beginbar = beginbar,
-            endbar = endbar
-        ));
+        deferredPath newdp;
+        newdp.g = new path[] {gs};
+        newdp.p = p;
+        newdp.under = new int[] {0};
+        newdp.arrow = arrow;
+        newdp.bar = bar;
+        curdp.push(newdp);
     }
-    else
-    {
-        arrowbar truearrow;
-        if (beginarrow && endarrow) truearrow = Arrows(arrow);
-        else if (beginarrow) truearrow = BeginArrow(arrow);
-        else if (endarrow) truearrow = EndArrow(arrow);
-        else truearrow = None;
-        arrowbar truebar;
-        if (beginbar && endbar) truebar = Bars(barsize);
-        else if (beginbar) truebar = BeginBar(barsize);
-        else if (endbar) truebar = EndBar(barsize);
-        else truebar = None;
-        draw(pic = pic, gs, p = p, arrow = truearrow, bar = truebar);
-    }
+    else { draw(pic = pic, gs, p = p, arrow = convertarrow(arrow), bar = convertbar(bar)); }
 }
 
 void fitpath (
@@ -4970,13 +5042,9 @@ void fitpath (
     Label L = "",
     pen p = currentpen,
     bool drawnow = false,
-    arrowhead arrow = SimpleHead,
-    bool beginarrow = false,
-    bool endarrow = false,
-    real barsize = 0,
-    bool beginbar = false,
-    bool endbar = false
-) { fitpath(pic, false, covermode, drawnow, g, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar); }
+    tarrow arrow = config.arrow.currentarrow,
+    tbar bar = config.arrow.currentbar
+) { fitpath(pic, false, covermode, drawnow, g, L, p, arrow, bar); }
 
 void fitpath (
     picture pic = currentpicture,
@@ -4988,7 +5056,7 @@ void fitpath (
 )
 {
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, false, covermode, drawnow, g[i], L, p, null, false, false, 0, false, false); }
+    { fitpath(pic, false, covermode, drawnow, g[i], L, p, null, null); }
 }
 
 void fillfitpath (
@@ -5002,7 +5070,7 @@ void fillfitpath (
 )
 {
     fill(pic, g, fillpen);
-    fitpath(pic, false, covermode, drawnow, g, L, drawpen, null, false, false, 0, false, false);
+    fitpath(pic, false, covermode, drawnow, g, L, drawpen, null, null);
 }
 
 void fillfitpath (
@@ -5017,7 +5085,7 @@ void fillfitpath (
 {
     fill(pic, g, fillpen);
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, false, false, 0, false, false); }
+    { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, null); }
 }
 
 void shaderegion (
@@ -5111,7 +5179,7 @@ void draw (
             {
                 debugpaths.push(contour[i]);
             }
-            fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = 1-2*sgn(i), dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+            fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = 1-2*sgn(i), dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, bar = null);
         }
     }
 
@@ -5249,7 +5317,7 @@ void draw (
                 {
                     debugpaths.push(sm.subsets[i].contour);
                 }
-                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, beginarrow = false, endarrow = false, barsize = 0, beginbar = false, endbar = false);
+                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, bar = null);
             }
         }
     }
@@ -5476,18 +5544,13 @@ void drawarrow (
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    arrowhead arrow = SimpleHead,
-    bool beginarrow = false,
-    bool endarrow = true,
-    real barsize = 0,
-    bool beginbar = false,
-    bool endbar = false,
+    tarrow arrow = config.arrow.currentarrow,
+    tbar bar = config.arrow.currentbar,
     bool help = config.help.enable,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow,
-    real margin = config.system.dummynumber,
-    real margin1 = config.arrow.margin,
-    real margin2 = config.arrow.margin
+    real beginmargin = config.arrow.mar,
+    real endmargin = config.system.dummynumber
 ) // Draws an arrow between two given smooth objects, or their subsets.
 {
     bool onself = false;
@@ -5496,10 +5559,9 @@ void drawarrow (
     bool hasenclosure2 = false;
     path g2;
 
-    if (margin != config.system.dummynumber)
+    if (endmargin == config.system.dummynumber)
     {
-        margin1 = margin;
-        margin2 = margin;
+        endmargin = beginmargin;
     }
     
     if (start == config.system.dummypair)
@@ -5580,19 +5642,19 @@ void drawarrow (
     real length = arclength(g);
     if (!config.arrow.absmargins)
     {
-        margin1 *= length;    
-        margin2 *= length;    
+        beginmargin *= length;    
+        endmargin *= length;    
     }
     real time1;
     real time2; 
 
     if (intersection1.length > 0)
-    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+margin1); }
-    else { time1 = arctime(g, margin1); }
+    { time1 = arctime(g, arclength(g, 0, intersection1[0][0])+beginmargin); }
+    else { time1 = arctime(g, beginmargin); }
 
     if (intersection2.length > (onself ? 1 : 0))
-    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-margin2); }
-    else { time2 = arctime(g, (length-margin2)); }
+    { time2 = arctime(g, arclength(g, 0, intersection2[intersection2.length-1][0])-endmargin); }
+    else { time2 = arctime(g, (length-endmargin)); }
 
     path gs = subpath(g, time1, time2);
 
@@ -5604,7 +5666,7 @@ void drawarrow (
         dot(finish, elementpen(blue));
     }
 
-    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, arrow, beginarrow, endarrow, barsize, beginbar, endbar);
+    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, arrow = arrow, bar = bar);
 }
 
 void drawarrow (
@@ -5618,24 +5680,18 @@ void drawarrow (
     pair[] points = {},
     Label L = "",
     pen p = currentpen,
-    arrowhead arrow = SimpleHead,
-    bool beginarrow = false,
-    bool endarrow = true,
-    real barsize = 0,
-    bool beginbar = false,
-    bool endbar = false,
+    tarrow arrow = config.arrow.currentarrow,
+    tbar bar = config.arrow.currentbar,
     bool help = config.help.enable,
     bool overlap = config.drawing.overlap,
     bool drawnow = config.drawing.drawnow,
-    real margin = config.system.dummynumber,
-    real margin1 = config.arrow.margin,
-    real margin2 = config.arrow.margin
+    real beginmargin = config.arrow.mar,
+    real endmargin = config.system.dummynumber
 )
 {
-    if (margin != config.system.dummynumber)
+    if (endmargin == config.system.dummynumber)
     {
-        margin1 = margin;
-        margin2 = margin;
+        endmargin = beginmargin;
     }
 
     smooth sm1 = null, sm2 = null;
@@ -5663,7 +5719,7 @@ void drawarrow (
         { finish = sm2.elements[indices2[2]].pos; }
     }
 
-    drawarrow(pic, sm1, index1, start, sm2, index2, finish, curve, angle, radius, points, L, p, arrow, beginarrow, endarrow, barsize, beginbar, endbar, help, overlap, drawnow, margin1, margin2);
+    drawarrow(pic, sm1, index1, start, sm2, index2, finish, curve, angle, radius, points, L, p, arrow, bar, help, overlap, drawnow, beginmargin, endmargin);
 }
 
 void drawpath (
@@ -5725,7 +5781,7 @@ void drawpath (
 
     if (reverse) gs = reverse(gs);
     
-    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, null, false, false, 0, false, false);
+    fitpath(pic, overlap = overlap, covermode = 0, drawnow = drawnow, gs = gs, L = L, p = p, null, null);
 }
 
 void drawpath (
@@ -5783,6 +5839,13 @@ void drawdeferred (
         int finishind = g.length-1;
         pen underp = underpen(p);
 
+        bool beginarrow = arrow == null || arrow.begin;
+        bool endarrow = arrow == null || arrow.end;
+        bool beginbar = bar == null || bar.begin;
+        bool endbar = bar == null || bar.end;
+        arrowbar truearrow = convertarrow(arrow);
+        arrowbar truebar = convertbar(bar);
+
         if (!beginarrow && !endarrow && !beginbar && !endbar)
         {
             for (int j = startind; j <= finishind; ++j)
@@ -5792,33 +5855,23 @@ void drawdeferred (
 
         if (!beginarrow && !beginbar)
         {
-            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
+            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             finishind -= 1;
         }
         else if (!endarrow && !endbar)
         {
-            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
+            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             startind += 1;
         }
         else if (g.length > 1)
         {
-            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = beginarrow ? BeginArrow(arrow) : None, bar = beginbar ? BeginBar(barsize) : None);
-            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = endarrow ? EndArrow(arrow) : None, bar = endbar ? EndBar(barsize) : None);
+            draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = convertarrow(arrow, overridebegin = true), bar = convertbar(bar, overridebegin = true));
+            draw(pic = pic, g[g.length-1], p = under[g.length-1] > 0 ? underp : p, arrow = convertarrow(arrow, overrideend = true), bar = convertbar(bar, overrideend = true));
             startind += 1;
             finishind -= 1;
         }
         else
         {
-            arrowbar truearrow;
-            if (beginarrow && endarrow) truearrow = Arrows(arrow);
-            else if (beginarrow) truearrow = BeginArrow(arrow);
-            else if (endarrow) truearrow = EndArrow(arrow);
-            else truearrow = None;
-            arrowbar truebar;
-            if (beginbar && endbar) truebar = Bars(barsize);
-            else if (beginbar) truebar = BeginBar(barsize);
-            else if (endbar) truebar = EndBar(barsize);
-            else truebar = None;
             draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             return;
         }

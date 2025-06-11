@@ -15,7 +15,8 @@ config.help.enable = true;
 
 smooth sm = samplesmooth(1)
     .setlabel("M")
-    .setlabel(0, "U", S+.5*E);
+    .setlabel(0, "U", S+.5*E)
+    .setsection(0, new real[] {-4, 2, 270, 9});
 
 smooth ts = tangentspace(
     sm = sm,
@@ -38,16 +39,15 @@ smooth rn = rn(n = 1)
         unit = true
     );
 
-draw(sm, dpar(mode = free, overlap = false));
+draw(sm, dpar(mode = free, viewdir = 1.5*dir(-45), overlap = false));
 draw(rn, rnpar());
 
 drawarrow(
     ts,
 	rn,
-	endarrow = true,
-	beginarrow = true,
-	margin1 = .05,
-	margin2 = -.1,
+	arrow = DeferredArrow(SimpleHead, begin = true),
+	beginmargin = .07,
+	endmargin = -.3,
 	curve = -.2,
 	L = Label("\cong", align = Relative(W))
 );
@@ -57,8 +57,7 @@ drawarrow(
 	rn,
 	0,
 	curve = .3,
-	margin1 = .03,
-	margin2 = .03,
+	beginmargin = .07,
 	L = Label("f")
 );
 

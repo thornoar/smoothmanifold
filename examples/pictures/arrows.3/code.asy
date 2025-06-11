@@ -7,6 +7,7 @@ defaultpen(.5);
 config.drawing.gaplength = .07;
 config.smooth.shiftsubsets = true;
 config.arrow.absmargins = true;
+config.arrow.mar = .04;
 config.drawing.fill = true;
 config.smooth.unit = true;
 config.drawing.mode = free;
@@ -67,7 +68,6 @@ drawarrow(
     sm1,
 	sm2,
 	curve = -.15,
-    margin = .02,
 	L = Label("f", align = Relative(W))
 );
 drawarrow(
@@ -75,8 +75,7 @@ drawarrow(
 	sm2,
 	index1 = 0,
 	index2 = 0,
-	curve = .34,
-    margin = .015,
+	curve = .36,
 	L = Label("f_U", position = Relative(.4))
 );
 drawarrow(
@@ -85,8 +84,6 @@ drawarrow(
 	index1 = 1,
 	index2 = 0,
 	curve = .4,
-    margin1 = .015,
-    margin2 = .03,
 	L = "g"
 );
 drawarrow(
@@ -94,7 +91,6 @@ drawarrow(
 	0,
 	angle = 185,
 	radius = .62,
-    margin = .02,
 	L = Label(
         "\mathrm{id}_U",
         position = Relative(.22),
@@ -105,9 +101,8 @@ drawarrow(
     sm2,
 	1,
 	angle = -63,
-	radius = .8,
+	radius = .85,
 	reverse = true,
-    margin = .02,
 	L = Label(
         "\mathrm{id}_W",
         position = Relative(.45),
@@ -117,7 +112,6 @@ drawarrow(
 drawarrow(
     sm2,
 	2,
-    margin = .01,
 	angle = 150,
 	radius = .7
 );
@@ -125,8 +119,6 @@ drawarrow(
     sm1,
 	angle = 70,
 	radius = .9,
-    margin1 = .02,
-    margin2 = .01,
 	L = Label("\mathrm{id}_M", align = Relative(W))
 );
 

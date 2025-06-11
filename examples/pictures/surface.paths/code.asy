@@ -12,6 +12,8 @@ config.section.freedom = .3;
 config.drawing.gaplength = .1;
 config.drawing.subsetoverlap = true;
 config.drawing.pathrandom = true;
+config.drawing.subpenbrighten = .4;
+config.drawing.subpenfactor = .6;
 config.smooth.unit = true;
 
 smooth sm1 = samplesmooth(0)

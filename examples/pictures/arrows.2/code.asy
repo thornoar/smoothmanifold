@@ -14,7 +14,7 @@ config.smooth.unit = true;
 config.drawing.gaplength = .1;
 config.drawing.mode = cartesian;
 config.drawing.viewdir = dir(-20);
-config.arrow.margin = .02;
+config.arrow.mar = .05;
 config.arrow.absmargins = true;
 
 smooth sm1 = samplesmooth(3, 1).move(scale = 1.3).setlabel("M", dir(150));

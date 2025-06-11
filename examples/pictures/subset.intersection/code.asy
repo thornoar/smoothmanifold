@@ -4,7 +4,6 @@ settings.render = 8;
 
 size(20 cm);
 defaultpen(1);
-// smpar(minscale = .05, subsetoverlap = false, gaplength = .03, smoothfill = lightgreen, subsetfill = cyan, unit = false);
 
 config.drawing.subsetoverlap = false;
 config.drawing.gaplength = .03;

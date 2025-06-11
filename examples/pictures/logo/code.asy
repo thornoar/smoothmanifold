@@ -92,18 +92,23 @@ drawpath(
 drawarrow(
     start = sm2.elements[1].pos,
     finish = sm1.elements[1].pos,
-    curve = -.4
+    curve = -.4,
+    beginmargin = .05
 );
 drawarrow(
     sm1,
     angle = 180,
     radius = 1.2,
-    margin = .015
+    beginmargin = .05
 );
 
 picture pic;
 // usepackage("tgschola");
 defaultpen(fontsize(11pt));
-label(pic, (0,.2), L = "\textrm{module}");
-label(pic, (0,0), L = "\texttt{smoothmanifold}");
-add(shift((-.92,-.05))*pic);
+label(pic, (0,0), L = minipage("
+    \begin{center}
+    \textrm{module}\\
+    \textit{smoothmanifold}
+    \end{center}
+"));
+add(shift((-.92,.03))*pic);
