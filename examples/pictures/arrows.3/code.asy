@@ -20,8 +20,8 @@ export.xmargin = 1cm;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)
-    .setsection(0, 0, r(dn,dn,dn,6))
-    .setsection(1, 0, r(dn,dn,dn,6))
+    .setsection(0, 0, r(dn,dn,6))
+    .setsection(1, 0, r(dn,dn,6))
     .movesubset(0, shift = (0.05,.09))
     .setlabel("M", dir = dir(100))
     .setlabel(0, label = "U", dir = dir(180));
@@ -29,7 +29,7 @@ smooth sm1 = samplesmooth(3,0)
 smooth sm2 = samplesmooth(1)
 .move(shift = (4,0), rotate = 90)
 .rmsubset(0)
-.setsection(0, r(dn,dn,240,5))
+.setsection(0, r(dn,240,5))
 .addsubset(
     contour = convexpaths[4],
     label = "V",

@@ -30,7 +30,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.1.0-alpha";
+    string version = "v6.2.0-alpha";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
@@ -51,7 +51,7 @@ struct sectionconfig {
     int precision = 20; // how many points to sample in search for good section position.
     real elprecision = -1; // precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
     bool avoidsubsets = false; // [A]void [S]ubsets
-    real[] default = new real[] {-10000,-10000,235,5}; // default expressed in section notation.
+    real[] default = new real[] {-10000,235,5}; // default expressed in section notation.
 }
 
 struct smoothconfig {
@@ -1091,11 +1091,13 @@ private bool dummy (string s)
 private bool checksection (real[] section)
 // Checks if array has valid section values in it
 {
-    if (section.length > 1 && section[0] == 0 && section[1] == 0)
+    if (section.length > 0 && !dummy(section[0]) && !inside(0, 360, section[0]))
     { return false; }
-    if (section.length > 2 && !dummy(section[2]) && !inside(0, 360, section[2]))
+    if (section.length > 1 && !dummy(section[1]) && !inside(0, 360, section[1]))
     { return false; }
-    if (section.length > 3 && !dummy(section[3]) && section[3] <= 0)
+    if (section.length > 2 && !dummy(section[2]) && section[2] <= 0)
+    { return false; }
+    if (section.length > 3)
     { return false; }
     return true;
 }
@@ -1571,11 +1573,7 @@ restricted struct hole
 
         if (!movesections) return this;
         for (int i = 0; i < this.sections.length; ++i)
-        {
-            pair sectdir = (this.sections[i][0], this.sections[i][1]);
-            this.sections[i][0] = xpart(rotate(rotate)*sectdir);
-            this.sections[i][1] = ypart(rotate(rotate)*sectdir);
-        }
+        { this.sections[i][0] += rotate; }
         return this;
     }
 
@@ -2236,11 +2234,7 @@ struct smooth
             hl.center = scale(s,1)*hl.center;
 
             for (real[] sc : hl.sections)
-            {
-                pair dir = (sc[0], sc[1]);
-                sc[0] = (scale(s,1)*dir).x;
-                sc[1] = (scale(s,1)*dir).y;
-            }
+            { sc[0] = degrees(scale(s,1)*dir(sc[0])); }
         }
         for (subset sb : this.subsets)
         {
@@ -2655,13 +2649,12 @@ struct smooth
         pair holedir = (hl.center == this.center) ? (-1,0) : unit(hl.center - this.center);
         for (int i = 0; i < hl.sections.length; ++i)
         {
-            if (dummy(hl.sections[i][0]) || dummy(hl.sections[i][1]))
+            if (dummy(hl.sections[i][0]))
             {
-                hl.sections[i][0] = (rotate(360*i/hl.sections.length)*holedir).x;
-                hl.sections[i][1] = (rotate(360*i/hl.sections.length)*holedir).y;
+                hl.sections[i][0] = degrees(holedir) + 360*i/hl.sections.length;
             }
-            if (dummy(hl.sections[i][2]) || hl.sections[i][2] <= 0) hl.sections[i][2] = config.section.default[2];
-            if (dummy(hl.sections[i][3]) || hl.sections[i][3] <= 0 || hl.sections[i][3] != ceil(hl.sections[i][3])) hl.sections[i][3] = config.section.default[3];
+            if (dummy(hl.sections[i][1]) || hl.sections[i][1] <= 0 || hl.sections[i][1] >= 360) hl.sections[i][1] = config.section.default[1];
+            if (dummy(hl.sections[i][2]) || hl.sections[i][2] <= 0 || hl.sections[i][2] != ceil(hl.sections[i][2])) hl.sections[i][2] = config.section.default[2];
         }
 
         this.holes.insert(i = insertindex, hl);
@@ -2778,11 +2771,7 @@ struct smooth
         if (movesections)
         {
             for (int i = 0; i < hl.sections.length; ++i)
-            {
-                pair sectdir = (hl.sections[i][0], hl.sections[i][1]);
-                hl.sections[i][0] = xpart(rotate(rotate)*sectdir);
-                hl.sections[i][1] = ypart(rotate(rotate)*sectdir);
-            }
+            { hl.sections[i][0] += rotate; }
         }
 
         return this;
@@ -2798,16 +2787,13 @@ struct smooth
             write("> ? Could not add hole section: invalid entries. [ addsection() ]");
             return this;
         }
-        for (int i = 2; i < section.length; ++i)
+        for (int i = 1; i < section.length; ++i)
         { if (dummy(section[i])) section[i] = config.section.default[i]; }
         while (section.length < config.section.default.length)
         { section.push(config.section.default[section.length]); }
         pair holedir = (this.holes[index].center == this.center) ? (-1,0) : unit(this.holes[index].center - this.center);
-        if (dummy(section[0]) || dummy(section[1]))
-        {
-            section[0] = holedir.x;
-            section[1] = holedir.y;
-        }
+        if (dummy(section[0]))
+        { section[0] = degrees(holedir); }
 
         this.holes[index].sections.push(section);
         return this;
@@ -4040,7 +4026,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                 holes = new hole[] {
                     hole(
                         contour = convexpaths[2],
-                        sections = rr(config.system.dummynumber, config.system.dummynumber, 260, config.system.dummynumber),
+                        sections = rr(config.system.dummynumber, 260, config.system.dummynumber),
                         shift = (-.65, .25),
                         scale = .5
                     )
@@ -4069,7 +4055,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         scale = .51,
                         rotate = -60,
                         sections = new real[][] {
-                            new real[] {-5, -1, 280, 10, .65, 200}
+                            new real[] {190, 280, 10}
                         }
                     )
                 },
@@ -4090,7 +4076,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
             return smooth(
                 contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
                 holes = new hole[] {
-                    hole(contour = convexpaths[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(-4.5,1.5,230,8))
+                    hole(contour = convexpaths[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(161,230,8))
                 },
                 subsets = new subset[] {
                     subset(contour = concavepaths[3], shift = (-.3,-.35), rotate = -50),
@@ -4113,8 +4099,8 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = convexpaths[4],
                         sections = new real[][] {
-                            new real[] {-2,1.5, 60, 3},
-                            new real[] {0, -1, 80, 4}
+                            new real[] {140, 60, 3},
+                            new real[] {270, 80, 4}
                         },
                         shift = (-.5, -.15),
                         scale = .45,
@@ -4123,7 +4109,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = convexpaths[3],
                         sections = new real[][] {
-                            new real[] {config.system.dummynumber, config.system.dummynumber, 230, 10}
+                            new real[] {config.system.dummynumber, 230, 10}
                         },
                         shift = (.57,.52),
                         scale = .47,
@@ -4182,7 +4168,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = convexpaths[5],
                         sections = new real[][] {
-                            new real[] {3,0, 160, 7}
+                            new real[] {0, 160, 7}
                         },
                         shift = (.57,-.13),
                         scale = .37,
@@ -4191,7 +4177,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
                         sections = new real[][] {
-                            new real[] {0,1,190,6}
+                            new real[] {90,190,6}
                         },
                         scnumber = -1,
                         shift = (-.12,.7),
@@ -4200,7 +4186,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                     hole(
                         contour = convexpaths[6],
                         sections = new real[][] {
-                            new real[] {-3,-2, 190, 6}
+                            new real[] {220, 190, 6}
                         },
                         shift = (-.35,-.43),
                         scale = .32,
@@ -4638,12 +4624,12 @@ smooth[] union (
             {
                 real[] section = trueholes[i].sections[j];
                 pair center = trueholes[i].center;
-                real dirang = degrees((section[0], section[1]));
-                real ang = section[2];
-                int num = floor(section[3]);
+                real dirang = section[0];
+                real ang = section[1];
+                int num = floor(section[2]);
                 real langlim = 1;
                 
-                if (intersectiontime(sm2.contour, center, (section[0], section[1])) != -1)
+                if (intersectiontime(sm2.contour, center, dir(dirang)) != -1)
                 {
                     trueholes[i].sections.delete(j);
                     j -= 1;
@@ -4662,7 +4648,7 @@ smooth[] union (
                     dirang += ang*.5;
                     num = ceil((real)num*.5);
                 }
-                trueholes[i].sections[j] = new real[] {dir(dirang).x, dir(dirang).y, ang, num};
+                trueholes[i].sections[j] = new real[] {dirang, ang, num};
             }
         }
     }
@@ -4679,12 +4665,12 @@ smooth[] union (
             {
                 real[] section = trueholes[sm1.holes.length+i].sections[j];
                 pair center = trueholes[sm1.holes.length+i].center;
-                real dirang = degrees((section[0], section[1]));
-                real ang = section[2];
-                int num = floor(section[3]);
+                real dirang = section[0];
+                real ang = section[1];
+                int num = floor(section[2]);
                 real langlim = 1;
                 
-                if (intersectiontime(sm1.contour, center, (section[0], section[1])) != -1)
+                if (intersectiontime(sm1.contour, center, dir(dirang)) != -1)
                 {
                     trueholes[sm1.holes.length + i].sections.delete(j);
                     j -= 1;
@@ -4704,7 +4690,7 @@ smooth[] union (
                     num = ceil((real)num*.5);
                 }
                 
-                trueholes[sm1.holes.length+i].sections[j] = new real[] {dir(dirang).x, dir(dirang).y, ang, num};
+                trueholes[sm1.holes.length+i].sections[j] = new real[] {dirang, ang, num};
             }
         }
     }
@@ -5200,8 +5186,8 @@ void draw (
             hole hl = sm.holes[i];
             for (int j = 0; j < hl.sections.length; ++j)
             {
-                pair smrange = range(sm.contour, hl.center, (hl.sections[j][0], hl.sections[j][1]), hl.sections[j][2]);
-                pair hlrange = range(hl.contour, hl.center, (hl.sections[j][0], hl.sections[j][1]), hl.sections[j][2]);
+                pair smrange = range(sm.contour, hl.center, dir(hl.sections[j][0]), hl.sections[j][1]);
+                pair hlrange = range(hl.contour, hl.center, dir(hl.sections[j][0]), hl.sections[j][1]);
                 path cursmcontour = subcyclic(sm.contour, smrange);
                 path curhlcontour = subcyclic(hl.contour, hlrange);
 
@@ -5211,11 +5197,11 @@ void draw (
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
                     pair hlvec = config.help.arcratio * radius(hl.contour) * unit(hlstart - hl.center);
                     draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + config.help.linewidth);
-                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][2])*hlvec) -- hlfinish, yellow + config.help.linewidth);
+                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][1])*hlvec) -- hlfinish, yellow + config.help.linewidth);
                     draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+config.help.linewidth);
                 }
 
-                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][3]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
+                drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][2]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
             }
 
             // Drawing sections between holes

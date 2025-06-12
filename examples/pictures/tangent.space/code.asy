@@ -16,7 +16,7 @@ config.help.enable = true;
 smooth sm = samplesmooth(1)
     .setlabel("M")
     .setlabel(0, "U", S+.5*E)
-    .setsection(0, new real[] {-4, 2, 270, 9});
+    .setsection(0, new real[] {153, 270, 9});
 
 smooth ts = tangentspace(
     sm = sm,

@@ -25,8 +25,8 @@ draw(sm1, ds);
 draw(sm2, ds);
 
 smooth sm3 = intersect(sm1, sm2);
-sm3.setsection(1, 0, r(-1.5,4,230,7));
-sm3.setsection(0, 0, r(2,-1,230,dn));
+sm3.setsection(1, 0, r(110,230,7));
+sm3.setsection(0, 0, r(330,230,dn));
 
 draw(sm3, dpar(help = false, mode = free, viewdir = dir(45)));
 
