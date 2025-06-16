@@ -19,7 +19,7 @@ smooth sm1 = smooth(
             shift = (-.84,.1),
             scale = .57,
             rotate = 30,
-            sections = rr(-1,0,235,8)
+            sections = rr(180,235,8)
         )
     },
     subsets = new subset[]{
