@@ -19,7 +19,7 @@ smooth sm = smooth(
         shift = (-.25,.2),
         scale = .5,
         rotate = -50,
-        sections = rr(-5.5,1.5,250,8)
+        sections = rr(164,250,8)
     )
     },
     unit = false,
