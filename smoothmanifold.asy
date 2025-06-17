@@ -4904,7 +4904,7 @@ The `covermode` parameter needs additional explanation. It determines what happe
             path[] newg;
             int[] newunder;
             if (!gscyclic) covermode = 0;
-            bool gjcyclic = (g.length == 1) && cyclic(g[0]);
+            bool gjcyclic = (g.length == 1);
 
             for (int j = 0; j < g.length; ++j)
             {
@@ -4936,7 +4936,7 @@ The `covermode` parameter needs additional explanation. It determines what happe
                     pair gjdo = (times[k][0] == floor(times[k][0])) ? dir(g[j], floor(times[k][0]), sign = 1) : dir(g[j], times[k][0]);
                     pair gsdi = (times[k][1] == floor(times[k][1])) ? dir(gs, floor(times[k][1]), sign = -1) : dir(gs, times[k][1]);
                     pair gsdo = (times[k][1] == floor(times[k][1])) ? dir(gs, floor(times[k][1]), sign = 1) : dir(gs, times[k][1]);
-                    if (sgn(cross(gjdi, gsdi))*sgn(cross(gjdo, gsdo)) <= 0) { continue; }
+                    if (sgn(cross(gjdi, gsdi))*sgn(cross(gjdo, gsdo)) < 0) { continue; }
 
                     pair gjd = unit(gjdi+gjdo);
                     pair gsd = unit(gsdi+gsdo);
@@ -5028,7 +5028,7 @@ void fitpath (
     Label L = "",
     pen p = currentpen,
     bool drawnow = false,
-    tarrow arrow = config.arrow.currentarrow,
+    tarrow arrow = null,
     tbar bar = config.arrow.currentbar
 ) { fitpath(pic, false, covermode, drawnow, g, L, p, arrow, bar); }
 
@@ -5081,8 +5081,10 @@ void shaderegion (
     real density = config.drawing.lineshadedensity,
     real margin = config.drawing.lineshademargin,
     pen p = config.drawing.lineshadepen
-) // TODO
+) // Draws shade lines inside a cyclic path.
 {
+    if (!cyclic(g))
+    { halt("Could not shade region: path is non-cyclic [ shaderegion() ]"); }
     real vsep = density / Cos(angle);
     pair min = min(g), max = max(g);
     pair diag = max - min;
