@@ -585,10 +585,10 @@ path neigharc (
     real x = 0,
     real h = config.paths.neighheight,
     int dir = 1,
-    real w = dir * config.paths.neighwidth
+    real w = config.paths.neighwidth
 ) // Draw an arc delimiting a neighborhood
 {
-    return ((x+w, h) .. {(0,-1)}(x, 0) .. (x+w, -h));
+    return ((x+dir*w, h) .. {(0,-1)}(x, 0) .. (x+dir*w, -h));
 }
 
 path ellipsepath (
@@ -5079,7 +5079,7 @@ void shaderegion (
     path g,
     real angle = config.drawing.lineshadeangle,
     real density = config.drawing.lineshadedensity,
-    real margin = config.drawing.lineshademargin,
+    real mar = config.drawing.lineshademargin,
     pen p = config.drawing.lineshadepen
 ) // Draws shade lines inside a cyclic path.
 {
@@ -5088,7 +5088,7 @@ void shaderegion (
     real vsep = density / Cos(angle);
     pair min = min(g), max = max(g);
     pair diag = max - min;
-    g = srap(max((length(diag)-margin)/length(diag), 0.5), 0, center(g)) * g;
+    g = srap(max((length(diag)-mar)/length(diag), 0.5), 0, center(g)) * g;
     min -= 0.1*diag;
     max += 0.1*diag;
     diag = max - min;
