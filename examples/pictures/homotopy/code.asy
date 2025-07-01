@@ -59,7 +59,7 @@ drawpath(
     p = pathpen,
     overlap = true
 );
-for (real i = 0.13; i > 0; i -= 0.03)
+for (real i = 0.13; i > 0.04; i -= 0.03)
 {
     drawpath(sm, 0, angle = -15, radius = i, p = pathpen, overlap = true);
 }

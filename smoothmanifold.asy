@@ -85,7 +85,7 @@ struct drawingconfig {
     real dashopacity = .4; // opacity of dashed pens.
     real attachedopacity = .8; // opacity of smooth objects attached to main object.
     real subpenfactor = .5; // how darker subsets get with each new layer.
-    real subpenbrighten = .5; // how darker subsets get with each new layer.
+    real subpenbrighten = .5; // How brighter to make the fill color of a subset than its contour color.
     pen sectionpen = nullpen;
     real lineshadeangle = 45;
     real lineshadedensity = 0.15;
@@ -1128,7 +1128,7 @@ private pen inverse (pen p)
     return colorless(p);
 }
 
-private pen brighten (pen p, real coeff)
+pen brighten (pen p, real coeff)
 // Makes `p` brighter
 {
     return inverse(coeff * inverse(p));
