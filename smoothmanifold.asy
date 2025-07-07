@@ -5024,17 +5024,31 @@ The `covermode` parameter needs additional explanation. It determines what happe
 void fitpath (
     picture pic = currentpicture,
     path g,
+    bool overlap = false,
     int covermode = 0,
     Label L = "",
     pen p = currentpen,
     bool drawnow = false,
     tarrow arrow = null,
     tbar bar = config.arrow.currentbar
-) { fitpath(pic, false, covermode, drawnow, g, L, p, arrow, bar); }
+) { fitpath(pic, overlap, covermode, drawnow, g, L, p, arrow, bar); }
+
+void fitpath (
+    picture pic = currentpicture,
+    guide g,
+    bool overlap = false,
+    int covermode = 0,
+    Label L = "",
+    pen p = currentpen,
+    bool drawnow = false,
+    tarrow arrow = null,
+    tbar bar = config.arrow.currentbar
+) { fitpath(pic, overlap, covermode, drawnow, (path)g, L, p, arrow, bar); }
 
 void fitpath (
     picture pic = currentpicture,
     path[] g,
+    bool overlap = false,
     int covermode = 0,
     Label L = "",
     pen p = currentpen,
@@ -5042,12 +5056,13 @@ void fitpath (
 )
 {
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, false, covermode, drawnow, g[i], L, p, null, null); }
+    { fitpath(pic, overlap, covermode, drawnow, g[i], L, p, null, null); }
 }
 
 void fillfitpath (
     picture pic = currentpicture,
     path g,
+    bool overlap = false,
     int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
@@ -5056,12 +5071,13 @@ void fillfitpath (
 )
 {
     fill(pic, g, fillpen);
-    fitpath(pic, false, covermode, drawnow, g, L, drawpen, null, null);
+    fitpath(pic, overlap, covermode, drawnow, g, L, drawpen, null, null);
 }
 
 void fillfitpath (
     picture pic = currentpicture,
     path[] g,
+    bool overlap = false,
     int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
@@ -5071,7 +5087,7 @@ void fillfitpath (
 {
     fill(pic, g, fillpen);
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, false, covermode, drawnow, g[i], L, drawpen, null, null); }
+    { fitpath(pic, overlap, covermode, drawnow, g[i], L, drawpen, null, null); }
 }
 
 void shaderegion (
