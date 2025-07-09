@@ -30,7 +30,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.2.0-alpha";
+    string version = "v6.3.0-alpha";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
@@ -639,6 +639,9 @@ path connect (pair[] points)
     { acc = acc .. points[i]; }
     return (path) acc;
 }
+
+path connect (... pair[] points)
+{ return connect(points); }
 
 path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
 // Connect points around the origin with a path.
@@ -2096,6 +2099,26 @@ struct smooth
                 "> ? Unrecognized index value: " +
                 (string) index +
                 ". Please use -1 for self-reference to the smooth object" +
+                ". [ " + fname + "() ]"
+            );
+        }
+    }
+
+    void checkelementindex (int index, string fname)
+    {
+        if (index >= this.elements.length)
+        {
+            halt(
+                "Element index out of bounds for smooth object " + 
+                (this.label == "" ? "[unlabeled]" : this.label) +
+                ". [ " + fname + "() ]"
+            );
+        }
+        if (index < -1)
+        {
+            write(
+                "> ? Unrecognized index value: " +
+                (string) index +
                 ". [ " + fname + "() ]"
             );
         }
@@ -3925,7 +3948,7 @@ private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
 {
     deferredPath[] res;
     int ind = extractdeferredindex(pic);
-    if (ind >= 0) res =  deferredPaths[ind];
+    if (ind >= 0) res = deferredPaths[ind];
     else if (createlink)
     {
         deferredPaths.push(res);
@@ -5541,6 +5564,7 @@ void drawarrow (
     smooth sm2 = sm1,
     int index2 = config.system.dummynumber,
     pair finish = config.system.dummypair,
+    bool elements = false,
     real curve = 0,
     real angle = 0,
     real radius = config.system.dummynumber,
@@ -5575,17 +5599,27 @@ void drawarrow (
             halt("Please provide either `sm1` or a starting point for the arrow. [ drawarrow() ]");
         }
 
-        hasenclosure1 = true;
         if (index1 == config.system.dummynumber) index1 = -1;
         if (index1 > -1)
         {
-            sm1.checksubsetindex(index1, "drawarrow");
-            subset sb1 = sm1.subsets[index1];
-            g1 = sb1.contour;
-            start = sb1.center;
+            if (elements)
+            {
+                sm1.checkelementindex(index1, "drawarrow");
+                hasenclosure1 = false;
+                start = sm1.elements[index1].pos;
+            }
+            else
+            {
+                sm1.checksubsetindex(index1, "drawarrow");
+                hasenclosure1 = true;
+                subset sb1 = sm1.subsets[index1];
+                g1 = sb1.contour;
+                start = sb1.center;
+            }
         }
         else
         {
+            hasenclosure1 = true;
             g1 = sm1.contour;
             start = sm1.center;
         }
@@ -5598,7 +5632,7 @@ void drawarrow (
             halt("Please provide either `sm2` or a finishing point for the arrow. [ drawarrow() ]");
         }
 
-        hasenclosure2 = true;
+        // hasenclosure2 = true;
         if (index2 == config.system.dummynumber)
         {
             if (sm1 == sm2) index2 = index1;
@@ -5611,18 +5645,33 @@ void drawarrow (
         {
             if (index2 > -1)
             {
-                sm2.checksubsetindex(index2, "drawarrow");
-                subset sb2 = sm2.subsets[index2];
-                g2 = sb2.contour;
-                finish = sb2.center;
+                if (elements)
+                {
+                    sm2.checkelementindex(index2, "drawarrow");
+                    hasenclosure2 = false;
+                    finish = sm2.elements[index2].pos;
+                }
+                else
+                {
+                    sm2.checksubsetindex(index2, "drawarrow");
+                    hasenclosure2 = true;
+                    subset sb2 = sm2.subsets[index2];
+                    g2 = sb2.contour;
+                    finish = sb2.center;
+                }
             }
             else
             {
+                hasenclosure2 = true;
                 g2 = sm2.contour;
                 finish = sm2.center;
             }
         }
-        else finish = start;
+        else
+        {
+            finish = start;
+            hasenclosure2 = hasenclosure1;
+        }
     }
 
     path g;
