@@ -5047,11 +5047,11 @@ The `covermode` parameter needs additional explanation. It determines what happe
 void fitpath (
     picture pic = currentpicture,
     path g,
-    bool overlap = false,
+    bool overlap = config.drawing.overlap,
     int covermode = 0,
     Label L = "",
     pen p = currentpen,
-    bool drawnow = false,
+    bool drawnow = config.drawing.drawnow,
     tarrow arrow = null,
     tbar bar = config.arrow.currentbar
 ) { fitpath(pic, overlap, covermode, drawnow, g, L, p, arrow, bar); }
@@ -5059,11 +5059,11 @@ void fitpath (
 void fitpath (
     picture pic = currentpicture,
     guide g,
-    bool overlap = false,
+    bool overlap = config.drawing.overlap,
     int covermode = 0,
     Label L = "",
     pen p = currentpen,
-    bool drawnow = false,
+    bool drawnow = config.drawing.drawnow,
     tarrow arrow = null,
     tbar bar = config.arrow.currentbar
 ) { fitpath(pic, overlap, covermode, drawnow, (path)g, L, p, arrow, bar); }
@@ -5071,11 +5071,11 @@ void fitpath (
 void fitpath (
     picture pic = currentpicture,
     path[] g,
-    bool overlap = false,
+    bool overlap = config.drawing.overlap,
     int covermode = 0,
     Label L = "",
     pen p = currentpen,
-    bool drawnow = false
+    bool drawnow = config.drawing.drawnow
 )
 {
     for (int i = 0; i < g.length; ++i)
@@ -5085,12 +5085,12 @@ void fitpath (
 void fillfitpath (
     picture pic = currentpicture,
     path g,
-    bool overlap = false,
+    bool overlap = config.drawing.overlap,
     int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
     pen fillpen = currentpen,
-    bool drawnow = false
+    bool drawnow = config.drawing.drawnow
 )
 {
     fill(pic, g, fillpen);
@@ -5100,12 +5100,12 @@ void fillfitpath (
 void fillfitpath (
     picture pic = currentpicture,
     path[] g,
-    bool overlap = false,
+    bool overlap = config.drawing.overlap,
     int covermode = 1,
     Label L = "",
     pen drawpen = currentpen,
     pen fillpen = currentpen,
-    bool drawnow = false
+    bool drawnow = config.drawing.drawnow
 )
 {
     fill(pic, g, fillpen);
