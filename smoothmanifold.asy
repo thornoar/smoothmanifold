@@ -1154,7 +1154,7 @@ private pen dashpenscale (pen p)
 private pen dashopacity (pen p)
 { return p+dashed+opacity(config.drawing.dashopacity); }
 
-private pen dashpen (pen p)
+pen dashpen (pen p)
 // Derives a pen to draw dashed lines, using either color dimming or opacity.
 {
     if (config.drawing.useopacity) return dashopacity(p);
@@ -1891,6 +1891,8 @@ struct dpar
     pen shadepen;           // The pen used to fill shaded regions.
     pen elementpen;         // The pen used to dot elements.
     pen labelpen;           // The pen used to write labels.
+    pen[] elementlabelpens; // The pen used to write labels.
+    pen[] subsetlabelpens;  // The pen used to write labels.
     int mode;               // The drawing mode. Could be either 'plain', 'free', or 'cartesian'.
     pair viewdir;           // The direction of the view.
     bool drawlabels;        // Whether to draw the labels.
@@ -1918,6 +1920,8 @@ struct dpar
         pen shadepen = shadepen(smoothfill),
         pen elementpen = elementpen(contourpen),
         pen labelpen = currentpen,
+        pen[] elementlabelpens = {},
+        pen[] subsetlabelpens = {},
         int mode = config.drawing.mode,
         pair viewdir = config.drawing.viewdir,
         bool drawlabels = config.drawing.labels,
@@ -1943,6 +1947,8 @@ struct dpar
         this.shadepen = shadepen;
         this.elementpen = elementpen;
         this.labelpen = labelpen;
+        this.elementlabelpens = elementlabelpens;
+        this.subsetlabelpens = subsetlabelpens;
         this.mode = mode;
         this.viewdir = viewdir;
         this.drawlabels = drawlabels;
@@ -1969,6 +1975,8 @@ struct dpar
         pen shadepen = this.shadepen,
         pen elementpen = this.elementpen,
         pen labelpen = this.labelpen,
+        pen[] elementlabelpens = this.elementlabelpens,
+        pen[] subsetlabelpens = this.subsetlabelpens,
         int mode = this.mode,
         pair viewdir = this.viewdir,
         bool drawlabels = this.drawlabels,
@@ -1994,6 +2002,8 @@ struct dpar
         this.shadepen = shadepen;
         this.elementpen = elementpen;
         this.labelpen = labelpen;
+        this.elementlabelpens = elementlabelpens;
+        this.subsetlabelpens = subsetlabelpens;
         this.mode = mode;
         this.viewdir = viewdir;
         this.drawlabels = drawlabels;
@@ -4333,13 +4343,14 @@ smooth node (
         shift = pos
     );
 }
-dpar nodepar ()
+dpar nodepar (pen labelpen = currentpen)
 {
     return dpar(
         fill = false,
         fillsubsets = false,
         drawcontour = false,
-        drawsubsetcontour = false
+        drawsubsetcontour = false,
+        labelpen = labelpen
     );
 }
 
@@ -5147,7 +5158,7 @@ void shaderegion (
 
 // >drawing | Drawing high-level structures
 
-private void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -5168,7 +5179,7 @@ private void drawsections (picture pic, pair[][] sections, pair viewdir, bool da
     }
 }
 
-private void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Draw vertical and horizontal cross sections.
 {
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
@@ -5361,7 +5372,14 @@ void draw (
         element elt = sm.elements[i];
         if (dspec.drawlabels && elt.label != "")
         {
-            label(pic = pic, position = elt.pos, L = Label((config.system.insertdollars ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign));
+            pen curlabelpen = (dspec.elementlabelpens.length == 0)
+                ? dspec.labelpen
+                : (
+                    (dspec.elementlabelpens.length <= i)
+                    ? dspec.elementlabelpens[dspec.elementlabelpens.length - 1]
+                    : dspec.elementlabelpens[i]
+                );
+            label(pic = pic, position = elt.pos, L = Label((config.system.insertdollars ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign, p = curlabelpen));
         }
         dot(pic = pic, elt.pos, dspec.elementpen);
     }
@@ -5374,7 +5392,7 @@ void draw (
             if (abs(sm.labeldir) == 0) align = (0,0);
             else align = rotate(90)*dir(sm.contour, intersectiontime(sm.contour, sm.center, sm.labeldir));
         }
-        label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sm.label+"$") : sm.label), align = align));
+        label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sm.label+"$") : sm.label), align = align, p = dspec.labelpen));
         if (dspec.help && abs(sm.labeldir) > 0)
         {
             draw(pic = pic, sm.center -- pos, purple+config.help.linewidth);
@@ -5394,7 +5412,14 @@ void draw (
                 if (abs(sb.labeldir) == 0) align = (0,0);
                 else align = rotate(90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
             }
-            label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sb.label+"$") : sb.label), align = align, p = dspec.subsetcontourpens[min(sb.layer, dspec.subsetcontourpens.length-1)]));
+            pen curlabelpen = (dspec.subsetlabelpens.length == 0)
+                ? dspec.subsetcontourpens[min(sb.layer, dspec.subsetcontourpens.length-1)]
+                : (
+                    (dspec.subsetlabelpens.length <= i)
+                    ? dspec.subsetlabelpens[dspec.subsetlabelpens.length - 1]
+                    : dspec.subsetlabelpens[i]
+                );
+            label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sb.label+"$") : sb.label), align = align, p = curlabelpen));
             if (dspec.help && abs(sb.labeldir) > 0)
             {
                 draw(pic = pic, sb.center -- pos, purple+config.help.linewidth);
