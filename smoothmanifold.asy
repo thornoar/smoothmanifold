@@ -307,7 +307,7 @@ restricted path randomconvex ()
 restricted path randomconcave ()
 { return concavepaths[rand()%concavepaths.length]; }
 
-private path[] debugpaths; // [D]ebug [P]aths
+restricted path[] debugpaths; // [D]ebug [P]aths
 
 restricted int plain = 0;
 restricted int free = 1;
@@ -1079,19 +1079,19 @@ restricted string mode (int md)
     return "[undefined]";
 }
 
-private bool dummy (int n)
+restricted bool dummy (int n)
 { return n == config.system.dummynumber; }
 
-private bool dummy (real r)
+restricted bool dummy (real r)
 { return r == config.system.dummynumber; }
 
-private bool dummy (pair p)
+restricted bool dummy (pair p)
 { return p == config.system.dummypair; }
 
-private bool dummy (string s)
+restricted bool dummy (string s)
 { return s == config.system.dummystring; }
 
-private bool checksection (real[] section)
+restricted bool checksection (real[] section)
 // Checks if array has valid section values in it
 {
     if (section.length > 0 && !dummy(section[0]) && !inside(0, 360, section[0]))
@@ -1105,11 +1105,11 @@ private bool checksection (real[] section)
     return true;
 }
 
-private real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
+restricted real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
 // A rating of how symmetric the section is
 { return abs(dot(dir2, p1p2) + dot(p1p2, dir1)); }
 
-private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
+restricted bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
 // Checks if the section is too broad
 {
     pair p1p2u = unit(p2-p1);
@@ -1122,7 +1122,7 @@ private bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
 
 // >pens | Manipulating pens
 
-private pen inverse (pen p)
+restricted pen inverse (pen p)
 // Inverts the colors of `p`.
 {
     real[] colors = colors(p);
@@ -1137,21 +1137,21 @@ pen brighten (pen p, real coeff)
     return inverse(coeff * inverse(p));
 }
 
-private pen sectionpen (pen p)
+restricted pen sectionpen (pen p)
 // Derives a pen to draw cross sections
 {
     if (config.drawing.sectionpen == nullpen) return p+linewidth(config.drawing.sectpenscale*linewidth(p));
     else return config.drawing.sectionpen;
 }
 
-private pen nextsubsetpen (pen p, real scale)
+restricted pen nextsubsetpen (pen p, real scale)
 // Derives a pen to fill subsets of increasing layers
 { return scale * p; }
 
-private pen dashpenscale (pen p)
+restricted pen dashpenscale (pen p)
 { return inverse(config.drawing.dashpenscale*inverse(p))+dashed; }
 
-private pen dashopacity (pen p)
+restricted pen dashopacity (pen p)
 { return p+dashed+opacity(config.drawing.dashopacity); }
 
 pen dashpen (pen p)
@@ -1161,15 +1161,15 @@ pen dashpen (pen p)
     else return dashpenscale(p);
 }
 
-private pen shadepen (pen p)
+restricted pen shadepen (pen p)
 // Derives a pen to fill shaded regions
 { return config.drawing.shadescale*p; }
 
-private pen elementpen (pen p)
+restricted pen elementpen (pen p)
 // Derives a pen to render elements
 { return p + linewidth(config.drawing.elpenwidth); }
 
-private pen underpen (pen p)
+restricted pen underpen (pen p)
 // Derives a pen to draw paths that go under areas.
 { return dashpen(p); }
 
@@ -1257,7 +1257,7 @@ restricted void defaults ()
 
 // >technical | Low-level path-related functions
 
-private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
+restricted pair[][] cartsectionpoints (path[] g, real r, bool horiz)
 {
     real min = horiz ? ypart(min(g)) : xpart(min(g));
     real max = horiz ? ypart(max(g)) : xpart(max(g));
@@ -1274,7 +1274,7 @@ private pair[][] cartsectionpoints (path[] g, real r, bool horiz)
     return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
 
-private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
+restricted pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 // Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
     pair[][] presections = cartsectionpoints(g, r, horiz);
@@ -1314,7 +1314,7 @@ private pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
     return sections;
 }
 
-private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
+restricted path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
     if (length(viewdir) == 0) return new path[] {p1--p2};
@@ -1392,7 +1392,7 @@ private path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair view
     return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
 
-private pair[][] sectionparams (path g, path h, int n, real r, int p)
+restricted pair[][] sectionparams (path g, path h, int n, real r, int p)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
     pair[] pres;
@@ -1542,7 +1542,7 @@ restricted struct element
     }
 }
 
-private element[] elementcopy (element[] elements)
+restricted element[] elementcopy (element[] elements)
 { return sequence(new element (int i) { return elements[i].copy(); }, elements.length); }
 
 // >hole
@@ -1631,10 +1631,10 @@ restricted struct hole
 
 // >hole | Utilities for holes
 
-private hole[] holecopy (hole[] holes)
+restricted hole[] holecopy (hole[] holes)
 { return sequence(new hole (int i){return holes[i].copy();}, holes.length); }
 
-private path[] holecontours (hole[] h)
+restricted path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
 // >subset
@@ -1745,10 +1745,10 @@ restricted struct subset
 
 // >subset | Utilities for subsets
 
-private subset[] subsetcopy (subset[] subsets)
+restricted subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
 
-private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.smooth.inferlabels)
+restricted subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.smooth.inferlabels)
 {
     path[] contours = intersection(sb1.contour, sb2.contour);
     return sequence(new subset (int i){
@@ -1766,7 +1766,7 @@ private subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = 
     }, contours.length);
 }
 
-private void subsetdelete (subset[] subsets, int index, bool recursive)
+restricted void subsetdelete (subset[] subsets, int index, bool recursive)
 {
     subset cursb = subsets[index];
     if (recursive)
@@ -1785,7 +1785,7 @@ private void subsetdelete (subset[] subsets, int index, bool recursive)
     }
 }
 
-private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
+restricted int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 {
     int[] res;
     for (int i = 0; i < range.length; ++i)
@@ -1793,7 +1793,7 @@ private int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
     return res;
 }
 
-private int[] subsetgetall (subset[] subsets, subset s)
+restricted int[] subsetgetall (subset[] subsets, subset s)
 {
     bool[] wanted = array(subsets.length, false);
     void fill (subset sp)
@@ -1811,23 +1811,23 @@ private int[] subsetgetall (subset[] subsets, subset s)
     return res;
 }
 
-private int[] subsetgetall (subset[] subsets, int index)
+restricted int[] subsetgetall (subset[] subsets, int index)
 { return subsetgetall(subsets, subsets[index]); }
 
-private int[] subsetgetallnot (subset[] subsets, subset s)
+restricted int[] subsetgetallnot (subset[] subsets, subset s)
 { return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
 
-private int[] subsetgetallnot (subset[] subsets, int index)
+restricted int[] subsetgetallnot (subset[] subsets, int index)
 { return difference(sequence(subsets.length), subsetgetall(subsets, index)); }
 
-private void subsetdeepen (subset[] subsets, subset s)
+restricted void subsetdeepen (subset[] subsets, subset s)
 {
     s.layer += 1;
     for (int i = 0; i < s.subsets.length; ++i)
     { if (s.layer == subsets[s.subsets[i]].layer) subsetdeepen(subsets, subsets[s.subsets[i]]); }
 }
 
-private int subsetinsertindex (subset[] subsets, int layer)
+restricted int subsetinsertindex (subset[] subsets, int layer)
 {
     int insertindex = subsets.length;
     for (int i = subsets.length-1; i >= 0; --i)
@@ -1839,7 +1839,7 @@ private int subsetinsertindex (subset[] subsets, int layer)
     return insertindex;
 }
 
-private int subsetmaxlayer (subset[] subsets, int[] range)
+restricted int subsetmaxlayer (subset[] subsets, int[] range)
 {
     int res = -1;
     for (int i = 0; i < range.length; ++i)
@@ -1847,7 +1847,7 @@ private int subsetmaxlayer (subset[] subsets, int[] range)
     return res;
 }
 
-private void subsetcleanreferences (subset[] subsets)
+restricted void subsetcleanreferences (subset[] subsets)
 {
     bool[] visited = array(subsets.length, value = false);
 
@@ -2078,7 +2078,7 @@ struct smooth
 
     // Methods
 
-    private static bool repeats (string label)
+    restricted static bool repeats (string label)
     // Whether a label is already used in the cache.
     {
         if (label == "") return false;
@@ -2149,19 +2149,19 @@ struct smooth
         return true;
     }
 
-    private real getyratio (real y)
+    restricted real getyratio (real y)
     { return (y - ypart(min(this.contour)))/this.ysize(); }
 
-    private real getxratio (real x)
+    restricted real getxratio (real x)
     { return (x - xpart(min(this.contour)))/this.xsize(); }
 
-    private real getypoint (real y)
+    restricted real getypoint (real y)
     { y = y - floor(y); return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y); }
 
-    private real getxpoint (real x)
+    restricted real getxpoint (real x)
     { x = x - floor(x); return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x); }
 
-    private transform selfadjust ()
+    restricted transform selfadjust ()
     // Calculates the unit coordinates of the object.
     { return shift(this.center)*scale(radius(this.contour)); }
 
@@ -2182,7 +2182,7 @@ struct smooth
     // Returns the point in unit coordinates.
     { return this.unitadjust * point; }
 
-    private int findlocalsubsetindex (string label)
+    restricted int findlocalsubsetindex (string label)
     // Locate a subset by its label.
     {
         int res = -1;
@@ -2202,7 +2202,7 @@ struct smooth
         return res;
     }
 
-    private int findlocalelementindex (string label)
+    restricted int findlocalelementindex (string label)
     // Locate an element by its label.
     {
         int res = -1;
@@ -2255,7 +2255,7 @@ struct smooth
         return this;
     }
 
-    private void xscale (real s)
+    restricted void xscale (real s)
     {
         pair center = this.center;
         this.move(shift = -center, drag = false);
@@ -3226,7 +3226,7 @@ struct smooth
 
     // -- Methods for moving subset globally or within containing subset -- //
 
-    private bool onlyprimary (int index)
+    restricted bool onlyprimary (int index)
     {
         subset s = this.subsets[index];
         
@@ -3243,7 +3243,7 @@ struct smooth
         return res;
     }
 
-    private bool onlysecondary (int index)
+    restricted bool onlysecondary (int index)
     {
         subset s = this.subsets[index];
         
@@ -3670,7 +3670,7 @@ void printall ()
 
 // >finding | Identifying objects by label
 
-private int findsmoothindex (string label)
+restricted int findsmoothindex (string label)
 {
     bool found = false;
     int smres = -1;
@@ -3709,7 +3709,7 @@ smooth[] operator cast (string[] labels)
     );
 }
 
-private int[] findsubsetindex (string label)
+restricted int[] findsubsetindex (string label)
 {
     bool found = false;
     int smres = -1;
@@ -3753,7 +3753,7 @@ subset[] operator cast (string[] labels)
     );
 }
 
-private int[] findelementindex (string label)
+restricted int[] findelementindex (string label)
 {
     bool found = false;
     int smres;
@@ -3798,7 +3798,7 @@ element[] operator cast (string[] labels)
     );
 }
 
-private int[] findbylabel (string label)
+restricted int[] findbylabel (string label)
 {
     bool found = false;
     int smres;
@@ -3872,7 +3872,7 @@ tarrow DeferredArrow(
 }
 config.arrow.currentarrow = DeferredArrow(SimpleHead);
 
-private arrowbar convertarrow(
+restricted arrowbar convertarrow(
     tarrow arrow,
     bool overridebegin = false,
     bool overrideend = false
@@ -3913,7 +3913,7 @@ tbar DeferredBar(
     return res;
 }
 
-private arrowbar convertbar(
+restricted arrowbar convertbar(
     tbar bar,
     bool overridebegin = false,
     bool overrideend = false
@@ -3932,7 +3932,7 @@ private arrowbar convertbar(
 }
 
 // >deferredPath | An auxiliary structure for deferred path drawing
-private struct deferredPath
+restricted struct deferredPath
 {
     path[] g;
     pen p;
@@ -3943,10 +3943,10 @@ private struct deferredPath
 
 // >deferredPath | Utilities for deferred paths
 
-private deferredPath[][] deferredPaths;
-private deferredPath[][] savedDeferredPaths;
+restricted deferredPath[][] deferredPaths;
+restricted deferredPath[][] savedDeferredPaths;
 
-private int extractdeferredindex (picture pic)
+restricted int extractdeferredindex (picture pic)
 {
     string[] split;
     if (pic.nodes.length > 0 && (split = split(pic.nodes[0].key, "")).length > 1 && dummy(split[0]))
@@ -3954,7 +3954,7 @@ private int extractdeferredindex (picture pic)
     return -1;
 }
 
-private deferredPath[] extractdeferredpaths (picture pic, bool createlink)
+restricted deferredPath[] extractdeferredpaths (picture pic, bool createlink)
 {
     deferredPath[] res;
     int ind = extractdeferredindex(pic);
@@ -3979,7 +3979,7 @@ path[] getdeferredpaths (
     }, ps.length));
 }
 
-private void purgedeferredunder (deferredPath[] curdeferred)
+restricted void purgedeferredunder (deferredPath[] curdeferred)
 {
     for (int i = 0; i < curdeferred.length; ++i)
     {
@@ -4891,7 +4891,7 @@ smooth tangentspace (
 
 // >drawing | Generic drawing functionality
 
-private void fitpath (
+restricted void fitpath (
     picture pic,
     bool overlap,
     int covermode,
@@ -5158,7 +5158,7 @@ void shaderegion (
 
 // >drawing | Drawing high-level structures
 
-void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+restricted void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -5179,7 +5179,7 @@ void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool
     }
 }
 
-void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+restricted void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Draw vertical and horizontal cross sections.
 {
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
