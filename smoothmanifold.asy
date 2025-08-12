@@ -50,7 +50,7 @@ struct sectionconfig {
     real freedom = .3; // how freely sections can deviate from their target positions.
     int precision = 20; // how many points to sample in search for good section position.
     real elprecision = -1; // precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
-    bool avoidsubsets = false; // [A]void [S]ubsets
+    bool avoidsubsets = false;
     real[] default = new real[] {-10000,235,5}; // default expressed in section notation.
 }
 
@@ -66,10 +66,10 @@ struct smoothconfig {
     bool inferlabels = true; // whether to create labels like "A \cap B" on intersection.
     bool shiftsubsets = false; // whether to shift subsets on view.
     bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
-    bool correct = true; // [C]orrect [C]ontour
-    bool clip = false; // [C]lip
-    bool unit = false; // [U]nit
-    bool setcenter = true; // [S]et [C]enter
+    bool correct = true;
+    bool clip = false;
+    bool unit = false;
+    bool setcenter = true;
 }
 
 struct drawingconfig {
@@ -91,21 +91,22 @@ struct drawingconfig {
     real lineshadedensity = 0.15;
     real lineshademargin = 0.1;
     pen lineshadepen = lightgrey;
-    int mode = 0; // [M]ode
-    bool useopacity = false; // [U]se [O]pacity
-    bool dashes = true; // [D]raw [D]ashes
-    bool underdashes = false; // [D]raw [U]nder [D]ashes
-    bool shade = false; // [D]raw [S]hade
-    bool labels = true; // [D]raw [L]abels
-    bool fill = true; // [F]ill
-    bool fillsubsets = true; // [F]ill [S]ubsets
-    bool drawcontour = true; // [D]raw [C]ontour
-    bool drawsubsetcontour = true; // [D]raw [S]ubset [C]ontour
-    bool pathrandom = false; // [P]ath [R]andom
-    bool overlap = false; // [O]verlap
-    bool drawnow = false; // [D]raw [N]ow
-    bool postdrawover = false; // [P]ost [D]raw [O]ver
-    bool subsetoverlap = false; // [S]ubset [C]outour [O]verlap
+    int mode = 0;
+    bool useopacity = false;
+    bool dashes = true;
+    bool underdashes = false;
+    bool shade = false;
+    bool labels = true;
+    bool fill = true;
+    bool fillsubsets = true;
+    bool drawcontour = true;
+    bool drawsubsetcontour = true;
+    int subsetcovermode = 0;
+    bool pathrandom = false;
+    bool overlap = false;
+    bool drawnow = false;
+    bool postdrawover = false;
+    bool subsetoverlap = false;
 }
 
 struct helpconfig {
@@ -157,7 +158,7 @@ globalconfig config;
 
 // >values | A collection of pre-defined convenience values
 
-restricted path[] convexpaths = new path[] { // [C]on[V]ex
+path[] convexpaths = new path[] { // [C]on[V]ex
     (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
     (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
     (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
@@ -173,7 +174,7 @@ restricted path[] convexpaths = new path[] { // [C]on[V]ex
     (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle,
     (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
 };
-restricted path[] concavepaths = new path[] { // [C]on[C]ave
+path[] concavepaths = new path[] { // [C]on[C]ave
     (
         (-0.9,0).. controls
         (-1.07649842837266,0.638748977821067) and
@@ -301,23 +302,21 @@ restricted path[] concavepaths = new path[] { // [C]on[C]ave
     )
 };
 
-restricted path randomconvex ()
+path randomconvex ()
 { return convexpaths[rand()%convexpaths.length]; }
 
-restricted path randomconcave ()
+path randomconcave ()
 { return concavepaths[rand()%concavepaths.length]; }
 
-restricted path[] debugpaths; // [D]ebug [P]aths
+path[] debugpaths;
 
-restricted int plain = 0;
-restricted int free = 1;
-restricted int cartesian = 2;
-restricted int combined = 3;
-restricted int dn = config.system.dummynumber;
-restricted arrowbar simple = Arrow(SimpleHead);
-restricted arrowbar simples = Arrows(SimpleHead);
-restricted path ucircle = reverse(unitcircle); // [U]nit [C]ircle
-restricted path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
+int plain = 0;
+int free = 1;
+int cartesian = 2;
+int combined = 3;
+int dn = config.system.dummynumber;
+path ucircle = reverse(unitcircle); // [U]nit [C]ircle
+path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
 
 // >support | Supportiong utility functions
 
@@ -1061,7 +1060,7 @@ path[] operator | (path p, path q)
 
 usepackage("amssymb"); // LaTeX package for mathematical symbols
 
-restricted void halt (string msg)
+void halt (string msg)
 // Writes error message and exits compilation.
 {
     write();
@@ -1069,7 +1068,7 @@ restricted void halt (string msg)
     abort("");
 }
 
-restricted string mode (int md)
+string mode (int md)
 // Extracts the name of given draw mode.
 {
     if (md == 0) return "plain";
@@ -1079,19 +1078,19 @@ restricted string mode (int md)
     return "[undefined]";
 }
 
-restricted bool dummy (int n)
+bool dummy (int n)
 { return n == config.system.dummynumber; }
 
-restricted bool dummy (real r)
+bool dummy (real r)
 { return r == config.system.dummynumber; }
 
-restricted bool dummy (pair p)
+bool dummy (pair p)
 { return p == config.system.dummypair; }
 
-restricted bool dummy (string s)
+bool dummy (string s)
 { return s == config.system.dummystring; }
 
-restricted bool checksection (real[] section)
+bool checksection (real[] section)
 // Checks if array has valid section values in it
 {
     if (section.length > 0 && !dummy(section[0]) && !inside(0, 360, section[0]))
@@ -1105,11 +1104,11 @@ restricted bool checksection (real[] section)
     return true;
 }
 
-restricted real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
+real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
 // A rating of how symmetric the section is
 { return abs(dot(dir2, p1p2) + dot(p1p2, dir1)); }
 
-restricted bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
+bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
 // Checks if the section is too broad
 {
     pair p1p2u = unit(p2-p1);
@@ -1122,7 +1121,7 @@ restricted bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
 
 // >pens | Manipulating pens
 
-restricted pen inverse (pen p)
+pen inverse (pen p)
 // Inverts the colors of `p`.
 {
     real[] colors = colors(p);
@@ -1137,21 +1136,21 @@ pen brighten (pen p, real coeff)
     return inverse(coeff * inverse(p));
 }
 
-restricted pen sectionpen (pen p)
+pen sectionpen (pen p)
 // Derives a pen to draw cross sections
 {
     if (config.drawing.sectionpen == nullpen) return p+linewidth(config.drawing.sectpenscale*linewidth(p));
     else return config.drawing.sectionpen;
 }
 
-restricted pen nextsubsetpen (pen p, real scale)
+pen nextsubsetpen (pen p, real scale)
 // Derives a pen to fill subsets of increasing layers
 { return scale * p; }
 
-restricted pen dashpenscale (pen p)
+pen dashpenscale (pen p)
 { return inverse(config.drawing.dashpenscale*inverse(p))+dashed; }
 
-restricted pen dashopacity (pen p)
+pen dashopacity (pen p)
 { return p+dashed+opacity(config.drawing.dashopacity); }
 
 pen dashpen (pen p)
@@ -1161,19 +1160,19 @@ pen dashpen (pen p)
     else return dashpenscale(p);
 }
 
-restricted pen shadepen (pen p)
+pen shadepen (pen p)
 // Derives a pen to fill shaded regions
 { return config.drawing.shadescale*p; }
 
-restricted pen elementpen (pen p)
+pen elementpen (pen p)
 // Derives a pen to render elements
 { return p + linewidth(config.drawing.elpenwidth); }
 
-restricted pen underpen (pen p)
+pen underpen (pen p)
 // Derives a pen to draw paths that go under areas.
 { return dashpen(p); }
 
-restricted void defaults ()
+void defaults ()
 // Revert global settings to the defaults.
 {
     // System config
@@ -1257,7 +1256,7 @@ restricted void defaults ()
 
 // >technical | Low-level path-related functions
 
-restricted pair[][] cartsectionpoints (path[] g, real r, bool horiz)
+pair[][] cartsectionpoints (path[] g, real r, bool horiz)
 {
     real min = horiz ? ypart(min(g)) : xpart(min(g));
     real max = horiz ? ypart(max(g)) : xpart(max(g));
@@ -1274,7 +1273,7 @@ restricted pair[][] cartsectionpoints (path[] g, real r, bool horiz)
     return sort(res, new bool (pair[] i, pair[] j){ return ((horiz ? xpart(i[0]) : ypart(i[0])) < (horiz ? xpart(j[0]) : ypart(j[0]))); });
 }
 
-restricted pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
+pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
 // Marks the places where it is suitable to draw horizontal or vertical sections of `g` at ratio `r`.
 {
     pair[][] presections = cartsectionpoints(g, r, horiz);
@@ -1314,7 +1313,7 @@ restricted pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
     return sections;
 }
 
-restricted path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
+path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
 // One of the most important technical functions of the module. Constructs an ellipse that touches `dir1` and `dir2` and whose center lies on the segment [p1, p2].
 {
     if (length(viewdir) == 0) return new path[] {p1--p2};
@@ -1392,7 +1391,7 @@ restricted path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair v
     return map(new path (path p){return shift(p1)*rotate(degrees(p1p2))*p;}, new path[] {subpath(pres, 0, t2), subpath(pres, t2, length(pres))});
 }
 
-restricted pair[][] sectionparams (path g, path h, int n, real r, int p)
+pair[][] sectionparams (path g, path h, int n, real r, int p)
 // Searches for potential section positions between two given paths using a [clever] algorithm.
 {
     pair[] pres;
@@ -1493,7 +1492,7 @@ restricted pair[][] sectionparams (path g, path h, int n, real r, int p)
 
 // >structs | The structures of the module
 
-restricted struct element
+struct element
 // An 'element' of a set, in a set-theoretical sense.
 {
     // Attributes
@@ -1542,11 +1541,11 @@ restricted struct element
     }
 }
 
-restricted element[] elementcopy (element[] elements)
+element[] elementcopy (element[] elements)
 { return sequence(new element (int i) { return elements[i].copy(); }, elements.length); }
 
 // >hole
-restricted struct hole
+struct hole
 // A cyclic area 'cut out' of a smooth object.
 {
     // Attributes
@@ -1631,14 +1630,14 @@ restricted struct hole
 
 // >hole | Utilities for holes
 
-restricted hole[] holecopy (hole[] holes)
+hole[] holecopy (hole[] holes)
 { return sequence(new hole (int i){return holes[i].copy();}, holes.length); }
 
-restricted path[] holecontours (hole[] h)
+path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 
 // >subset
-restricted struct subset
+struct subset
 // A structure representing a subset of a given object (see "smooth")
 {
     // Attributes
@@ -1745,10 +1744,10 @@ restricted struct subset
 
 // >subset | Utilities for subsets
 
-restricted subset[] subsetcopy (subset[] subsets)
+subset[] subsetcopy (subset[] subsets)
 { return sequence(new subset (int i) { return subsets[i].copy(); }, subsets.length); }
 
-restricted subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.smooth.inferlabels)
+subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.smooth.inferlabels)
 {
     path[] contours = intersection(sb1.contour, sb2.contour);
     return sequence(new subset (int i){
@@ -1766,7 +1765,7 @@ restricted subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels
     }, contours.length);
 }
 
-restricted void subsetdelete (subset[] subsets, int index, bool recursive)
+void subsetdelete (subset[] subsets, int index, bool recursive)
 {
     subset cursb = subsets[index];
     if (recursive)
@@ -1785,7 +1784,7 @@ restricted void subsetdelete (subset[] subsets, int index, bool recursive)
     }
 }
 
-restricted int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
+int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
 {
     int[] res;
     for (int i = 0; i < range.length; ++i)
@@ -1793,7 +1792,7 @@ restricted int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
     return res;
 }
 
-restricted int[] subsetgetall (subset[] subsets, subset s)
+int[] subsetgetall (subset[] subsets, subset s)
 {
     bool[] wanted = array(subsets.length, false);
     void fill (subset sp)
@@ -1811,23 +1810,23 @@ restricted int[] subsetgetall (subset[] subsets, subset s)
     return res;
 }
 
-restricted int[] subsetgetall (subset[] subsets, int index)
+int[] subsetgetall (subset[] subsets, int index)
 { return subsetgetall(subsets, subsets[index]); }
 
-restricted int[] subsetgetallnot (subset[] subsets, subset s)
+int[] subsetgetallnot (subset[] subsets, subset s)
 { return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
 
-restricted int[] subsetgetallnot (subset[] subsets, int index)
+int[] subsetgetallnot (subset[] subsets, int index)
 { return difference(sequence(subsets.length), subsetgetall(subsets, index)); }
 
-restricted void subsetdeepen (subset[] subsets, subset s)
+void subsetdeepen (subset[] subsets, subset s)
 {
     s.layer += 1;
     for (int i = 0; i < s.subsets.length; ++i)
     { if (s.layer == subsets[s.subsets[i]].layer) subsetdeepen(subsets, subsets[s.subsets[i]]); }
 }
 
-restricted int subsetinsertindex (subset[] subsets, int layer)
+int subsetinsertindex (subset[] subsets, int layer)
 {
     int insertindex = subsets.length;
     for (int i = subsets.length-1; i >= 0; --i)
@@ -1839,7 +1838,7 @@ restricted int subsetinsertindex (subset[] subsets, int layer)
     return insertindex;
 }
 
-restricted int subsetmaxlayer (subset[] subsets, int[] range)
+int subsetmaxlayer (subset[] subsets, int[] range)
 {
     int res = -1;
     for (int i = 0; i < range.length; ++i)
@@ -1847,7 +1846,7 @@ restricted int subsetmaxlayer (subset[] subsets, int[] range)
     return res;
 }
 
-restricted void subsetcleanreferences (subset[] subsets)
+void subsetcleanreferences (subset[] subsets)
 {
     bool[] visited = array(subsets.length, value = false);
 
@@ -1900,6 +1899,7 @@ struct dpar
     bool fillsubsets;       // Whether the subsets should be filled.
     bool drawcontour;       // Whether the contour should be drawn.
     bool drawsubsetcontour; // Whether the contour of the subsets should be drawn.
+    int subsetcovermode;    // Whether the contour of the subsets should be drawn.
     bool help;              // Whether to draw auxiliary help information.
     bool dash;              // Whether to draw dashed lines on cross sections.
     bool shade;             // Whether to shade the regions between cross sections.
@@ -1929,6 +1929,7 @@ struct dpar
         bool fillsubsets = config.drawing.fillsubsets,
         bool drawcontour = config.drawing.drawcontour,
         bool drawsubsetcontour = config.drawing.drawsubsetcontour,
+        int subsetcovermode = config.drawing.subsetcovermode,
         bool help = config.help.enable,
         bool dash = config.drawing.dashes,
         bool shade = config.drawing.shade,
@@ -1956,6 +1957,7 @@ struct dpar
         this.fillsubsets = fillsubsets;
         this.drawcontour = drawcontour;
         this.drawsubsetcontour = drawsubsetcontour;
+        this.subsetcovermode = subsetcovermode;
         this.help = help;
         this.dash = dash;
         this.shade = shade;
@@ -1984,6 +1986,7 @@ struct dpar
         bool fillsubsets = this.fillsubsets,
         bool drawcontour = this.drawcontour,
         bool drawsubsetcontour = this.drawsubsetcontour,
+        int subsetcovermode = this.subsetcovermode,
         bool help = this.help,
         bool dash = this.dash,
         bool shade = this.shade,
@@ -2011,6 +2014,7 @@ struct dpar
         this.fillsubsets = fillsubsets;
         this.drawcontour = drawcontour;
         this.drawsubsetcontour = drawsubsetcontour;
+        this.subsetcovermode = subsetcovermode;
         this.help = help;
         this.dash = dash;
         this.shade = shade;
@@ -2078,7 +2082,7 @@ struct smooth
 
     // Methods
 
-    restricted static bool repeats (string label)
+    static bool repeats (string label)
     // Whether a label is already used in the cache.
     {
         if (label == "") return false;
@@ -2149,19 +2153,19 @@ struct smooth
         return true;
     }
 
-    restricted real getyratio (real y)
+    real getyratio (real y)
     { return (y - ypart(min(this.contour)))/this.ysize(); }
 
-    restricted real getxratio (real x)
+    real getxratio (real x)
     { return (x - xpart(min(this.contour)))/this.xsize(); }
 
-    restricted real getypoint (real y)
+    real getypoint (real y)
     { y = y - floor(y); return (ypart(min(this.contour))*(1-y) + ypart(max(this.contour))*y); }
 
-    restricted real getxpoint (real x)
+    real getxpoint (real x)
     { x = x - floor(x); return (xpart(min(this.contour))*(1-x) + xpart(max(this.contour))*x); }
 
-    restricted transform selfadjust ()
+    transform selfadjust ()
     // Calculates the unit coordinates of the object.
     { return shift(this.center)*scale(radius(this.contour)); }
 
@@ -2182,7 +2186,7 @@ struct smooth
     // Returns the point in unit coordinates.
     { return this.unitadjust * point; }
 
-    restricted int findlocalsubsetindex (string label)
+    int findlocalsubsetindex (string label)
     // Locate a subset by its label.
     {
         int res = -1;
@@ -2202,7 +2206,7 @@ struct smooth
         return res;
     }
 
-    restricted int findlocalelementindex (string label)
+    int findlocalelementindex (string label)
     // Locate an element by its label.
     {
         int res = -1;
@@ -2255,7 +2259,7 @@ struct smooth
         return this;
     }
 
-    restricted void xscale (real s)
+    void xscale (real s)
     {
         pair center = this.center;
         this.move(shift = -center, drag = false);
@@ -3226,7 +3230,7 @@ struct smooth
 
     // -- Methods for moving subset globally or within containing subset -- //
 
-    restricted bool onlyprimary (int index)
+    bool onlyprimary (int index)
     {
         subset s = this.subsets[index];
         
@@ -3243,7 +3247,7 @@ struct smooth
         return res;
     }
 
-    restricted bool onlysecondary (int index)
+    bool onlysecondary (int index)
     {
         subset s = this.subsets[index];
         
@@ -3670,7 +3674,7 @@ void printall ()
 
 // >finding | Identifying objects by label
 
-restricted int findsmoothindex (string label)
+int findsmoothindex (string label)
 {
     bool found = false;
     int smres = -1;
@@ -3709,7 +3713,7 @@ smooth[] operator cast (string[] labels)
     );
 }
 
-restricted int[] findsubsetindex (string label)
+int[] findsubsetindex (string label)
 {
     bool found = false;
     int smres = -1;
@@ -3753,7 +3757,7 @@ subset[] operator cast (string[] labels)
     );
 }
 
-restricted int[] findelementindex (string label)
+int[] findelementindex (string label)
 {
     bool found = false;
     int smres;
@@ -3798,7 +3802,7 @@ element[] operator cast (string[] labels)
     );
 }
 
-restricted int[] findbylabel (string label)
+int[] findbylabel (string label)
 {
     bool found = false;
     int smres;
@@ -3872,7 +3876,7 @@ tarrow DeferredArrow(
 }
 config.arrow.currentarrow = DeferredArrow(SimpleHead);
 
-restricted arrowbar convertarrow(
+arrowbar convertarrow(
     tarrow arrow,
     bool overridebegin = false,
     bool overrideend = false
@@ -3913,7 +3917,7 @@ tbar DeferredBar(
     return res;
 }
 
-restricted arrowbar convertbar(
+arrowbar convertbar(
     tbar bar,
     bool overridebegin = false,
     bool overrideend = false
@@ -3932,7 +3936,7 @@ restricted arrowbar convertbar(
 }
 
 // >deferredPath | An auxiliary structure for deferred path drawing
-restricted struct deferredPath
+struct deferredPath
 {
     path[] g;
     pen p;
@@ -3943,10 +3947,10 @@ restricted struct deferredPath
 
 // >deferredPath | Utilities for deferred paths
 
-restricted deferredPath[][] deferredPaths;
-restricted deferredPath[][] savedDeferredPaths;
+deferredPath[][] deferredPaths;
+deferredPath[][] savedDeferredPaths;
 
-restricted int extractdeferredindex (picture pic)
+int extractdeferredindex (picture pic)
 {
     string[] split;
     if (pic.nodes.length > 0 && (split = split(pic.nodes[0].key, "")).length > 1 && dummy(split[0]))
@@ -3954,7 +3958,7 @@ restricted int extractdeferredindex (picture pic)
     return -1;
 }
 
-restricted deferredPath[] extractdeferredpaths (picture pic, bool createlink)
+deferredPath[] extractdeferredpaths (picture pic, bool createlink)
 {
     deferredPath[] res;
     int ind = extractdeferredindex(pic);
@@ -3979,7 +3983,7 @@ path[] getdeferredpaths (
     }, ps.length));
 }
 
-restricted void purgedeferredunder (deferredPath[] curdeferred)
+void purgedeferredunder (deferredPath[] curdeferred)
 {
     for (int i = 0; i < curdeferred.length; ++i)
     {
@@ -4284,46 +4288,6 @@ smooth samplesmooth (int type, int num = 0, string label = "")
 }
 
 smooth sm (int type, int num = 0, string label = "") = samplesmooth;
-
-smooth rn (
-    int n,
-    pair labeldir = (1,1),
-    pair shift = (0,0),
-    real scale = 1,
-    real rotate = 0
-) // A method for the common diagram representation of the n-dimensional Eucledian space.
-{
-    return smooth(
-        contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
-        label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
-        labeldir = (.5,1),
-        labelalign = (-1.5,-1.5),
-        hratios = new real[] {},
-        vratios = new real[] {},
-        postdraw = new void (dpar dspec, smooth sm)
-        {
-            transform adj = sm.unitadjust;
-            pen p = dspec.contourpen;
-            draw(adj*((-1,-.2)--(1,-.2)), p = p, arrow = Arrow(SimpleHead));
-            draw(adj*((-.2,-1)--(-.2,1)), p = p, arrow = Arrow(SimpleHead));
-        },
-        shift = shift,
-        scale = scale,
-        rotate = rotate
-    );
-}
-dpar rnpar ()
-{
-    return dpar(
-        drawcontour = false,
-        drawsubsetcontour = true,
-        fill = false,
-        fillsubsets = true,
-        mode = plain,
-        viewdir = (0,0),
-        postdrawover = false
-    );
-}
 
 smooth node (
     string label,
@@ -4891,7 +4855,7 @@ smooth tangentspace (
 
 // >drawing | Generic drawing functionality
 
-restricted void fitpath (
+void fitpath (
     picture pic,
     bool overlap,
     int covermode,
@@ -5124,6 +5088,48 @@ void fillfitpath (
     { fitpath(pic, overlap, covermode, drawnow, g[i], L, drawpen, null, null); }
 }
 
+smooth rn (
+    int n,
+    pair labeldir = (.5,1),
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    bool drawnow = false
+) // A method for the common diagram representation of the n-dimensional Eucledian space.
+{
+    return smooth(
+        contour = (-1,-1)--(-1,1)--(1,1)--(1,-1)--cycle,
+        label = "\mathbb{R}^" + ((n == -1) ? "n" : (string)n),
+        labeldir = labeldir,
+        labelalign = (-1.5,-1.5),
+        hratios = new real[] {},
+        vratios = new real[] {},
+        postdraw = new void (dpar dspec, smooth sm)
+        {
+            transform adj = sm.unitadjust;
+            pen p = dspec.contourpen;
+            fitpath(adj*((-1,-.2)--(1,-.2)), p = p, arrow = DeferredArrow(SimpleHead), drawnow = drawnow);
+            fitpath(adj*((-.2,-1)--(-.2,1)), p = p, arrow = DeferredArrow(SimpleHead), drawnow = drawnow);
+        },
+        shift = shift,
+        scale = scale,
+        rotate = rotate
+    );
+}
+dpar rnpar ()
+{
+    return dpar(
+        drawcontour = false,
+        drawsubsetcontour = true,
+        subsetcovermode = 1,
+        fill = false,
+        fillsubsets = true,
+        mode = plain,
+        viewdir = (0,0),
+        postdrawover = false
+    );
+}
+
 void shaderegion (
     picture pic = currentpicture,
     path g,
@@ -5158,7 +5164,7 @@ void shaderegion (
 
 // >drawing | Drawing high-level structures
 
-restricted void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Renders the circular sections, given an array of control points.
 {
     for (int k = 0; k < sections.length; ++k)
@@ -5179,7 +5185,7 @@ restricted void drawsections (picture pic, pair[][] sections, pair viewdir, bool
     }
 }
 
-restricted void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
 // Draw vertical and horizontal cross sections.
 {
     drawsections(pic, cartsections(g, avoid, y, horiz), viewdir, dash, help, shade, scale, sectionpen, dashpen, shadepen);
@@ -5355,7 +5361,7 @@ void draw (
                 {
                     debugpaths.push(sm.subsets[i].contour);
                 }
-                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = 0, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, bar = null);
+                fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = dspec.subsetcovermode, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, bar = null);
             }
         }
     }
