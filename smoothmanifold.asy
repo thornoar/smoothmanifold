@@ -30,7 +30,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.3.0-alpha";
+    string version = "v6.3.0";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);

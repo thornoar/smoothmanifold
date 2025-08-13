@@ -8,10 +8,10 @@ config.arrow.absmargins = true;
 config.drawing.gaplength = .1;
 config.drawing.attachedopacity = .9;
 config.drawing.underdashes = true;
+config.drawing.smoothfill = gray(.92);
 
 smooth sm = samplesmooth(1)
     .setlabel("M", dir = dir(-10))
-    // .setlabel(0, "U", S+.5*E)
     .setsection(0, new real[] {153, 270, 9})
     .rotate(20);
 
