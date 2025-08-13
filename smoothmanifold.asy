@@ -107,6 +107,7 @@ struct drawingconfig {
     bool drawnow = false;
     bool postdrawover = false;
     bool subsetoverlap = false;
+    real elementcirclerad = -1;
 }
 
 struct helpconfig {
@@ -1240,11 +1241,13 @@ void defaults ()
     config.drawing.fillsubsets = defaultconfig.drawing.fillsubsets;
     config.drawing.drawcontour = defaultconfig.drawing.drawcontour;
     config.drawing.drawsubsetcontour = defaultconfig.drawing.drawsubsetcontour;
+    config.drawing.subsetcovermode = defaultconfig.drawing.subsetcovermode;
     config.drawing.pathrandom = defaultconfig.drawing.pathrandom;
     config.drawing.overlap = defaultconfig.drawing.overlap;
     config.drawing.subsetoverlap = defaultconfig.drawing.subsetoverlap;
     config.drawing.drawnow = defaultconfig.drawing.drawnow;
     config.drawing.postdrawover = defaultconfig.drawing.postdrawover;
+    config.drawing.elementcirclerad = defaultconfig.drawing.elementcirclerad;
     // Help config
     config.help.arcratio = defaultconfig.help.arcratio;
     config.help.arrowlength = defaultconfig.help.arrowlength;
@@ -5387,7 +5390,11 @@ void draw (
                 );
             label(pic = pic, position = elt.pos, L = Label((config.system.insertdollars ? ("$"+elt.label+"$") : elt.label), align = elt.labelalign, p = curlabelpen));
         }
-        dot(pic = pic, elt.pos, dspec.elementpen);
+        if (config.drawing.elementcirclerad > 0) {
+            fill(pic = pic, circle(elt.pos, config.drawing.elementcirclerad), dspec.elementpen);
+        } else {
+            dot(pic = pic, elt.pos, dspec.elementpen);
+        }
     }
     if (dspec.drawlabels && sm.label != "") 
     {

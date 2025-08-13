@@ -3,18 +3,19 @@ settings.render = 16;
 settings.outformat = "svg";
 
 size(21 cm);
-defaultpen(linewidth(.7) + fontsize(15pt));
+defaultpen(linewidth(.8) + fontsize(15pt));
 
-config.drawing.gaplength = .07;
+config.drawing.gaplength = .1;
 config.smooth.shiftsubsets = true;
 config.arrow.absmargins = true;
-config.arrow.mar = .04;
+config.arrow.mar = .03;
 config.drawing.fill = true;
 config.smooth.unit = true;
 config.drawing.mode = free;
 config.drawing.viewdir = dir(-100);
 config.section.freedom = 0.15;
 config.help.enable = false;
+// config.drawing.labels = false;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)
@@ -72,7 +73,7 @@ drawarrow(
     sm1,
 	sm2,
 	curve = -.2,
-	L = Label("f", position = Relative(.4), align = Relative(W))
+	L = Label("f", position = Relative(.35), align = Relative(W))
 );
 drawarrow(
     sm1,
@@ -80,7 +81,7 @@ drawarrow(
 	index1 = 0,
 	index2 = 0,
 	curve = .47,
-	L = Label("f_U", position = Relative(.4))
+	L = Label("f_U", position = Relative(.35))
 );
 drawarrow(
     sm2,
