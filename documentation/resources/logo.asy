@@ -3,7 +3,7 @@ settings.render = 16;
 settings.outformat = "svg";
 
 size(21 cm);
-defaultpen(linewidth(.8) + fontsize(15pt));
+defaultpen(linewidth(.8) + fontsize(14pt));
 
 config.drawing.gaplength = .1;
 config.smooth.shiftsubsets = true;
@@ -15,7 +15,7 @@ config.drawing.mode = free;
 config.drawing.viewdir = dir(-100);
 config.section.freedom = 0.15;
 config.help.enable = false;
-// config.drawing.labels = false;
+config.drawing.labels = false;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)

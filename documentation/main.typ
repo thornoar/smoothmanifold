@@ -44,7 +44,7 @@
   #set text(size: 18pt)
   `smoothmanifold.asy - v6.3.0` \ #v(0pt)
   Diagrams in higher mathematics with Asymptote\
-  #set text(size: 15pt)
+  #set text(size: 14pt)
   by Roman Maksimovich
   #v(1fr)
   #image("./resources/logo.svg")
