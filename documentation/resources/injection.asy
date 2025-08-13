@@ -2,7 +2,7 @@ include common;
 config.drawing.fill = false;
 config.drawing.gaplength = .15;
 config.arrow.mar = .1;
-size(0, 3.8cm);
+size(0, 5cm);
 
 smooth sm1 = smooth(
     contour = yscale(1.8) * ucircle

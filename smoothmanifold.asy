@@ -4860,10 +4860,10 @@ smooth tangentspace (
 
 void fitpath (
     picture pic,
+    path gs,
     bool overlap,
     int covermode,
     bool drawnow,
-    path gs,
     Label L,
     pen p,
     tarrow arrow,
@@ -5032,7 +5032,7 @@ void fitpath (
     bool drawnow = config.drawing.drawnow,
     tarrow arrow = null,
     tbar bar = config.arrow.currentbar
-) { fitpath(pic, overlap, covermode, drawnow, g, L, p, arrow, bar); }
+) { fitpath(pic, g, overlap, covermode, drawnow, L, p, arrow, bar); }
 
 void fitpath (
     picture pic = currentpicture,
@@ -5044,7 +5044,7 @@ void fitpath (
     bool drawnow = config.drawing.drawnow,
     tarrow arrow = null,
     tbar bar = config.arrow.currentbar
-) { fitpath(pic, overlap, covermode, drawnow, (path)g, L, p, arrow, bar); }
+) { fitpath(pic, (path)g, overlap, covermode, drawnow, L, p, arrow, bar); }
 
 void fitpath (
     picture pic = currentpicture,
@@ -5057,7 +5057,7 @@ void fitpath (
 )
 {
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, overlap, covermode, drawnow, g[i], L, p, null, null); }
+    { fitpath(pic, g[i], overlap, covermode, drawnow, L, p, null, null); }
 }
 
 void fillfitpath (
@@ -5072,7 +5072,7 @@ void fillfitpath (
 )
 {
     fill(pic, g, fillpen);
-    fitpath(pic, overlap, covermode, drawnow, g, L, drawpen, null, null);
+    fitpath(pic, g, overlap, covermode, drawnow, L, drawpen, null, null);
 }
 
 void fillfitpath (
@@ -5088,7 +5088,7 @@ void fillfitpath (
 {
     fill(pic, g, fillpen);
     for (int i = 0; i < g.length; ++i)
-    { fitpath(pic, overlap, covermode, drawnow, g[i], L, drawpen, null, null); }
+    { fitpath(pic, g[i], overlap, covermode, drawnow, L, drawpen, null, null); }
 }
 
 smooth rn (

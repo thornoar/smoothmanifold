@@ -2,7 +2,7 @@ include common;
 
 settings.render = 8;
 
-size(0, 3.8cm);
+size(0, 5cm);
 
 config.arrow.absmargins = true;
 config.drawing.gaplength = .1;
