@@ -16,7 +16,7 @@ void drawtangent (pair c1, real r1, pair c2, real r2, pen p) {
 }
 
 void drawrad (pair x, real r, real ang, real mar = 0, string label) {
-    draw((x + mar * dir(ang)) -- (x + r * dir(ang)), arrow = Arrow(TeXHead), L = Label(label, position = MidPoint, align = .6*Relative(E)));
+    draw((x + mar * dir(ang)) -- (x + r * dir(ang)), arrow = Arrow(TeXHead), L = Label(label, position = MidPoint, align = Relative(E)));
 }
 
 pair x0 = (0,0);
@@ -49,22 +49,6 @@ drawrad(x1o, r[1][0], 120, "$\varepsilon_1$");
 pair x2i = (2.4,-.45);
 path beps2s = circle(x2i, r[1][1]);
 
-// pair x2o = (5.5, -0.1);
-// drawtangent(x2i, r[1][1], x2o, r[2][0], dashed+grey);
-
 drawdeferred();
 filldraw(beps2s, drawpen = heavygreen, fillpen = white);
 dot(x2i, L = Label("$x_2$", align = S));
-
-// path beps2b = circle(x2o, r[2][0]);
-// fillfitpath(beps2b, drawpen = heavygreen, fillpen = white);
-// dot(x2o, L = Label("$x_2$", align = S+.5*W));
-// path u3 = shift(5.9, 1) * rotate(40) * concavepaths[3];
-// fill(intersection(beps2b, u3)[0], mediumgrey);
-// fitpath(subpath(u3, 2.4, length(u2)-2.5), L = Label("$U_3$", position = Relative(.06), align = Relative(W)));
-// drawrad(x2o, r[2][0], -20, "$\varepsilon_2$");
-//
-// pair x3i = (5.6,.58);
-// path beps3s = circle(x3i, r[2][1]);
-// fillfitpath(beps3s, drawpen = heavygreen, fillpen = white);
-// dot(x3i, L = Label("$x_3$", align = S));

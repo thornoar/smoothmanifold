@@ -61,4 +61,4 @@ To summarize, the most prominent features of module `smoothmanifold` are the fol
 - *Set operations on paths bounding areas*, e.g. intersection, union, set difference, etc.;
 - *Three-dimensional drawing*, achieved through an automatic (but configurable) addition of cross sections to smooth objects.
 
-
+Do take a look at the #link("https://github.com/thornoar/smoothmanifold/tree/master/documentation/resources", [source code]) for the above diagrams, to get a feel for how much heavy lifting is done by the module, and what is required from the user.

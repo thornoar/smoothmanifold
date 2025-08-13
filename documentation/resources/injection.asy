@@ -1,9 +1,7 @@
 include common;
-// config.drawing.elementcirclerad = .045;
 config.drawing.fill = false;
 config.drawing.gaplength = .15;
 config.arrow.mar = .1;
-// config.arrow.currentarrow = DeferredArrow(SimpleHead, arc = true);
 size(0, 3.8cm);
 
 smooth sm1 = smooth(
