@@ -95,7 +95,7 @@ drawarrow(
     sm1,
 	0,
 	angle = 98,
-	radius = .75,
+	radius = .95,
 	L = Label(
         "\mathrm{id}_U",
         position = Relative(.22),
@@ -126,58 +126,3 @@ drawarrow(
 	radius = 1.2,
 	L = Label("\mathrm{id}_M", align = Relative(W))
 );
-
-// shipout(rotate(90) * currentpicture);
-
-// import export;
-//
-// export.xmargin = .2cm;
-// settings.outformat = "svg";
-//
-// size(24cm);
-// defaultpen(linewidth(.7pt) + fontsize(15pt));
-//
-// smooth sm1 = smooth(
-//     contour = concavepaths[0],
-//     holes = new hole[]{
-//         hole(
-//             contour = convexpaths[1],
-//             scale = .35,
-//             rotate = -50,
-//             shift = (-.35,.65),
-//             sections = rr(115,240,10)
-//         )
-//     },
-//     subsets = new subset[]{
-//         subset(
-//             contour = convexpaths[4],
-//             scale = .45,
-//             rotate = 0,
-//             shift = (.05,-.38)
-//         ),
-//         subset(
-//             contour = convexpaths[3],
-//             scale = .44,
-//             rotate = 20,
-//             shift = (.5,-.3)
-//         )
-//     }
-// );
-// sm1.holes[0].center += (.03,-.15);
-// sm1.move(rotate = 40);
-//
-// smooth ctr = rn(-1, labeldir = (1,.5)).move(shift = (0,2.6), scale = 1.1)
-//     .addsubset(contour = convexpaths[6], scale = .5, shift = (.2,-.3), unit = true)
-//     .addsubset(0, contour = convexpaths[2], scale = .55, shift = (-.2,.1), unit = true)
-//     .addsubset(contour = concavepaths[2], scale = .5, shift = (-.25,.4), rotate = 190, unit = true)
-//     .addsubset(2, contour = convexpaths[3], scale = .4, shift = (-.6,-.2), rotate = 90, unit = true)
-//     .addsubset(2, contour = convexpaths[6], scale = .28, shift = (.8,.2), rotate = -40, unit = true);
-//
-// // smooth ts = tangentspace(sm1, angle = 30, ratio = .7, size = .5, rotate = -50);
-//
-// draw(sm1, dpar(mode = free, viewdir = dir(-30), help = false));
-// draw(ctr, rnpar());
-//
-// drawarrow(sm1, 0, ctr, 0, curve = -.45);
-// drawarrow(sm1, 2, ctr, 1, curve = .25);
-// drawarrow(ctr, 2, ctr, 0, curve = 1.5);

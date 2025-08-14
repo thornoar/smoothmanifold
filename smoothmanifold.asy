@@ -333,7 +333,8 @@ real mod (real a, real b)
 pair center (
     path p,
     int n = 10,
-    bool arc = true
+    bool arc = true,
+    bool force = false
 ) /*
     Calculate the center of mass of the area enclosed by the path `p`.
     The `arc` parameter determines whether arclength should be used
@@ -345,7 +346,7 @@ pair center (
     pair sum = (0,0);
     for (int i = 0; i < n; ++i)
     { sum += point(p, arc ? arctime(p, arclength(p)*i/n) : (length(p) * i/n)); }
-    if (inside(p, sum/n)) return sum/n;
+    if (force || inside(p, sum/n)) return sum/n;
     real[] times = times(p, (0, ypart(sum/n)));
     return (point(p, times[0]) + point(p, times[1])) * .5;
 }
@@ -527,7 +528,7 @@ path turn (path g, pair point, pair dir)
 { return reorient(g, intersectiontime(g, point, dir)); }
 
 path subcyclic (path p, pair t)
-// An improved `subpath` made for cyclic ps.
+// An improved `subpath` made for cyclic paths.
 {
     if (t.x <= t.y) return subpath(p, t.x, t.y);
     return (subpath(p, t.x, length(p)) & subpath(p, 0, t.y));
@@ -617,7 +618,7 @@ path curvedpath (
 }
 
 path cyclepath (pair a, real angle, real radius)
-// A circular path starting from `a` and 
+// A circular path starting from `a` and turned at `angle`.
 { return shift(a)*rotate(-180 + angle)*scale(radius)*shift(-1,0)*reverse(unitcircle); }
 
 path midpath (path g, path h, int n = 20)

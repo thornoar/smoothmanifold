@@ -1,6 +1,6 @@
 include common;
 
-size(8cm);
+size(7cm);
 
 real ys = 3;
 real ang = 40;
