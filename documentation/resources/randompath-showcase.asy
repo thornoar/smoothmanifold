@@ -1,7 +1,7 @@
 include common;
-size(15cm);
+size(14cm);
 
-real angle = 60;
+real angle = 50;
 pair[] ctrl = {
     (0,0), (.7,.5), (1.5,.2), (2.3,0.4), (3.1,.1)
 };

@@ -1,7 +1,7 @@
 include common;
 size(12cm);
 
-real w = .1, h = .2, x = 1;;
+real w = .1, h = .2, x = 1;
 
 draw((x,h) -- (x+2*w,h), dotted);
 draw((x,0) -- (x,1.5*h), dotted);

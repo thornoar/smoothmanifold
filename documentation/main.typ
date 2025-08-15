@@ -51,8 +51,17 @@
   caption: caption
 )
 
-#let vs = v(-5pt)
+#let vs = v(-6pt)
 #let bl = block.with(breakable: false)
+#let point = {
+  set text(stroke: .2pt, size: 11pt)
+  box(move(
+    rotate(90deg, math.arrow.l.curve, origin: center + horizon),
+    dx: 0pt, dy: -3pt
+  ))
+}
+// #let point = image("resources/arrow.svg")
+// #let point = [⤴]
 
 #set ref(form: "page", supplement: "page")
 #show ref.where(form: "page"): it => context {
@@ -174,7 +183,7 @@ Similarly to drawing paths to a picture, arrows and bars are implemented through
 
 These structs store information about the arrow/bar, and are converted to regular arrowbars when the corresponding path is drawn to the picture. For creating new `tarrow`/`tbar` instances and converting them to arrowbars, the following functions are available:
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   tarrow DeferredArrow(
@@ -249,7 +258,7 @@ Arguments:
 - `bar` --- the bar to attach to the path. Note that the type is `tbar`, not `arrowbar`.
 
 Apart from different types of the `arrow`/`bar` arguments, the `fitpath` function is identical to `draw` in type signature, and they can be used interchangeably. Moreover, there are overloaded versions of `fitpath`, where parameters are given default values (one of these versions is used in the example above):
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   void fitpath (
@@ -365,7 +374,7 @@ This function returns an array of paths because the combination of two bounded r
 
 Based on different values for the `mode` parameter, the module defines the following specializations:
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   path[] difference (
@@ -384,7 +393,7 @@ Based on different values for the `mode` parameter, the module defines the follo
 ]#vs
 Calculate the path(s) bounding the set difference of the regions bounded by `p` and `q`. The `correct` parameter determines whether the paths should be "corrected", i.e. oriented clockwise.
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   path[] symmetric (
@@ -403,7 +412,7 @@ Calculate the path(s) bounding the set difference of the regions bounded by `p` 
 ]#vs
 Calculate the path(s) bounding the set symmetric difference of the regions bounded by `p` and `q`.
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   path[] intersection (
@@ -422,7 +431,7 @@ Calculate the path(s) bounding the set symmetric difference of the regions bound
 ]#vs
 Calculate the path(s) bounding the set intersection of the regions bounded by `p` and `q`. The following array versions are also available:
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   path[] intersection (
@@ -445,26 +454,26 @@ Calculate the path(s) bounding the set intersection of the regions bounded by `p
 
 Inductively calculate the total intersection of an array of paths.
 
-#[
-#show: it => columns(2, gutter: 0pt, it)
-```
-path[] union (
-  path p,
-  path q,
-  bool correct = true,
-  bool round = false,
-  real roundcoeff = config.paths.roundcoeff
-)
-``` <path-set-union>
-#colbreak()
-```
-path[] operator | (path p, path q)
-{ return union(p, q); }
-``` <path-set-union-operator>
+#bl[
+  #show: it => columns(2, gutter: 0pt, it)
+  ```
+  path[] union (
+    path p,
+    path q,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+  )
+  ``` <path-set-union>
+  #colbreak()
+  ```
+  path[] operator | (path p, path q)
+  { return union(p, q); }
+  ``` <path-set-union-operator>
 ]#vs
 Calculate the path(s) bounding the set union of the regions bounded by `p` and `q`. The corresponding array versions are available:
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   path[] union (
@@ -656,7 +665,7 @@ Connect an array of points with a path.
 path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
 path wavypath (... real[] nums)
 ``` <path-wavypath> #vs
-Generate a clockwise cyclic path around the point `(0,0)`, based on the `nums` parameter. If `normaldir` is set to `true`, additional restrictions are imposed on the path. If `adjust` is `true`, then the path is shifted and scaled such that its `center` (see @path-center) is `(0,0)`, and its `radius` (see @path-radius) is `1`. Consider the following example:
+Generate a clockwise cyclic path around the point `(0,0)`, based on the `nums` parameter. If `normaldir` is set to `true`, additional restrictions are imposed on the path. If `adjust` is `true`, then the path is shifted and scaled such that its `center` @path-center is `(0,0)`, and its `radius` @path-radius is `1`. Consider the following example:
 #example(
   image("resources/wavypath-showcase.svg"),
   ```
@@ -711,7 +720,7 @@ Draw an "open neighborhood bracket" on the real line, like so:
 
 The `smoothmanifold` module's original purpose was to introduce a suitable abstraction to simplify drawing blobs on the plane. The `smooth` structure is, perhaps, the oldest part of `smoothmanifold`, that has persisted through countless updates and changes. In its current form, here is how it's defined:
 
-#[
+#bl[
   #show: it => columns(2, gutter: 0pt, it)
   ```
   struct smooth {
@@ -771,21 +780,21 @@ The `smoothmanifold` module's original purpose was to introduce a suitable abstr
 
 Every `smooth` object has a:
 - `contour` --- the clockwise cyclic path that serves as a boundary of the object;
-- `center` --- the center of the object, usually inferred automatically by means of calling `center(contour)` (see @path-center);
+- `center` --- the center of the object, usually inferred automatically with `center(contour)` @path-center;
 - `label` --- a string label, e.g. `"$A$"` or `"$S$"`, that will be displayed when drawing the smooth object;
-- `labeldir` and `labelalign` --- they determine where the label is to be drawn, namely at `intersection(contour, center, labeldir)` (see @path-intersection), with `labelalign` as `align`.
+- `labeldir` and `labelalign` --- they determine where the label is to be drawn, namely at `intersection(contour, center, labeldir)` @path-intersection, with `labelalign` as `align`.
   #figure(
     image("resources/labeldir-showcase.svg"),
     caption: [A showcase of the `labeldir` and `labelalign` fields]
   )
 - `holes` --- an array of `hole` structures, each of which has a:
   - `contour` --- the clockwise cyclic boundary of the hole;
-  - `center` --- the center of the hole, typically calculated automatically by `center(contour)` (see @path-center);
+  - `center` --- the center of the hole, typically calculated automatically by `center(contour)` @path-center;
   - `sections` --- a two-dimensional array that determines where to draw the cross sections seen on @tangent. For a detailed description, see @sc-smooth-modes-free;
   - `scnumber` --- the maximum amount of cross sections that the hole allows other holes to share with it. These are sections _between holes,_ not ones between a hole and the contour of the `smooth` object. For details, see @sc-smooth-modes-free;
 - `subsets` --- an array of `subset` structures, each of which has a:
   - `contour` --- the clockwise cyclic boundary of the subset;
-  - `center` --- the center of the subset, likewise usually determined by `center(contour)` (see @path-center);
+  - `center` --- the center of the subset, likewise usually determined by `center(contour)` @path-center;
   - `label`, `labeldir`, `labelalign` --- serve the same purpose as the respective fields of the `smooth` object;
   - `layer` --- an integer determining the "depth" of the subset. A toplevel subset will have `layer == 0`, its subsets will have `layer == 1`, their subsets will have `layer == 2`, etc. This way, a hierarchy of subsets is established. For details, see @sc-smooth-subset;
   - `subsets` --- an index `i` is an element of this array if and only if the subset `subsets[i]` (taken from the `subsets` field of the parent `smooth` object) is a subset of the current subset. For details, see @sc-smooth-subset;
@@ -823,7 +832,7 @@ bool inside (pair x)
 ``` <smooth-inside> #vs
 Check if `x` lies inside the contour of `this`, but not inside any of its `holes`.
 
-#[
+#bl[
   #show: columns.with(2, gutter: 0pt)
   ```
   smooth move (
@@ -849,7 +858,6 @@ Check if `x` lies inside the contour of `this`, but not inside any of its `holes
 ] #vs
 Scale `this` by `scale` (with center at `point`), rotate by `rotate` around `point`, and then shift by `shift`. If `readjust` is `true`, also recalculate the `unitadjust` field. If `drag` is `true`, also apply the `move` to all smooth objects `attached` to `this`. In the end return `this`. The `shift`, `scale` and `rotate` methods on the right are all specializations of the `move` method.
 
-
 ```
 void xscale (real s)
 ``` <smooth-xscale> #vs
@@ -860,7 +868,6 @@ smooth dirscale (pair dir, real s)
 ``` <smooth-dirscale> #vs
 Scale `this` by `s` in the direction `dir`. Return `this`.
 
-
 ```
 smooth setcenter (
     int index = -1,
@@ -869,7 +876,6 @@ smooth setcenter (
 )
 ``` <smooth-setcenter> #vs
 Set the center of `this` if `index == -1`, and the center of `this.subsets[index]` otherwise. If `unit` is `true`, interpret `center` in the unit coordinates of `this` (i.e. apply `this.unitadjust` to `center`). For the definition of `config.system.dummypair`, see @sc-config-system.
-
 
 ```
 smooth setlabel (
@@ -881,7 +887,161 @@ smooth setlabel (
 ``` <smooth-setlabel> #vs
 Set the `label`, `labeldir` and `labelalign` of `this` if `index == -1`, and set these fields of `this.subsets[index]` otherwise. For the definition of `config.system.dummystring`, see @sc-config-system.
 
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth addelement (
+      pair pos,
+      string label = "",
+      pair align = 1.5*S,
+      int index = -1,
+      bool unit = config.smooth.unit
+  )
+  ``` <smooth-addelement-spec> 
+  #colbreak()
+  ```
+  smooth addelement (
+      element elt,
+      int index = -1,
+      bool unit = config.smooth.unit
+  )
+  ``` <smooth-addelement>
+] #vs
+Add a new element to `this`. Return `this`. If `index >= 0`, then the function will additionally check if the `element` is contained within the contour of `this.subsets[index]`. If `unit` is true, then the position of the `element` is interpreted in `this` object's unit coordinates.
 
+```
+smooth setelement (
+    int index,
+    pair pos = config.system.dummypair,
+    string label = config.system.dummystring,
+    pair labelalign = config.system.dummypair,
+    int sbindex = -1,
+    bool unit = config.smooth.unit
+)
+``` <smooth-setelement> #vs
+Change the fields of the element of `this` at index `index`. Return `this`. Slightly different versions of this routine are also defined in the source code, feel free to peruse it.
+
+```
+smooth rmelement (int index)
+``` <smooth-rmelement> #vs
+Delete an element at index `index`. Return `this`.
+
+```
+smooth movelement (int index, pair shift)
+``` <smooth-movelement> #vs
+Move the element at index `index` by `shift`. Return `this`.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth addhole (
+      path contour,
+      pair center = config.system.dummypair,
+      real[][] sections = {},
+      pair shift = (0,0),
+      real scale = 1,
+      real rotate = 0,
+      pair point = center(contour),
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  ``` <smooth-addhole-spec>
+  #colbreak()
+  ```
+  smooth addhole (
+      hole hl,
+      int insertindex = this.holes.length,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  ``` <smooth-addhole>
+] #vs
+Add a new hole to `this`. If `clip` is `true` and the hole's contour is _not_ contained within `this` object's contour, then clip `this` smooth object's contour using `difference` @path-set-difference, like so:
+#figure(
+  image("resources/addhole-clip.svg"),
+  caption: [A showcase of the `clip` parameter]
+)
+If `unit` is `true`, then the hole contour will be treated in the unit coordinates, i.e. the `unitadjust` transform will be applied to it.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth addholes (
+      hole[] holes,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  smooth addholes (
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+      ... hole[] holes
+  )
+  ``` <smooth-addholes>
+  #colbreak()
+  ```
+  smooth addholes (
+      path[] contours,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  smooth addholes (
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+      ... path[] contours
+  )
+  ``` <smooth-addholes-spec>
+] #vs
+Auxiliary routines made for conveniently adding multiple holes at the same time.
+
+```
+smooth rmhole (int index = this.holes.length-1)
+``` <smooth-rmhole> #vs
+Delete the hole under index `index` from `this`.
+
+```
+smooth rmholes (int[] indices)
+smooth rmholes (... int[] indices)
+``` <smooth-rmholes> #vs
+Delete a number of holes from `this`.
+
+```
+smooth movehole (
+    int index,
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    pair point = this.holes[index].center,
+    bool movesections = false
+)
+``` <smooth-movehole> #vs
+Move the hole at index `index` by scaling and rotating it around `point`, and shifting it by `shift`. If `movesections` is `true`, the `sections` values of the hole are updated accordingly with the transform. This is only really necessary when `rotate` is non-zero.
+
+#bl[
+  #show: columns.with(3, gutter: 0pt)
+  ```
+  smooth addsection (
+      int index,
+      real[] section = {}
+  )
+  ``` <smooth-addsection>
+  #colbreak()
+  ```
+  smooth setsection (
+      int index,
+      int scindex = 0,
+      real[] section = {}
+  )
+  ``` <smooth-setsection>
+  #colbreak()
+  ```
+  smooth rmsection (
+      int index =
+        this.holes.length-1,
+      int scindex = 0
+  )
+  ``` <smooth-rmsection>
+] #vs
+Add, set or remove a section under `scindex` in the hole under `index`.
 
 == The subset hierarchy <sc-smooth-subset>
 
@@ -941,6 +1101,8 @@ int findlocalsubsetindex (string label)
 ``` <smooth-findlocalsubsetindex> #vs
 Locate a subset of `this` by its label and return its index.
 
+
+
 ```
 smooth setcenter (
     string destlabel,
@@ -959,6 +1121,27 @@ smooth setlabel (
 ) { return this.setlabel(findlocalsubsetindex(destlabel), label, dir, align); }
 ``` <smooth-setcenter-label> #vs
 An alternative to `setlabel` @smooth-setlabel, but finds the subset by label.
+
+```
+smooth setelement (
+    string destlabel,
+    pair pos = config.system.dummypair,
+    string label = config.system.dummystring,
+    pair labelalign = config.system.dummypair,
+    bool unit = config.smooth.unit
+) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
+``` <smooth-setelement-label> #vs
+An alternative to `setelement` @smooth-setelement, but finds the element by label.
+
+```
+smooth rmelement (string destlabel)
+``` <smooth-rmelement-label> #vs
+An alternative to `rmelement` @smooth-rmelement, but finds the element by label.
+
+```
+smooth movelement (string destlabel, pair shift)
+``` <smooth-movelement-label> #vs
+An alternative to `movelement` @smooth-movelement, but finds the element by label.
 
 = Global configuration <sc-config>
 

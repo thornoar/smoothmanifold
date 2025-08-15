@@ -2771,8 +2771,7 @@ struct smooth
         real scale = 1,
         real rotate = 0,
         pair point = this.holes[index].center,
-        bool movesections = false,
-        bool keepview = true
+        bool movesections = false
     )
     {
         transform move = srap(scale, rotate, point) * shift(shift);
@@ -2861,8 +2860,8 @@ struct smooth
 
     smooth rmsection (
         int index = this.holes.length-1,
-        int ind2 = 0
-    ) { this.holes[index].sections.delete(ind2); return this; }
+        int scindex = 0
+    ) { this.holes[index].sections.delete(scindex); return this; }
 
     // -- Methods for manipulating subsets -- //
 
