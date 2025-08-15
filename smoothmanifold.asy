@@ -22,7 +22,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >keywords
 /*  config, tarrow, tbar, values, support,
     generic, system, pens, technical, structs,
-    hole, subset, dpar, smooth, finding,
+    hole, subset, element, dpar, smooth, finding,
     deferredPath, operations, intersections,
     unions, drawing, redefining
 */
@@ -30,7 +30,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.3.0";
+    string version = "v6.3.1";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
@@ -1496,6 +1496,7 @@ pair[][] sectionparams (path g, path h, int n, real r, int p)
 
 // >structs | The structures of the module
 
+// >element
 struct element
 // An 'element' of a set, in a set-theoretical sense.
 {
@@ -2940,17 +2941,14 @@ struct smooth
             range = subsetgetlayer(this.subsets, sequence(this.subsets.length), 0);
         }
 
-        if (checkintersection && !sub)
+        if (checkintersection)
         {
-            bool meet = false;
-
             if (!insidepath(pcontour, sb.contour))
             {
                 if (clip && meet(pcontour, sb.contour))
                 {
                     sb.contour = intersection(pcontour, sb.contour)[0];
                     sb.isonboundary = true;
-                    meet = true;
                 }
                 else
                 {
@@ -2960,7 +2958,7 @@ struct smooth
                 }
             }
 
-            for (int i = 0; i < this.holes.length; ++i)
+            if (!sub) for (int i = 0; i < this.holes.length; ++i)
             {
                 if (meet(this.holes[i].contour, sb.contour))
                 {
@@ -2968,7 +2966,6 @@ struct smooth
                     {
                         sb.contour = difference(sb.contour, this.holes[i].contour)[0];
                         sb.isonboundary = true;
-                        meet = true;
                     }
                     else
                     {
@@ -3145,6 +3142,17 @@ struct smooth
     ) { return this.addsubsets(sbs, index, inferlabels, clip, unit); }
 
     smooth addsubsets (
+        path[] contours,
+        int index = -1,
+        bool inferlabels = config.smooth.inferlabels,
+        bool clip = config.smooth.clip,
+        bool unit = config.smooth.unit
+    )
+    {
+        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, clip, unit);
+    }
+
+    smooth addsubsets (
         int index = -1,
         bool inferlabels = config.smooth.inferlabels,
         bool clip = config.smooth.clip,
@@ -3152,7 +3160,7 @@ struct smooth
         ... path[] contours
     )
     {
-        return this.addsubsets(index = index, sbs = sequence(new subset (int i){ return subset(contours[i]); }, contours.length), inferlabels, clip, unit);
+        return this.addsubsets(contours, index, inferlabels, clip, unit);
     }
 
     smooth addsubsets (
@@ -3245,6 +3253,7 @@ struct smooth
                 res = false;
                 break;
             }
+            res = res && onlyprimary(s.subsets[i]);
         }
 
         return res;

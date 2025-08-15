@@ -79,7 +79,7 @@
 
 #align(center)[
   #set text(size: 17pt)
-  `smoothmanifold.asy - v6.3.0` \ #v(0pt)
+  `smoothmanifold.asy - v6.3.1` \ #v(0pt)
   #set text(size: 18pt)
   Diagrams in higher mathematics with Asymptote\
   #set text(size: 14pt)
@@ -106,7 +106,7 @@ This document contains the full description and user manual to the `smoothmanifo
 In higher mathematics, diagrams often take the form of "blobs" (representing sets and their subsets) placed on the plane, connected with paths or arrows. This is particularly true for set theory and topology, but other more advanced fields inherit this style. In differential geometry and multivariate calculus, one draws spheres, tori, and other surfaces in place of these "blobs". In category theory, commutative diagrams are commonplace, where the "blobs" are replaced by symbols. Here are a couple of examples, all drawn with `smoothmanifold`:
 
 #[
-  #show: it => columns(2, gutter: 0%, it)
+  #show: columns.with(2, gutter: 0%)
   #figure(
     image("./resources/injection.svg"),
     caption: [An illustration of non-injectivity\ (set theory)]
@@ -159,7 +159,7 @@ All these steps require no extra input from the user, since the shipout function
 
 Similarly to drawing paths to a picture, arrows and bars are implemented through a function type `bool(picture, path, pen, margin)`, typedef'ed as `arrowbar`. Moreover, when this arrowbar is called, it automatically draws not only itself, but also the path is was attached to. This makes it impossible to attach an arrowbar to a path and then mutate the path --- the arrowbar will remember the path's original state. Hence, `smoothmanifold` implements custom arrow/bar implementations:
 #block(breakable: false)[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   struct tarrow {
       arrowhead head;
@@ -184,7 +184,7 @@ Similarly to drawing paths to a picture, arrows and bars are implemented through
 These structs store information about the arrow/bar, and are converted to regular arrowbars when the corresponding path is drawn to the picture. For creating new `tarrow`/`tbar` instances and converting them to arrowbars, the following functions are available:
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   tarrow DeferredArrow(
       arrowhead head = DefaultHead,
@@ -259,7 +259,7 @@ Arguments:
 
 Apart from different types of the `arrow`/`bar` arguments, the `fitpath` function is identical to `draw` in type signature, and they can be used interchangeably. Moreover, there are overloaded versions of `fitpath`, where parameters are given default values (one of these versions is used in the example above):
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   void fitpath (
       picture pic = currentpicture,
@@ -375,7 +375,7 @@ This function returns an array of paths because the combination of two bounded r
 Based on different values for the `mode` parameter, the module defines the following specializations:
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] difference (
     path p,
@@ -394,7 +394,7 @@ Based on different values for the `mode` parameter, the module defines the follo
 Calculate the path(s) bounding the set difference of the regions bounded by `p` and `q`. The `correct` parameter determines whether the paths should be "corrected", i.e. oriented clockwise.
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] symmetric (
     path p,
@@ -413,7 +413,7 @@ Calculate the path(s) bounding the set difference of the regions bounded by `p` 
 Calculate the path(s) bounding the set symmetric difference of the regions bounded by `p` and `q`.
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] intersection (
     path p,
@@ -432,7 +432,7 @@ Calculate the path(s) bounding the set symmetric difference of the regions bound
 Calculate the path(s) bounding the set intersection of the regions bounded by `p` and `q`. The following array versions are also available:
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] intersection (
     path[] ps,
@@ -455,7 +455,7 @@ Calculate the path(s) bounding the set intersection of the regions bounded by `p
 Inductively calculate the total intersection of an array of paths.
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] union (
     path p,
@@ -474,7 +474,7 @@ Inductively calculate the total intersection of an array of paths.
 Calculate the path(s) bounding the set union of the regions bounded by `p` and `q`. The corresponding array versions are available:
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   path[] union (
     path[] ps,
@@ -721,7 +721,7 @@ Draw an "open neighborhood bracket" on the real line, like so:
 The `smoothmanifold` module's original purpose was to introduce a suitable abstraction to simplify drawing blobs on the plane. The `smooth` structure is, perhaps, the oldest part of `smoothmanifold`, that has persisted through countless updates and changes. In its current form, here is how it's defined:
 
 #bl[
-  #show: it => columns(2, gutter: 0pt, it)
+  #show: columns.with(2, gutter: 0pt)
   ```
   struct smooth {
       path contour;
@@ -815,11 +815,11 @@ Every `smooth` object has a:
 
 Each of the four structures is equipped with a sophisticated `void operator init` that will infer as much information as possible. To construct a `smooth`, `hole`, or `subset`, it is only necessary to pass a `contour`. All other fields can be set in the constructor, but they are optional. To construct an `element`, it is only necessary to pass a `pos`, the `label` and `labelalign` fields have default values.
 
-== Query and mutation <sc-smooth-method>
+== Query and mutation methods <sc-smooth-method>
 
 Already constructed structures can be queried and modified in a plethora of ways. Most methods return `this` at the end of execution for convenience.
 
-=== Methods of `smooth` objects
+=== `smooth` objects
 
 ```
 real xsize () { return xsize(this.contour); }
@@ -961,7 +961,7 @@ Add a new hole to `this`. If `clip` is `true` and the hole's contour is _not_ co
   image("resources/addhole-clip.svg"),
   caption: [A showcase of the `clip` parameter]
 )
-If `unit` is `true`, then the hole contour will be treated in the unit coordinates, i.e. the `unitadjust` transform will be applied to it.
+If `unit` is `true`, then the hole contour will be treated in the unit coordinates, i.e. the `unitadjust` transform will be applied to it. See @sc-smooth-unit for more details.
 
 #bl[
   #show: columns.with(2, gutter: 0pt)
@@ -1023,6 +1023,7 @@ Move the hole at index `index` by scaling and rotating it around `point`, and sh
       int index,
       real[] section = {}
   )
+    
   ``` <smooth-addsection>
   #colbreak()
   ```
@@ -1041,65 +1042,285 @@ Move the hole at index `index` by scaling and rotating it around `point`, and sh
   )
   ``` <smooth-rmsection>
 ] #vs
-Add, set or remove a section under `scindex` in the hole under `index`.
+Add, set or remove a section under `scindex`
+in the hole under `index`.
+
+```
+smooth addsubset (
+    subset sb,
+    int index = -1,
+    bool inferlabels = config.smooth.inferlabels,
+    bool clip = config.smooth.clip,
+    bool unit = config.smooth.unit,
+    bool checkintersection = true
+)
+``` <smooth-addsubset> #vs
+Add a new subset to `this`. The meaning of the arguments is as follows:
+- `sb` --- the subset to add;
+- `index` --- the index of another, preexisting subset of `this`, such that `sb` should be made a subset of `this.subsets[index]`. If `index` is `-1`, then `sb` is considered a toplevel subset until found otherwise by containment checks. Essentially, the `index` parameter saves the algorithm some work figuring out where to fit `sb` in the subset hierarchy. See @sc-smooth-subset for more explanation;
+- `inferlabels` --- if set to `true`, the intersection subsets arising from the addition of `sb` will be given labels like `"$A \cap B$"`, given that some subsets have labels `"$A$"` and `"$B$"`;
+- `clip` --- if set to `false`, this leads to an error whenever `sb`'s contour is out of bounds with `this` objects's contour. If `clip` is set to true, then `sb`'s contour is clipped instead, and its `isonboundary` field is set to `true`;
+- `unit` --- as usual, setting this to `true` leads to `sb` being interpreted in `this` objects's unit coordinates, see @sc-smooth-unit;
+- `checkintersection` --- if set to `false`, the routine will _not_ perform out-of-bounds checks. This can significantly increase efficiency when the user is confident in the correctness of the call. But then you only have yourself to blame when your subsets are sticking out of your smooth objects!
+
+```
+smooth addsubset (
+    int index = -1,
+    path contour,
+    pair center = config.system.dummypair,
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    pair point = center(contour),
+    string label = "",
+    pair dir = config.system.dummypair,
+    pair align = config.system.dummypair,
+    bool inferlabels = config.smooth.inferlabels,
+    bool clip = config.smooth.clip,
+    bool unit = config.smooth.unit
+)
+``` <smooth-addsubset-spec> #vs
+A convenience routine that creates the subset from given parameters and calls `addsubset` @smooth-addsubset on it.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth addsubsets (
+      subset[] sbs,
+      int index = -1,
+      bool inferlabels = config.smooth.inferlabels,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  smooth addsubsets (
+      int index = -1,
+      bool inferlabels = config.smooth.inferlabels,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+      ... subset[] sbs
+  )
+  ``` <smooth-addsubsets>
+  #colbreak()
+  ```
+  smooth addsubsets (
+      path[] contours,
+      int index = -1,
+      bool inferlabels = config.smooth.inferlabels,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+  )
+  smooth addsubsets (
+      int index = -1,
+      bool inferlabels = config.smooth.inferlabels,
+      bool clip = config.smooth.clip,
+      bool unit = config.smooth.unit
+      ... path[] contours
+  )
+  ``` <smooth-addsubsets-spec>
+] #vs
+Further convenience routines that allow adding multiple subsets.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth rmsubset (
+      int index = this.subsets.length-1,
+      bool recursive = true
+  )
+    
+  ``` <smooth-rmsubset>
+  #colbreak()
+  ```
+  smooth rmsubsets (
+      int[] indices,
+      bool recursive = true
+  )
+  // (... indices)
+  ``` <smooth-rmsubsets>
+] #vs
+Remove one or more subsets from `this`. If `recursive` is set to `true`, then all subsets of the removed subset shall also be removed.
+
+```
+smooth movesubset (
+    int index = this.subsets.length-1,
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    pair point = config.system.dummypair,
+    bool movelabel = false,
+    bool recursive = true,
+    bool bounded = true,
+    bool clip = config.smooth.clip,
+    bool inferlabels = config.smooth.inferlabels,
+    bool keepview = true
+)
+``` <smooth-movesubset> #vs
+Move the subset at index `index` (say, `sb`), scaling and rotating it around `point`, and then shifting it by `shift`. The meaning of the `bool` parameters is as follows:
+- `movelabel` --- if set to `true`, the `labeldir` of `sb` is rotated with the subset itself;
+- `recursive` --- if set to `true`, all subsets of `sb` are moved as well;
+- `bounded` --- if set to `true`, the movement of `sb` is restricted by its subsets and supersets;
+- `clip` --- if set to `true`, the contour of `sb` will be clipped if it becomes out-of-bounds as a result of the movement;
+- `inferlabels` --- same as the corresponding parameter of the `addsubset` @smooth-addsubset function.
+
+```
+smooth attach (smooth sm)
+``` <smooth-attach> #vs
+Add the smooth object `sm` to the `attached` field of `this`. Return `this`.
+
+```
+smooth fit (
+    int index = -1,
+    picture pic = currentpicture,
+    picture addpic,
+    pair shift = (0,0)
+)
+``` <smooth-fit> #vs
+Fit an entire picture `pic` into one of the subsets of `this`, namely one under index `index`. If `index` is `-1`, the picture is fit inside the contour of `this`.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth copy ()
+  ``` <smooth-copy>
+  #colbreak()
+  ```
+  smooth replicate (smooth sm)
+  ``` <smooth-replicate>
+] #vs
+Perform a deep copy of `this` and return this copy, or deeply copy all fields from another smooth object `sm`, returning `this`.
+
+=== `subset` objects
+
+```
+real xsize () { return xsize(this.contour); }
+real ysize () { return ysize(this.contour); }
+``` <subset-size> #vs
+Calculate the vertical and horizontal size of `this`.
+
+```
+subset move (transform move)
+``` <subset-move> #vs
+Move `this` by applying `move` to its `contour`.
+
+```
+subset move (pair shift, real scale, real rotate, pair point, bool movelabel)
+``` <subset-move-spec> #vs
+A more sophisticated version of `move` @subset-move, which accepts the usual `shift`, `scale`, `rotate`, `point` arguments (see `smooth.move` @smooth-move), and moves the subset's `labeldir` based on the `movelabel` flag.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  subset copy ()
+  ``` <subset-copy>
+  #colbreak()
+  ```
+  subset replicate (subset s)
+  ``` <subset-replicate>
+] #vs
+Perform a deep copy of `this` and return the copy, or deeply copy all fields of another subset, `s`, into `this`, returning `this`.
+
+=== `hole` objects
+
+```
+hole move (transform move)
+``` <hole-move> #vs
+Move `this` by applying `move` to the hole's `contour`.
+
+```
+hole move (pair shift, real scale, real rotate, pair point, bool movesections)
+``` <hole-move-spec> #vs
+A more sophisticated version of `move` @hole-move, which accepts the usual `shift`, `scale`, `rotate`, `point` arguments (see `smooth.move` @smooth-move), and rotates the sections of `this` (see @sc-smooth-modes-free) if the `movesections` flag is set.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  hole copy ()
+  ``` <subset-copy>
+  #colbreak()
+  ```
+  hole replicate (hole h)
+  ``` <subset-replicate>
+] #vs
+Perform a deep copy of `this` and return the copy, or deeply copy all fields of another hole, `h`, into `this`, returning `this`.
+
+=== `element` objects
+
+```
+element move (transform move)
+``` <element-move> #vs
+Move `this` by applying `move` to the element's `contour`.
+
+```
+element move (pair shift, real scale, real rotate, pair point, bool movelabel)
+``` <element-move-spec> #vs
+A more sophisticated version of `move` @element-move, which accepts the usual `shift`, `scale`, `rotate`, `point` arguments (see `smooth.move` @smooth-move), and rotates this element's `labeldir` if the `movelabel` flag is set.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  element copy ()
+  ``` <subset-copy>
+  #colbreak()
+  ```
+  element replicate (element elt)
+  ``` <subset-replicate>
+] #vs
+Perform a deep copy of `this` and return the copy, or deeply copy all fields of another element, `elt`, into `this`, returning `this`.
 
 == The subset hierarchy <sc-smooth-subset>
 
+In general, a system of subsets of a set can form a complicated network of intersections and inclusions. Consider the following example:
+#figure(
+  image("resources/subset-hierarchy.svg"),
+  caption: [An example of many intersecting subsets]
+) <subset-hierarchy>
+
+To manage this mess (and to be able to draw the diagram above in under 30 lines of code), `smoothmanifold` employs a _hierarchy of subsets._ This is achieved through every subset having a `layer` field which specifies how deep in the hierarchy it lies (in @subset-hierarchy different layers are colored with different colors). Some points to note:
+- The `int[] subsets` field of a subset `sb` structure contains all indices of subsets in the parent `smooth` object, that are direct subsets of `sb`;
+- When adding a subset `sb` with `smooth.addsubset` @smooth-addsubset, the algorithm automatically checks its intersections with all other subsets of the smooth object, creating additional subsets, and fits `sb` on the appropriate `layer`.
+
+There are two internally important methods of `smooth`, related to the subset hierarchy:
+
+```
+bool onlyprimary (int index)
+``` <smooth-onlyprimary> #vs
+Determine if the subset of `this` at index `index` only contains "proper" subsets (that is, those that are not intersections of other subsets).
+
+```
+bool onlysecondary (int index)
+``` <smooth-onlysecondary> #vs
+Same as `onlyprimary` @smooth-onlyprimary, but now check if all subsets of `this.subsets[index]` are intersections of other subsets.
+
+You will not be able to `move` @smooth-movesubset a subset, if it contains both primary ("proper") and secondary subsets, since the situation becomes too complicated and I don't know how to resolve it algorithmically. This is the case because moving a subset should trigger a recalculation of the entire subset hierarchy, which is a generally difficult task.
+
 == Unit coordinates in a `smooth` object <sc-smooth-unit>
+
+Sometimes, when working with a `smooth` object, it is easier not to think about where it is located in user coordinates, and assume that its `center` @smooth-smooth is at `(0,0)`, and its `radius` @path-radius is approximately `1`. Module `smoothmanifold` supports a mechanism to allow this, namely the `unitadjust` @smooth-smooth field of the `smooth` structure. It establishes a bridge between the object's "unit coordinates" and the global user coordinates. This field is calculated via
 
 ```
 transform selfadjust ()
 { return shift(this.center)*scale(radius(this.contour)); }
 ``` <smooth-selfadjust> #vs
-Calculate the unit coordinates of `this`. See `unitadjust` @smooth-smooth and @sc-smooth-unit for reference.
+Calculate the unit coordinates of `this`. See `unitadjust` @smooth-smooth for reference.
+
+The unit coordinates of a subset can also be obtained: #vs
 
 ```
 transform adjust (int index)
 ``` <smooth-adjust> #vs
 Calculate the unit coordinates of the subset of `this` at index `index`. If `index` is set to `-1`, the `unitadjust` field of `this` is used instead.
 
+Now, any method that accepts a `bool unit` parameter, can accept pairs/paths in the parent object's unit coordinates, since it will convert them to global coordinates by applying `unitadjust`.
+
+Another unit-related method of the `smooth` structure is #vs
 ```
 pair relative (pair point)
 ``` <smooth-relative> #vs
-
-== The modes of cross section drawing <sc-smooth-modes>
-
-=== `plain` mode <sc-smooth-modes-plain>
-
-=== `free` mode <sc-smooth-modes-free>
-
-=== `cartesian` mode <sc-smooth-modes-cartesian>
-
-```
-real getyratio (real y)
-real getxratio (real x)
-real getypoint (real y)
-real getxpoint (real x)
-``` <smooth-get-ratio-point> #vs
-Convert to and from relative lengths.
-
-```
-smooth setratios (real[] ratios, bool horiz)
-``` <smooth-setratios> #vs
-Set the horizontal/vertical cartesian ratios of `this`.
-
-=== `combined` mode <sc-smooth-modes-combined>
-
-== The `dpar` drawing configuration structure <sc-smooth-dpar>
-
-== The `draw` function <sc-smooth-draw>
+Convert `point` (given in unit coordinates) to a point in global coordinates.
 
 == Reference by label <sc-smooth-by-label>
 
-```
-static bool repeats (string label)
-``` <smooth-repeats> #vs
-Check if `label` already exists as a label of some `smooth`, `subset`, or `element` object.
-
-```
-int findlocalsubsetindex (string label)
-``` <smooth-findlocalsubsetindex> #vs
-Locate a subset of `this` by its label and return its index.
+The global array `smooth.cache` @smooth-smooth gives many opportunities, and one of them is _reference by label._ Given a string `label`, one can loop over the `smooth.cache` array and search for a smooth object with this label. Moreover, one can inspect the subsets and elements of these smooth objects, and compare their labels to `label`. In this way, one can obtain a `smooth`, `subset`, or `element` from their `label`. This gives rise to the following versions of the already familiar `smooth` methods:
 
 
 
@@ -1143,6 +1364,157 @@ smooth movelement (string destlabel, pair shift)
 ``` <smooth-movelement-label> #vs
 An alternative to `movelement` @smooth-movelement, but finds the element by label.
 
+```
+smooth addsubset (
+    string destlabel,
+    subset sb,
+    bool inferlabels = config.smooth.inferlabels,
+    bool clip = config.smooth.clip,
+    bool unit = config.smooth.unit
+)
+``` <smooth-addsubset-label> #vs
+An alternative to `addsubset` @smooth-addsubset, but finds the destination subset by label. The specialized versions of `addsubset` also have a label version.
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  smooth rmsubset (
+      string destlabel,
+      bool recursive = true
+  )
+    
+  ``` <smooth-rmsubset-label>
+  #colbreak()
+  ```
+  smooth rmsubsets (
+      string[] destlabels,
+      bool recursive = true
+  )
+  // (... destlabels)
+  ``` <smooth-rmsubsets-label>
+] #vs
+Label-based alternatives to `rmsubset` @smooth-rmsubset and `rmsubsets` @smooth-rmsubsets.
+
+```
+smooth movesubset (
+    string destlabel,
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    pair point = config.system.dummypair,
+    bool movelabel = false,
+    bool recursive = true,
+    bool bounded = true,
+    bool clip = config.smooth.clip,
+    bool inferlabels = config.smooth.inferlabels,
+    bool keepview = true
+)
+``` <smooth-movesubset-label> #vs
+A label-based alternative of `movesubset` @smooth-movesubset.
+
+These are methods that facilitate the correct finding of objects by label:
+```
+static bool repeats (string label)
+``` <smooth-repeats> #vs
+Check if `label` already exists as a label of some `smooth`, `subset`, or `element` object.
+```
+int findlocalsubsetindex (string label)
+``` <smooth-findlocalsubsetindex> #vs
+Locate a subset of `this` by its label and return its index.
+
+As a final step, module `smoothmanifold` defines a number of `operator cast` functions for full label integration:
+
+```
+smooth operator cast (string label)
+smooth[] operator cast (string[] labels)
+``` <smooth-cast> #vs
+Cast a `string` to a `smooth` object.
+
+```
+subset operator cast (string label)
+subset[] operator cast (string[] labels)
+``` <subset-cast> #vs
+Cast a `string` to a `subset` object.
+
+```
+element operator cast (string label)
+element[] operator cast (string[] labels)
+``` <element-cast> #vs
+Cast a `string` to a `element` object.
+
+These casts rely on the following auxiliary internal functions: #vs
+
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  int findsmoothindex (string label)
+  int[] findsubsetindex (string label)
+  int[] findelementindex (string label)
+  ``` <smooth-findindex>
+  #colbreak()
+  ```
+  smooth findsm (string label)
+  subset findsb (string label)
+  element findelt (string label)
+  ``` <smooth-find>
+]
+
+== The modes of cross section drawing <sc-smooth-modes>
+
+Cross sections (as seen in @tangent) are meant to create the illusion of 3D in a 2D diagram. They typically connect the contours of an object's holes with the contour of the object itself. These sections can be drawn in various modes. Compare:
+#figure(
+  [
+    #let item(img, lab) = grid(
+      align: center,
+      gutter: 1em,
+      img,
+      lab
+    )
+    #let frame(lab) = block(inset: 3pt, fill: paleyellow, lab)
+    #set raw(lang: none)
+    #grid(
+      columns: 4,
+      gutter: 1fr,
+      item(image("resources/mode-plain-showcase.svg"), frame([`plain` mode])),
+      item(image("resources/mode-free-showcase.svg"), frame([`free` mode])),
+      item(image("resources/mode-cartesian-showcase.svg"), frame([`cartesian` mode])),
+      item(image("resources/mode-combined-showcase.svg"), frame([`combined` mode])),
+    )
+  ],
+  caption: [Different modes of drawing cross sections]
+)
+
+We will now explain how each mode is implemented.
+
+=== The `plain` mode <sc-smooth-modes-plain>
+
+This is the simplest mode --- no sections at all. It is the default mode, since most of `smoothmanifold` diagrams (despite the name of the module) are purely 2D.
+
+=== The `free` mode <sc-smooth-modes-free>
+
+This mode makes use of the `sections` field of the `hole` @smooth-ho-su-el structure.
+
+=== The `cartesian` mode <sc-smooth-modes-cartesian>
+
+```
+real getyratio (real y)
+real getxratio (real x)
+real getypoint (real y)
+real getxpoint (real x)
+``` <smooth-get-ratio-point> #vs
+Convert to and from relative lengths.
+
+```
+smooth setratios (real[] ratios, bool horiz)
+``` <smooth-setratios> #vs
+Set the horizontal/vertical cartesian ratios of `this`.
+
+=== The `combined` mode <sc-smooth-modes-combined>
+
+== The `dpar` drawing configuration structure <sc-smooth-dpar>
+
+== The `draw` function <sc-smooth-draw>
+
 = Global configuration <sc-config>
 
 == System variables <sc-config-system>
@@ -1169,7 +1541,20 @@ Should you perform an erroneous calculation step (like adding an out-of-bounds s
 
 = Miscellaneous auxiliary routines <sc-misc>
 
-== Useful array functions <sc-misc-array>
+```
+smooth[] concat (smooth[][] smss)
+``` <smooth-concat> #vs
+Concatenate an array of `smooth` objects. In Asymptote, it is difficult to write a polymorphic `concat` function.
+
+```
+void print (smooth sm)
+``` <smooth-print> #vs
+Print various information about the smooth object `sm` in the console.
+
+```
+void printall ()
+``` <smooth-printall> #vs
+Print all `smooth` objects in the global `smooth.cache` array.
 
 = The `export.asy` auxiliary module <sc-export>
 
