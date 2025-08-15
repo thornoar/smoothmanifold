@@ -2239,7 +2239,7 @@ struct smooth
         pair point = this.center,
         bool readjust = true,
         bool drag = true
-    ) // Transforms the smooth object. Respects the current `viewdir`.
+    ) // Transforms the smooth object.
     {
         if (scale <= 0)
         { halt("Could not move: scale value must be positive. [ move() ]"); }
