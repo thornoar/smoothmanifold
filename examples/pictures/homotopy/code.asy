@@ -5,6 +5,7 @@ export.drawgrid = false;
 export.gridnumber = 20;
 export.xmargin = .5cm;
 export.prefix = "picture";
+config.system.insertdollars = true;
 settings.outformat = "pdf";
 
 size(12cm);

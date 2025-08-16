@@ -3,6 +3,7 @@ size(8cm);
 
 config.arrow.absmargins = true;
 config.smooth.nodesize = .8;
+config.system.insertdollars = true;
 
 smooth a = node("A", pos = (0,0));
 smooth fa = node("F(A)", (5,2));

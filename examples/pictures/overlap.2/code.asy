@@ -5,6 +5,7 @@ defaultpen(.7);
 
 config.drawing.gaplength = .03;
 config.drawing.underdashes = true;
+config.system.insertdollars = true;
 
 fitpath((0,0){up}..{down}(1,0), arrow = DeferredArrow(HookHead, begin = true, arc = true), bar = DeferredBar(begin = true, end = true, size = 10), p = blue);
 fitpath((.5,-1.3){up}..(.6,.7), arrow = DeferredArrow(TeXHead));

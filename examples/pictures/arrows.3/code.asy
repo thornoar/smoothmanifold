@@ -14,6 +14,7 @@ config.drawing.mode = free;
 config.drawing.viewdir = dir(15);
 config.section.freedom = 0.15;
 config.help.enable = false;
+config.system.insertdollars = true;
 
 export.background = paleyellow;
 export.xmargin = 1cm;

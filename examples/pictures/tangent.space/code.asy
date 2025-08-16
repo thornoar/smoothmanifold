@@ -12,6 +12,7 @@ config.arrow.absmargins = true;
 config.drawing.gaplength = .09;
 config.drawing.attachedopacity = .9;
 config.help.enable = true;
+config.system.insertdollars = true;
 
 smooth sm = samplesmooth(1)
     .setlabel("M")

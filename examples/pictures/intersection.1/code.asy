@@ -7,6 +7,7 @@ defaultpen(.7);
 config.section.freedom = .5;
 config.drawing.viewdir = dir(45);
 config.drawing.mode = free;
+config.system.insertdollars = true;
 
 export.background = paleyellow;
 

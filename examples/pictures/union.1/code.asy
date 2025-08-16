@@ -11,6 +11,7 @@ export.xmargin = 1.5cm;
 config.drawing.viewdir = dir(40);
 config.drawing.mode = free;
 config.drawing.dashes = false;
+config.system.insertdollars = true;
 
 smooth sm1 = samplesmooth(3).setlabel("M", dir(140));
 smooth sm2 = samplesmooth(2).setlabel("N", dir(-30));

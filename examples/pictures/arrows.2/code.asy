@@ -24,8 +24,8 @@ smooth sm2 = samplesmooth(1, 1).move(rotate = 90, shift = (3.5,0)).setlabel("N",
 sm2.setlabel(0, "S", dir(135));
 sm2.addelement((-.2,0), "y", align = E);
 
-draw("M");
-draw("N");
+draw(findsm("M"));
+draw(findsm("N"));
 drawarrow(
     destlabel1 = "x",
 	destlabel2 = "y",

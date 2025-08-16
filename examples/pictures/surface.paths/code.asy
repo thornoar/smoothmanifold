@@ -15,6 +15,7 @@ config.drawing.pathrandom = true;
 config.drawing.subpenbrighten = .4;
 config.drawing.subpenfactor = .6;
 config.smooth.unit = true;
+config.system.insertdollars = true;
 
 smooth sm1 = samplesmooth(0)
     .setlabel("\mathcal{S}^2")

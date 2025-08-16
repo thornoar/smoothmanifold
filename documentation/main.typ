@@ -624,6 +624,8 @@ Calculate the begin and end times of a subpath of `g`, based on `center`, `dir`,
   caption: [An illustration of the `range` function]
 )
 
+If `orient` is set to `-1` instead of `1`, then the returned times are switched.
+
 ```
 bool outsidepath (path p, path q)
 ``` <path-outsidepath> #vs
@@ -1043,7 +1045,11 @@ Move the hole at index `index` by scaling and rotating it around `point`, and sh
   ``` <smooth-rmsection>
 ] #vs
 Add, set or remove a section under `scindex`
-in the hole under `index`.
+in the hole under `index`. When adding, the section will have to pass the #vs
+```
+bool checksection (real[] section)
+``` <smooth-checksection> #vs
+check.
 
 ```
 smooth addsubset (
@@ -1534,7 +1540,7 @@ Return an array of two paths, together composing an ellipse whose center lies on
   // Drawing it in pretty colors
   ```,
   [An illustration of the output of the `sectionellipse` function]
-)
+) <sectionellipse-showcase>
 The `viewdir` parameter represents "direction of view", it helps coordinate the tilt angles of all section ellipses in a picture to maintain the illusion of 3D.\
 This algorithm uses either an $O(1)$ formula, if `config.section.elprecision` (see @sc-config-section) is less than zero (which is true by default), or an $O(log n)$ binary search procedure, otherwise.
 
@@ -1633,7 +1639,7 @@ You may have noticed that the `smooth` @smooth-smooth structure contains no info
     ));
     ```,
     [A showcase of the interpretation of `subsetcontourpens` and `subsetfill`]
-  )
+  ) <subsetfill-showcase>
 - `pen sectionpen` --- the pen used to draw cross sections (their visible parts);
 - `pen dashpen` --- the pen used to draw the "invisible" (dashed) parts of cross sections;
 - `pen shadepen` --- the pen used to fill the section ellipses;
@@ -1657,7 +1663,7 @@ You may have noticed that the `smooth` @smooth-smooth structure contains no info
 - `bool drawnow` --- the `drawnow` parameter to pass to `fitpath` @def-fitpath;
 - `bool drawextraover` --- whether to apply the `drawextra` function of the smooth object "over" everything else (that is, after drawing the object itself). In other words, if `drawextraover` is `false`, then the `drawextra` will be called in the beginning of drawing the smooth object, otherwise in the end.
 
-These are all the fields of `dpar`. The structure has a comprehensive `void operator init` constructor where all fields are given default values from the `config.drawing` TODO global configuration structure. The `dpar` structure also supports a method #vs
+These are all the fields of `dpar`. The structure has a comprehensive `void operator init` constructor where all fields are given default values from the `config.drawing` @config-drawing global configuration structure. The `dpar` structure also supports a method #vs
 ```
 dpar subs (
     pen contourpen = this.contourpen,
@@ -1691,27 +1697,478 @@ void draw (
 ``` <smooth-draw> #vs
 Draw `sm` on picture `pic`, with drawing configuration `dspec`. This function follows all the drawing protocols described previously in @sc-smooth-subset, @sc-smooth-modes and @sc-smooth-dpar.
 
+Moreover, there are overloaded versions of `draw`: #vs
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  void draw (
+      picture pic = currentpicture,
+      smooth[] sms,
+      dpar dspec = null
+  )
+  ```
+  #colbreak()
+  ```
+  void draw (
+      picture pic = currentpicture,
+      dpar dspec = null
+      ... smooth[] sms
+  )
+  ```
+]
+
 == Set operations on `smooth` objects
+
+Nobody asked, but module `smoothmanifold` implements a few very complicated functions dedicated to calculating unions and intersections of `smooth` objects.
+
+```
+smooth[] intersection (
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff,
+    bool addsubsets = config.smooth.addsubsets
+)
+smooth[] intersection (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff,
+    bool addsubsets = config.smooth.addsubsets
+)
+// (... sms)
+``` <smooth-intersection> #vs
+Calculate the intersection of two or more `smooth` objects. The `round` and `roundcoeff` parameters are passed to the `intersection` @path-intersection function. If `keepdata` is set to `true`, then references to old `hole` and `subset` objects will be used in the construction of the new `smooth` object. If `addsubsets` is set to `true`, the function will try to move the subsets of the given `smooth` objects to their intersection.
+
+For convenience, `intersection` is available as an operator: #vs
+```
+smooth[] operator ^^ (smooth sm1, smooth sm2)
+{ return intersection(sm1, sm2); }
+``` <smooth-intersection-operator>
+
+Furthermore, there is a specialized routine which only return one smooth object:
+
+```
+smooth intersect (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff,
+    bool addsubsets = config.smooth.addsubsets
+)
+// (... sms)
+``` <smooth-intersect> #vs
+Apply `intersection` @smooth-intersection and return the 0-th element of the resulting `smooth[]` array. If the array is empty, raise an error. If the array contains more than one object, give a warning. See @sc-debug for details on errors and warnings.
+
+For `intersect` there is also an operator version: #vs
+```
+smooth operator ^ (smooth sm1, smooth sm2)
+{ return intersect(sm1, sm2); }
+``` <smooth-intersect-operator>
+
+Likewise, there are similarly defined `union` and `unite` routines:
+
+```
+smooth[] union (
+    smooth sm1,
+    smooth sm2,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+smooth[] union (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+// (... sms)
+``` <smooth-union> #vs
+Calculate the union of one or more `smooth` objects. The meanings of `round`, `roundcoeff` and `keepdata` are as in `intersection` @smooth-intersection.
+
+```
+smooth[] operator ++ (smooth sm1, smooth sm2)
+{ return union(sm1, sm2); }
+``` <smooth-union-operator> #vs
+An operator version of `union`.
+
+```
+smooth unite (
+    smooth[] sms,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+// (... sms)
+``` <smooth-unite> #vs
+A specialized version of `union` which returns only one `smooth` object. An error/warning is raised if the resulting `smooth[]` array contains any number of elements other than `1`.
+
+```
+smooth operator + (smooth sm1, smooth sm2)
+{ return unite(sm1, sm2); }
+``` <smooth-unite-operator> #vs
+An operator version of `unite`.
 
 == Drawing arrows and paths
 
-= Global configuration <sc-config>
+One of many crucial features of module `smoothmanifold` is the ease with which arrows can be drawn between smooth objects, their subsets or elements. In plain Asymptote one can easily draw an arrow between two points, but not between two _areas._ This is mainly what the `drawarrow` routine takes care of.
+
+```
+void drawarrow (
+    picture pic = currentpicture,
+    smooth sm1 = null,
+    int index1 = config.system.dummynumber,
+    pair start = config.system.dummypair,
+    smooth sm2 = sm1,
+    int index2 = config.system.dummynumber,
+    pair finish = config.system.dummypair,
+    bool elements = false,
+    real curve = 0,
+    real angle = 0,
+    real radius = config.system.dummynumber,
+    bool reverse = false,
+    pair[] points = {},
+    Label L = "",
+    pen p = currentpen,
+    tarrow arrow = config.arrow.currentarrow,
+    tbar bar = config.arrow.currentbar,
+    bool help = config.help.enable,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow,
+    real beginmargin = config.arrow.mar,
+    real endmargin = config.system.dummynumber
+)
+``` <smooth-drawarrow> #vs
+Draw an arrow. The routine is quite sophisticated in that it accepts many different types of arguments. You can start the arrow from:
+- The `sm1` object;
+- A subset of the `sm1` object, under index `index1`;
+- An arbitrary point `start`.
+
+Likewise, you can finish the arrow at:
+- The same object `sm1` (by default), getting a cyclic arrow;
+- The same `sm1`, but different subset, under index `index2`;
+- A different smooth object, `sm2`, or its subset under `index2`;
+- An arbitrary point `finish`.
+
+The meaning of the remaining arguments is as follows:
+- `elements` --- if set to `true`, then `index1` and `index2` will be treated as element indices instead of subset indices;
+- `curve` --- for non-cyclic arrows, this argument is passed to the `curvedpath` @path-curvedpath function;
+- `angle` and `radius` --- for cyclic arrows, these arguments are passed to the `cyclepath` @path-cyclepath function;
+- `reverse` --- whether the arrow should be reversed;
+- `points` --- an array of arbitrary points that the arrow should pass through. If this array is non-empty, the `connect` @path-connect function is used instead of `curvedpath` @path-curvedpath or `cyclepath` @path-cyclepath;
+- `L` --- the label to attach to the arrow;
+- `p` --- the pen to draw the arrow with;
+- `arrow` and `bar` --- the arrow and bar to use with the arrow. Since `drawarrow` is integrated with `smoothmanifold`'s deferred drawing system, the custom `tarrow` @def-tarrow and `tbar` @def-tbar structures are used here;
+- `help` --- if set to `true`, addition help/debug information will be drawn;
+- `overlap` and `drawnow` --- these arguments are passed to `fitpath` @def-fitpath together with `arrow` and `bar`;
+- `beginmargin` and `endmargin` --- the margins left at the beginning and end. If `endmargin` is not specified, `beginmargin` is used instead.
+
+For the definitions of the default values of `drawarrow`'s parameters, see @sc-config.
+
+There is a specialized overloaded version of `drawarrow`: #vs
+```
+void drawarrow (
+    picture pic = currentpicture,
+    string destlabel1,
+    string destlabel2 = destlabel1,
+    real curve = 0,
+    <...>
+)
+``` <smooth-drawarrow-label> #vs
+A label-based version of `drawarrow`. It automatically detects if the labels belong to `smooth` objects/subsets/elements, and passes appropriate arguments to `drawarrow` @smooth-drawarrow.
+
+Now, apart from arrows, one may want to draw a path connecting two points. This may be done with the `drawpath` routine: #vs
+```
+void drawpath (
+    picture pic = currentpicture,
+    smooth sm1,
+    int index1,
+    smooth sm2 = sm1,
+    int index2 = index1,
+    real range = config.paths.range,
+    real angle = config.system.dummynumber,
+    real radius = config.system.dummynumber,
+    bool reverse = false,
+    pair[] points = {},
+    Label L = "",
+    pen p = currentpen,
+    bool help = config.help.enable,
+    bool random = config.drawing.pathrandom,
+    bool overlap = config.drawing.overlap,
+    bool drawnow = config.drawing.drawnow
+)
+``` <smooth-drawpath> #vs
+Draw a surface path connecting `sm1.elements[index1]` and `sm2.elements[index2]`. By default, `sm1` and `sm2` coincide. All remaining arguments have the same meaning as in `drawarrow` @smooth-drawarrow, except for two:
+- `range` --- this value is passed to `randomdir` @path-randomdirpath as `angle`;
+- `random` --- if set to `true`, then the `randompath` @path-randomdirpath routine will be used for the path, instead of `connect` @path-connect or `cyclepath` @path-cyclepath.
+
+Similarly to `drawarrow`, there is a label-based version of `drawpath`: #vs
+```
+void drawpath (
+    picture pic = currentpicture,
+    string destlabel1,
+    string destlabel2 = destlabel1,
+    real range = config.paths.range,
+    <...>
+)
+``` <smooth-drawpath-label> #vs
+Draw a surface path between elements with labels `destlabel1` and `destlabel2`.
+
+= Global configuration and the `config` structure <sc-config>
+
+Throughout the document, we have seen references to a global `config` structure instance. It is defined as follows: #vs
+```
+struct globalconfig {
+    systemconfig system;
+    pathconfig paths;
+    sectionconfig section;
+    smoothconfig smooth;
+    drawingconfig drawing;
+    helpconfig help;
+    arrowconfig arrow;
+}
+
+private globalconfig defaultconfig;
+globalconfig config;
+``` <config> #vs
+The `defaultconfig` instance contains all default values, while `config` contains all _current_ values, which can be changed directly at any time in the Asymptote code. Functions and methods feature default argument values that borrow from `config`, never `defaultconfig`. This way, a convenient configuration system is created, where all functions are aware of the flexible current `config`, and the defaults can be easily restored by deeply copying `defaultconfig` to `config`. We will now define in detail the member structures of `config`.
 
 == System variables <sc-config-system>
 
+```
+struct systemconfig {
+    string version = "v6.3.1";
+    int dummynumber = -10000;
+    string dummystring = (string) dummynumber;
+    pair dummypair = (dummynumber, dummynumber);
+    bool repeatlabels = false;
+    bool insertdollars = false;
+}
+``` <config-system> #vs
+A structure containing system configuration variables. Their meanings are as follows:
+- `version` --- the version of `smoothmanifold`, currently `6.3.1`;
+- `dummynumber` --- the number that "the program knows what to do with". It is often given as a default value in many functions, when the true default value requires additional computations that are better done in the body of the function;
+- `dummypair` and `dummystring` --- versions of `dummynumber` with different types. Module `smoothmanifold` features four helpher functions to check if a value is "dummy": #vs
+  #bl[
+    #show: columns.with(4, gutter: 0pt)
+    ```
+    bool dummy (int n)
+    ``` <config-dummy-int>
+    #colbreak()
+    ```
+    bool dummy (real r)
+    ``` <config-dummy-real>
+    #colbreak()
+    ```
+    bool dummy (pair p)
+    ``` <config-dummy-pair>
+    #colbreak()
+    ```
+    bool dummy(string s)
+    ``` <config-dummy-string>
+  ]
+- `repeatlabel` --- whether to allow different objects to share the same label. If set to `false`, an error (see @sc-debug) will be raised on attempt to bestow an already existent label;
+- `insertdollars` --- whether to automatically insert `$` characters around all labels (including those passed to `drawarrow` @smooth-drawarrow and `drawpath` @smooth-drawpath) right before drawing them. This is useful, but disabled by default to avoid confusion.
+
 == Path variables <sc-config-path>
+
+```
+struct pathconfig {
+    real roundcoeff = .03;
+    real range = 30;
+    real neighheight = .05;
+    real neighwidth = .01;
+}
+``` <config-path> #vs
+A structure containing global path-related variables. The meaning of the fields is as follows:
+- `roundcoeff` --- default value to pass to `combination` @path-combination and its derivatives;
+- `range` --- default value to pass to `drawpath` @smooth-drawpath;
+- `neighheight` --- default value to pass to `neigharc` @path-neigharc as `h`;
+- `neighwidth` --- default value to pass to `neigharc` @path-neigharc as `w`;
 
 == Cross section variables <sc-config-section>
 
+```
+struct sectionconfig {
+    real maxbreadth = .65;
+    real freedom = .3;
+    int precision = 20;
+    real elprecision = -1;
+    bool avoidsubsets = false;
+    real[] default = new real[] {-10000,235,5};
+}
+``` <config-section> #vs
+A structure to hold cross section-related configuration. The meanings of the fields are as follows:
+- `maxbreadth` --- bound on how wide `dir1` and `dir2` can be spread in `sectionellipse` @smooth-sectionellipse (see @sectionellipse-showcase). There are two technical routines dedicated to controlling the "quality" of cross sections: #vs
+  ```
+  real sectionsymmetryrating (pair p1p2, pair dir1, pair dir2)
+  bool sectiontoobroad (pair p1, pair p2, pair dir1, pair dir2)
+  ``` <section-quality>
+- `freedom` --- the default value to pass to the `sectionparams` @smooth-sectionparams function as `r`;
+- `precision` --- the default value to pass to `sectionparams` @smooth-sectionparams as `p`;
+- `elprecision` --- the default precision for the `ellipsepath` @path-ellipsepath binary search algorithm. Set to `-1` by default, to use the $O(1)$ formula;
+- `avoidsubsets` --- the default value for the `avoidsubsets` field of the `dpar` @smooth-dpar structure;
+- `default` --- the default section array used to substitute missing values in `addsection` @smooth-addsection and its related methods.
+
 == Smooth object variables <sc-config-smooth>
+
+```
+struct smoothconfig {
+    int interholenumber = 1;
+    real interholeangle = 25;
+    real maxsectionlength = -1;
+    real rejectcurve = .15;
+    real edgemargin = .07;
+    real stepdistance = .15;
+    real nodesize = 1;
+    real maxlength;
+    bool inferlabels = true;
+    bool addsubsets = true;
+    bool correct = true;
+    bool clip = false;
+    bool unit = false;
+    bool setcenter = true;
+}
+``` <config-smooth> #vs
+A structure to hold all smooth object-related variables, whose meanings are as follows:
+- `interholenumber` --- the default value for the `scnumber` field in the `hole` @smooth-ho-su-el structure;
+- `interholeangle` --- this value gets passed to the `range` @path-range function as `ang`, when drawing sections between holes;
+- `maxsectionlength` --- the maximum length of a section. A value of `-1` means no restriction. Setting this value may help get rid of some annoying sections that look bad because they are too big;
+- `rejectcurve` --- this value is passed to `curvedpath` @path-curvedpath when constructing curves to determine which inter-hole sections to draw and which not to. This is done by checking if the curves intersect with any holes or subsets;
+- `edgemargin` --- no point in explaining, let this one remain a mystery. If you REALLY need to know what this does, go see the source code...
+- `stepdistance` --- same;
+- `nodesize` --- the default value of the `size` parameter in the `node` TODO function;
+- `maxlength` --- a parameter dependent on `maxsectionlength`, should not be set manually;
+- `inferlabels` --- the default value of the `inferlabels` parameter passed to `addsubset` @smooth-addsubset and its derivatives;
+- `addsubsets` --- the default value to pass to the `intersection` @smooth-intersection function and its derivatives;
+- `correct` --- whether non-clockwise paths should be reversed to clockwise. This value is passed as default in set operations with paths (see @sc-path-set);
+- `clip` --- the default value passed to the `addsubset` @smooth-addsubset, `addhole` @smooth-addhole, `movesubset` @smooth-movesubset and their derivatives, as the `clip` parameter;
+- `unit` --- whether to use unit coordinates (see @sc-smooth-unit). This is the default value of the `unit` parameter in all methods that accept it;
+- `setcenter` --- whether to automatically set the centers of various objects in various situations by calling `center` @path-center on their `contour`.
 
 == Drawing-related variables <sc-config-drawing>
 
+```
+struct drawingconfig {
+    pair viewdir = (0,0);
+    real viewscale = 0.12;
+    real gaplength = .05;
+    pen smoothfill = lightgrey;
+    pen[] subsetfill = {};
+    real sectpenscale = .6;
+    real elpenwidth = 3.0;
+    real shadescale = .85;
+    real dashpenscale = .4;
+    real dashopacity = .4;
+    real attachedopacity = .8;
+    real subpenfactor = .5;
+    real subpenbrighten = .5;
+    pen sectionpen = nullpen;
+    real lineshadeangle = 45;
+    real lineshadedensity = 0.15;
+    real lineshademargin = 0.1;
+    pen lineshadepen = lightgrey;
+    int mode = 0;
+    bool useopacity = false;
+    bool dash = true;
+    bool underdashes = false;
+    bool shade = false;
+    bool drawlabels = true;
+    bool fill = true;
+    bool fillsubsets = true;
+    bool drawcontour = true;
+    bool drawsubsetcontour = true;
+    int subsetcovermode = 0;
+    bool pathrandom = false;
+    bool overlap = false;
+    bool drawnow = false;
+    bool drawextraover = false;
+    bool subsetoverlap = false;
+    real elementcirclerad = -1;
+}
+``` <config-drawing> #vs
+A structure to hold drawing-related configuration, encoded in the following variables:
+- `viewdir`, `smoothfill`, `subsetfill`, `sectionpen`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
+- `viewscale` --- a value by which the `viewdir` vector is scale on call of the `draw` @smooth-draw function;
+- `gaplength` --- the default length of the gaps left in `deferredPath` @def-deferredPath objects when the `fitpath` @def-fitpath function is called;
+- `sectpenscale` --- determines how thinner the section pen is compared to `contourpen`;
+- `elpenwidth` --- the width of the `dot`'s representing a smooth object's elements, used when calling `draw` @smooth-draw. The relevant pen creation utility is #vs
+  ```
+  pen elementpen (pen p) { return p + linewidth(config.drawing.elpenwidth); }
+  ``` <pen-elements>
+- `shadescale` --- how darker shaded section ellipses are compared to object filling color. This is relevant if the `shade` flag is set to `true`;
+- `dashpenscale` --- how lighter dashed lines (in cross section drawing) are compared to regular lines;
+- `dashopacity` --- default opacity of dashed pens;
+- `attachedopacity` --- the opacity used to draw smooth objects `attached` @smooth-smooth to the one currently being drawn;
+- `subpenfactor` --- how darker the fill color for subsets get with each layer. See @sc-smooth-dpar and @subsetfill-showcase;
+- `subpenbrighen` --- how brighter to make the fill color of a subset than its contour color. The relevant pen creation routines are #vs
+  ```
+  pen brighten (pen p, real coeff) { return inverse(coeff * inverse(p)); }
+  pen nextsubsetpen (pen p, real scale) { return scale * p; }
+  ``` <pen-subsets>
+- `lineshadeangle`, `lineshadedensity`, `lineshademargin`, `lineshadepen` --- default values passed to the `shaderegion` TODO function;
+- `useopacity` --- whether to use Asymptote's `opacity` function for generating pens (primarily dashed section pens). Since some image formats do not support opacity, this is disabled by default, and so the `dashpenscale` field is used for dashed pen creation. Otherwise, the `dashopacity` field is used. The relevant pen creation routines are #vs
+  ```
+  pen sectionpen (pen p)
+  pen dashpenscale (pen p)
+      { return inverse(config.drawing.dashpenscale*inverse(p))+dashed; }
+  pen dashopacity (pen p) { return p+dashed+opacity(config.drawing.dashopacity); }
+  pen dashpen (pen p)
+  pen shadepen (pen p) { return config.drawing.shadescale*p; }
+  pen underpen (pen p) { return dashpen(p); }
+  ``` <pen-sections>
+- `underdashes` --- whether to draw the "demoted" parts of a `deferredPath` @def-deferredPath in a dashed line, instead of erasing them;
+- `pathrandom` --- the default value passed to the `drawpath` @smooth-drawpath function as `random`;
+- `elementcirclerad` --- the radius to use when drawing elements as `circle`'s instead of `dot`'s. This exists because sometimes dots are not showing up in SVG output, in which case the simplest thing to do is say screw it and fill a circle instead of calling the `dot` function.
+
 == Help-related variables <sc-config-help>
+
+```
+struct helpconfig {
+    bool enable = false;
+    real arcratio = 0.2;
+    real arrowlength = .2;
+    pen linewidth = linewidth(.3);
+}
+``` <config-help> #vs
+A structure to hold the few help-related variables, namely
+- `enable` --- whether to enable auxiliary drawing by default;
+- `arcratio` --- the relative radius of the blue arcs seen near the center of the hole on @section-showcase, it may be useful to tweak if the arc covers the number in the center of the hole;
+- `arrowlength` --- the length of auxiliary arrows drawn by the sides of cross sections when `help = true`. A value of `-1` will disable these arrows (like on @section-showcase);
+- `linewidth` -- the pen containing the line width to draw help lines with.
 
 == Arrow variables <sc-config-arrow>
 
+```
+struct arrowconfig {
+    real mar = 0.03;
+    tarrow currentarrow = null;
+    tbar currentbar = null;
+    bool absmargins = true;
+}
+``` <config-arrow>
+A structure to hold variables related to arrows, namely the following:
+- `mar` --- the default arrow margin that is passed as the default value to the `beginmargin` and `endmargin` parameters of the `drawarrow` @smooth-drawarrow function;
+- `currentarrow`, `currentbar` --- the default values of the `arrow` and `bar` parameters of `drawarrow` @smooth-drawarrow; The `currentarrow` value is updated after the definition of `DeferredArrow` @def-tarrow-func:
+  ```
+  config.arrow.currentarrow = DeferredArrow(SimpleHead);
+  ```
+- `absmargins` --- whether arrow margins should be absolute, as opposed to being relative to the length of the arrow.
+
 = Debugging capabilities <sc-debug>
+
+In case an algorithm runs into an incorrect situation or is given incorrect input, mechanisms are put in place in module `smoothmanifold` to trigger an _error_ (subsequently stopping execution) or a _warning_ (while continuing execution). The relevant routine is #vs
+
+```
+void halt (string msg) {
+    write();
+    write("> ! " + msg);
+    abort("");
+}
+``` <debug-halt>
+
+Warnings are simply written with a direct call to `write`.
 
 == Errors <sc-debug-errors>
 

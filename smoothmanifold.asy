@@ -35,7 +35,7 @@ struct systemconfig {
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
     bool repeatlabels = false; // whether to allow two entities to have one label.
-    bool insertdollars = true; // whether to automatically insert dollars in labels.
+    bool insertdollars = false; // whether to automatically insert dollars in labels.
 }
 
 struct pathconfig {
@@ -60,11 +60,10 @@ struct smoothconfig {
     real maxsectionlength = -1; // how long (in diameter) a section can be, compared to the size of parent object. A value of -1 means no restriction.
     real rejectcurve = .15; // defines the condition for drawing sections between two holes (or in cartesian mode).
     real edgemargin = .07; // no point in explaining, see the use cases.
-    real stepdistance = .15; //||--
+    real stepdistance = .15; // same...
     real nodesize = 1; // the size of nodes.
-    real maxlength; // [M]aximum [L]ength
+    real maxlength; // fuck my life...
     bool inferlabels = true; // whether to create labels like "A \cap B" on intersection.
-    bool shiftsubsets = false; // whether to shift subsets on view.
     bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
     bool correct = true;
     bool clip = false;
@@ -93,10 +92,10 @@ struct drawingconfig {
     pen lineshadepen = lightgrey;
     int mode = 0;
     bool useopacity = false;
-    bool dashes = true;
+    bool dash = true;
     bool underdashes = false;
     bool shade = false;
-    bool labels = true;
+    bool drawlabels = true;
     bool fill = true;
     bool fillsubsets = true;
     bool drawcontour = true;
@@ -1066,7 +1065,7 @@ void halt (string msg)
 // Writes error message and exits compilation.
 {
     write();
-    write("> ! "+msg);
+    write("> ! " + msg);
     abort("");
 }
 
@@ -1134,9 +1133,7 @@ pen inverse (pen p)
 
 pen brighten (pen p, real coeff)
 // Makes `p` brighter
-{
-    return inverse(coeff * inverse(p));
-}
+{ return inverse(coeff * inverse(p)); }
 
 pen sectionpen (pen p)
 // Derives a pen to draw cross sections
@@ -1208,7 +1205,6 @@ void defaults ()
     config.smooth.nodesize = defaultconfig.smooth.nodesize;
     config.smooth.maxlength = defaultconfig.smooth.maxlength;
     config.smooth.inferlabels = defaultconfig.smooth.inferlabels;
-    config.smooth.shiftsubsets = defaultconfig.smooth.shiftsubsets;
     config.smooth.addsubsets = defaultconfig.smooth.addsubsets;
     config.smooth.correct = defaultconfig.smooth.correct;
     config.smooth.clip = defaultconfig.smooth.clip;
@@ -1233,11 +1229,11 @@ void defaults ()
     config.drawing.lineshadepen = defaultconfig.drawing.lineshadepen;
     config.drawing.mode = defaultconfig.drawing.mode;
     config.drawing.useopacity = defaultconfig.drawing.useopacity;
-    config.drawing.dashes = defaultconfig.drawing.dashes;
+    config.drawing.dash = defaultconfig.drawing.dash;
     config.drawing.underdashes = defaultconfig.drawing.underdashes;
     config.help.enable = defaultconfig.help.enable;
     config.drawing.shade = defaultconfig.drawing.shade;
-    config.drawing.labels = defaultconfig.drawing.labels;
+    config.drawing.drawlabels = defaultconfig.drawing.drawlabels;
     config.drawing.fill = defaultconfig.drawing.fill;
     config.drawing.fillsubsets = defaultconfig.drawing.fillsubsets;
     config.drawing.drawcontour = defaultconfig.drawing.drawcontour;
@@ -1929,14 +1925,14 @@ struct dpar
         pen[] subsetlabelpens = {},
         int mode = config.drawing.mode,
         pair viewdir = config.drawing.viewdir,
-        bool drawlabels = config.drawing.labels,
+        bool drawlabels = config.drawing.drawlabels,
         bool fill = config.drawing.fill,
         bool fillsubsets = config.drawing.fillsubsets,
         bool drawcontour = config.drawing.drawcontour,
         bool drawsubsetcontour = config.drawing.drawsubsetcontour,
         int subsetcovermode = config.drawing.subsetcovermode,
         bool help = config.help.enable,
-        bool dash = config.drawing.dashes,
+        bool dash = config.drawing.dash,
         bool shade = config.drawing.shade,
         bool avoidsubsets = config.section.avoidsubsets,
         bool overlap = config.drawing.overlap,
@@ -3489,7 +3485,6 @@ struct smooth
         smooth[] attached = {},
         bool correct = config.smooth.correct,
         bool copy = false,
-        bool shiftsubsets = config.smooth.shiftsubsets,
         bool isderivative = false,
         bool unit = config.smooth.unit,
         void drawextra (dpar ds, smooth sm) = new void (dpar, smooth) {} 
@@ -3713,18 +3708,6 @@ smooth findsm (string label)
     return smooth.cache[findsmoothindex(label)];
 }
 
-// smooth operator cast (string label)
-// { return findsm(label); }
-
-// smooth[] operator cast (string[] labels)
-// {
-//     return sequence(
-//         new smooth (int i)
-//         { return findsm(labels[i]); },
-//         labels.length
-//     );
-// }
-
 int[] findsubsetindex (string label)
 {
     bool found = false;
@@ -3757,18 +3740,6 @@ subset findsb (string label)
     return smooth.cache[indices[0]].subsets[indices[1]];
 }
 
-// subset operator cast (string label)
-// { return findsb(label); }
-
-// subset[] operator cast (string[] labels)
-// {
-//     return sequence(
-//         new subset (int i)
-//         { return findsb(labels[i]); },
-//         labels.length
-//     );
-// }
-
 int[] findelementindex (string label)
 {
     bool found = false;
@@ -3800,18 +3771,6 @@ element findelt (string label)
     // if (indices[1] == -1) halt("Could not identify element: object with label \""+label+"\" is not a element. Use `findsm()` instead. [ findsb() ]");
     return smooth.cache[indices[0]].elements[indices[1]];
 }
-
-// element operator cast (string label)
-// { return findelt(label); }
-
-// element[] operator cast (string[] labels)
-// {
-//     return sequence(
-//         new element (int i)
-//         { return findelt(labels[i]); },
-//         labels.length
-//     );
-// }
 
 int[] findbylabel (string label)
 {
@@ -4797,7 +4756,7 @@ smooth unite (
 {
     smooth[] union = union(sms, keepdata, round, roundcoeff);
     if (union.length > 1) 
-    { write("> ? Union produced more than one object. Returning only the 0-th one. [ intersect() ]"); }
+    { write("> ? Union produced more than one object. Returning only the 0-th one. [ unite() ]"); }
     return union[0];
 }
 
@@ -4887,7 +4846,7 @@ The `covermode` parameter needs additional explanation. It determines what happe
 */
 {
     if (config.system.insertdollars && length(L.s) > 0) L.s = "$"+L.s+"$";
-    if (config.drawing.labels && length(L.s) > 0)
+    if (config.drawing.drawlabels && length(L.s) > 0)
     { label(pic = pic, gs, L = L, p = p); }
 
     deferredPath[] curdp = extractdeferredpaths(pic, true);

@@ -11,6 +11,7 @@ config.drawing.dashes = false;
 config.drawing.gaplength = .15;
 config.arrow.mar = .1;
 config.arrow.absmargins = true;
+config.system.insertdollars = true;
 
 smooth sm1 = samplesmooth(1,2).move(scale = 2);
 sm1.setlabel(0, "U", dir = S);

@@ -5,6 +5,7 @@ settings.render = 8;
 size(10 cm);
 defaultpen(.7);
 
+config.system.insertdollars = true;
 export.background = paleyellow;
 export.xmargin = 1cm;
 
