@@ -1482,7 +1482,7 @@ Cross sections (as seen in @tangent) are meant to create the illusion of 3D in a
     )
   ],
   caption: [Different modes of drawing cross sections]
-)
+) <modes-showcase>
 
 We will now explain how each mode is implemented.
 
@@ -1492,9 +1492,104 @@ This is the simplest mode --- no sections at all. It is the default mode, since 
 
 === The `free` mode <sc-smooth-modes-free>
 
-This mode makes use of the `sections` field of the `hole` @smooth-ho-su-el structure.
+This mode makes use of the `real[][] sections` field of the `hole` @smooth-ho-su-el structure. Each member of this two-dimensional array is an array `{d, a, n}` of three `real` numbers, with the following meaning:
+- `d` and `a` --- these numbers determine the region where the cross sections are to be drawn. This is done by calling `range(g, ctr, dir(d), a)` @path-range, where `g` is the contour of either the hole or the parent object, and `ctr` is the `center` of the hole;
+- `n` --- the number of cross sections to draw. This is supposed to be an integer, and is converted to one with `floor(n)`.
+
+Consider the following example:
+#example(
+  image("resources/section-showcase.svg"),
+  ```
+  smooth sm = smooth(
+      contour = ucircle
+  ).addhole(
+      contour = ucircle,
+      scale = .5,
+      sections = new real[][]{
+          {60, 120, 5}, {-90, 50, 3}
+      }
+  );
+
+  draw(sm, dpar(help = true, mode = free, viewdir = dir(-40)));
+  ```,
+  [A showcase of the `sections` field of the `hole` structure and how it is used]
+) <section-showcase>
+
+(for an explanation of the `dpar` structure seen in the code in @section-showcase, see @sc-smooth-dpar).\
+Now, as seen on the second picture in @modes-showcase, cross sections in `free` mode can connect not only the parent object's contour with the hole's contour, but also the contours of two holes. This is achieved through the `int scnumber` field of the `hole` @smooth-ho-su-el structure. It determines how many "inter-hole" sections a hole is willing to support with any other hole. If `hl1` has `hl1.scnumber = 4` and `hl2` has `hl2.scnumber = 2`, then there will be `2` cross sections drawn between `hl1` and `hl2`. In fact, there is a very neat trick. The expression to get the resulting number of holes is #vs
+```
+abs(min(hl1.scnumber, hl2.scnumber))
+``` #vs
+meaning that you can set, for example, `hl1.scnumber = -3`, and it will _force_ the number of sections to be `3`, _regardless_ of the value of `hl2.scnumber` (unless it is also negative). In other words,
+- setting `hl1.scnumber = -n` guarantees that the number of sections is `n` _or more;_
+- setting `hl1.scnumber = n` guarantees that the number of sections is `n` _or less;_
+
+The `free` mode is usually the preferred mode for three-dimensional drawing, it can be enabled via #box[`mode = free`] in the `dpar` @smooth-dpar structure.
+
+The implementation of the `free` mode relies heavily on the following technical routines:
+
+```
+path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
+``` <smooth-sectionellipse> #vs
+Return an array of two paths, together composing an ellipse whose center lies on `p1 -- p2`, such that both vectors `dir1`, `dir2`, when starting from `p1` and `p2` respectively, are tangent to the ellipse.
+#example(
+  image("resources/sectionellipse-showcase.svg"),
+  ```
+  pair p1 = (1,0), p2 = (4,0);
+  pair dir1 = dir(55), dir2 = dir(140);
+  pair viewdir = .2*dir(90);
+
+  path[] ell = sectionellipse(
+    p1, p2, dir1, dir2, viewdir
+  );
+
+  // Drawing it in pretty colors
+  ```,
+  []
+)
+The `viewdir` parameter represents "direction of view", it helps coordinate the tilt angles of all section ellipses in a picture to maintain the illusion of 3D.\
+This algorithm uses either an $O(1)$ formula, if `config.section.elprecision` (see @sc-config-section) is less than zero (which is true by default), or an $O(log n)$ binary search procedure, otherwise.
+
+```
+pair[][] sectionparams (path g, path h, int n, real r, int p)
+``` <smooth-sectionparams> #vs
+Search for potential section positions between paths `g` and `h`, aiming to construct `n` sections. The meanings of `r` and `p` are:
+- `r` --- ranges from `0` to `1`, and can be interpreted as "freedom": when small, it restricts the section positions, but when large, the algorithm has more choice. The default value for `r` is captured by `config.section.freedom` (see @sc-config-section);
+- `p` --- controls precision. The bigger the value of `p`, the more precise the search, but the longer it takes.
+
+The algorithm runs in $O(n + p)$ time and produces an array of `pair` arrays, whose values can then be plugged into the `sectionellipse` @smooth-sectionellipse function.
+
+```
+void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+``` <smooth-drawsections> #vs
+Draw the cross sections specified in `sections` by calling the `sectionellipse` @smooth-sectionellipse function. The meanings of the rest of the parameters is as follows:
+- `viewdir` --- passed to `sectionellipse` @smooth-sectionellipse;
+- `dash`, `dashpen` --- after obtaining a `path[]` array from `sectionellipse`, whether to draw its second member with `dashpen`;
+- `shade`, `shadepen` --- whether to shade the region bounded by each ellipse with `shadepen`;
+- `help` --- whether to draw auxiliary help information, e.g. mark all the parameters;
+- `scale` --- an internal parameter that only matters when `help` is `true`;
+- `sectionpen` --- the pen to draw the first member of the section ellipse with.
 
 === The `cartesian` mode <sc-smooth-modes-cartesian>
+
+This is the alternative mode of drawing cross sections, mainly implemented to draw three-dimensional smooth objects without any holes (note that the `free` mode relies on the presence of holes). For the `cartesian` mode, the `real[] hratios` and `real[] vratios` fields of the `smooth` @smooth-smooth structure are used. These fields are completely similar, the only difference being that `hratios` deals with horizontal sections, where `vratios` deals with vertical. Both these arrays contain numbers ranging from `0` to `1`, and are used as follows:
+#example(
+  image("resources/hvratios-showcase.svg"),
+  ```
+  smooth sm = smooth(
+      contour = contour(<...>),
+      hratios = new real[] {0.15, 0.5},
+      vratios = new real[] {0.2, 0.6, 0.9}
+  );
+
+  draw(sm, dpar(mode = cartesian, viewdir = .7*dir(45)));
+  ```,
+  [A showcase of the way the `hratios` and `vratios` fields are used]
+)
+
+In other words, horizontal sections are drawn `r` of the way through `sm`'s _height_ for every `r` in `sm.hratios`, and vertical sections are drawn `s` of the way through `sm`'s _width_ for every `s` in `sm.vratios`. The mode is enabled by writing `mode = cartesian` in the `dpar` @smooth-dpar structure.
+
+The `cartesian` mode (so called because the sections are only vertical and horizontal) is implemented by means of the following technical routines:
 
 ```
 real getyratio (real y)
@@ -1505,13 +1600,37 @@ real getxpoint (real x)
 Convert to and from relative lengths.
 
 ```
-smooth setratios (real[] ratios, bool horiz)
+smooth smooth.setratios (real[] ratios, bool horiz)
 ``` <smooth-setratios> #vs
-Set the horizontal/vertical cartesian ratios of `this`.
+Set the horizontal/vertical cartesian ratios of `this` smooth object.
+
+```
+pair[][] cartsectionpoints (path[] g, real r, bool horiz)
+``` <smooth-cartsectionpoints> #vs
+Construct an array of section points in `g` (which represents a contour and holes in it) at relative length `r`, either vertically or horizontally, depending on `horiz`.
+
+```
+pair[][] cartsections (path[] g, path[] avoid, real r, bool horiz)
+``` <smooth-cartsections> #vs
+A more refined version of `cartsectionpoints` @smooth-cartsectionpoints, which performs additional tests and selects suitable sections.
+
+```
+void drawcartsections (picture pic, path[] g, path[] avoid, real y, bool horiz, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
+``` <smooth-drawcartsections> #vs
+A wrapper drawing function for the `cartesian` mode, which calls `cartsections` @smooth-cartsections  and passes the result to `drawsections` @smooth-drawsections, along with other arguments.
+
+Besides, the final section ellipses are, of course, still calculated via the `sectionellipse` @smooth-sectionellipse function.
 
 === The `combined` mode <sc-smooth-modes-combined>
 
+As seen in @modes-showcase, the `combined` mode combines both `free` and `cartesian` modes together, drawing all sections at once. Maybe, sometimes this is useful.
+
 == The `dpar` drawing configuration structure <sc-smooth-dpar>
+
+You may have noticed that the `smooth` @smooth-smooth structure contains no information about _how to draw_ a smooth object (although historically it did). Now, all of this information is isolated into a separate structure called `dpar` <smooth-dpar> (short for "drawing parameters"), which has the following fields:
+- `pen contourpen` --- the pen to draw the contour of the smooth object, as well as those of its holes and subsets;
+- `pen smoothfill` --- the pen used to fill the smooth object's interior;
+- 
 
 == The `draw` function <sc-smooth-draw>
 

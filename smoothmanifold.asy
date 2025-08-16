@@ -5191,6 +5191,7 @@ void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool
             dot(pic, sections[k][0], blue+1.5);
             dot(pic, sections[k][1], blue+1);
             draw(pic, sections[k][0] -- sections[k][1], deepgreen + config.help.linewidth);
+            if (config.help.arrowlength <= 0) continue;
             draw(pic, sections[k][0]-.5*config.help.arrowlength*scale*sections[k][2] -- sections[k][0]+.5*config.help.arrowlength*scale*sections[k][2], deepgreen+config.help.linewidth, arrow = Arrow(SimpleHead));
             draw(pic, sections[k][1]-.5*config.help.arrowlength*scale*sections[k][3] -- sections[k][1]+.5*config.help.arrowlength*scale*sections[k][3], deepgreen+config.help.linewidth, arrow = Arrow(SimpleHead));
         }
@@ -5256,17 +5257,20 @@ void draw (
             hole hl = sm.holes[i];
             for (int j = 0; j < hl.sections.length; ++j)
             {
-                pair smrange = range(sm.contour, hl.center, dir(hl.sections[j][0]), hl.sections[j][1]);
-                pair hlrange = range(hl.contour, hl.center, dir(hl.sections[j][0]), hl.sections[j][1]);
+                pair sdir = dir(hl.sections[j][0]);
+                pair smrange = range(sm.contour, hl.center, sdir, hl.sections[j][1]);
+                pair hlrange = range(hl.contour, hl.center, sdir, hl.sections[j][1]);
                 path cursmcontour = subcyclic(sm.contour, smrange);
                 path curhlcontour = subcyclic(hl.contour, hlrange);
 
                 if (dspec.help)
                 {
                     pair hlstart = point(curhlcontour, 0);
+                    pair hlmid = intersection(curhlcontour, hl.center, sdir);
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
                     pair hlvec = config.help.arcratio * radius(hl.contour) * unit(hlstart - hl.center);
                     draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + config.help.linewidth);
+                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][1]/2)*hlvec) -- hlmid, blue + config.help.linewidth, arrow = Arrow(SimpleHead));
                     draw(pic = pic, (hl.center + rotate(-hl.sections[j][1])*hlvec) -- hlfinish, yellow + config.help.linewidth);
                     draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+config.help.linewidth);
                 }
@@ -5418,7 +5422,7 @@ void draw (
         if (dspec.help && abs(sm.labeldir) > 0)
         {
             draw(pic = pic, sm.center -- pos, purple+config.help.linewidth);
-            draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
+            if (config.help.arrowlength > 0) draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
         }
     }
 
@@ -5445,7 +5449,7 @@ void draw (
             if (dspec.help && abs(sb.labeldir) > 0)
             {
                 draw(pic = pic, sb.center -- pos, purple+config.help.linewidth);
-                draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
+                if (config.help.arrowlength > 0) draw(pic = pic, pos -- pos+scale*config.help.arrowlength*align, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
             }
         }
 
@@ -5453,7 +5457,7 @@ void draw (
     }
     if (dspec.help)
     {
-        draw(pic = pic, sm.center -- sm.center+unit(viewdir)*config.help.arrowlength, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
+        if (config.help.arrowlength > 0) draw(pic = pic, sm.center -- sm.center+unit(viewdir)*config.help.arrowlength, purple+config.help.linewidth, arrow = Arrow(SimpleHead));
         dot(pic = pic, sm.center, red+1);
         if (dspec.drawlabels) for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
