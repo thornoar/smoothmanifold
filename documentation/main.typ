@@ -744,7 +744,7 @@ The `smoothmanifold` module's original purpose was to introduce a suitable abstr
 
       smooth[] attached;
 
-      void postdraw (dpar, smooth);
+      void drawextra (dpar, smooth);
 
       static smooth[] cache;
   }
@@ -808,7 +808,7 @@ Every `smooth` object has a:
 - `hratios` and `vratios` --- two arrays that determine where to draw cross sections in the `cartesian` mode. For details, see @sc-smooth-modes-cartesian;
 - `isderivative` --- similarly to `subset`, this field marks those `smooth` objects which are obtained from preexisting objects through operations of intersection, union, etc.;
 - `attached` --- this field allows to bind an array of smooth objects to the current one. Drawing the current object will trigger drawing all of its `attached` objects. For example, the tangent space seen on @tangent is `attached` to the main object;
-- `postdraw` --- a callback to be executed _after the `smooth` object is drawn._ It takes as parameters a drawing configuration of type `dpar` (see @sc-config-drawing) and the current `smooth` object;
+- `drawextra` --- a callback to be executed _after the `smooth` object is drawn._ It takes as parameters a drawing configuration of type `dpar` (see @sc-config-drawing) and the current `smooth` object;
 - `static cache` --- a global array of all `smooth` objects constructed so far. It is used mainly to search for smooth objects by label. See @sc-smooth-by-label.
 
 == Construction <sc-smooth-init>
@@ -1628,9 +1628,46 @@ As seen in @modes-showcase, the `combined` mode combines both `free` and `cartes
 == The `dpar` drawing configuration structure <sc-smooth-dpar>
 
 You may have noticed that the `smooth` @smooth-smooth structure contains no information about _how to draw_ a smooth object (although historically it did). Now, all of this information is isolated into a separate structure called `dpar` <smooth-dpar> (short for "drawing parameters"), which has the following fields:
-- `pen contourpen` --- the pen to draw the contour of the smooth object, as well as those of its holes and subsets;
+- `pen contourpen` --- the pen used to draw the contour of the smooth object, as well as those of its holes and subsets;
 - `pen smoothfill` --- the pen used to fill the smooth object's interior;
-- 
+- `pen[] subsetcontourpens` --- a list of pens to draw subset contours with (by layer). Subsets on layer `0` will be drawn with `subsetcontourpens[0]`, etc. If the array is empty, then `contourpen` will be used instead for all layers. If the number or layers is larger than the length of `subsetcontourpens`, then the last member of the array will be used for all subsequent layers that are not covered;
+- `pen[] subsetfill` --- similarly, a list of pens to use to fill different layers of subsets. If the array is empty, then lightened versions of the corresponding `subsetcontourpens` pens are used instead. If some layers are not covered by `subsetfill`, then the last member of the array is used, getting progressively darker. Consider the following example:
+  #example(
+    image("resources/subsetfill-showcase.svg"),
+    ```
+    smooth sm = smooth(
+        contour = ucircle
+    ).addsubsets(<...>);
+
+    draw(sm, dpar(
+        subsetcontourpens = new pen[] {red, green, blue},
+        subsetfill = new pen[] {cyan, magenta, yellow}
+    ));
+    ```,
+    [A showcase of the interpretation of `subsetcontourpens` and `subsetfill`]
+  )
+- `pen sectionpen` --- the pen used to draw cross sections (their visible parts);
+- `pen dashpen` --- the pen used to draw the "invisible" (dashed) parts of cross sections;
+- `pen shadepen` --- the pen used to fill the section ellipses;
+- `pen elementpen` --- the pen used to `dot` the elements of the smooth object;
+- `pen labelpen` --- the pen used to `label` the label of the smooth object;
+- `pen[] elementlabelpens` --- pens used to `label` the labels of the smooth object's elements. If the array is empty, then `labelpen` is used for all elements. If there are more elements than the length of `elementlabelpens`, then the last member of the array is used for all elements not covered;
+- `pen[] subsetlabelpens` --- pens used to `label` the labels of the smooth object's subsets. `labelpen` is used in case `subsetlabelpens` is empty. All subsets not covered by the array use the last member thereof;
+- `int mode` --- the drawing mode. Can be one of the four: `plain`, `free`, `cartesian`, `combined` (which have values of `0`, `1`, `2`, `3` respectively). Any other integer value would be accepted, but the consequences may be unpredictable;
+- `pair viewdir` --- the `viewdir` parameter to pass to the `sectionellipse` @smooth-sectionellipse function;
+- `bool drawlabels` --- whether to draw the label of the smooth object as well as those of its subsets and elements;
+- `bool fill` --- whether to fill the region bounded by the contour of the smooth object;
+- `bool fillsubsets` --- whether to fill the subsets of the smooth object;
+- `bool drawcontour` --- whether to draw the smooth object's contour;
+- `bool drawsubsetcontour` --- whether to draw the contours of subsets;
+- `int subsetcovermode` --- the `covermode` to pass to `fitpath` @def-fitpath when drawing the contours of subsets;
+- `bool help` --- whether to enable additional information being drawn with the smooth object. Useful for debugging;
+- `bool dash` --- the `dash` parameter to pass to `drawsections` @smooth-drawsections or `drawcartsections` @smooth-drawcartsections;
+- `bool shade` --- the `shade` parameter to pass to `drawsections` @smooth-drawsections or `drawcartsections` @smooth-drawcartsections;
+- `bool avoidsubsets` --- whether to avoid drawing cross sections that intersect with the smooth object's subsets. You can see that on the diagram on the title page of this document, this option was disabled;
+- `bool overlap` --- the `overlap` parameter to pass to `fitpath` @def-fitpath;
+- `bool drawnow` --- the `drawnow` parameter to pass to `fitpath` @def-fitpath;
+- `bool drawextraover` --- whether to apply the `drawextra` function of the smooth object "over" everything else (that is, after drawing the object itself). In other words, if `drawextraover` is `false`, then the `drawextra` will be called in the beginning of drawing the smooth object, otherwise in the end.
 
 == The `draw` function <sc-smooth-draw>
 

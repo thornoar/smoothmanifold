@@ -1,6 +1,6 @@
 import export;
 config.drawing.fill = false;
-config.drawing.postdrawover = true;
+config.drawing.drawextraover = true;
 config.drawing.viewdir = (1,0);
 config.system.insertdollars = false;
 size(10cm);
@@ -27,7 +27,7 @@ smooth sm = smooth(
     },
     vratios = r(.05,.5,.95),
     hratios = r(),
-    postdraw = new void(dpar dspec, smooth smp) {
+    drawextra = new void(dpar dspec, smooth smp) {
         fitpath(smp.unitadjust * ((-1.3,0) -- (-.9,0)), invisible);
         fitpath(smp.unitadjust * ((.9,0) -- (1.3,0)), invisible);
     }

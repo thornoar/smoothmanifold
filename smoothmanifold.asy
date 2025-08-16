@@ -105,7 +105,7 @@ struct drawingconfig {
     bool pathrandom = false;
     bool overlap = false;
     bool drawnow = false;
-    bool postdrawover = false;
+    bool drawextraover = false;
     bool subsetoverlap = false;
     real elementcirclerad = -1;
 }
@@ -1247,7 +1247,7 @@ void defaults ()
     config.drawing.overlap = defaultconfig.drawing.overlap;
     config.drawing.subsetoverlap = defaultconfig.drawing.subsetoverlap;
     config.drawing.drawnow = defaultconfig.drawing.drawnow;
-    config.drawing.postdrawover = defaultconfig.drawing.postdrawover;
+    config.drawing.drawextraover = defaultconfig.drawing.drawextraover;
     config.drawing.elementcirclerad = defaultconfig.drawing.elementcirclerad;
     // Help config
     config.help.arcratio = defaultconfig.help.arcratio;
@@ -1895,8 +1895,8 @@ struct dpar
     pen shadepen;           // The pen used to fill shaded regions.
     pen elementpen;         // The pen used to dot elements.
     pen labelpen;           // The pen used to write labels.
-    pen[] elementlabelpens; // The pen used to write labels.
-    pen[] subsetlabelpens;  // The pen used to write labels.
+    pen[] elementlabelpens; // The pens used to write element labels.
+    pen[] subsetlabelpens;  // The pens used to write subset labels.
     int mode;               // The drawing mode. Could be either 'plain', 'free', or 'cartesian'.
     pair viewdir;           // The direction of the view.
     bool drawlabels;        // Whether to draw the labels.
@@ -1911,7 +1911,7 @@ struct dpar
     bool avoidsubsets;      // Whether to refrain from drawing sections that intersect subsets.
     bool overlap;           // Whether to leave gaps where lines intersect.
     bool drawnow;           // Whether to draw the object immediately instead of deferring until shipout.
-    bool postdrawover;      // Whether to call `postdraw` after everything else.
+    bool drawextraover;      // Whether to call `drawextra` after everything else.
 
     // Methods
 
@@ -1941,7 +1941,7 @@ struct dpar
         bool avoidsubsets = config.section.avoidsubsets,
         bool overlap = config.drawing.overlap,
         bool drawnow = config.drawing.drawnow,
-        bool postdrawover = config.drawing.postdrawover
+        bool drawextraover = config.drawing.drawextraover
     ) // Constructor
     {
         this.contourpen = contourpen;
@@ -1969,7 +1969,7 @@ struct dpar
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
         this.drawnow = drawnow;
-        this.postdrawover = postdrawover;
+        this.drawextraover = drawextraover;
     }
 
     dpar subs (
@@ -1998,7 +1998,7 @@ struct dpar
         bool avoidsubsets = this.avoidsubsets,
         bool overlap = this.overlap,
         bool drawnow = this.drawnow,
-        bool postdrawover = this.postdrawover
+        bool drawextraover = this.drawextraover
     ) // Create a new dpar with some attributes changed.
     {
         this.contourpen = contourpen;
@@ -2026,7 +2026,7 @@ struct dpar
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
         this.drawnow = drawnow;
-        this.postdrawover = postdrawover;
+        this.drawextraover = drawextraover;
 
         return this;
     }
@@ -2081,7 +2081,7 @@ struct smooth
 
     smooth[] attached;      // The smooth objects linked to this one.
 
-    void postdraw (dpar, smooth);   // What do do after drawing the object.
+    void drawextra (dpar, smooth);   // What do do after drawing the object.
 
     static smooth[] cache;  // The store of all smooth objects created.
 
@@ -3492,7 +3492,7 @@ struct smooth
         bool shiftsubsets = config.smooth.shiftsubsets,
         bool isderivative = false,
         bool unit = config.smooth.unit,
-        void postdraw (dpar ds, smooth sm) = new void (dpar, smooth) {} 
+        void drawextra (dpar ds, smooth sm) = new void (dpar, smooth) {} 
     )
     {
         if (copy)
@@ -3508,7 +3508,7 @@ struct smooth
             this.vratios = vratios;
             this.attached = attached;
             this.isderivative = isderivative;
-            this.postdraw = postdraw;
+            this.drawextra = drawextra;
         }
         else
         {
@@ -3541,7 +3541,7 @@ struct smooth
             
             this.attached = attached;
 
-            this.postdraw = postdraw;
+            this.drawextra = drawextra;
         }
 
         cache.push(this);
@@ -3561,7 +3561,7 @@ struct smooth
             hratios = this.hratios,
             vratios = this.vratios,
             attached = this.attached,
-            postdraw = this.postdraw,
+            drawextra = this.drawextra,
             copy = true
         );
     }
@@ -3579,7 +3579,7 @@ struct smooth
         this.hratios = sm.hratios;
         this.vratios = sm.vratios;
         this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
-        this.postdraw = sm.postdraw;
+        this.drawextra = sm.drawextra;
 
         return this;
     }
@@ -5116,7 +5116,7 @@ smooth rn (
         labelalign = (-1.5,-1.5),
         hratios = new real[] {},
         vratios = new real[] {},
-        postdraw = new void (dpar dspec, smooth sm)
+        drawextra = new void (dpar dspec, smooth sm)
         {
             transform adj = sm.unitadjust;
             pen p = dspec.contourpen;
@@ -5138,7 +5138,7 @@ dpar rnpar ()
         fillsubsets = true,
         mode = plain,
         viewdir = (0,0),
-        postdrawover = false
+        drawextraover = false
     );
 }
 
@@ -5221,9 +5221,9 @@ void draw (
     path[] contour = reverse(sm.contour) ^^ holes;
     real scale = radius(sm.contour);
 
-    // Applying the postdraw function if specified
+    // Applying the drawextra function if specified
 
-    if (!dspec.postdrawover) sm.postdraw(dspec, sm);
+    if (!dspec.drawextraover) sm.drawextra(dspec, sm);
 
     // Filling and drawing main contour
 
@@ -5464,9 +5464,9 @@ void draw (
         draw(sm.adjust(-1)*unitcircle, blue+config.help.linewidth);
     }
 
-    // Applying the postdraw function if specified
+    // Applying the drawextra function if specified
 
-    if (dspec.postdrawover) sm.postdraw(dspec, sm);
+    if (dspec.drawextraover) sm.drawextra(dspec, sm);
 }
 
 void draw (

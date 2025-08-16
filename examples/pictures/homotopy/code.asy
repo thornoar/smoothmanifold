@@ -30,7 +30,7 @@ smooth sm = smooth(
 
 smooth segment = smooth(
     contour = (-.1,0)--(-.1,1)--(.1,1)--(.1,0)--cycle,
-    postdraw = new void (dpar dspec, smooth sm)
+    drawextra = new void (dpar dspec, smooth sm)
     {
         transform adj = sm.unitadjust;
         draw(adj*((0,1.5)--(0,-1.5)), p = pathpen, L = Label("", position = MidPoint, align = E));
