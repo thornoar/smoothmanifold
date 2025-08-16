@@ -3713,17 +3713,17 @@ smooth findsm (string label)
     return smooth.cache[findsmoothindex(label)];
 }
 
-smooth operator cast (string label)
-{ return findsm(label); }
+// smooth operator cast (string label)
+// { return findsm(label); }
 
-smooth[] operator cast (string[] labels)
-{
-    return sequence(
-        new smooth (int i)
-        { return findsm(labels[i]); },
-        labels.length
-    );
-}
+// smooth[] operator cast (string[] labels)
+// {
+//     return sequence(
+//         new smooth (int i)
+//         { return findsm(labels[i]); },
+//         labels.length
+//     );
+// }
 
 int[] findsubsetindex (string label)
 {
@@ -3757,17 +3757,17 @@ subset findsb (string label)
     return smooth.cache[indices[0]].subsets[indices[1]];
 }
 
-subset operator cast (string label)
-{ return findsb(label); }
+// subset operator cast (string label)
+// { return findsb(label); }
 
-subset[] operator cast (string[] labels)
-{
-    return sequence(
-        new subset (int i)
-        { return findsb(labels[i]); },
-        labels.length
-    );
-}
+// subset[] operator cast (string[] labels)
+// {
+//     return sequence(
+//         new subset (int i)
+//         { return findsb(labels[i]); },
+//         labels.length
+//     );
+// }
 
 int[] findelementindex (string label)
 {
@@ -3795,24 +3795,23 @@ int[] findelementindex (string label)
 }
 
 element findelt (string label)
-// 
 {
     int[] indices = findelementindex(label);
     // if (indices[1] == -1) halt("Could not identify element: object with label \""+label+"\" is not a element. Use `findsm()` instead. [ findsb() ]");
     return smooth.cache[indices[0]].elements[indices[1]];
 }
 
-element operator cast (string label)
-{ return findelt(label); }
+// element operator cast (string label)
+// { return findelt(label); }
 
-element[] operator cast (string[] labels)
-{
-    return sequence(
-        new element (int i)
-        { return findelt(labels[i]); },
-        labels.length
-    );
-}
+// element[] operator cast (string[] labels)
+// {
+//     return sequence(
+//         new element (int i)
+//         { return findelt(labels[i]); },
+//         labels.length
+//     );
+// }
 
 int[] findbylabel (string label)
 {
@@ -5208,8 +5207,7 @@ void draw (
     picture pic = currentpicture,
     smooth sm,
     dpar dspec = null
-) // The main drawing function of the module. It renders a given smooth object with substantial customization: all drawing pens can be altered, there are three section-drawing modes available: `free`, `cartesian` and `plain`. 
-{
+) {
     // Configuring variables
 
     if (dspec == null) dspec = dpar();

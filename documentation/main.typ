@@ -1422,42 +1422,32 @@ int findlocalsubsetindex (string label)
 ``` <smooth-findlocalsubsetindex> #vs
 Locate a subset of `this` by its label and return its index.
 
-As a final step, module `smoothmanifold` defines a number of `operator cast` functions for full label integration:
+As a final step, module `smoothmanifold` defines a number of conversion routines to find objects by label:
 
 ```
-smooth operator cast (string label)
-smooth[] operator cast (string[] labels)
-``` <smooth-cast> #vs
-Cast a `string` to a `smooth` object.
+smooth findsm (string label)
+``` <smooth-find> #vs
+Find a `smooth` object by its `label`.
 
 ```
-subset operator cast (string label)
-subset[] operator cast (string[] labels)
-``` <subset-cast> #vs
-Cast a `string` to a `subset` object.
+subset findsb (string label)
+``` <subset-find> #vs
+Find a `subset` by its `label`.
 
 ```
-element operator cast (string label)
-element[] operator cast (string[] labels)
-``` <element-cast> #vs
-Cast a `string` to a `element` object.
+element findelt (string label)
+``` <element-find> #vs
+Find an `element` by its `label`.
 
-These casts rely on the following auxiliary internal functions: #vs
+These routines rely on the following auxiliary internal functions: #vs
+```
+int findsmoothindex (string label)
+int[] findsubsetindex (string label)
+int[] findelementindex (string label)
+``` <smooth-findindex> #vs
+Inspect the `smooth.cache` array for `label` and return the relevant index/indices.
 
-#bl[
-  #show: columns.with(2, gutter: 0pt)
-  ```
-  int findsmoothindex (string label)
-  int[] findsubsetindex (string label)
-  int[] findelementindex (string label)
-  ``` <smooth-findindex>
-  #colbreak()
-  ```
-  smooth findsm (string label)
-  subset findsb (string label)
-  element findelt (string label)
-  ``` <smooth-find>
-]
+Up until recently module `smoothmanifold` supported three `operator cast` routines that could cast strings to `smooth`, `subset`, and `element` structures. However, I have recently realized that this may easily lead to ambiguity in function calls, and so now the module encourages the direct use of the `findsm`, `findsb` and `findelt` routines.
 
 == The modes of cross section drawing <sc-smooth-modes>
 
@@ -1524,9 +1514,7 @@ meaning that you can set, for example, `hl1.scnumber = -3`, and it will _force_ 
 - setting `hl1.scnumber = -n` guarantees that the number of sections is `n` _or more;_
 - setting `hl1.scnumber = n` guarantees that the number of sections is `n` _or less;_
 
-The `free` mode is usually the preferred mode for three-dimensional drawing, it can be enabled via #box[`mode = free`] in the `dpar` @smooth-dpar structure.
-
-The implementation of the `free` mode relies heavily on the following technical routines:
+The `free` mode is usually the preferred mode for three-dimensional drawing. Its implementation relies heavily on the following technical routines:
 
 ```
 path[] sectionellipse (pair p1, pair p2, pair dir1, pair dir2, pair viewdir)
@@ -1545,7 +1533,7 @@ Return an array of two paths, together composing an ellipse whose center lies on
 
   // Drawing it in pretty colors
   ```,
-  []
+  [An illustration of the output of the `sectionellipse` function]
 )
 The `viewdir` parameter represents "direction of view", it helps coordinate the tilt angles of all section ellipses in a picture to maintain the illusion of 3D.\
 This algorithm uses either an $O(1)$ formula, if `config.section.elprecision` (see @sc-config-section) is less than zero (which is true by default), or an $O(log n)$ binary search procedure, otherwise.
@@ -1669,7 +1657,43 @@ You may have noticed that the `smooth` @smooth-smooth structure contains no info
 - `bool drawnow` --- the `drawnow` parameter to pass to `fitpath` @def-fitpath;
 - `bool drawextraover` --- whether to apply the `drawextra` function of the smooth object "over" everything else (that is, after drawing the object itself). In other words, if `drawextraover` is `false`, then the `drawextra` will be called in the beginning of drawing the smooth object, otherwise in the end.
 
+These are all the fields of `dpar`. The structure has a comprehensive `void operator init` constructor where all fields are given default values from the `config.drawing` TODO global configuration structure. The `dpar` structure also supports a method #vs
+```
+dpar subs (
+    pen contourpen = this.contourpen,
+    pen smoothfill = this.smoothfill,
+    <...>
+)
+``` <dpar-copy> #vs
+which replaces some of the fields of `this` with new values.
+
+Besides, there are two conveniently defined `dpar` instances:
+
+```
+dpar ghostpar (pen contourpen = currentpen)
+``` <dpar-ghostpar> #vs
+A `dpar` to draw a faint outline of a smooth object.
+
+```
+dpar emptypar ()
+``` <dpar-emptypar> #vs
+A `dpar` that doesn't draw any contours or fill any regions.
+
 == The `draw` function <sc-smooth-draw>
+
+One of the central functions of module `smoothmanifold` is the `draw` function which allows one to draw a `smooth` object:
+```
+void draw (
+    picture pic = currentpicture,
+    smooth sm,
+    dpar dspec = null
+)
+``` <smooth-draw> #vs
+Draw `sm` on picture `pic`, with drawing configuration `dspec`. This function follows all the drawing protocols described previously in @sc-smooth-subset, @sc-smooth-modes and @sc-smooth-dpar.
+
+== Set operations on `smooth` objects
+
+== Drawing arrows and paths
 
 = Global configuration <sc-config>
 

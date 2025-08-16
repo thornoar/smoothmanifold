@@ -1,5 +1,5 @@
 include common;
-size(7cm);
+size(6cm);
 
 pair p1 = (1,1), p2 = (4,1);
 pair dir1 = dir(55), dir2 = dir(140);
