@@ -1,3 +1,6 @@
+#import "@preview/in-dexter:0.7.2": *
+#let ind = index.with(fmt: raw, apply-casing: false)
+
 #set page("a4", margin: 0.5in, numbering: "1")
 #set text(size: 11pt, font: "New Computer Modern")
 #show raw: it => context {
@@ -1241,11 +1244,11 @@ A more sophisticated version of `move` @hole-move, which accepts the usual `shif
   #show: columns.with(2, gutter: 0pt)
   ```
   hole copy ()
-  ``` <subset-copy>
+  ``` <hole-copy>
   #colbreak()
   ```
   hole replicate (hole h)
-  ``` <subset-replicate>
+  ``` <hole-replicate>
 ] #vs
 Perform a deep copy of `this` and return the copy, or deeply copy all fields of another hole, `h`, into `this`, returning `this`.
 
@@ -1265,11 +1268,11 @@ A more sophisticated version of `move` @element-move, which accepts the usual `s
   #show: columns.with(2, gutter: 0pt)
   ```
   element copy ()
-  ``` <subset-copy>
+  ``` <element-copy>
   #colbreak()
   ```
   element replicate (element elt)
-  ``` <subset-replicate>
+  ``` <element-replicate>
 ] #vs
 Perform a deep copy of `this` and return the copy, or deeply copy all fields of another element, `elt`, into `this`, returning `this`.
 
@@ -2158,7 +2161,7 @@ A structure to hold variables related to arrows, namely the following:
 
 = Debugging capabilities <sc-debug>
 
-In case an algorithm runs into an incorrect situation or is given incorrect input, mechanisms are put in place in module `smoothmanifold` to trigger an _error_ (subsequently stopping execution) or a _warning_ (while continuing execution). The relevant routine is #vs
+In case an algorithm runs into an incorrect situation or is given incorrect input, mechanisms are put in place in module `smoothmanifold` to trigger an _error_ (subsequently stopping execution) or a _warning_ (while continuing execution). For errors, the relevant routine is #vs
 
 ```
 void halt (string msg) {
@@ -2170,13 +2173,9 @@ void halt (string msg) {
 
 Warnings are simply written with a direct call to `write`.
 
-== Errors <sc-debug-errors>
-
-Should you perform an erroneous calculation step (like adding an out-of-bounds subset to a smooth object, or referring to a non-existent label), `smoothmanifold` will crash with an error message.
-
-== Warnings <sc-debug-warnings>
-
 = Miscellaneous auxiliary routines <sc-misc>
+
+== `smooth`-related functions
 
 ```
 smooth[] concat (smooth[][] smss)
@@ -2191,14 +2190,117 @@ Print various information about the smooth object `sm` in the console.
 ```
 void printall ()
 ``` <smooth-printall> #vs
-Print all `smooth` objects in the global `smooth.cache` array.
+Print all `smooth` objects in the global `smooth.cache` array. #ind[smooth]
 
-= The `export.asy` auxiliary module <sc-export>
+```
+void smooth.checksubsetindex (int index, string fname)
+``` <smooth-checksubsetindex> #vs
+Check if `this` has a subset at index `index`. The `fname` parameter is used for debugging purposes -- it contains the name of the function that is calling `checksubsetindex`.
 
-== The `export` routine <sc-export-function>
+```
+void smooth.checkelementindex (int index, string fname)
+``` <smooth-checkelementindex> #vs
+Check if `this` has a element at index `index`. The `fname` parameter is used for debugging purposes -- it contains the name of the function that is calling `checkelementindex`.
 
-== Animations <sc-export-animations>
+== Array utilities
 
-== Configuration <sc-export-config>
+```
+path[] c (... path[] source) { return source; }
+``` <misc-c> #vs
+An R-style convenience function, for those who are tired of writing `new path[]{}`.
+
+```
+path[][] cc (... path[] source) { return new path[][]{source}; }
+``` <misc-cc> #vs
+A convenient replacement of `new path[][]{{}}`.
+
+```
+pair[] concat (pair[][] a)
+``` <misc-concat-pair> #vs
+Concatenate an array of `pair`.
+
+```
+path[] concat (path[][] a)
+``` <misc-concat-path> #vs
+Concatenate an array of `path`.
+
+```
+bool contains (int[] source, int a)
+``` <misc-contains> #vs
+Check if `source` contains `a`.
+
+== Other routines
+
+```
+pair comb (pair a, pair b, real t) { return t*b + (1-t)*a;}
+``` <misc-comb> #vs
+A convex combination between `a` and `b` with time `t`.
 
 = Index <sc-index>
+
+#let section(letter, cnt) = {
+  text(size: 15pt, strong(letter))
+  v(-10pt)
+  columns(1, gutter: 3pt, cnt)
+}
+#let e = { h(.5em); math.arrow.long; h(.5em) }
+#set raw(lang: none)
+
+#section("A")[
+  + `struct arrowconfig` #e @config-arrow\
+  + `real arclength (path, real, real)` #e @path-arclength\
+  + `path arcsubpath (path, real, real)` #e @path-arcsubpath\
+  + `transform smooth.adjust (int)` #e @smooth-adjust\
+  + `smooth smooth.addelement (element, int, bool)` #e @smooth-addelement\
+  + `smooth smooth.addelement (pair, string, pair, int, bool)` #e @smooth-addelement-spec\
+  + `smooth smooth.addhole (hole, int, bool, bool)` #e @smooth-addhole\
+  + `smooth smooth.addhole (path, pair, real[][], pair, real, real, pair, bool, bool)` #e @smooth-addhole-spec\
+  + `smooth smooth.addholes (hole[], bool, bool)` #e @smooth-addholes\
+  + `smooth smooth.addholes (bool, bool ... hole[])` #e @smooth-addholes\
+  + `smooth smooth.addholes (path[], bool, bool)` #e @smooth-addholes-spec\
+  + `smooth smooth.addholes (bool, bool ... path[])` #e @smooth-addholes-spec\
+  + `smooth smooth.addsection (int, real[])` #e @smooth-addsection\
+  + `smooth smooth.addsubset (subset, int, bool, bool, bool, bool)` #e @smooth-addsubset\
+  + `smooth smooth.addsubset (int, path, pair, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-spec\
+  + `smooth smooth.addsubset (string, subset, bool, bool, bool)` #e @smooth-addsubset-label\
+  + `smooth smooth.addsubset (string, path, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-label\
+  + `smooth smooth.addsubsets (subset[], int, bool, bool, bool)` #e @smooth-addsubsets\
+  + `smooth smooth.addsubsets (int, bool, bool, bool ... subset[])` #e @smooth-addsubsets\
+  + `smooth smooth.addsubsets (path[], int, bool, bool, bool)` #e @smooth-addsubsets-spec\
+  + `smooth smooth.addsubsets (int, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec\
+  + `smooth smooth.addsubsets (string, subset[], bool, bool, bool)` #e @smooth-addsubsets\
+  + `smooth smooth.addsubsets (string, bool, bool, bool ... subset[])` #e @smooth-addsubsets\
+  + `smooth smooth.addsubsets (string, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec\
+  + `smooth smooth.attach (smooth)` #e @smooth-attach\
+]
+
+#section("B")[
+  + `pen brighen (pen, real)` #e @pen-subsets\
+]
+
+#section("C")[
+  + `pair center (path, int, bool, bool)` #e @path-center\
+  + `pair comb (pair, pair, real)` #e @misc-comb\
+  + `path[] c (... path[])` #e @misc-c\
+  + `path[][] cc (... path[])` #e @misc-cc\
+  + `pair[] concat (pair[][])` #e @misc-concat-pair\
+  + `path[] concat (path[][])` #e @misc-concat-path\
+  + `bool contains (int[], int)` #e @misc-contains\
+  + `bool clockwise (path)` #e @path-clockwise\
+  + `path curvedpath (pair, pair, real, bool)` #e @path-curvedpath\
+  + `path cyclepath (pair, real, real)` #e @path-curvedpath\
+  + `path connect (pair[])` #e @path-connect\
+  + `path connect (... pair[])` #e @path-connect\
+  + `path connect (path, path)` #e @path-connect-pq\
+  + `path[] combination (path, path, int, bool, real)` #e @path-combination\
+  + `bool checksection (real[])` #e @smooth-checksection\
+  + `pair[][] cartsectionpoints (path[], real, bool)` #e @smooth-cartsectionpoints\
+  + `pair[][] cartsections (path[], path[], real, bool)` #e @smooth-cartsections\
+  + `element element.copy ()` #e @element-copy\
+  + `hole hole.copy ()` #e @hole-copy\
+  + `subset subset.copy ()` #e @subset-copy\
+  + `smooth smooth.copy ()` #e @smooth-copy\
+  + `void smooth.checksubsetindex (int, string)` #e @smooth-checksubsetindex\
+  + `void smooth.checkelementindex (int, string)` #e @smooth-checkelementindex\
+  + `smooth[] concat (smooth[][])` #e @smooth-concat\
+]
