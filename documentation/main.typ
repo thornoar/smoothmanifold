@@ -2590,14 +2590,15 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 = Index <sc-index>
 
 #let section(letter, cnt) = {
-  text(size: 13pt, strong(letter))
-  v(-10pt)
+  // text(size: 13pt, strong(letter))
+  v(7pt)
+  set list(marker: ([(#letter)]))
   cnt
 }
 #let e = { h(.5em); math.arrow.long; h(.5em) }
 #set raw(lang: none)
 
-#section("Operators")[
+#section("*")[
   - `gauss operator cast (pair)` #e @misc-gauss-func
   - `pair operator cast (gauss)` #e @misc-gauss-func
   - `bool operator == (gauss, gauss)` #e @misc-gauss-func
@@ -2790,11 +2791,11 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `smooth intersect (bool, bool, real, bool ... smooth[])` #e @smooth-intersect
 ]
 
-#section("J")[ --- ]
+#section("J")[ - --- ]
 
-#section("K")[ --- ]
+#section("K")[ - --- ]
 
-#section("L")[ --- ]
+#section("L")[ - --- ]
 
 #section("M")[
   - `real mod (real, real)` #e @misc-mod
@@ -2847,7 +2848,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `void plainrestore ()` #e @def-shipout
 ]
 
-#section("Q")[ --- ]
+#section("Q")[ - --- ]
 
 #section("R")[
   - `path randomconvex ()` #e @path-randomdefault
@@ -2958,7 +2959,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `smooth unite (bool, bool, real ... smooth[])` #e @smooth-unite
 ]
 
-#section("V")[ --- ]
+#section("V")[ - --- ]
 
 #section("W")[
   - `path wavypath (real[], bool, bool)` #e @path-wavypath
@@ -2980,4 +2981,4 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `real smooth.ysize ()` #e @smooth-size
 ]
 
-#section("Z")[ --- ]
+#section("Z")[ - --- ]
