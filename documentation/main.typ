@@ -139,7 +139,7 @@ Do take a look at the #link("https://github.com/thornoar/smoothmanifold/tree/mas
 
 == The general mechanism <sc-def-general>
 
-In the `picture` structure, the paths drawn on a picture are not stored in an array, but rather indirectly stored in a `void` callback. That is, when the `draw` function is called, the _instruction to draw_ the path is added to the picture, not the path itself. This makes it quite impossible to "modify the path after it is drawn". To go around this limitation, `smoothmanifold` introduces an auxiliary struct:
+In the `picture` structure, the paths drawn on a picture are not stored in an array, but rather indirectly stored in a `void` callback. That is, when the `draw` function is called, the _instruction to draw_ the path is added to the picture, not the path itself. This makes it quite impossible to "modify the path after it is drawn". To go around this limitation, `smoothmanifold` introduces an auxiliary structure:
 ```
 struct deferredPath {
     path[] g;
@@ -152,7 +152,7 @@ struct deferredPath {
 It stores the path(s) to draw later, and how to draw them. Now, `smoothmanifold` executes the following steps to draw a "mutable" path `p` to a picture `pic` and then draw it for real:
 + Have a global two-dimensional array, say `arr`, of `deferredPath`'s;
 + Construct a `deferredPath` based on `p`, say `dp`;
-+ Exploit the `nodes` field of the `picture` struct to store an integer. Retrieve this integer, say `n`, from `pic` (or create one if the `nodes` field doesn't contain it).
++ Exploit the `nodes` field of the `picture` structure to store an integer. Retrieve this integer, say `n`, from `pic` (or create one if the `nodes` field doesn't contain it).
 + Store the deferred path `dp` in the one-dimensional array `arr[n]`;
 + Move on with the original code, perhaps modifying the deferred path `dp` in `arr` as needed, e.g. adding gaps;
 + At shipout time, when processing the picture `pic`, retrieve the index `n` from its `nodes` field and draw all `deferredPath` objects in the array `arr[n]`.
@@ -184,7 +184,7 @@ Similarly to drawing paths to a picture, arrows and bars are implemented through
   ``` <def-tbar>
 ]
 
-These structs store information about the arrow/bar, and are converted to regular arrowbars when the corresponding path is drawn to the picture. For creating new `tarrow`/`tbar` instances and converting them to arrowbars, the following functions are available:
+These structures store information about the arrow/bar, and are converted to regular arrowbars when the corresponding path is drawn to the picture. For creating new `tarrow`/`tbar` instances and converting them to arrowbars, the following functions are available:
 
 #bl[
   #show: columns.with(2, gutter: 0pt)
@@ -575,12 +575,12 @@ A more general version of `arclength`.
 ```
 real relarctime (path g, real t0, real a)
 ``` <path-relarctime> #vs
-Calculate the time at which arclength `a` will be traveled along the path `g`, starting from time `t0`.
+Calculate the time at which arc length `a` will be traveled along the path `g`, starting from time `t0`.
 
 ```
 path arcsubpath (path g, real arc1, real arc2)
 ``` <path-arcsubpath> #vs
-Calculate the subpath of `g`, starting from arclength `arc1`, and ending with arclength `arc2`.
+Calculate the subpath of `g`, starting from arc length `arc1`, and ending with arc length `arc2`.
 
 ```
 real intersectiontime (path g, pair point, pair dir)
@@ -645,7 +645,7 @@ Produce half of an ellipse connecting points `a` and `b`. Curvature may be relat
 ```
 path curvedpath (pair a, pair b, real curve = 0, bool abs = false)
 ``` <path-curvedpath> #vs
-Constuct a curved path between two points. Curvature may be relative (from $0$ to $1$) or absolute.
+Construct a curved path between two points. Curvature may be relative (from $0$ to $1$) or absolute.
 
 ```
 path cyclepath (pair a, real angle, real radius)
@@ -1071,8 +1071,8 @@ Add a new subset to `this`. The meaning of the arguments is as follows:
 - `sb` --- the subset to add;
 - `index` --- the index of another, preexisting subset of `this`, such that `sb` should be made a subset of `this.subsets[index]`. If `index` is `-1`, then `sb` is considered a toplevel subset until found otherwise by containment checks. Essentially, the `index` parameter saves the algorithm some work figuring out where to fit `sb` in the subset hierarchy. See @sc-smooth-subset for more explanation;
 - `inferlabels` --- if set to `true`, the intersection subsets arising from the addition of `sb` will be given labels like `"$A \cap B$"`, given that some subsets have labels `"$A$"` and `"$B$"`;
-- `clip` --- if set to `false`, this leads to an error whenever `sb`'s contour is out of bounds with `this` objects's contour. If `clip` is set to true, then `sb`'s contour is clipped instead, and its `isonboundary` field is set to `true`;
-- `unit` --- as usual, setting this to `true` leads to `sb` being interpreted in `this` objects's unit coordinates, see @sc-smooth-unit;
+- `clip` --- if set to `false`, this leads to an error whenever `sb`'s contour is out of bounds with `this` object's contour. If `clip` is set to true, then `sb`'s contour is clipped instead, and its `isonboundary` field is set to `true`;
+- `unit` --- as usual, setting this to `true` leads to `sb` being interpreted in `this` object's unit coordinates, see @sc-smooth-unit;
 - `checkintersection` --- if set to `false`, the routine will _not_ perform out-of-bounds checks. This can significantly increase efficiency when the user is confident in the correctness of the call. But then you only have yourself to blame when your subsets are sticking out of your smooth objects!
 
 ```
@@ -1147,7 +1147,7 @@ Further convenience routines that allow adding multiple subsets.
       int[] indices,
       bool recursive = true
   )
-  // (... indices)
+  // (... int[] indices)
   ``` <smooth-rmsubsets>
 ] #vs
 Remove one or more subsets from `this`. If `recursive` is set to `true`, then all subsets of the removed subset shall also be removed.
@@ -1362,7 +1362,7 @@ smooth setelement (
     string label = config.system.dummystring,
     pair labelalign = config.system.dummypair,
     bool unit = config.smooth.unit
-) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
+)
 ``` <smooth-setelement-label> #vs
 An alternative to `setelement` @smooth-setelement, but finds the element by label.
 
@@ -1402,7 +1402,7 @@ An alternative to `addsubset` @smooth-addsubset, but finds the destination subse
       string[] destlabels,
       bool recursive = true
   )
-  // (... destlabels)
+  // (... string[] destlabels)
   ``` <smooth-rmsubsets-label>
 ] #vs
 Label-based alternatives to `rmsubset` @smooth-rmsubset and `rmsubsets` @smooth-rmsubsets.
@@ -1583,6 +1583,7 @@ This is the alternative mode of drawing cross sections, mainly implemented to dr
 #example(
   image("resources/hvratios-showcase.svg"),
   ```
+  import contour;
   smooth sm = smooth(
       contour = contour(<...>),
       hratios = new real[] {0.15, 0.5},
@@ -1609,7 +1610,7 @@ Convert to and from relative lengths.
 ```
 smooth setratios (real[] ratios, bool horiz)
 ``` <smooth-setratios> #vs
-Set the horizontal/vertical cartesian ratios of `this` smooth object.
+Set the horizontal/vertical Cartesian ratios of `this` smooth object.
 
 ```
 pair[][] cartsectionpoints (path[] g, real r, bool horiz)
@@ -1660,7 +1661,7 @@ You may have noticed that the `smooth` @smooth-smooth structure contains no info
 - `pen labelpen` --- the pen used to `label` the label of the smooth object;
 - `pen[] elementlabelpens` --- pens used to `label` the labels of the smooth object's elements. If the array is empty, then `labelpen` is used for all elements. If there are more elements than the length of `elementlabelpens`, then the last member of the array is used for all elements not covered;
 - `pen[] subsetlabelpens` --- pens used to `label` the labels of the smooth object's subsets. `labelpen` is used in case `subsetlabelpens` is empty. All subsets not covered by the array use the last member thereof;
-- `int mode` --- the drawing mode. Can be one of the four: `plain`, `free`, `cartesian`, `combined` (which have values of `0`, `1`, `2`, `3` respectively). Any other integer value would be accepted, but the consequences may be unpredictable;
+- `int mode` <mode-values> --- the drawing mode. Can be one of the four: `plain`, `free`, `cartesian`, `combined` (which have values of `0`, `1`, `2`, `3` respectively). Any other integer value would be accepted, but the consequences may be unpredictable;
 - `pair viewdir` --- the `viewdir` parameter to pass to the `sectionellipse` @smooth-sectionellipse function;
 - `bool drawlabels` --- whether to draw the label of the smooth object as well as those of its subsets and elements;
 - `bool fill` --- whether to fill the region bounded by the contour of the smooth object;
@@ -1750,7 +1751,7 @@ smooth[] intersection (
     real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
-// (... sms)
+// (... smooth[] sms)
 ``` <smooth-intersection> #vs
 Calculate the intersection of two or more `smooth` objects. The `round` and `roundcoeff` parameters are passed to the `intersection` @path-intersection function. If `keepdata` is set to `true`, then references to old `hole` and `subset` objects will be used in the construction of the new `smooth` object. If `addsubsets` is set to `true`, the function will try to move the subsets of the given `smooth` objects to their intersection.
 
@@ -1770,7 +1771,7 @@ smooth intersect (
     real roundcoeff = config.paths.roundcoeff,
     bool addsubsets = config.smooth.addsubsets
 )
-// (... sms)
+// (... smooth[] sms)
 ``` <smooth-intersect> #vs
 Apply `intersection` @smooth-intersection and return the 0-th element of the resulting `smooth[]` array. If the array is empty, raise an error. If the array contains more than one object, give a warning. See @sc-debug for details on errors and warnings.
 
@@ -1796,7 +1797,7 @@ smooth[] union (
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
-// (... sms)
+// (... smooth[] sms)
 ``` <smooth-union> #vs
 Calculate the union of one or more `smooth` objects. The meanings of `round`, `roundcoeff` and `keepdata` are as in `intersection` @smooth-intersection.
 
@@ -1813,7 +1814,7 @@ smooth unite (
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
-// (... sms)
+// (... smooth[] sms)
 ``` <smooth-unite> #vs
 A specialized version of `union` which returns only one `smooth` object. An error/warning is raised if the resulting `smooth[]` array contains any number of elements other than `1`.
 
@@ -1965,8 +1966,8 @@ struct systemconfig {
 ``` <config-system> #vs
 A structure containing system configuration variables. Their meanings are as follows:
 - `version` --- the version of `smoothmanifold`, currently `6.3.1`;
-- `dummynumber` --- the number that "the program knows what to do with". It is often given as a default value in many functions, when the true default value requires additional computations that are better done in the body of the function;
-- `dummypair` and `dummystring` --- versions of `dummynumber` with different types. Module `smoothmanifold` features four helpher functions to check if a value is "dummy": #vs
+- `dummynumber` <dummynumber> --- the number that "the program knows what to do with". It is often given as a default value in many functions, when the true default value requires additional computations that are better done in the body of the function. A shorthand `dn` is defined for it, for convenience;
+- `dummypair` and `dummystring` --- versions of `dummynumber` with different types. Module `smoothmanifold` features four helper functions to check if a value is "dummy": #vs
   #bl[
     #show: columns.with(4, gutter: 0pt)
     ```
@@ -2124,7 +2125,7 @@ A structure to hold drawing-related configuration, encoded in the following vari
   pen brighten (pen p, real coeff) { return inverse(coeff * inverse(p)); }
   pen nextsubsetpen (pen p, real scale) { return scale * p; }
   ``` <pen-subsets>
-- `lineshadeangle`, `lineshadedensity`, `lineshademargin`, `lineshadepen` --- default values passed to the `shaderegion` TODO function;
+- `lineshadeangle`, `lineshadedensity`, `lineshademargin`, `lineshadepen` --- default values passed to the `shaderegion` @misc-shaderegion function;
 - `useopacity` --- whether to use Asymptote's `opacity` function for generating pens (primarily dashed section pens). Since some image formats do not support opacity, this is disabled by default, and so the `dashpenscale` field is used for dashed pen creation. Otherwise, the `dashopacity` field is used. The relevant pen creation routines are #vs
   ```
   pen sectionpen (pen p)
@@ -2589,13 +2590,12 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 = Index <sc-index>
 
 #let section(letter, cnt) = {
-  text(size: 15pt, strong(letter))
+  text(size: 13pt, strong(letter))
   v(-10pt)
   cnt
 }
 #let e = { h(.5em); math.arrow.long; h(.5em) }
 #set raw(lang: none)
-// #set enum(numbering: "1.")
 
 #section("Operators")[
   - `gauss operator cast (pair)` #e @misc-gauss-func
@@ -2614,6 +2614,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("A")[
+  - `struct arrowconfig` #e @config-arrow
   - `struct arrowconfig` #e @config-arrow
   - `real arclength (path, real, real)` #e @path-arclength
   - `path arcsubpath (path, real, real)` #e @path-arcsubpath
@@ -2646,6 +2647,11 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("C")[
+  - `path[] convexpaths` #e @path-defaultpaths
+  - `path[] concavepaths` #e @path-defaultpaths
+  - `int cartesian` #e @mode-values
+  - `int combined` #e @mode-values
+  - `globalconfig config` #e @config
   - `pair center (path, int, bool, bool)` #e @path-center
   - `pair comb (pair, pair, real)` #e @misc-comb
   - `path[] c (... path[])` #e @misc-c
@@ -2673,6 +2679,11 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("D")[
+  - `struct drawingconfig` #e @config-drawing
+  - `struct dpar` #e @smooth-dpar
+  - `struct deferredPath` #e @def-deferredPath
+  - `int dn` #e @dummynumber
+  - `private globalconfig defaultconfig` #e @config
   - `transform dscale (real, pair, pair)` #e @misc-dscale
   - `real[][] dr (... real[][])` #e @misc-r
   - `pair[][] dp (... pair[][])` #e @misc-p
@@ -2710,6 +2721,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("E")[
+  - `struct element` #e @smooth-ho-su-el
   - `path ellipsepath (pair, pair, real, bool)` #e @path-ellipsepath
   - `pen elementpen (pen)` #e @pen-elements
   - `element[] elementcopy (element[])` #e @smooth-elementcopy
@@ -2719,6 +2731,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("F")[
+  - `int free` #e @mode-values
   - `int smooth.findlocalsubsetindex (string)` #e @smooth-findlocalsubsetindex
   - `int smooth.findlocalelementindex (string)` #e @smooth-findlocalelementindex
   - `smooth fit (int, picture, picture, pair)` #e @smooth-fit
@@ -2739,6 +2752,8 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("G")[
+  - `struct globalconfig` #e @config
+  - `struct gauss` #e @misc-gauss
   - `dpar ghostpar (pen)` #e @dpar-ghostpar
   - `real smooth.getyratio (real)` #e @smooth-get-ratio-point
   - `real smooth.getxratio (real)` #e @smooth-get-ratio-point
@@ -2748,6 +2763,8 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("H")[
+  - `struct helpconfig` #e @config-help
+  - `struct hole` #e @smooth-ho-su-el
   - `void halt (string)` #e @debug-halt
   - `hole[] holecopy (hole[])` #e @smooth-holecopy
   - `path[] holecontours (hole[])` #e @smooth-holecontours
@@ -2814,6 +2831,8 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("P")[
+  - `struct pathconfig` #e @config-path
+  - `int plain` #e @mode-values
   - `pair[] p (... pair[])` #e @misc-p
   - `pair[][] pp (... pair[])` #e @misc-p
   - `path pop (path[])` #e @misc-pop
@@ -2868,6 +2887,11 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("S")[
+  - `struct systemconfig` #e @config-system
+  - `struct sectionconfig` #e @config-section
+  - `struct smoothconfig` #e @config-smooth
+  - `struct subset` #e @smooth-ho-su-el
+  - `struct smooth` #e @smooth-smooth
   - `transform srap (real, real, pair)` #e @misc-srap
   - `string[] s (... string[])` #e @misc-s
   - `string[][] ss (... string[])` #e @misc-s
@@ -2913,11 +2937,15 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("T")[
+  - `struct tarrow` #e @def-tarrow
+  - `struct tbar` #e @def-tbar
   - `path turn (path, pair, pair)` #e @path-turn
   - `smooth tangentspace (smooth, int, pair, real, real, real, real, string, pair)` #e @smooth-tangentspace
 ]
 
 #section("U")[
+  - `path ucircle` #e @path-upaths
+  - `path usquare` #e @path-upaths
   - `real[] unitseq (real)` #e @misc-unitseq
   - `path[] union (path, path, bool, bool, real)` #e @path-set-union
   - `path[] union (path[], bool, bool, real)` #e @path-set-union-array
