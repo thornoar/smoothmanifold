@@ -1,6 +1,3 @@
-#import "@preview/in-dexter:0.7.2": *
-#let ind = index.with(fmt: raw, apply-casing: false)
-
 #set page("a4", margin: 0.5in, numbering: "1")
 #set text(size: 11pt, font: "New Computer Modern")
 #show raw: it => context {
@@ -2205,7 +2202,7 @@ Print various information about the smooth object `sm` in the console.
 ```
 void printall ()
 ``` <smooth-printall> #vs
-Print all `smooth` objects in the global `smooth.cache` array. #ind[smooth]
+Print all `smooth` objects in the global `smooth.cache` array.
 
 ```
 void smooth.checksubsetindex (int index, string fname)
