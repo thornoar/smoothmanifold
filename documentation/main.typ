@@ -338,7 +338,7 @@ shipout = new void (...)
 ```<def-shipout> #vs
 A redefinition of the `shipout` function to automatically draw the deferred paths at shipout time. For a definition of `debugpaths`, see @sc-smooth-subset.
 
-The functions `erase`, `add`, `save`, and `restore` are redefined to automatically handle deferred paths.
+The functions `erase`, `* (transform, picture)`, `add`, `save`, and `restore` are redefined to automatically handle deferred paths.
 
 = Operations on paths <sc-path>
 
@@ -1349,7 +1349,7 @@ smooth setlabel (
     pair dir = config.system.dummypair,
     pair align = config.system.dummypair
 ) { return this.setlabel(findlocalsubsetindex(destlabel), label, dir, align); }
-``` <smooth-setcenter-label> #vs
+``` <smooth-setlabel-label> #vs
 An alternative to `setlabel` @smooth-setlabel, but finds the subset by label.
 
 ```
@@ -1604,7 +1604,7 @@ real getxpoint (real x)
 Convert to and from relative lengths.
 
 ```
-smooth smooth.setratios (real[] ratios, bool horiz)
+smooth setratios (real[] ratios, bool horiz)
 ``` <smooth-setratios> #vs
 Set the horizontal/vertical cartesian ratios of `this` smooth object.
 
@@ -1680,7 +1680,7 @@ dpar subs (
     pen smoothfill = this.smoothfill,
     <...>
 )
-``` <dpar-copy> #vs
+``` <dpar-subs> #vs
 which replaces some of the fields of `this` with new values.
 
 Besides, there are two conveniently defined `dpar` instances:
@@ -2280,20 +2280,125 @@ element[] elementcopy (element[] elements)
 Deeply copy an array of `element` structures.
 
 ```
-int[] findbylabel (string label)
-``` <smooth-findbylabel> #vs
-A fully general label identification function that returns an index path to either a smooth object or its subset/element with a label matching `label`.
-
-```
 hole[] holecopy (hole[] holes)
 ``` <smooth-holecopy> #vs
 Deeply copy an array of `hole` structures.
+
+```
+subset[] subsetcopy (subset[] subsets)
+``` <smooth-subsetcopy> #vs
+Deeply copy an array of `subset` structures.
+
+```
+subset[] subsetintersection (
+    subset sb1,
+    subset sb2,
+    bool inferlabels = config.smooth.inferlabels
+)
+``` <smooth-subsetintersection> #vs
+Calculate the intersection of two subsets by applying `intersection` @path-set-intersection and automatically setting other `subset` @smooth-ho-su-el fields.
+
+```
+void subsetdelete (subset[] subsets, int index, bool recursive)
+``` <smooth-subsetdelete> #vs
+Properly delete entry under `index` from the `subsets` array.
+
+```
+int[] subsetgetlayer (subset[] subsets, int[] range, int layer)
+``` <smooth-subsetgetlayer> #vs
+Fetch those elements of `subsets`, which have layer `layer`, and return their indices. Moreover, these indices are restricted to the elements of `range`.
+
+```
+int[] subsetgetall (subset[] subsets, subset s)
+int[] subsetgetall (subset[] subsets, int index)
+{ return subsetgetall(subsets, subsets[index]); }
+``` <smooth-subsetgetall> #vs
+Get all descendants (subsets) of subset `s` (or subset `subsets[index]`) in the array `subsets`.
+
+```
+int[] subsetgetallnot (subset[] subsets, subset s)
+{ return difference(sequence(subsets.length), subsetgetall(subsets, s)); }
+int[] subsetgetallnot (subset[] subsets, int index)
+{ return difference(sequence(subsets.length), subsetgetall(subsets, index)); }
+``` <smooth-subsetgetallnot> #vs
+Return the indices of all subsets in `subsets`, which are _not_ subsets of `s`.
+
+```
+void subsetdeepen (subset[] subsets, subset s)
+``` <smooth-subsetdeepen> #vs
+Descend `s` one layer deeper, and patch `subsets` accordingly, so that the subset hierarchy is properly kept.
+
+```
+int subsetinsertindex (subset[] subsets, int layer)
+``` <smooth-subsetinsertindex> #vs
+Calculate the index at which a new subset on layer `layer` should be inserted.
+
+```
+int subsetmaxlayer (subset[] subsets, int[] range)
+``` <smooth-subsetmaxlayer> #vs
+Calculate the maximum layer that subsets in `subsets` with indices in `range` occupy.
+
+```
+void subsetcleanreferences (subset[] subsets)
+``` <smooth-subsetcleanreferences> #vs
+Clean up the `subsets` @smooth-ho-su-el fields of all subsets in `subsets`.
+
+```
+int[] findbylabel (string label)
+``` <smooth-findbylabel> #vs
+A fully general label identification function that returns an index path to either a smooth object or its subset/element with a label matching `label`.
 
 ```
 path[] holecontours (hole[] h)
 { return sequence(new path (int i){return h[i].contour;}, h.length); }
 ``` <smooth-holecontours> #vs
 Return the contours of an array of `hole` objects.
+
+```
+void phantom (picture pic = currentpicture, smooth sm)
+``` <smooth-phantom> #vs
+Inspired by T#sub[E]X's `\phantom` commands, this takes the space on the plane that `sm` would take, without actually drawing it.
+
+```
+smooth rn (
+    int n,
+    pair labeldir = (.5,1),
+    pair shift = (0,0),
+    real scale = 1,
+    real rotate = 0,
+    bool drawnow = false
+)
+``` <smooth-rn> #vs
+Construct an $RR^n$ representation as a `smooth` object. This mainly utilizes the `drawextra` @smooth-smooth field to draw the axes. The `n` parameter controls the $n$ in $RR^n$, all the rest are passed to `smooth`, except for `drawnow` which is passed to `fitpath` @def-fitpath
+
+```
+dpar rnpar ()
+``` <smooth-rnpar> #vs
+The `dpar` instance to draw `rn` @smooth-rn smooth objects.
+
+```
+smooth samplesmooth (int type, int num = 0, string label = "")
+smooth sm (int type, int num = 0, string label = "") = samplesmooth;
+``` <smooth-samplesmooth> #vs
+Produce a predefined smooth object. The `type` parameter determines the number of holes, and `num` --- the index of the object inside its type. `label` will be attached to the resulting object. The `sm` function is a convenience shorthand.
+
+```
+smooth tangentspace (
+    smooth sm,
+    int hlindex = -1,
+    pair center = config.system.dummypair,
+    real angle,
+    real ratio,
+    real size = 1,
+    real rotate = 45,
+    string eltlabel = "x",
+    pair eltlabelalign = 1.5*S
+)
+``` <smooth-tangentspace> #vs
+Construct a tangent space at a point on `sm`, and attach it to `sm`.
+- The point is determined by `hlindex` (an index of `sm`'s hole, a value of `-1` means no hole), `angle`, `center` (determined automatically by default), and `ratio`.
+- The `rotate` parameter can be used to rotate the tangent space.
+- The `eltlabel` and `eltlabelalign` parameters are passed to the `element` generated at the point where the tangent space is constructed. For a showcase of the `tangentspace` function, see @tangent.
 
 == Array utilities
 
@@ -2391,6 +2496,66 @@ Derive the "inverse" or "negative" pen from `p`.
 real mod (real a, real b)
 ``` <misc-mod> #vs
 Calculate `a` modulo `b` by subtracting `b` until the result falls between `0` and `b`.
+
+```
+string mode (int md)
+``` <misc-mode> #vs
+Convert an integer `mode` (see @sc-smooth-modes) value into its string representation. E.g., `mode(0) = "plain"`. Historic side note: in early versions of `smoothmanifold`, the `mode` parameter _was_ a string, but I have later found it excessive and inconvenient.
+
+```
+path pop (path[] source)
+``` <misc-pop> #vs
+Remove the 0-th element of `source` and return it.
+
+```
+real round (real a, int places) { return floor(10^places*a)*.1^places; }
+pair round (pair a, int places) { return (round(a.x, places), round(a.y, places)); }
+``` <misc-round> #vs
+Round `a` to the `places` number of decimal places.
+
+```
+string repeatstring (string str, int n)
+``` <misc-repeatstring> #vs
+Produce a string that repeats `str` `n` times.
+
+```
+transform srap (real scale, real rotate, pair point)
+{ return shift(point)*scale(scale)*rotate(rotate)*shift(-point); }
+``` <misc-srap> #vs
+[S]cale [R]otate [A]round [P]oint.
+
+```
+void shaderegion (
+    picture pic = currentpicture,
+    path g,
+    real angle = config.drawing.lineshadeangle,
+    real density = config.drawing.lineshadedensity,
+    real mar = config.drawing.lineshademargin,
+    pen p = config.drawing.lineshadepen
+)
+``` <misc-shaderegion> #vs
+Shade the region bounded by `g` with straight lines, like so: #vs
+#example(
+  image("resources/shaderegion-showcase.svg"),
+  ```
+  path g = wavypath(r(2,4,3,1,2,3,2));
+  draw(g);
+
+  shaderegion(
+      g,
+      angle = -20,
+      density = .2,
+      mar = .4,
+      p = red
+  );
+  ```,
+  [A showcase of the `shaderegion` function]
+)
+
+```
+real[] unitseq (real step)
+``` <misc-unitseq> #vs
+Calculate a uniform partition of the unit segment with step `step`.
 
 = Index <sc-index>
 
@@ -2574,4 +2739,148 @@ Calculate `a` modulo `b` by subtracting `b` until the result falls between `0` a
   - `bool meet (path, path)` #e @path-meet
   - `bool meet (path, path[])` #e @path-meet
   - `bool meet (path[], path[])` #e @path-meet
+  - `path midpath (path, path, n)` #e @path-midpath
+  - `string mode (int)` #e @misc-mode
+  - `element element.move (transform)` #e @element-move
+  - `element element.move (pair, real, real, pair, bool)` #e @element-move-spec
+  - `hole hole.move (transform)` #e @hole-move
+  - `hole hole.move (pair, real, real, pair, bool)` #e @hole-move-spec
+  - `subset subset.move (transform)` #e @subset-move
+  - `subset subset.move (pair, real, real, pair, bool)` #e @subset-move-spec
+  - `smooth smooth.move (pair, real, real, pair, bool, bool)` #e @smooth-move
+  - `smooth smooth.moveelement (int, pair)` #e @smooth-movelement
+  - `smooth smooth.moveelement (string, pair)` #e @smooth-movelement-label
+  - `smooth smooth.movehole (int, pair, real, real, pair, bool)` #e @smooth-movehole
+  - `smooth smooth.movesubset (int, pair, real, real, pair, bool, bool, bool, bool, bool, bool)` #e @smooth-movesubset
+  - `smooth smooth.movesubset (string, pair, real, real, pair, bool, bool, bool, bool, bool, bool)` #e @smooth-movesubset-label
+]
+
+#section("N")[
+  - `path neigharc (real, real, int, real)` #e @path-neigharc
+  - `pen nextsubsetpen (pen, real)` #e @pen-subsets
+  - `smooth node (string, pair, real)` #e @smooth-node
+  - `dpar nodepar (pen)` #e @smooth-nodepar
+]
+
+#section("O")[
+  - `bool outsidepath (path, path)` #e @path-outsidepath
+  - `bool smooth.onlyprimary (int)` #e @smooth-onlyprimary
+  - `bool smooth.onlysecondary (int)` #e @smooth-onlysecondary
+]
+
+#section("P")[
+  - `pair[] p (... pair[])` #e @misc-p
+  - `pair[][] pp (... pair[])` #e @misc-p
+  - `path pop (path[])` #e @misc-pop
+  - `void print (smooth)` #e @smooth-print
+  - `void printall ()` #e @smooth-printall
+  - `void purgedeferredunder (deferredPath[])` #e @def-purgedeferredunder
+  - `void phantom (picture, smooth)` #e @smooth-phantom
+  - `void plainshipout (string, picture, orientation, string, bool, bool, string, string, light, projection)` #e @def-shipout
+  - `void plainerase (picture)` #e @def-shipout
+  - `void plainapply (transform, picture)` #e @def-shipout
+  - `void plainsave ()` #e @def-shipout
+  - `void plainrestore ()` #e @def-shipout
+]
+
+#section("Q")[ --- ]
+
+#section("R")[
+  - `path randomconvex ()` #e @path-randomdefault
+  - `path randomconcave ()` #e @path-randomdefault
+  - `real round (real, int)` #e @misc-round
+  - `pair round (pair, int)` #e @misc-round
+  - `real[] r (... real[] source)` #e @misc-r
+  - `real[][] rr (... real[] source)` #e @misc-r
+  - `repeatstring (string, int)` #e @misc-repeatstring
+  - `real radius (path)` #e @path-radius
+  - `real relarctime (path, real, real)` #e @path-relarctime
+  - `path reorient (path, real)` #e @path-reorient
+  - `pair range (path, pair, pair, real, real)` #e @path-range
+  - `pair randomdir (pair, real)` #e @path-randomdirpath
+  - `pair randompath (pair[], real)` #e @path-randomdirpath
+  - `element element.replicate (element)` #e @element-replicate
+  - `hole hole.replicate (hole)` #e @hole-replicate
+  - `subset subset.replicate (subset)` #e @subset-replicate
+  - `pair smooth.relative (pair)` #e @smooth-relative
+  - `smooth smooth.rmelement (int)` #e @smooth-rmelement
+  - `smooth smooth.rmelement (string)` #e @smooth-rmelement-label
+  - `smooth smooth.rmhole (int)` #e @smooth-rmhole
+  - `smooth smooth.rmholes (int[])` #e @smooth-rmholes
+  - `smooth smooth.rmholes (... int[])` #e @smooth-rmholes
+  - `smooth smooth.rmsection (int, int)` #e @smooth-rmsection
+  - `smooth smooth.rmsubset (int, bool)` #e @smooth-rmsubset
+  - `smooth smooth.rmsubset (string, bool)` #e @smooth-rmsubset-label
+  - `smooth smooth.rmsubsets (int[], bool)` #e @smooth-rmsubsets
+  - `smooth smooth.rmsubsets (bool ... int[])` #e @smooth-rmsubsets
+  - `smooth smooth.rmsubsets (string[], bool)` #e @smooth-rmsubsets-label
+  - `smooth smooth.rmsubsets (bool ... string[])` #e @smooth-rmsubsets-label
+  - `smooth smooth.replicate (smooth)` #e @smooth-replicate
+  - `smooth rotate (real)` #e @smooth-move-sssr
+  - `smooth rn (int, pair, pair, real, real, bool)` #e @smooth-rn
+  - `dpar rnpar ()` #e @smooth-rnpar
+  - `void restore ()` #e @def-shipout
+]
+
+#section("S")[
+  - `transform srap (real, real, pair)` #e @misc-srap
+  - `string[] s (... string[])` #e @misc-s
+  - `string[][] ss (... string[])` #e @misc-s
+  - `path subcyclic (path, pair)` #e @path-subcyclic
+  - `path[] symmetric (path, path, bool, bool, real)` #e @path-set-symmetric
+  - `real sectionsymmetryrating (pair, pair, pair)` #e @section-quality
+  - `real sectiontoobroad (pair, pair, pair, pair)` #e @section-quality
+  - `pen sectionpen (pen)` #e @pen-sections
+  - `pen shadepen (pen)` #e @pen-sections
+  - `path[] sectionellipse (pair, pair, pair, pair, pair)` #e @smooth-sectionellipse
+  - `pair[][] sectionparams (path, path, int, real, int)` #e @smooth-sectionparams
+  - `subset[] subsetcopy (subset[])` #e @smooth-subsetcopy
+  - `subset[] subsetintersection (subset, subset, bool)` #e @smooth-subsetintersection
+  - `void subsetdelete (subset[], int, bool)` #e @smooth-subsetdelete
+  - `int[] subsetgetlayer (subset[], int[], int)` #e @smooth-subsetgetlayer
+  - `int[] subsetgetall (subset[], subset)` #e @smooth-subsetgetall
+  - `int[] subsetgetall (subset[], int)` #e @smooth-subsetgetall
+  - `int[] subsetgetallnot (subset[], subset)` #e @smooth-subsetgetallnot
+  - `int[] subsetgetallnot (subset[], int)` #e @smooth-subsetgetallnot
+  - `void subsetdeepen (subset[], subset)` #e @smooth-subsetdeepen
+  - `int subsetinsertindex (subset[], int)` #e @smooth-subsetinsertindex
+  - `int subsetmaxlayer (subset[], int[])` #e @smooth-subsetmaxlayer
+  - `void subsetcleanreferences (subset[])` #e @smooth-subsetcleanreferences
+  - `dpar dpar.subs (<...>)` #e @dpar-subs
+  - `transform smooth.selfadjust ()` #e @smooth-selfadjust
+  - `smooth smooth.setratios (real[], bool)` #e @smooth-setratios
+  - `smooth smooth.setcenter (int, pair, bool)` #e @smooth-setcenter
+  - `smooth smooth.setcenter (string, pair, bool)` #e @smooth-setcenter-label
+  - `smooth smooth.setlabel (int, string, pair, pair)` #e @smooth-setlabel
+  - `smooth smooth.setlabel (string, string, pair, pair)` #e @smooth-setlabel-label
+  - `smooth smooth.setelement (int, element, int, bool)` #e @smooth-setelement
+  - `smooth smooth.setelement (int, pair, string, pair, int, bool)` #e @smooth-setelement
+  - `smooth smooth.setelement (string, element, bool)` #e @smooth-setelement-label
+  - `smooth smooth.setelement (string, pair, string, pair, bool)` #e @smooth-setelement-label
+  - `smooth smooth.setsection (int, int, real[])` #e @smooth-setsection
+  - `smooth smooth.shift (explicit pair)` #e @smooth-move-sssr
+  - `smooth smooth.shift (real, real)` #e @smooth-move-sssr
+  - `smooth smooth.scale (real)` #e @smooth-move-sssr
+  - `smooth samplesmooth (int, int, string)` #e @smooth-samplesmooth
+  - `smooth sm (int, int, string)` #e @smooth-samplesmooth
+  - `void shaderegion (picture, path, real, real, pen)` #e @misc-shaderegion
+  - `void save ()` #e @def-shipout
+]
+
+#section("T")[
+  - `path turn (path, pair, pair)` #e @path-turn
+  - `smooth tangentspace (smooth, int, pair, real, real, real, real, string, pair)` #e @smooth-tangentspace
+]
+
+#section("U")[
+  - `real[] unitseq (real)` #e @misc-unitseq
+  - `path[] union (path, path, bool, bool, real)` #e @path-set-union
+  - `path[] union (path[], bool, bool, real)` #e @path-set-union-array
+  - `path[] union (bool, bool, real ... path[])` #e @path-set-union-array-dots
+  - `pen underpen (pen)` #e @pen-sections
+  - `smooth[] union (smooth, smooth, bool, bool, real)` #e @smooth-union
+  - `smooth[] union (smooth[], bool, bool, real)` #e @smooth-union
+  - `smooth[] union (bool, bool, real ... smooth[])` #e @smooth-union
+  - `smooth unite (smooth[], bool, bool, real)` #e @smooth-unite
+  - `smooth unite (bool, bool, real ... smooth[])` #e @smooth-unite
 ]
