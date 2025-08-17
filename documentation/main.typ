@@ -290,7 +290,7 @@ Apart from different types of the `arrow`/`bar` arguments, the `fitpath` functio
   ```<def-fitpath-array>
 ]
 
-Here, `config` is the global configuration structure, see @sc-config. Furthermore, there are corresponding `fillfitpath` <fillfitpath> functions that serve the same purpose as `filldraw`.
+Here, `config` is the global configuration structure, see @sc-config. Furthermore, there are corresponding `fillfitpath` <def-fillfitpath> functions that serve the same purpose as `filldraw`.
 
 == Other related routines <deferred-misc>
 
@@ -1426,9 +1426,16 @@ These are methods that facilitate the correct finding of objects by label:
 static bool repeats (string label)
 ``` <smooth-repeats> #vs
 Check if `label` already exists as a label of some `smooth`, `subset`, or `element` object.
-```
-int findlocalsubsetindex (string label)
-``` <smooth-findlocalsubsetindex> #vs
+#bl[
+  #show: columns.with(2, gutter: 0pt)
+  ```
+  int findlocalsubsetindex (string label)
+  ``` <smooth-findlocalsubsetindex>
+  #colbreak()
+  ```
+  int findlocalelementindex (string label)
+  ``` <smooth-findlocalelementindex>
+] #vs
 Locate a subset of `this` by its label and return its index.
 
 As a final step, module `smoothmanifold` defines a number of conversion routines to find objects by label:
@@ -1709,7 +1716,7 @@ Moreover, there are overloaded versions of `draw`: #vs
       smooth[] sms,
       dpar dspec = null
   )
-  ```
+  ``` <smooth-draw-spec>
   #colbreak()
   ```
   void draw (
@@ -1717,7 +1724,7 @@ Moreover, there are overloaded versions of `draw`: #vs
       dpar dspec = null
       ... smooth[] sms
   )
-  ```
+  ``` <smooth-draw-spec-dots>
 ]
 
 == Set operations on `smooth` objects
@@ -1935,7 +1942,11 @@ struct globalconfig {
 private globalconfig defaultconfig;
 globalconfig config;
 ``` <config> #vs
-The `defaultconfig` instance contains all default values, while `config` contains all _current_ values, which can be changed directly at any time in the Asymptote code. Functions and methods feature default argument values that borrow from `config`, never `defaultconfig`. This way, a convenient configuration system is created, where all functions are aware of the flexible current `config`, and the defaults can be easily restored by deeply copying `defaultconfig` to `config`. We will now define in detail the member structures of `config`.
+The `defaultconfig` instance contains all default values, while `config` contains all _current_ values, which can be changed directly at any time in the Asymptote code. Functions and methods feature default argument values that borrow from `config`, never `defaultconfig`. This way, a convenient configuration system is created, where all functions are aware of the flexible current `config`, and the defaults can be easily restored by deeply copying `defaultconfig` to `config`, by means of the #vs
+```
+void defaults ()
+``` <config-defaults> #vs
+function. We will now define in detail the member structures of `config`.
 
 == System variables <sc-config-system>
 
@@ -2041,7 +2052,7 @@ A structure to hold all smooth object-related variables, whose meanings are as f
 - `rejectcurve` --- this value is passed to `curvedpath` @path-curvedpath when constructing curves to determine which inter-hole sections to draw and which not to. This is done by checking if the curves intersect with any holes or subsets;
 - `edgemargin` --- no point in explaining, let this one remain a mystery. If you REALLY need to know what this does, go see the source code...
 - `stepdistance` --- same;
-- `nodesize` --- the default value of the `size` parameter in the `node` TODO function;
+- `nodesize` --- the default value of the `size` parameter in the `node` @smooth-node function;
 - `maxlength` --- a parameter dependent on `maxsectionlength`, should not be set manually;
 - `inferlabels` --- the default value of the `inferlabels` parameter passed to `addsubset` @smooth-addsubset and its derivatives;
 - `addsubsets` --- the default value to pass to the `intersection` @smooth-intersection function and its derivatives;
@@ -2202,17 +2213,124 @@ void smooth.checkelementindex (int index, string fname)
 ``` <smooth-checkelementindex> #vs
 Check if `this` has a element at index `index`. The `fname` parameter is used for debugging purposes -- it contains the name of the function that is calling `checkelementindex`.
 
+```
+smooth[] drawintersect (
+    picture pic = currentpicture,
+    smooth sm1,
+    smooth sm2,
+    string label = config.system.dummystring,
+    pair labeldir = config.system.dummypair,
+    pair labelalign = config.system.dummypair,
+    bool keepdata = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff,
+    pair shift = (0,0),
+    dpar dspec = null
+)
+``` <smooth-drawintersect> #vs
+Draw the `intersection` @smooth-intersection of `sm1` and `sm2` and return it, while also drawing the faint silhouettes of `sm1` and `sm2` themselves. Remaining arguments:
+- `label`, `labeldir` and `labelalign` --- these are passed as fields to the intersection object(s);
+- `round` and `roundcoeff` --- passed to `intersection` @path-intersection
+- `shift` --- allows to additionally shift the involved objects.
+
+The `drawintersect` <smooth-drawintersect-spec> function has overloaded versions that accept `smooth[]` and `... smooth[]` arguments.
+
+```
+smooth node (
+    string label,
+    pair pos = (0,0),
+    real size = config.smooth.nodesize
+)
+``` <smooth-node> #vs
+Produce a `smooth` object with label `label` that can be used as a node in a commutative diagram @smooth-drawcommuting. The object will be positioned as `pos` and have the size `size`. Moreover, there is a special `dpar` instance for drawing nodes: #vs
+```
+dpar nodepar (pen labelpen = currentpen)
+``` <smooth-nodepar>
+
+```
+void drawcommuting (
+    picture pic = currentpicture,
+    smooth[] sms,
+    real size = config.smooth.nodesize*.5,
+    pen p = currentpen,
+    bool direction = CW
+)
+``` <smooth-drawcommuting> #vs
+Draw all objects in the `sms` array (all presumably generated by `node` @smooth-node) and draw a "commutative diagram symbol" in the center of the diagram, like so:
+#example(
+  image("resources/drawcommuting-showcase.svg"),
+  ```
+  config.system.insertdollars = true;
+  smooth a = node("A", pos = (0,0));
+  smooth fa = node("F(A)", (5,2));
+  smooth g = node("\forall G", (4,-3));
+
+  draw(a, fa, g, dspec = nodepar());
+  drawarrow(a, fa, L = Label("\varphi", align = Relative(W)));
+  drawarrow(g, a, L = Label("\forall f", align = Relative(W)));
+  drawarrow(g, fa, p = dashed, L = Label("\exists!", align = Relative(E)));
+  drawcommuting(g, a, fa, size = .7);
+  ```,
+  [A showcase of the `drawcommuting` function]
+)
+
+```
+element[] elementcopy (element[] elements)
+``` <smooth-elementcopy> #vs
+Deeply copy an array of `element` structures.
+
+```
+int[] findbylabel (string label)
+``` <smooth-findbylabel> #vs
+A fully general label identification function that returns an index path to either a smooth object or its subset/element with a label matching `label`.
+
+```
+hole[] holecopy (hole[] holes)
+``` <smooth-holecopy> #vs
+Deeply copy an array of `hole` structures.
+
+```
+path[] holecontours (hole[] h)
+{ return sequence(new path (int i){return h[i].contour;}, h.length); }
+``` <smooth-holecontours> #vs
+Return the contours of an array of `hole` objects.
+
 == Array utilities
 
 ```
 path[] c (... path[] source) { return source; }
+path[][] dc (... path[][] source) { return source; }
+path[][] cc (... path[] source) { return new path[][]{source}; }
 ``` <misc-c> #vs
-An R-style convenience function, for those who are tired of writing `new path[]{}`.
+R-style convenience functions for paths, for those who are tired of writing `new path[]`.
 
 ```
-path[][] cc (... path[] source) { return new path[][]{source}; }
-``` <misc-cc> #vs
-A convenient replacement of `new path[][]{{}}`.
+real[] r (... real[] source) { return source; }
+real[][] dr (... real[][] source) { return source; }
+real[][] rr (... real[] source) { return new real[][]{source}; }
+``` <misc-r> #vs
+R-style convenience functions for reals, for those who are tired of writing `new real[]`.
+
+```
+pair[] p (... pair[] source) { return source; }
+pair[][] dp (... pair[][] source) { return source; }
+pair[][] pp (... pair[] source) { return new pair[][]{source}; }
+``` <misc-p> #vs
+R-style convenience functions for pairs, for those who are tired of writing `new pair[]`.
+
+```
+int[] i (... int[] source) { return source; }
+int[][] di (... int[][] source) { return source; }
+int[][] ii (... int[] source) { return new int[][]{source}; }
+``` <misc-i> #vs
+R-style convenience functions for integers, for those who are tired of writing `new int[]`.
+
+```
+string[] s (... string[] source) { return source; }
+string[][] ds (... string[][] source) { return source; }
+string[][] ss (... string[] source) { return new string[][]{source}; }
+``` <misc-s> #vs
+R-style convenience functions for strings, for those who are tired of writing `new string[]`.
 
 ```
 pair[] concat (pair[][] a)
@@ -2229,12 +2347,50 @@ bool contains (int[] source, int a)
 ``` <misc-contains> #vs
 Check if `source` contains `a`.
 
+```
+int[] difference (int[] a, int[] b)
+``` <misc-difference> #vs
+Calculate the set difference of two arrays of integers.
+
 == Other routines
 
 ```
 pair comb (pair a, pair b, real t) { return t*b + (1-t)*a;}
 ``` <misc-comb> #vs
 A convex combination between `a` and `b` with time `t`.
+
+```
+transform dscale (real scale, pair dir, pair center = (0,0))
+``` <misc-dscale> #vs
+Return a transform that scales by `scale` in direction `dir`, with center in `center`.
+
+```
+bool inside (real a, real b, real c)
+{ return (a <= c && c <= b); }
+``` <misc-inside> #vs
+Determine if `c` lies in the segment `[a,b]`.
+
+```
+path[] intersection (
+    path p,
+    path q,
+    path[] holes,
+    bool correct = true,
+    bool round = false,
+    real roundcoeff = config.paths.roundcoeff
+)
+``` <misc-intersection-holes> #vs
+A version of `intersection` @path-set-intersection, but it subtracts all members of `holes` from the intersection of `p` and `q`, using `difference` @path-set-difference.
+
+```
+pen inverse (pen p)
+``` <misc-inverse> #vs
+Derive the "inverse" or "negative" pen from `p`.
+
+```
+real mod (real a, real b)
+``` <misc-mod> #vs
+Calculate `a` modulo `b` by subtracting `b` until the result falls between `0` and `b`.
 
 = Index <sc-index>
 
@@ -2245,62 +2401,177 @@ A convex combination between `a` and `b` with time `t`.
 }
 #let e = { h(.5em); math.arrow.long; h(.5em) }
 #set raw(lang: none)
+// #set enum(numbering: "1.")
 
 #section("A")[
-  + `struct arrowconfig` #e @config-arrow\
-  + `real arclength (path, real, real)` #e @path-arclength\
-  + `path arcsubpath (path, real, real)` #e @path-arcsubpath\
-  + `transform smooth.adjust (int)` #e @smooth-adjust\
-  + `smooth smooth.addelement (element, int, bool)` #e @smooth-addelement\
-  + `smooth smooth.addelement (pair, string, pair, int, bool)` #e @smooth-addelement-spec\
-  + `smooth smooth.addhole (hole, int, bool, bool)` #e @smooth-addhole\
-  + `smooth smooth.addhole (path, pair, real[][], pair, real, real, pair, bool, bool)` #e @smooth-addhole-spec\
-  + `smooth smooth.addholes (hole[], bool, bool)` #e @smooth-addholes\
-  + `smooth smooth.addholes (bool, bool ... hole[])` #e @smooth-addholes\
-  + `smooth smooth.addholes (path[], bool, bool)` #e @smooth-addholes-spec\
-  + `smooth smooth.addholes (bool, bool ... path[])` #e @smooth-addholes-spec\
-  + `smooth smooth.addsection (int, real[])` #e @smooth-addsection\
-  + `smooth smooth.addsubset (subset, int, bool, bool, bool, bool)` #e @smooth-addsubset\
-  + `smooth smooth.addsubset (int, path, pair, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-spec\
-  + `smooth smooth.addsubset (string, subset, bool, bool, bool)` #e @smooth-addsubset-label\
-  + `smooth smooth.addsubset (string, path, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-label\
-  + `smooth smooth.addsubsets (subset[], int, bool, bool, bool)` #e @smooth-addsubsets\
-  + `smooth smooth.addsubsets (int, bool, bool, bool ... subset[])` #e @smooth-addsubsets\
-  + `smooth smooth.addsubsets (path[], int, bool, bool, bool)` #e @smooth-addsubsets-spec\
-  + `smooth smooth.addsubsets (int, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec\
-  + `smooth smooth.addsubsets (string, subset[], bool, bool, bool)` #e @smooth-addsubsets\
-  + `smooth smooth.addsubsets (string, bool, bool, bool ... subset[])` #e @smooth-addsubsets\
-  + `smooth smooth.addsubsets (string, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec\
-  + `smooth smooth.attach (smooth)` #e @smooth-attach\
+  + `struct arrowconfig` #e @config-arrow
+  + `real arclength (path, real, real)` #e @path-arclength
+  + `path arcsubpath (path, real, real)` #e @path-arcsubpath
+  + `transform smooth.adjust (int)` #e @smooth-adjust
+  + `smooth smooth.addelement (element, int, bool)` #e @smooth-addelement
+  + `smooth smooth.addelement (pair, string, pair, int, bool)` #e @smooth-addelement-spec
+  + `smooth smooth.addhole (hole, int, bool, bool)` #e @smooth-addhole
+  + `smooth smooth.addhole (path, pair, real[][], pair, real, real, pair, bool, bool)` #e @smooth-addhole-spec
+  + `smooth smooth.addholes (hole[], bool, bool)` #e @smooth-addholes
+  + `smooth smooth.addholes (bool, bool ... hole[])` #e @smooth-addholes
+  + `smooth smooth.addholes (path[], bool, bool)` #e @smooth-addholes-spec
+  + `smooth smooth.addholes (bool, bool ... path[])` #e @smooth-addholes-spec
+  + `smooth smooth.addsection (int, real[])` #e @smooth-addsection
+  + `smooth smooth.addsubset (subset, int, bool, bool, bool, bool)` #e @smooth-addsubset
+  + `smooth smooth.addsubset (int, path, pair, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-spec
+  + `smooth smooth.addsubset (string, subset, bool, bool, bool)` #e @smooth-addsubset-label
+  + `smooth smooth.addsubset (string, path, pair, real, real, pair, string, pair, pair, bool, bool, bool)` #e @smooth-addsubset-label
+  + `smooth smooth.addsubsets (subset[], int, bool, bool, bool)` #e @smooth-addsubsets
+  + `smooth smooth.addsubsets (int, bool, bool, bool ... subset[])` #e @smooth-addsubsets
+  + `smooth smooth.addsubsets (path[], int, bool, bool, bool)` #e @smooth-addsubsets-spec
+  + `smooth smooth.addsubsets (int, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec
+  + `smooth smooth.addsubsets (string, subset[], bool, bool, bool)` #e @smooth-addsubsets
+  + `smooth smooth.addsubsets (string, bool, bool, bool ... subset[])` #e @smooth-addsubsets
+  + `smooth smooth.addsubsets (string, bool, bool, bool ... path[])` #e @smooth-addsubsets-spec
+  + `smooth smooth.attach (smooth)` #e @smooth-attach
 ]
 
 #section("B")[
-  + `pen brighen (pen, real)` #e @pen-subsets\
+  + `pen brighen (pen, real)` #e @pen-subsets
 ]
 
 #section("C")[
-  + `pair center (path, int, bool, bool)` #e @path-center\
-  + `pair comb (pair, pair, real)` #e @misc-comb\
-  + `path[] c (... path[])` #e @misc-c\
-  + `path[][] cc (... path[])` #e @misc-cc\
-  + `pair[] concat (pair[][])` #e @misc-concat-pair\
-  + `path[] concat (path[][])` #e @misc-concat-path\
-  + `bool contains (int[], int)` #e @misc-contains\
-  + `bool clockwise (path)` #e @path-clockwise\
-  + `path curvedpath (pair, pair, real, bool)` #e @path-curvedpath\
-  + `path cyclepath (pair, real, real)` #e @path-curvedpath\
-  + `path connect (pair[])` #e @path-connect\
-  + `path connect (... pair[])` #e @path-connect\
-  + `path connect (path, path)` #e @path-connect-pq\
-  + `path[] combination (path, path, int, bool, real)` #e @path-combination\
-  + `bool checksection (real[])` #e @smooth-checksection\
-  + `pair[][] cartsectionpoints (path[], real, bool)` #e @smooth-cartsectionpoints\
-  + `pair[][] cartsections (path[], path[], real, bool)` #e @smooth-cartsections\
-  + `element element.copy ()` #e @element-copy\
-  + `hole hole.copy ()` #e @hole-copy\
-  + `subset subset.copy ()` #e @subset-copy\
-  + `smooth smooth.copy ()` #e @smooth-copy\
-  + `void smooth.checksubsetindex (int, string)` #e @smooth-checksubsetindex\
-  + `void smooth.checkelementindex (int, string)` #e @smooth-checkelementindex\
-  + `smooth[] concat (smooth[][])` #e @smooth-concat\
+  + `pair center (path, int, bool, bool)` #e @path-center
+  + `pair comb (pair, pair, real)` #e @misc-comb
+  + `path[] c (... path[])` #e @misc-c
+  + `path[][] cc (... path[])` #e @misc-c
+  + `pair[] concat (pair[][])` #e @misc-concat-pair
+  + `path[] concat (path[][])` #e @misc-concat-path
+  + `bool contains (int[], int)` #e @misc-contains
+  + `bool clockwise (path)` #e @path-clockwise
+  + `path curvedpath (pair, pair, real, bool)` #e @path-curvedpath
+  + `path cyclepath (pair, real, real)` #e @path-curvedpath
+  + `path connect (pair[])` #e @path-connect
+  + `path connect (... pair[])` #e @path-connect
+  + `path connect (path, path)` #e @path-connect-pq
+  + `path[] combination (path, path, int, bool, real)` #e @path-combination
+  + `bool checksection (real[])` #e @smooth-checksection
+  + `pair[][] cartsectionpoints (path[], real, bool)` #e @smooth-cartsectionpoints
+  + `pair[][] cartsections (path[], path[], real, bool)` #e @smooth-cartsections
+  + `element element.copy ()` #e @element-copy
+  + `hole hole.copy ()` #e @hole-copy
+  + `subset subset.copy ()` #e @subset-copy
+  + `smooth smooth.copy ()` #e @smooth-copy
+  + `void smooth.checksubsetindex (int, string)` #e @smooth-checksubsetindex
+  + `void smooth.checkelementindex (int, string)` #e @smooth-checkelementindex
+  + `smooth[] concat (smooth[][])` #e @smooth-concat
+]
+
+#section("D")[
+  + `transform dscale (real, pair, pair)` #e @misc-dscale
+  + `real[][] dr (... real[][])` #e @misc-r
+  + `pair[][] dp (... pair[][])` #e @misc-p
+  + `int[][] di (... int[][])` #e @misc-i
+  + `path[][] dc (... path[][])` #e @misc-c
+  + `string[][] ds (... string[][])` #e @misc-s
+  + `int[] difference (int[], int[])` #e @misc-difference
+  + `path[] difference (path, path, bool, bool, real)` #e @path-set-difference
+  + `path[] difference (path[], path, bool, bool, real)` #e @path-set-difference
+  + `bool dummy (int)` #e @config-dummy-int
+  + `bool dummy (real)` #e @config-dummy-real
+  + `bool dummy (pair)` #e @config-dummy-pair
+  + `bool dummy (string)` #e @config-dummy-string
+  + `pen dashpenscale (pen)` #e @pen-sections
+  + `pen dashopacity (pen)` #e @pen-sections
+  + `pen dashpen (pen)` #e @pen-sections
+  + `void defaults ()` #e @config-defaults
+  + `void smooth.drawextra (dpar, smooth)` #e @smooth-smooth
+  + `smooth smooth.dirscale (pair, real)` #e @smooth-dirscale
+  + `void drawsections (picture, pair[][], pair, bool, bool, bool, real, pen, pen, pen)` #e @smooth-drawsections
+  + `void drawcartsections (picture, path[], path[], real, bool, pair, bool, bool, bool, real, pen, pen, pen)` #e @smooth-drawcartsections
+  + `void draw (picture, smooth, dpar)` #e @smooth-draw
+  + `void draw (picture, smooth[], dpar)` #e @smooth-draw-spec
+  + `void draw (picture, dpar ... smooth[])` #e @smooth-draw-spec-dots
+  + `smooth[] drawintersect (picture, smooth, smooth, string, pair, pair, bool, bool, real, pair, dpar)` #e @smooth-drawintersect
+  + `smooth[] drawintersect (picture, smooth[], string, pair, pair, bool, bool, real, pair, dpar)` #e @smooth-drawintersect-spec
+  + `smooth[] drawintersect (picture, string, pair, pair, bool, bool, real, pair, dpar ... smooth[])` #e @smooth-drawintersect-spec
+  + `void drawcommuting (picture, smooth[], real, pen, bool)` #e @smooth-drawcommuting
+  + `void drawcommuting (picture, real, pen, bool ... smooth[])` #e @smooth-drawcommuting
+  + `void drawarrow (picture, smooth, int, pair, smooth, int, pair, bool, real, real, real, bool, pair[], Label, pen, tarrow, tbar, bool, bool, bool, real, real)` #e @smooth-drawarrow
+  + `void drawarrow (picture, string, string, real, real, real, bool, pair[], Label, pen, tarrow, tbar, bool, bool, bool, real, real)` #e @smooth-drawarrow-label
+  + `void drawpath (picture, smooth, int, smooth, int, real, real, real, bool, pair[], Label, pen, bool, bool, bool, bool)` #e @smooth-drawpath
+  + `void drawpath (picture, string, string, real, real, real, bool, pair[], Label, pen, bool, bool, bool, bool)` #e @smooth-drawpath-label
+  + `void drawdeferred (picture, bool)` #e @def-drawdeferred
+]
+
+#section("E")[
+  + `path ellipsepath (pair, pair, real, bool)` #e @path-ellipsepath
+  + `pen elementpen (pen)` #e @pen-elements
+  + `element[] elementcopy (element[])` #e @smooth-elementcopy
+  + `dpar emptypar ()` #e @dpar-emptypar
+  + `int extractdeferredindex (picture)` #e @def-extractdeferredindex
+  + `deferredPath[] extractdeferredpaths (picture, bool)` #e @def-extractdeferredpaths
+]
+
+#section("F")[
+  + `int smooth.findlocalsubsetindex (string)` #e @smooth-findlocalsubsetindex
+  + `int smooth.findlocalelementindex (string)` #e @smooth-findlocalelementindex
+  + `smooth fit (int, picture, picture, pair)` #e @smooth-fit
+  + `int findsmoothindex (string)` #e @smooth-findindex
+  + `smooth findsm (string)` #e @smooth-find
+  + `int findsubsetindex (string)` #e @smooth-findindex
+  + `subset findsb (string)` #e @subset-find
+  + `int findelementindex (string)` #e @smooth-findindex
+  + `subset findelt (string)` #e @element-find
+  + `int[] findbylabel (string)` #e @smooth-findbylabel
+  + `void fitpath (picture, path, bool, int, bool, Label, pen, tarrow, tbar)` #e @def-fitpath
+  + `void fitpath (picture, path, bool, int, Label, pen, bool, tarrow, tbar)` #e @def-fitpath-spec
+  + `void fitpath (picture, guide, bool, int, Label, pen, bool, tarrow, tbar)` #e @def-fitpath-spec
+  + `void fitpath (picture, path[], bool, int, Label, pen, bool)` #e @def-fitpath-spec
+  + `void fillfitpath (picture, path, bool, int, Label, pen, pen, bool)` #e @def-fillfitpath
+  + `void fillfitpath (picture, path[], bool, int, Label, pen, pen, bool)` #e @def-fillfitpath
+  + `void flushdeferred (picture)` #e @def-flushdeferred
+]
+
+#section("G")[
+  + `dpar ghostpar (pen)` #e @dpar-ghostpar
+  + `real smooth.getyratio (real)` #e @smooth-get-ratio-point
+  + `real smooth.getxratio (real)` #e @smooth-get-ratio-point
+  + `real smooth.getypoint (real)` #e @smooth-get-ratio-point
+  + `real smooth.getxpoint (real)` #e @smooth-get-ratio-point
+  + `path[] getdeferredpaths (picture)` #e @def-getdeferredpaths
+]
+
+#section("H")[
+  + `void halt (string)` #e @debug-halt
+  + `hole[] holecopy (hole[])` #e @smooth-holecopy
+  + `path[] holecontours (hole[])` #e @smooth-holecontours
+]
+
+#section("I")[
+  + `bool inside (real, real, real)` #e @misc-inside
+  + `bool insidepath (path, path)` #e @path-insidepath
+  + `int[] i (... int[])` #e @misc-i
+  + `int[][] ii (... int[])` #e @misc-i
+  + `real intersectiontime (path, pair, pair)` #e @path-intersectiontime
+  + `pair intersection (path, pair, pair)` #e @path-intersection
+  + `path[] intersection (path, path, bool, bool, real)` #e @path-set-intersection
+  + `path[] intersection (path[], bool, bool, real)` #e @path-set-intersection-array
+  + `path[] intersection (bool, bool, real ... path[])` #e @path-set-intersection-array-dots
+  + `path[] intersection (path, path, path[], bool, bool, real)` #e @misc-intersection-holes
+  + `pen inverse (p)` #e @misc-inverse
+  + `bool smooth.inside (pair)` #e @smooth-inside
+  + `smooth[] intersection (smooth, smooth, bool, bool, real, bool)` #e @smooth-intersection
+  + `smooth[] intersection (smooth[], bool, bool, real, bool)` #e @smooth-intersection
+  + `smooth[] intersection (bool, bool, real, bool ... smooth[])` #e @smooth-intersection
+  + `smooth intersect (smooth[], bool, bool, real, bool)` #e @smooth-intersect
+  + `smooth intersect (bool, bool, real, bool ... smooth[])` #e @smooth-intersect
+]
+
+#section("J")[ --- ]
+
+#section("K")[ --- ]
+
+#section("L")[ --- ]
+
+#section("M")[
+  - `real mod (real, real)` #e @misc-mod
+  - `bool meet (path, path)` #e @path-meet
+  - `bool meet (path, path[])` #e @path-meet
+  - `bool meet (path[], path[])` #e @path-meet
 ]
