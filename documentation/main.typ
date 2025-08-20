@@ -123,7 +123,7 @@ In higher mathematics, diagrams often take the form of "blobs" (representing set
   caption: [The proof of the Baire category theorem (topology)]
 ) <baire>
 
-Take special note of the gaps that arrows leave on the boundaries of the ovals on @injection. I find this feature quite hard to achieve in plain Asymptote, and module `smoothmanifold` uses some dark magic to implement it. Similarly, note the shaded areas on @baire. They represent intersections of areas bounded by two paths. Finding the bounding path of such an intersection is non-trivial and also implemented in `smoothmanifold`. Lastly, @tangent shows a three-dimensional surface, while the picture was fully drawn in 2D. The illusion is achieved through these cross-sectional "rings" on the left of the diagram.\
+Take special note of the gaps that arrows leave on the boundaries of the ovals in @injection. I find this feature quite hard to achieve in plain Asymptote, and module `smoothmanifold` uses some dark magic to implement it. Similarly, note the shaded areas in @baire. They represent intersections of areas bounded by two paths. Finding the bounding path of such an intersection is non-trivial and also implemented in `smoothmanifold`. Lastly, @tangent shows a three-dimensional surface, while the picture was fully drawn in 2D. The illusion is achieved through these cross-sectional "rings" on the left of the diagram.\
 To summarize, the most prominent features of module `smoothmanifold` are the following:
 
 - *Gaps in overlapping paths*, achieved through a system of deferred drawing;
@@ -795,7 +795,7 @@ Every `smooth` object has a:
 - `holes` --- an array of `hole` structures, each of which has a:
   - `contour` --- the clockwise cyclic boundary of the hole;
   - `center` --- the center of the hole, typically calculated automatically by `center(contour)` @path-center;
-  - `sections` --- a two-dimensional array that determines where to draw the cross sections seen on @tangent. For a detailed description, see @sc-smooth-modes-free;
+  - `sections` --- a two-dimensional array that determines where to draw the cross sections seen in @tangent. For a detailed description, see @sc-smooth-modes-free;
   - `scnumber` --- the maximum amount of cross sections that the hole allows other holes to share with it. These are sections _between holes,_ not ones between a hole and the contour of the `smooth` object. For details, see @sc-smooth-modes-free;
 - `subsets` --- an array of `subset` structures, each of which has a:
   - `contour` --- the clockwise cyclic boundary of the subset;
@@ -812,7 +812,7 @@ Every `smooth` object has a:
 - `unitadjust` --- a transform that converts from unit coordinates of the smooth object to the global user coordinates (see @sc-smooth-unit);
 - `hratios` and `vratios` --- two arrays that determine where to draw cross sections in the `cartesian` mode. For details, see @sc-smooth-modes-cartesian;
 - `isderivative` --- similarly to `subset`, this field marks those `smooth` objects which are obtained from preexisting objects through operations of intersection, union, etc.;
-- `attached` --- this field allows to bind an array of smooth objects to the current one. Drawing the current object will trigger drawing all of its `attached` objects. For example, the tangent space seen on @tangent is `attached` to the main object;
+- `attached` --- this field allows to bind an array of smooth objects to the current one. Drawing the current object will trigger drawing all of its `attached` objects. For example, the tangent space seen in @tangent is `attached` to the main object;
 - `drawextra` --- a callback to be executed _after the `smooth` object is drawn._ It takes as parameters a drawing configuration of type `dpar` (see @sc-config-drawing) and the current `smooth` object;
 - `static cache` --- a global array of all `smooth` objects constructed so far. It is used mainly to search for smooth objects by label. See @sc-smooth-by-label.
 
@@ -2149,8 +2149,8 @@ struct helpconfig {
 ``` <config-help> #vs
 A structure to hold the few help-related variables, namely
 - `enable` --- whether to enable auxiliary drawing by default;
-- `arcratio` --- the relative radius of the blue arcs seen near the center of the hole on @section-showcase, it may be useful to tweak if the arc covers the number in the center of the hole;
-- `arrowlength` --- the length of auxiliary arrows drawn by the sides of cross sections when `help = true`. A value of `-1` will disable these arrows (like on @section-showcase);
+- `arcratio` --- the relative radius of the blue arcs seen near the center of the hole in @section-showcase, it may be useful to tweak if the arc covers the number in the center of the hole;
+- `arrowlength` --- the length of auxiliary arrows drawn by the sides of cross sections when `help = true`. A value of `-1` will disable these arrows (like in @section-showcase);
 - `linewidth` -- the pen containing the line width to draw help lines with.
 
 == Arrow variables <sc-config-arrow>
@@ -2612,7 +2612,6 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 ]
 
 #section("A")[
-  - `struct arrowconfig` #e @config-arrow
   - `struct arrowconfig` #e @config-arrow
   - `real arclength (path, real, real)` #e @path-arclength
   - `path arcsubpath (path, real, real)` #e @path-arcsubpath
