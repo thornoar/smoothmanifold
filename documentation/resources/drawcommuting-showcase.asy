@@ -11,6 +11,6 @@ smooth g = node("\forall G", (4,-3));
 
 draw(a, fa, g, dspec = nodepar());
 drawarrow(a, fa, L = Label("\varphi", align = Relative(W)));
-drawarrow(g, a, L = Label("\forall f", align = Relative(W)));
+drawarrow(a, g, L = Label("\forall f", align = Relative(E)));
 drawarrow(g, fa, p = dashed, L = Label("\exists!", align = Relative(E)));
 drawcommuting(g, a, fa, size = .7);

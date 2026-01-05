@@ -33,6 +33,17 @@
   rawblock(it)
 }
 
+#let latex = {
+    set text(font: "New Computer Modern")
+    box(width: 2.55em, {
+      [L]
+      place(top, dx: 0.3em, text(size: 0.7em)[A])
+      place(top, dx: 0.7em)[T]
+      place(top, dx: 1.26em, dy: 0.22em)[E]
+      place(top, dx: 1.8em)[X]
+    })
+}
+
 #show figure: it => { v(.5em); it; v(.5em) }
 
 #let example(img, code, caption) = figure(
@@ -103,7 +114,7 @@ This document contains the full description and user manual to the `smoothmanifo
 #set heading(numbering: "1.")
 = Introduction <sc-intro>
 
-In higher mathematics, diagrams often take the form of "blobs" (representing sets and their subsets) placed on the plane, connected with paths or arrows. This is particularly true for set theory and topology, but other more advanced fields inherit this style. In differential geometry and multivariate calculus, one draws spheres, tori, and other surfaces in place of these "blobs". In category theory, commutative diagrams are commonplace, where the "blobs" are replaced by symbols. Here are a couple of examples, all drawn with `smoothmanifold`:
+In higher mathematics, diagrams often take the form of "blobs" (representing sets and their subsets) placed on the plane, connected with paths or arrows. This is particularly true for set theory and topology, but other, more advanced fields inherit this style. In differential geometry and multivariate calculus, one draws spheres, tori, and other surfaces in place of these "blobs". In category theory, commutative diagrams are commonplace, where the "blobs" are replaced by symbols. Here are a couple of examples, all drawn with `smoothmanifold`:
 
 #[
   #show: columns.with(2, gutter: 0%)
@@ -215,11 +226,11 @@ These structures store information about the arrow/bar, and are converted to reg
   )
   ``` <def-tbar-func>
 ]
-The `overridebegin` and `overrideend` options let the user force disable the arrow/bar at the beginning/end of the path.
+The `overridebegin` and `overrideend` options let the user force-disable the arrow/bar at the beginning/end of the path.
 
 == The `fitpath` function <sc-def-fitpath>
 
-This is a substitute for the plain `draw` function. The `fitpath` function implements steps 1-4 of the deferred drawing system describes above.
+This is a substitute for the plain `draw` function. The `fitpath` function implements steps 1-4 of the deferred drawing system described above.
 
 ```
 void fitpath (picture pic, path gs, bool overlap, int covermode, bool drawnow, Label L, pen p, tarrow arrow, tbar bar)
@@ -229,7 +240,7 @@ Arguments:
 - `gs` --- the path to fit;
 - `overlap` --- whether to let the path overlap the previously fit paths. A value of `false` will lead to gaps being left in all paths that `gs` intersects;
 - `covermode` --- if the path `gs` is cyclic, this option lets you decide what happens to the parts of previously fit paths that fall "inside" of `gs`. Suppose a portion `s` of another path falls inside the cyclic path `gs`. Then
-  - `covermode == 2`: The portion `s` will be erased completely;
+  - `covermode == 2`: The portion `s` will be erased completely, "covered" by `gs`;
   - `covermode == 1`: The portion `s` will be "demoted to the background" --- either temporarily removed or drawn with dashes;
   - `covermode == 0`: The portion `s` will be drawn like the rest of the path;
   - `covermode == -1`: If the portion `s` is "demoted", it will be brought "back to the surface", i.e. drawn with solid pen. Otherwise, it will be draw as-is.
@@ -1067,7 +1078,7 @@ smooth addsubset (
 Add a new subset to `this`. The meaning of the arguments is as follows:
 - `sb` --- the subset to add;
 - `index` --- the index of another, preexisting subset of `this`, such that `sb` should be made a subset of `this.subsets[index]`. If `index` is `-1`, then `sb` is considered a toplevel subset until found otherwise by containment checks. Essentially, the `index` parameter saves the algorithm some work figuring out where to fit `sb` in the subset hierarchy. See @sc-smooth-subset for more explanation;
-- `inferlabels` --- if set to `true`, the intersection subsets arising from the addition of `sb` will be given labels like `"$A \cap B$"`, given that some subsets have labels `"$A$"` and `"$B$"`;
+- `inferlabels` --- if set to `true`, the intersection subsets arising from the addition of `sb` will be given labels like `"A \cap B"`, given that some subsets have labels `"A"` and `"B"`. This only works if the `config.system.insertdollars` (see @sc-config-system) option is set to `true`;
 - `clip` --- if set to `false`, this leads to an error whenever `sb`'s contour is out of bounds with `this` object's contour. If `clip` is set to true, then `sb`'s contour is clipped instead, and its `isonboundary` field is set to `true`;
 - `unit` --- as usual, setting this to `true` leads to `sb` being interpreted in `this` object's unit coordinates, see @sc-smooth-unit;
 - `checkintersection` --- if set to `false`, the routine will _not_ perform out-of-bounds checks. This can significantly increase efficiency when the user is confident in the correctness of the call. But then you only have yourself to blame when your subsets are sticking out of your smooth objects!
@@ -1161,7 +1172,6 @@ smooth movesubset (
     bool bounded = true,
     bool clip = config.smooth.clip,
     bool inferlabels = config.smooth.inferlabels,
-    bool keepview = true
 )
 ``` <smooth-movesubset> #vs
 Move the subset at index `index` (say, `sb`), scaling and rotating it around `point`, and then shifting it by `shift`. The meaning of the `bool` parameters is as follows:
@@ -1207,9 +1217,9 @@ real ysize () { return ysize(this.contour); }
 Calculate the vertical and horizontal size of `this`.
 
 ```
-subset move (transform move)
+subset move (transform t)
 ``` <subset-move> #vs
-Move `this` by applying `move` to its `contour`.
+Move `this` by applying `t` to its `contour`.
 
 ```
 subset move (pair shift, real scale, real rotate, pair point, bool movelabel)
@@ -1231,9 +1241,9 @@ Perform a deep copy of `this` and return the copy, or deeply copy all fields of 
 === `hole` objects
 
 ```
-hole move (transform move)
+hole move (transform t)
 ``` <hole-move> #vs
-Move `this` by applying `move` to the hole's `contour`.
+Move `this` by applying `t` to the hole's `contour`.
 
 ```
 hole move (pair shift, real scale, real rotate, pair point, bool movesections)
@@ -1255,9 +1265,9 @@ Perform a deep copy of `this` and return the copy, or deeply copy all fields of 
 === `element` objects
 
 ```
-element move (transform move)
+element move (transform t)
 ``` <element-move> #vs
-Move `this` by applying `move` to the element's `contour`.
+Move `this` by applying `t` to the element's `contour`.
 
 ```
 element move (pair shift, real scale, real rotate, pair point, bool movelabel)
@@ -1415,8 +1425,7 @@ smooth movesubset (
     bool recursive = true,
     bool bounded = true,
     bool clip = config.smooth.clip,
-    bool inferlabels = config.smooth.inferlabels,
-    bool keepview = true
+    bool inferlabels = config.smooth.inferlabels
 )
 ``` <smooth-movesubset-label> #vs
 A label-based alternative of `movesubset` @smooth-movesubset.
@@ -2358,7 +2367,7 @@ Return the contours of an array of `hole` objects.
 ```
 void phantom (picture pic = currentpicture, smooth sm)
 ``` <smooth-phantom> #vs
-Inspired by T#sub[E]X's `\phantom` commands, this takes the space on the plane that `sm` would take, without actually drawing it.
+Inspired by #latex's `\phantom` commands, this takes the space on the plane that `sm` would take, without actually drawing it.
 
 ```
 smooth rn (

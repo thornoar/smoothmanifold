@@ -63,7 +63,7 @@ struct smoothconfig {
     real stepdistance = .15; // same...
     real nodesize = 1; // the size of nodes.
     real maxlength; // fuck my life...
-    bool inferlabels = true; // whether to create labels like "A \cap B" on intersection.
+    bool inferlabels = true; // whether to create labels like "A \cap B" on intersection. This only works when `system.insertdollars` is `true`.
     bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
     bool correct = true;
     bool clip = false;
@@ -1504,9 +1504,9 @@ struct element
 
     // Methods
 
-    element move (transform move)
+    element move (transform t)
     {
-        this.pos = move*this.pos;
+        this.pos = t*this.pos;
 
         return this;
     }
@@ -1559,20 +1559,20 @@ struct hole
 
     // Methods
 
-    hole move (transform move)
+    hole move (transform t)
     {
-        this.contour = move*this.contour;
-        if (!dummy(this.center)) this.center = move*this.center;
+        this.contour = t*this.contour;
+        if (!dummy(this.center)) this.center = t*this.center;
 
         return this;
     }
     hole move (pair shift, real scale, real rotate, pair point, bool movesections)
     // Shift, scale, rotate around a point.
     {
-        transform move = shift(shift)*srap(scale, rotate, point);
+        transform t = shift(shift)*srap(scale, rotate, point);
 
-        this.contour = move*this.contour;
-        if (!dummy(this.center)) this.center = move*this.center;
+        this.contour = t*this.contour;
+        if (!dummy(this.center)) this.center = t*this.center;
 
         if (!movesections) return this;
         for (int i = 0; i < this.sections.length; ++i)
@@ -1663,18 +1663,18 @@ struct subset
     real ysize ()
     { return ysize(this.contour); }
 
-    subset move (transform move)
+    subset move (transform t)
     {
-        this.contour = move*this.contour;
-        if (!dummy(this.center)) this.center = move*this.center;
+        this.contour = t*this.contour;
+        if (!dummy(this.center)) this.center = t*this.center;
 
         return this;
     }
     subset move (pair shift, real scale, real rotate, pair point, bool movelabel)
     {
-        transform move = shift(shift)*srap(scale, rotate, point);
-        this.contour = move*this.contour;
-        if (!dummy(this.center)) this.center = move*this.center;
+        transform t = shift(shift)*srap(scale, rotate, point);
+        this.contour = t*this.contour;
+        if (!dummy(this.center)) this.center = t*this.center;
         if (movelabel) this.labeldir = rotate(rotate)*this.labeldir;
 
         return this;
@@ -1755,7 +1755,7 @@ subset[] subsetintersection (subset sb1, subset sb2, bool inferlabels = config.s
         return subset(
             contour = contours[i],
             center = center(contours[i]),
-            label = (inferlabels && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
+            label = (inferlabels && config.system.insertdollars && length(sb1.label) > 0 && length(sb2.label) > 0 && contours.length == 1) ? (sb1.label + " \cap " + sb2.label) : "",
             labeldir = (0,0),
             labelalign = config.system.dummypair,
             layer = max(sb1.layer, sb2.layer)+1,
@@ -2771,8 +2771,8 @@ struct smooth
         bool movesections = false
     )
     {
-        transform move = srap(scale, rotate, point) * shift(shift);
-        path newcontour = move * this.holes[index].contour;
+        transform t = srap(scale, rotate, point) * shift(shift);
+        path newcontour = t * this.holes[index].contour;
 
         bool outofbounds = false;
 
@@ -2804,7 +2804,7 @@ struct smooth
 
         hole hl = this.holes[index];
         hl.contour = newcontour;
-        hl.center = move * hl.center;
+        hl.center = t * hl.center;
         if (movesections)
         {
             for (int i = 0; i < hl.sections.length; ++i)
@@ -3283,8 +3283,7 @@ struct smooth
         bool recursive = true,
         bool bounded = true,
         bool clip = config.smooth.clip,
-        bool inferlabels = config.smooth.inferlabels,
-        bool keepview = true
+        bool inferlabels = config.smooth.inferlabels
     )
     {
         this.checksubsetindex(index, "movesubset");
@@ -3433,11 +3432,10 @@ struct smooth
         bool recursive = true,
         bool bounded = true,
         bool clip = config.smooth.clip,
-        bool inferlabels = config.smooth.inferlabels,
-        bool keepview = true
+        bool inferlabels = config.smooth.inferlabels
     )
     {
-        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, clip, inferlabels, keepview);
+        return this.movesubset(findlocalsubsetindex(destlabel), shift, scale, rotate, point, movelabel, recursive, bounded, clip, inferlabels);
     }
 
     // -- Methods for controlling relationships between smooth objects -- //
@@ -4393,7 +4391,7 @@ smooth[] intersection (
 
         smooth cursm = smooth(
             contour = curcontour,
-            label = (config.smooth.inferlabels && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
+            label = (config.smooth.inferlabels && config.system.insertdollars && length(sm1.label) > 0 && length(sm2.label) > 0) ? (sm1.label+" \cap "+sm2.label) : "",
             labeldir = rotate(90)*unit(sm1.center - sm2.center),
             isderivative = true,
             copy = true
