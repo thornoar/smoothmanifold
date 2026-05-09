@@ -90,7 +90,7 @@
 
 #align(center)[
   #set text(size: 17pt)
-  `smoothmanifold.asy - v6.3.1` \ #v(0pt)
+  `smoothmanifold.asy - v6.4.1` \ #v(0pt)
   #set text(size: 18pt)
   Diagrams in higher mathematics with Asymptote\
   #set text(size: 14pt)
@@ -243,7 +243,7 @@ Arguments:
   - `covermode == 2`: The portion `s` will be erased completely, "covered" by `gs`;
   - `covermode == 1`: The portion `s` will be "demoted to the background" --- either temporarily removed or drawn with dashes;
   - `covermode == 0`: The portion `s` will be drawn like the rest of the path;
-  - `covermode == -1`: If the portion `s` is "demoted", it will be brought "back to the surface", i.e. drawn with solid pen. Otherwise, it will be draw as-is.
+  - `covermode == -1`: If the portion `s` is "demoted", it will be brought "back to the surface", i.e. drawn with solid pen. Otherwise, it will be drawn as-is.
   Consider the following example:
   #example(
     image("resources/fitpath-showcase.svg"),
@@ -1680,6 +1680,7 @@ You may have noticed that the `smooth` @smooth-smooth structure contains no info
 - `bool shade` --- the `shade` parameter to pass to `drawsections` @smooth-drawsections or `drawcartsections` @smooth-drawcartsections;
 - `bool avoidsubsets` --- whether to avoid drawing cross sections that intersect with the smooth object's subsets. You can see that on the diagram on the title page of this document, this option was disabled;
 - `bool overlap` --- the `overlap` parameter to pass to `fitpath` @def-fitpath;
+- `bool smoothoverlap` --- whether to erase paths that lie under smooth objects;
 - `bool drawnow` --- the `drawnow` parameter to pass to `fitpath` @def-fitpath;
 - `bool drawextraover` --- whether to apply the `drawextra` function of the smooth object "over" everything else (that is, after drawing the object itself). In other words, if `drawextraover` is `false`, then the `drawextra` will be called in the beginning of drawing the smooth object, otherwise in the end.
 
@@ -2106,6 +2107,7 @@ struct drawingconfig {
     int subsetcovermode = 0;
     bool pathrandom = false;
     bool overlap = false;
+    bool smoothoverlap = true;
     bool drawnow = false;
     bool drawextraover = false;
     bool subsetoverlap = false;
@@ -2113,7 +2115,7 @@ struct drawingconfig {
 }
 ``` <config-drawing> #vs
 A structure to hold drawing-related configuration, encoded in the following variables:
-- `viewdir`, `smoothfill`, `subsetfill`, `sectionpen`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
+- `viewdir`, `smoothfill`, `subsetfill`, `sectionpen`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `smoothoverlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
 - `viewscale` --- a value by which the `viewdir` vector is scale on call of the `draw` @smooth-draw function;
 - `gaplength` --- the default length of the gaps left in `deferredPath` @def-deferredPath objects when the `fitpath` @def-fitpath function is called;
 - `sectpenscale` --- determines how thinner the section pen is compared to `contourpen`;
