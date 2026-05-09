@@ -103,6 +103,7 @@ struct drawingconfig {
     int subsetcovermode = 0;
     bool pathrandom = false;
     bool overlap = false;
+    bool smoothoverlap = true;
     bool drawnow = false;
     bool drawextraover = false;
     bool subsetoverlap = false;
@@ -1245,6 +1246,7 @@ void defaults ()
     config.drawing.subsetcovermode = defaultconfig.drawing.subsetcovermode;
     config.drawing.pathrandom = defaultconfig.drawing.pathrandom;
     config.drawing.overlap = defaultconfig.drawing.overlap;
+    config.drawing.smoothoverlap = defaultconfig.drawing.smoothoverlap;
     config.drawing.subsetoverlap = defaultconfig.drawing.subsetoverlap;
     config.drawing.drawnow = defaultconfig.drawing.drawnow;
     config.drawing.drawextraover = defaultconfig.drawing.drawextraover;
@@ -1910,8 +1912,9 @@ struct dpar
     bool shade;             // Whether to shade the regions between cross sections.
     bool avoidsubsets;      // Whether to refrain from drawing sections that intersect subsets.
     bool overlap;           // Whether to leave gaps where lines intersect.
+    bool smoothoverlap;     // Whether to hide lines that go under the smooth object.
     bool drawnow;           // Whether to draw the object immediately instead of deferring until shipout.
-    bool drawextraover;      // Whether to call `drawextra` after everything else.
+    bool drawextraover;     // Whether to call `drawextra` after everything else.
 
     // Methods
 
@@ -1940,6 +1943,7 @@ struct dpar
         bool shade = config.drawing.shade,
         bool avoidsubsets = config.section.avoidsubsets,
         bool overlap = config.drawing.overlap,
+        bool smoothoverlap = config.drawing.smoothoverlap,
         bool drawnow = config.drawing.drawnow,
         bool drawextraover = config.drawing.drawextraover
     ) // Constructor
@@ -1968,6 +1972,7 @@ struct dpar
         this.shade = shade;
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
+        this.smoothoverlap = smoothoverlap;
         this.drawnow = drawnow;
         this.drawextraover = drawextraover;
     }
@@ -1997,6 +2002,7 @@ struct dpar
         bool shade = this.shade,
         bool avoidsubsets = this.avoidsubsets,
         bool overlap = this.overlap,
+        bool smoothoverlap = this.smoothoverlap,
         bool drawnow = this.drawnow,
         bool drawextraover = this.drawextraover
     ) // Create a new dpar with some attributes changed.
@@ -2025,6 +2031,7 @@ struct dpar
         this.shade = shade;
         this.avoidsubsets = avoidsubsets;
         this.overlap = overlap;
+        this.smoothoverlap = smoothoverlap;
         this.drawnow = drawnow;
         this.drawextraover = drawextraover;
 
@@ -5195,7 +5202,7 @@ void draw (
             {
                 debugpaths.push(contour[i]);
             }
-            fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = 1-2*sgn(i), dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, bar = null);
+            fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = dspec.smoothoverlap ? (1-2*sgn(i)) : 0, dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, bar = null);
         }
     }
 
