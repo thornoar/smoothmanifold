@@ -114,6 +114,10 @@ struct helpconfig {
     real arcratio = 0.2; // the radius of the arc around the center of a hole
     real arrowlength = .2; // the length of help arrows
     pen linewidth = linewidth(.3); // the width of help lines
+    bool drawgrid = false;
+    int gridnumber = 10;
+    int gridplaces = 1;
+    pair gridmarginscale = .1;
 }
 
 // >tarrow | A more descriptive analog of `arrowbar` for arrows
@@ -5948,6 +5952,83 @@ void drawdeferred (
 void flushdeferred (
     picture pic = currentpicture
 ) { extractdeferredpaths(pic, false).delete(); }
+
+void drawgrid (
+    picture pic = currentpicture,
+    int places = config.help.gridplaces,
+    int number = config.help.gridnumber,
+    pair min = pic.userMin2(),
+    pair max = pic.userMax2(),
+    pair margin = (max - min)*config.help.gridmarginscale
+) // Draws an auxiliary coordinate grid on the given picture. It helps understand what coordinates paths have.
+{
+    // pair margin = (max - min)*.1;
+    if (abs(margin.x) > abs(margin.y)) margin = (margin.y, margin.y);
+    else margin = (margin.x, margin.x);
+    min -= margin;
+    max += margin;
+    pair diff = max - min;
+    real lwidth = .2;
+
+    int nx = number, ny = number;
+    if (diff.y < diff.x) nx = floor(ny * (diff.x/diff.y));
+    else ny = floor(nx * (diff.y/diff.x));
+
+    draw(pic = pic, min -- (min.x,max.y) -- max -- (max.x, min.y) -- cycle, dashpen(linewidth(lwidth)));
+
+    gauss count = (1,1);
+    gauss exponent = (0,0);
+
+    while (true)
+    {
+        int nxp = floor(diff.x*10^exponent.x) # count.x;
+        if (nxp == nx) break;
+        if (nxp > nx) { count.x += 1; continue; }
+        if (nxp < nx)
+        {
+            if (exponent.x >= places) break;
+            exponent.x += 1;
+            continue;
+        }
+    }
+    real stepx = count.x/10^exponent.x;
+    real x;
+    for (int i = floor(min.x/stepx)+1; (x = i*stepx) < max.x; ++i)
+    {
+        label(pic = pic, position = (x, min.y), L = (string)x, align = S);
+        label(pic = pic, position = (x, max.y), L = (string)x, align = N);
+        if (x != 0) draw(pic = pic, (x, min.y)--(x, max.y), dashpen(linewidth(lwidth)));
+    }
+    if (inside(min.x, max.x, 0))
+    {
+        draw(pic = pic, (0,min.y)--(0, max.y), currentpen+linewidth(lwidth));
+    }
+
+    while (true)
+    {
+        int nyp = floor(diff.y*10^exponent.y) # count.y;
+        if (nyp == ny) break;
+        if (nyp > ny) { count.y += 1; continue; }
+        if (nyp < ny)
+        {
+            if (exponent.y >= places) break;
+            exponent.y += 1;
+            continue;
+        }
+    }
+    real stepy = count.y/10^exponent.y;
+    real y;
+    for (int i = floor(min.y/stepy)+1; (y = i*stepy) < max.y; ++i)
+    {
+        label(pic = pic, position = (min.x, y), L = (string)y, align = W);
+        label(pic = pic, position = (max.x, y), L = (string)y, align = E);
+        if (y != 0) draw(pic = pic, (min.x, y)--(max.x, y), dashpen(currentpen+linewidth(lwidth)));
+    }
+    if (inside(min.y, max.y, 0))
+    {
+        draw(pic = pic, (min.x, 0)--(max.x, 0), currentpen+linewidth(lwidth));
+    }
+}
 
 // >redefining | Changing basic Asymptote functions to accomodate for deferred drawing
 
