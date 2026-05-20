@@ -143,7 +143,7 @@ To summarize, the most prominent features of module `smoothmanifold` are the fol
 
 Do take a look at the #link("https://github.com/thornoar/smoothmanifold/tree/master/documentation/resources", [source code]) for the above diagrams, to get a feel for how much heavy lifting is done by the module, and what is required from the user. We will now consider each of the above mentioned features (and some others as well) in full detail.
 
-= delayed drawing and path overlapping <sc-def>
+= Delayed drawing and path overlapping <sc-def>
 
 == The general mechanism <sc-def-general>
 
