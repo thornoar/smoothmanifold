@@ -23,7 +23,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 /*  config, tarrow, tbar, values, support,
     generic, system, pens, technical, structs,
     hole, subset, element, dpar, smooth, finding,
-    deferredPath, operations, intersections,
+    delayedPath, operations, intersections,
     unions, drawing, redefining
 */
 
@@ -3833,7 +3833,7 @@ int[] findbylabel (string label)
 
 // >tarrow | Utilities for `tarrow`
 
-tarrow DeferredArrow(
+tarrow delayedArrow(
     arrowhead head = DefaultHead,
     real size = 0,
     real angle = arrowangle,
@@ -3853,7 +3853,7 @@ tarrow DeferredArrow(
     res.arc = arc;
     return res;
 }
-config.arrow.currentarrow = DeferredArrow(SimpleHead);
+config.arrow.currentarrow = delayedArrow(SimpleHead);
 
 arrowbar convertarrow(
     tarrow arrow,
@@ -3883,7 +3883,7 @@ arrowbar convertarrow(
 
 // >tbar | Utilities for `tbar`
 
-tbar DeferredBar(
+tbar delayedBar(
     real size = 0,
     bool begin = false,
     bool end = false
@@ -3914,8 +3914,8 @@ arrowbar convertbar(
     return None;
 }
 
-// >deferredPath | An auxiliary structure for deferred path drawing
-struct deferredPath
+// >delayedPath | An auxiliary structure for delayed path drawing
+struct delayedPath
 {
     path[] g;
     pen p;
@@ -3924,12 +3924,12 @@ struct deferredPath
     tbar bar;
 }
 
-// >deferredPath | Utilities for deferred paths
+// >delayedPath | Utilities for delayed paths
 
-deferredPath[][] deferredPaths;
-deferredPath[][] savedDeferredPaths;
+delayedPath[][] delayedPaths;
+delayedPath[][] saveddelayedPaths;
 
-int extractdeferredindex (picture pic)
+int extractdelayedindex (picture pic)
 {
     string[] split;
     if (pic.nodes.length > 0 && (split = split(pic.nodes[0].key, "")).length > 1 && dummy(split[0]))
@@ -3937,51 +3937,51 @@ int extractdeferredindex (picture pic)
     return -1;
 }
 
-deferredPath[] extractdeferredpaths (picture pic, bool createlink)
+delayedPath[] extractdelayedpaths (picture pic, bool createlink)
 {
-    deferredPath[] res;
-    int ind = extractdeferredindex(pic);
-    if (ind >= 0) res = deferredPaths[ind];
+    delayedPath[] res;
+    int ind = extractdelayedindex(pic);
+    if (ind >= 0) res = delayedPaths[ind];
     else if (createlink)
     {
-        deferredPaths.push(res);
+        delayedPaths.push(res);
         pic.nodes.insert(0, node(
             d = new void (frame f, transform t, transform T, pair lb, pair rt) {},
-            key = config.system.dummystring+" "+(string)(deferredPaths.length-1)
+            key = config.system.dummystring+" "+(string)(delayedPaths.length-1)
         ));
     }
     return res;
 }
 
-path[] getdeferredpaths (
+path[] getdelayedpaths (
     picture pic = currentpicture
 ) {
-    deferredPath[] ps = extractdeferredpaths(pic, false);
+    delayedPath[] ps = extractdelayedpaths(pic, false);
     return concat(sequence(new path[] (int i) {
         return ps[i].g;
     }, ps.length));
 }
 
-void purgedeferredunder (deferredPath[] curdeferred)
+void purgedelayedunder (delayedPath[] curdelayed)
 {
-    for (int i = 0; i < curdeferred.length; ++i)
+    for (int i = 0; i < curdelayed.length; ++i)
     {
-        for (int j = 0; j < curdeferred[i].g.length; ++j)
+        for (int j = 0; j < curdelayed[i].g.length; ++j)
         {
-            if (curdeferred[i].under[j] > 0)
+            if (curdelayed[i].under[j] > 0)
             {
                 if (j == 0)
                 {
-                    if (curdeferred[i].arrow != null) curdeferred[i].arrow.begin = false;
-                    if (curdeferred[i].bar != null) curdeferred[i].bar.begin = false;
+                    if (curdelayed[i].arrow != null) curdelayed[i].arrow.begin = false;
+                    if (curdelayed[i].bar != null) curdelayed[i].bar.begin = false;
                 }
-                if (j == curdeferred[i].g.length-1)
+                if (j == curdelayed[i].g.length-1)
                 {
-                    if (curdeferred[i].arrow != null) curdeferred[i].arrow.end = false;
-                    if (curdeferred[i].bar != null) curdeferred[i].bar.end = false;
+                    if (curdelayed[i].arrow != null) curdelayed[i].arrow.end = false;
+                    if (curdelayed[i].bar != null) curdelayed[i].bar.end = false;
                 }
-                curdeferred[i].g.delete(j);
-                curdeferred[i].under.delete(j);
+                curdelayed[i].g.delete(j);
+                curdelayed[i].under.delete(j);
                 j -= 1;
             }
         }
@@ -4858,7 +4858,7 @@ The `covermode` parameter needs additional explanation. It determines what happe
     if (config.drawing.drawlabels && length(L.s) > 0)
     { label(pic = pic, gs, L = L, p = p); }
 
-    deferredPath[] curdp = extractdeferredpaths(pic, true);
+    delayedPath[] curdp = extractdelayedpaths(pic, true);
 
     if (!overlap)
     {
@@ -4987,7 +4987,7 @@ The `covermode` parameter needs additional explanation. It determines what happe
     }
     if (!drawnow)
     {
-        deferredPath newdp;
+        delayedPath newdp;
         newdp.g = new path[] {gs};
         newdp.p = p;
         newdp.under = new int[] {0};
@@ -5087,8 +5087,8 @@ smooth rn (
         {
             transform adj = sm.unitadjust;
             pen p = dspec.contourpen;
-            fitpath(adj*((-1,-.2)--(1,-.2)), p = p, arrow = DeferredArrow(SimpleHead), drawnow = drawnow);
-            fitpath(adj*((-.2,-1)--(-.2,1)), p = p, arrow = DeferredArrow(SimpleHead), drawnow = drawnow);
+            fitpath(adj*((-1,-.2)--(1,-.2)), p = p, arrow = delayedArrow(SimpleHead), drawnow = drawnow);
+            fitpath(adj*((-.2,-1)--(-.2,1)), p = p, arrow = delayedArrow(SimpleHead), drawnow = drawnow);
         },
         shift = shift,
         scale = scale,
@@ -5891,17 +5891,17 @@ void drawpath (
     drawpath(pic, sm1, index1, sm2, index2, range, angle, radius, reverse, points, L, p, help, overlap, drawnow);
 }
 
-// >drawing | Deferred drawing implementation
+// >drawing | delayed drawing implementation
 
-void drawdeferred (
+void drawdelayed (
     picture pic = currentpicture,
     bool flush = true
 )
 {
-    deferredPath[] curdp = extractdeferredpaths(pic, false);
-    if (!config.drawing.underdashes) { purgedeferredunder(curdp); }
+    delayedPath[] curdp = extractdelayedpaths(pic, false);
+    if (!config.drawing.underdashes) { purgedelayedunder(curdp); }
 
-    void auxdraw (deferredPath p)
+    void auxdraw (delayedPath p)
     {
         unravel p;
 
@@ -5956,9 +5956,9 @@ void drawdeferred (
     if (flush) curdp.delete();
 }
 
-void flushdeferred (
+void flushdelayed (
     picture pic = currentpicture
-) { extractdeferredpaths(pic, false).delete(); }
+) { extractdelayedpaths(pic, false).delete(); }
 
 void drawgrid (
     picture pic = currentpicture,
@@ -6037,7 +6037,7 @@ void drawgrid (
     }
 }
 
-// >redefining | Changing basic Asymptote functions to accomodate for deferred drawing
+// >redefining | Changing basic Asymptote functions to accomodate for delayed drawing
 
 void plainshipout (
     string prefix=defaultfilename,
@@ -6065,7 +6065,7 @@ shipout = new void (
     projection P=currentprojection
 )
 {
-    drawdeferred(pic = pic, flush = false);
+    drawdelayed(pic = pic, flush = false);
     draw(pic = pic, debugpaths, red+1);
     plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
@@ -6078,7 +6078,7 @@ erase = new void (
     picture pic = currentpicture
 )
 {
-    flushdeferred();
+    flushdelayed();
     plainerase(pic);
 };
 
@@ -6090,7 +6090,7 @@ add = new void (
     bool above=true
 )
 {
-    drawdeferred(src);
+    drawdelayed(src);
     dest.add(src, group, filltype, above);
 };
 
@@ -6101,7 +6101,7 @@ add = new void (
     bool above=true
 )
 {
-    drawdeferred(src);
+    drawdelayed(src);
     currentpicture.add(src, group, filltype, above);
 };
 
@@ -6114,7 +6114,7 @@ add = new void (
     bool above=true
 )
 {
-    drawdeferred(src);
+    drawdelayed(src);
     add(dest, src.fit(identity()), position, group, filltype, above);
 };
 
@@ -6122,7 +6122,7 @@ picture plainapply (transform t, picture p) { return t*p; }
 
 picture operator * (transform t, picture p)
 {
-    deferredPath[] curdp = extractdeferredpaths(p, false);
+    delayedPath[] curdp = extractdelayedpaths(p, false);
     picture q = plainapply(t,p);
     if (curdp.length > 0)
     {
@@ -6137,8 +6137,8 @@ void plainsave () { save(); }
 
 void save ()
 {
-    deferredPath[] curdp = extractdeferredpaths(currentpicture, false);
-    savedDeferredPaths.push(copy(curdp));
+    delayedPath[] curdp = extractdelayedpaths(currentpicture, false);
+    saveddelayedPaths.push(copy(curdp));
     plainsave();
 };
 
@@ -6146,12 +6146,12 @@ void plainrestore () { restore(); }
 
 void restore ()
 {
-    int ind = extractdeferredindex(currentpicture);
+    int ind = extractdelayedindex(currentpicture);
     plainrestore();
-    if (ind >= 0 && savedDeferredPaths.length > 0)
+    if (ind >= 0 && saveddelayedPaths.length > 0)
     {
-        deferredPaths[ind] = savedDeferredPaths.pop();
-        if (extractdeferredindex(currentpicture) == -1)
+        delayedPaths[ind] = saveddelayedPaths.pop();
+        if (extractdelayedindex(currentpicture) == -1)
         {
             currentpicture.nodes.insert(0, node(
                 d = new void (frame f, transform t, transform T, pair lb, pair rt) {},

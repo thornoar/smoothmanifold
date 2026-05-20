@@ -15,7 +15,7 @@ draw(g, L = Label("\texttt{g}", position = EndPoint, align = (1,0)));
 fitpath(
     ctr -- (ctr + l*dir),
     blue,
-    arrow = DeferredArrow(SimpleHead),
+    arrow = delayedArrow(SimpleHead),
     L = Label("\texttt{dir}", position = EndPoint, align = .7*(1,1))
 );
 path a = arc(ctr, ctr + l2*dir(dirang - ang/2), ctr + l*dir(dirang + ang/2), CCW);
@@ -23,7 +23,7 @@ int lang = floor(dirang - ang/4);
 fitpath(
     a,
     deepgreen,
-    arrow = DeferredArrow(SimpleHead),
+    arrow = delayedArrow(SimpleHead),
     L = Label(
         "
             \begin{turn}{"+(string)(lang - 90)+"}
@@ -34,7 +34,7 @@ fitpath(
         align = .05*Relative((1,0))
     )
 );
-drawdeferred();
+drawdelayed();
 // labelpath(currentpicture, subpath(a, 0, 2), L = Label("\texttt{ang}", position = Relative(.5)), p = deepgreen);
 draw(ctr -- (ctr + l*dir(dirang - ang/2)), blue);
 draw(ctr -- (ctr + l*dir(dirang + ang/2)), blue);

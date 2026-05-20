@@ -137,33 +137,33 @@ In higher mathematics, diagrams often take the form of "blobs" (representing set
 Take special note of the gaps that arrows leave on the boundaries of the ovals in @injection. I find this feature quite hard to achieve in plain Asymptote, and module `smoothmanifold` uses some dark magic to implement it. Similarly, note the shaded areas in @baire. They represent intersections of areas bounded by two paths. Finding the bounding path of such an intersection is non-trivial and also implemented in `smoothmanifold`. Lastly, @tangent shows a three-dimensional surface, while the picture was fully drawn in 2D. The illusion is achieved through these cross-sectional "rings" on the left of the diagram.\
 To summarize, the most prominent features of module `smoothmanifold` are the following:
 
-- *Gaps in overlapping paths*, achieved through a system of deferred drawing;
+- *Gaps in overlapping paths*, achieved through a system of delayed drawing;
 - *Set operations on paths bounding areas*, e.g. intersection, union, set difference, etc.;
 - *Three-dimensional drawing*, achieved through an automatic (but configurable) addition of cross sections to smooth objects.
 
 Do take a look at the #link("https://github.com/thornoar/smoothmanifold/tree/master/documentation/resources", [source code]) for the above diagrams, to get a feel for how much heavy lifting is done by the module, and what is required from the user. We will now consider each of the above mentioned features (and some others as well) in full detail.
 
-= Deferred drawing and path overlapping <sc-def>
+= delayed drawing and path overlapping <sc-def>
 
 == The general mechanism <sc-def-general>
 
 In the `picture` structure, the paths drawn on a picture are not stored in an array, but rather indirectly stored in a `void` callback. That is, when the `draw` function is called, the _instruction to draw_ the path is added to the picture, not the path itself. This makes it quite impossible to "modify the path after it is drawn". To go around this limitation, `smoothmanifold` introduces an auxiliary structure:
 ```
-struct deferredPath {
+struct delayedPath {
     path[] g;
     pen p;
     int[] under;
     tarrow arrow;
     tbar bar;
 }
-``` <def-deferredPath>
+``` <def-delayedPath>
 It stores the path(s) to draw later, and how to draw them. Now, `smoothmanifold` executes the following steps to draw a "mutable" path `p` to a picture `pic` and then draw it for real:
-+ Have a global two-dimensional array, say `arr`, of `deferredPath`'s;
-+ Construct a `deferredPath` based on `p`, say `dp`;
++ Have a global two-dimensional array, say `arr`, of `delayedPath`'s;
++ Construct a `delayedPath` based on `p`, say `dp`;
 + Exploit the `nodes` field of the `picture` structure to store an integer. Retrieve this integer, say `n`, from `pic` (or create one if the `nodes` field doesn't contain it).
-+ Store the deferred path `dp` in the one-dimensional array `arr[n]`;
-+ Move on with the original code, perhaps modifying the deferred path `dp` in `arr` as needed, e.g. adding gaps;
-+ At shipout time, when processing the picture `pic`, retrieve the index `n` from its `nodes` field and draw all `deferredPath` objects in the array `arr[n]`.
++ Store the delayed path `dp` in the one-dimensional array `arr[n]`;
++ Move on with the original code, perhaps modifying the delayed path `dp` in `arr` as needed, e.g. adding gaps;
++ At shipout time, when processing the picture `pic`, retrieve the index `n` from its `nodes` field and draw all `delayedPath` objects in the array `arr[n]`.
 All these steps require no extra input from the user, since the shipout function is redefined to do them automatically. One only needs to use the `fitpath` function instead of `draw`.
 
 == The `tarrow` and `tbar` structures <sc-def-tarrow-tbar>
@@ -197,7 +197,7 @@ These structures store information about the arrow/bar, and are converted to reg
 #bl[
   #show: columns.with(2, gutter: 0pt)
   ```
-  tarrow DeferredArrow(
+  tarrow delayedArrow(
       arrowhead head = DefaultHead,
       real size = 0,
       real angle = arrowangle,
@@ -214,7 +214,7 @@ These structures store information about the arrow/bar, and are converted to reg
   ``` <def-tarrow-func>
   #colbreak()
   ```
-  tbar DeferredBar(
+  tbar delayedBar(
       real size = 0,
       bool begin = false,
       bool end = false
@@ -230,7 +230,7 @@ The `overridebegin` and `overrideend` options let the user force-disable the arr
 
 == The `fitpath` function <sc-def-fitpath>
 
-This is a substitute for the plain `draw` function. The `fitpath` function implements steps 1-4 of the deferred drawing system described above.
+This is a substitute for the plain `draw` function. The `fitpath` function implements steps 1-4 of the delayed drawing system described above.
 
 ```
 void fitpath (picture pic, path gs, bool overlap, int covermode, bool drawnow, Label L, pen p, tarrow arrow, tbar bar)
@@ -300,53 +300,53 @@ Apart from different types of the `arrow`/`bar` arguments, the `fitpath` functio
 
 Here, `config` is the global configuration structure, see @sc-config. Furthermore, there are corresponding `fillfitpath` <def-fillfitpath> functions that serve the same purpose as `filldraw`.
 
-== Other related routines <deferred-misc>
+== Other related routines <delayed-misc>
 
 ```
-int extractdeferredindex (picture pic)
-```<def-extractdeferredindex> #vs
+int extractdelayedindex (picture pic)
+```<def-extractdelayedindex> #vs
 Inspect the `nodes` field of `pic` for a string in a particular format, and, if it exists, extract an integer from it.
 
 ```
-deferredPath[] extractdeferredpaths (picture pic, bool createlink)
-```<def-extractdeferredpaths> #vs
-Extract the deferred paths associated with the picture `pic`. If `createlink` is set to `true` and `pic` has no integer stored in its `nodes` field, the routine will find the next available index and store it in `pic`.
+delayedPath[] extractdelayedpaths (picture pic, bool createlink)
+```<def-extractdelayedpaths> #vs
+Extract the delayed paths associated with the picture `pic`. If `createlink` is set to `true` and `pic` has no integer stored in its `nodes` field, the routine will find the next available index and store it in `pic`.
 
 ```
-path[] getdeferredpaths (picture pic = currentpicture)
-```<def-getdeferredpaths> #vs
-A wrapper around `extractdeferredpaths`, which concatenates the `path[] g` fields of the extracted deferred paths.
+path[] getdelayedpaths (picture pic = currentpicture)
+```<def-getdelayedpaths> #vs
+A wrapper around `extractdelayedpaths`, which concatenates the `path[] g` fields of the extracted delayed paths.
 
 ```
-void purgedeferredunder (deferredPath[] curdeferred)
-```<def-purgedeferredunder> #vs
-For each deferred path in `curdeferred`, delete the segments that are "demoted" to the background (i.e. going under a cyclic path, drawn with dashed lines).
+void purgedelayedunder (delayedPath[] curdelayed)
+```<def-purgedelayedunder> #vs
+For each delayed path in `curdelayed`, delete the segments that are "demoted" to the background (i.e. going under a cyclic path, drawn with dashed lines).
 
 ```
-void drawdeferred (
+void drawdelayed (
     picture pic = currentpicture,
     bool flush = true
 )
-```<def-drawdeferred> #vs
-Render the deferred paths associated with `pic`, to the picture `pic`. If `flush` is `true`, delete these deferred paths.
+```<def-drawdelayed> #vs
+Render the delayed paths associated with `pic`, to the picture `pic`. If `flush` is `true`, delete these delayed paths.
 
 ```
-void flushdeferred (picture pic = currentpicture)
-```<def-flushdeferred> #vs
-Delete the deferred paths associated with `pic`.
+void flushdelayed (picture pic = currentpicture)
+```<def-flushdelayed> #vs
+Delete the delayed paths associated with `pic`.
 
 ```
 void plainshipout (...) = shipout;
 shipout = new void (...)
 {
-    drawdeferred(pic = pic, flush = false);
+    drawdelayed(pic = pic, flush = false);
     draw(pic = pic, debugpaths, red+1);
     plainshipout(prefix, pic, orntn, format, wait, view, options, script, lt, P);
 };
 ```<def-shipout> #vs
-A redefinition of the `shipout` function to automatically draw the deferred paths at shipout time. For a definition of `debugpaths`, see @sc-smooth-subset.
+A redefinition of the `shipout` function to automatically draw the delayed paths at shipout time. For a definition of `debugpaths`, see @sc-smooth-subset.
 
-The functions `erase`, `* (transform, picture)`, `add`, `save`, and `restore` are redefined to automatically handle deferred paths.
+The functions `erase`, `* (transform, picture)`, `add`, `save`, and `restore` are redefined to automatically handle delayed paths.
 
 = Operations on paths <sc-path>
 
@@ -1880,7 +1880,7 @@ The meaning of the remaining arguments is as follows:
 - `points` --- an array of arbitrary points that the arrow should pass through. If this array is non-empty, the `connect` @path-connect function is used instead of `curvedpath` @path-curvedpath or `cyclepath` @path-cyclepath;
 - `L` --- the label to attach to the arrow;
 - `p` --- the pen to draw the arrow with;
-- `arrow` and `bar` --- the arrow and bar to use with the arrow. Since `drawarrow` is integrated with `smoothmanifold`'s deferred drawing system, the custom `tarrow` @def-tarrow and `tbar` @def-tbar structures are used here;
+- `arrow` and `bar` --- the arrow and bar to use with the arrow. Since `drawarrow` is integrated with `smoothmanifold`'s delayed drawing system, the custom `tarrow` @def-tarrow and `tbar` @def-tbar structures are used here;
 - `help` --- if set to `true`, addition help/debug information will be drawn;
 - `overlap` and `drawnow` --- these arguments are passed to `fitpath` @def-fitpath together with `arrow` and `bar`;
 - `beginmargin` and `endmargin` --- the margins left at the beginning and end. If `endmargin` is not specified, `beginmargin` is used instead.
@@ -2117,7 +2117,7 @@ struct drawingconfig {
 A structure to hold drawing-related configuration, encoded in the following variables:
 - `viewdir`, `smoothfill`, `subsetfill`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `smoothoverlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
 - `viewscale` --- a value by which the `viewdir` vector is scale on call of the `draw` @smooth-draw function;
-- `gaplength` --- the default length of the gaps left in `deferredPath` @def-deferredPath objects when the `fitpath` @def-fitpath function is called;
+- `gaplength` --- the default length of the gaps left in `delayedPath` @def-delayedPath objects when the `fitpath` @def-fitpath function is called;
 - `sectpenscale` --- determines how thinner the section pen is compared to `contourpen`;
 - `elpenwidth` --- the width of the `dot`'s representing a smooth object's elements, used when calling `draw` @smooth-draw. The relevant pen creation utility is #vs
   ```
@@ -2145,7 +2145,7 @@ A structure to hold drawing-related configuration, encoded in the following vari
   pen shadepen (pen p) { return config.drawing.shadescale*p; }
   pen underpen (pen p) { return dashpen(p); }
   ``` <pen-sections>
-- `underdashes` --- whether to draw the "demoted" parts of a `deferredPath` @def-deferredPath in a dashed line, instead of erasing them;
+- `underdashes` --- whether to draw the "demoted" parts of a `delayedPath` @def-delayedPath in a dashed line, instead of erasing them;
 - `pathrandom` --- the default value passed to the `drawpath` @smooth-drawpath function as `random`;
 - `subsetoverlap` --- whether to set `overlap = true` in the `fitpath` @def-fitpath function when drawing subset contours;
 - `elementcirclerad` --- the radius to use when drawing elements as `circle`'s instead of `dot`'s. This exists because sometimes dots are not showing up in SVG output, in which case the simplest thing to do is say screw it and fill a circle instead of calling the `dot` function. The value of `-1` means that `dot`'s will be used.
@@ -2178,9 +2178,9 @@ struct arrowconfig {
 ``` <config-arrow>
 A structure to hold variables related to arrows, namely the following:
 - `mar` --- the default arrow margin that is passed as the default value to the `beginmargin` and `endmargin` parameters of the `drawarrow` @smooth-drawarrow function;
-- `currentarrow`, `currentbar` --- the default values of the `arrow` and `bar` parameters of `drawarrow` @smooth-drawarrow; The `currentarrow` value is updated after the definition of `DeferredArrow` @def-tarrow-func:
+- `currentarrow`, `currentbar` --- the default values of the `arrow` and `bar` parameters of `drawarrow` @smooth-drawarrow; The `currentarrow` value is updated after the definition of `delayedArrow` @def-tarrow-func:
   ```
-  config.arrow.currentarrow = DeferredArrow(SimpleHead);
+  config.arrow.currentarrow = delayedArrow(SimpleHead);
   ```
 - `absmargins` --- whether arrow margins should be absolute, as opposed to being relative to the length of the arrow.
 
@@ -2686,7 +2686,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 #section("D")[
   - `struct drawingconfig` #e @config-drawing
   - `struct dpar` #e @smooth-dpar
-  - `struct deferredPath` #e @def-deferredPath
+  - `struct delayedPath` #e @def-delayedPath
   - `int dn` #e @dummynumber
   - `private globalconfig defaultconfig` #e @config
   - `transform dscale (real, pair, pair)` #e @misc-dscale
@@ -2722,7 +2722,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `void drawarrow (picture, string, string, real, real, real, bool, pair[], Label, pen, tarrow, tbar, bool, bool, bool, real, real)` #e @smooth-drawarrow-label
   - `void drawpath (picture, smooth, int, smooth, int, real, real, real, bool, pair[], Label, pen, bool, bool, bool, bool)` #e @smooth-drawpath
   - `void drawpath (picture, string, string, real, real, real, bool, pair[], Label, pen, bool, bool, bool, bool)` #e @smooth-drawpath-label
-  - `void drawdeferred (picture, bool)` #e @def-drawdeferred
+  - `void drawdelayed (picture, bool)` #e @def-drawdelayed
 ]
 
 #section("E")[
@@ -2731,8 +2731,8 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `pen elementpen (pen)` #e @pen-elements
   - `element[] elementcopy (element[])` #e @smooth-elementcopy
   - `dpar emptypar ()` #e @dpar-emptypar
-  - `int extractdeferredindex (picture)` #e @def-extractdeferredindex
-  - `deferredPath[] extractdeferredpaths (picture, bool)` #e @def-extractdeferredpaths
+  - `int extractdelayedindex (picture)` #e @def-extractdelayedindex
+  - `delayedPath[] extractdelayedpaths (picture, bool)` #e @def-extractdelayedpaths
 ]
 
 #section("F")[
@@ -2753,7 +2753,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `void fitpath (picture, path[], bool, int, Label, pen, bool)` #e @def-fitpath-spec
   - `void fillfitpath (picture, path, bool, int, Label, pen, pen, bool)` #e @def-fillfitpath
   - `void fillfitpath (picture, path[], bool, int, Label, pen, pen, bool)` #e @def-fillfitpath
-  - `void flushdeferred (picture)` #e @def-flushdeferred
+  - `void flushdelayed (picture)` #e @def-flushdelayed
 ]
 
 #section("G")[
@@ -2764,7 +2764,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `real smooth.getxratio (real)` #e @smooth-get-ratio-point
   - `real smooth.getypoint (real)` #e @smooth-get-ratio-point
   - `real smooth.getxpoint (real)` #e @smooth-get-ratio-point
-  - `path[] getdeferredpaths (picture)` #e @def-getdeferredpaths
+  - `path[] getdelayedpaths (picture)` #e @def-getdelayedpaths
 ]
 
 #section("H")[
@@ -2843,7 +2843,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `path pop (path[])` #e @misc-pop
   - `void print (smooth)` #e @smooth-print
   - `void printall ()` #e @smooth-print
-  - `void purgedeferredunder (deferredPath[])` #e @def-purgedeferredunder
+  - `void purgedelayedunder (delayedPath[])` #e @def-purgedelayedunder
   - `void phantom (picture, smooth)` #e @smooth-phantom
   - `void plainshipout (string, picture, orientation, string, bool, bool, string, string, light, projection)` #e @def-shipout
   - `void plainerase (picture)` #e @def-shipout

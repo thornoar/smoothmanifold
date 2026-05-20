@@ -127,7 +127,7 @@ void export(
     string script = "",
     light light = currentlight,
     projection P = currentprojection,
-        // Additional settings -- background, quality control, deferred drawing, file conversion:
+        // Additional settings -- background, quality control, delayed drawing, file conversion:
         pen bgpen = export.background,
         real xmargin = export.xmargin,
         real ymargin = export.ymargin < 0 ? xmargin : export.ymargin,
@@ -135,7 +135,7 @@ void export(
         int density = export.rasterdensity,
         bool exit = export.exitonexport,
         bool plainforce = false,
-        bool drawdeferred = true,
+        bool drawdelayed = true,
         bool restore = export.restore,
         bool forcenative = export.forcenative
 ) // The main function of the module. Analogous to the base `shipout`, but has more sophisticated settings.
@@ -161,7 +161,7 @@ void export(
         }
     }
 
-    if (drawdeferred) drawdeferred(pic1, flush = !restore);
+    if (drawdelayed) drawdelayed(pic1, flush = !restore);
     if (debugpaths.length > 0) draw(pic = pic1, debugpaths, red+1);
     if (config.help.drawgrid) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
 	if (export.enclose) framepicture(pic1);
@@ -306,13 +306,13 @@ void animate (
 		save();
 
 		update(i);
-        drawdeferred(currentpicture, false);
+        drawdelayed(currentpicture, false);
 
 		string str1 = hash+"_"+(string)(i);
 		string str2 = hash+"_"+(string)(2n - 1 - i);
-		export(prefix = str1, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false, density = density);
+		export(prefix = str1, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdelayed = false, density = density);
         write(f, s = str1+"."+informat, suffix = endl);
-		if (back) export(prefix = str2, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false, density = density);
+		if (back) export(prefix = str2, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdelayed = false, density = density);
         
         restore();
 
@@ -346,8 +346,8 @@ void addframe (
 {
     string hash = (string)export.animations.callcount + (string)seconds();
     export.animations.callcount += 1;
-    drawdeferred(pic, false);
-    export(pic = pic, prefix = hash, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdeferred = false);
+    drawdelayed(pic, false);
+    export(pic = pic, prefix = hash, format = informat, bgpen = bgpen, xmargin = xmargin, ymargin = ymargin, framepen = framepen, exit = false, drawdelayed = false);
     file f = output(name = export.animations.listfilename, update = true);
     write(f, s = hash+"."+informat, suffix = endl);
     close(f);

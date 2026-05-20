@@ -36,7 +36,7 @@ path beps1s = circle(x1i, r[0][1]);
 pair x1o = (2.7, 0.2);
 drawtangent(x1i, r[0][1], x1o, r[1][0], dashed+grey);
 
-drawdeferred();
+drawdelayed();
 filldraw(beps1s, drawpen = heavygreen, fillpen = white);
 dot(x1i, L = Label("$x_1$", align = S));
 
@@ -54,7 +54,7 @@ path beps2s = circle(x2i, r[1][1]);
 pair x2o = (5.5, -0.1);
 drawtangent(x2i, r[1][1], x2o, r[2][0], dashed+grey);
 
-drawdeferred();
+drawdelayed();
 filldraw(beps2s, drawpen = heavygreen, fillpen = white);
 dot(x2i, L = Label("$x_2$", align = S));
 
