@@ -50,7 +50,7 @@ struct sectionconfig {
     real freedom = .3; // how freely sections can deviate from their target positions.
     int precision = 20; // how many points to sample in search for good section position.
     real elprecision = -1; // precision used in bin. search to construct tangent ellipses for cross sections. A value of -1 uses exact formula instead of binary search.
-    bool avoidsubsets = false;
+    bool avoidsubsets = false; // the default value of `avoidsubsets` in the `dpar` structure.
     real[] default = new real[] {-10000,235,5}; // default expressed in section notation.
 }
 
@@ -62,13 +62,13 @@ struct smoothconfig {
     real edgemargin = .07; // no point in explaining, see the use cases.
     real stepdistance = .15; // same...
     real nodesize = 1; // the size of nodes.
-    real maxlength; // fuck my life...
+    real maxlength; // fuck my life... it's impossible to explain.
     bool inferlabels = true; // whether to create labels like "A \cap B" on intersection. This only works when `system.insertdollars` is `true`.
     bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
-    bool correct = true;
-    bool clip = false;
-    bool unit = false;
-    bool setcenter = true;
+    bool correct = true; // whether non-clockwise paths should be reversed to clockwise.
+    bool clip = false; // the default value passed to `addsubset`, `addhole`, and `movesubset`.
+    bool unit = false; // whether to use unit coordinate by default.
+    bool setcenter = true; // whether to automatically set the centers of various objects.
 }
 
 struct drawingconfig {
@@ -85,29 +85,29 @@ struct drawingconfig {
     real attachedopacity = .8; // opacity of smooth objects attached to main object.
     real subpenfactor = .5; // how darker subsets get with each new layer.
     real subpenbrighten = .5; // How brighter to make the fill color of a subset than its contour color.
-    pen sectionpen = nullpen;
-    real lineshadeangle = 45;
-    real lineshadedensity = 0.15;
-    real lineshademargin = 0.1;
-    pen lineshadepen = lightgrey;
-    int mode = 0;
-    bool useopacity = false;
-    bool dash = true;
-    bool underdashes = false;
-    bool shade = false;
-    bool drawlabels = true;
-    bool fill = true;
-    bool fillsubsets = true;
-    bool drawcontour = true;
-    bool drawsubsetcontour = true;
-    int subsetcovermode = 0;
-    bool pathrandom = false;
-    bool overlap = false;
-    bool smoothoverlap = true;
-    bool drawnow = false;
-    bool drawextraover = false;
-    bool subsetoverlap = false;
-    real elementcirclerad = -1;
+    pen sectionpen = nullpen; // the default pen to be produced by the `sectionpen()` routine.
+    real lineshadeangle = 45; //       \ 
+    real lineshadedensity = 0.15; //    - default values for the `shaderegion` function.
+    real lineshademargin = 0.1; //     /
+    pen lineshadepen = lightgrey; //  /
+    int mode = 0; // the default cross section drawing mode.
+    bool useopacity = false; // whether to use Asymtote's `opacity` routine or to just brighten the color.
+    bool dash = true; // the default value of the corresponding `dpar` field.
+    bool underdashes = false; // whether to draw "demoted" path sections with a dashed line.
+    bool shade = false; // the default value for the corresponding `dpar` field.
+    bool drawlabels = true; // --||--
+    bool fill = true; // --||--
+    bool fillsubsets = true; // --||--
+    bool drawcontour = true; // --||--
+    bool drawsubsetcontour = true; // --||--
+    int subsetcovermode = 0; // --||--
+    bool pathrandom = false; // the default value passed to the `drawpath` function.
+    bool overlap = false; // the default value of the respective `dpar` field.
+    bool smoothoverlap = true; // --||--
+    bool drawnow = false; // --||--
+    bool drawextraover = false; // --||--
+    bool subsetoverlap = false; // whether `overlap` should be set in the `fitpath` function when drawing subset contours.
+    real elementcirclerad = -1; // the radius to use when drawing elements as `circle`'s instead of `dot`'s.
 }
 
 struct helpconfig {

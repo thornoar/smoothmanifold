@@ -2115,7 +2115,7 @@ struct drawingconfig {
 }
 ``` <config-drawing> #vs
 A structure to hold drawing-related configuration, encoded in the following variables:
-- `viewdir`, `smoothfill`, `subsetfill`, `sectionpen`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `smoothoverlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
+- `viewdir`, `smoothfill`, `subsetfill`, `mode`, `dash`, `shade`, `drawlabels`, `fill`, `fillsubsets`, `drawcontour`, `drawsubsetcontour`, `subsetcovermode`, `overlap`, `smoothoverlap`, `drawnow`, `drawextraover` --- default values of the corresponding `dpar` @smooth-dpar fields;
 - `viewscale` --- a value by which the `viewdir` vector is scale on call of the `draw` @smooth-draw function;
 - `gaplength` --- the default length of the gaps left in `deferredPath` @def-deferredPath objects when the `fitpath` @def-fitpath function is called;
 - `sectpenscale` --- determines how thinner the section pen is compared to `contourpen`;
@@ -2133,6 +2133,7 @@ A structure to hold drawing-related configuration, encoded in the following vari
   pen brighten (pen p, real coeff) { return inverse(coeff * inverse(p)); }
   pen nextsubsetpen (pen p, real scale) { return scale * p; }
   ``` <pen-subsets>
+- `sectionpen` --- the default pen to be produced by the `sectionpen` @pen-elements routine. #vs
 - `lineshadeangle`, `lineshadedensity`, `lineshademargin`, `lineshadepen` --- default values passed to the `shaderegion` @misc-shaderegion function;
 - `useopacity` --- whether to use Asymptote's `opacity` function for generating pens (primarily dashed section pens). Since some image formats do not support opacity, this is disabled by default, and so the `dashpenscale` field is used for dashed pen creation. Otherwise, the `dashopacity` field is used. The relevant pen creation routines are #vs
   ```
@@ -2146,7 +2147,8 @@ A structure to hold drawing-related configuration, encoded in the following vari
   ``` <pen-sections>
 - `underdashes` --- whether to draw the "demoted" parts of a `deferredPath` @def-deferredPath in a dashed line, instead of erasing them;
 - `pathrandom` --- the default value passed to the `drawpath` @smooth-drawpath function as `random`;
-- `elementcirclerad` --- the radius to use when drawing elements as `circle`'s instead of `dot`'s. This exists because sometimes dots are not showing up in SVG output, in which case the simplest thing to do is say screw it and fill a circle instead of calling the `dot` function.
+- `subsetoverlap` --- whether to set `overlap = true` in the `fitpath` @def-fitpath function when drawing subset contours;
+- `elementcirclerad` --- the radius to use when drawing elements as `circle`'s instead of `dot`'s. This exists because sometimes dots are not showing up in SVG output, in which case the simplest thing to do is say screw it and fill a circle instead of calling the `dot` function. The value of `-1` means that `dot`'s will be used.
 
 == Help-related variables <sc-config-help>
 
@@ -2159,7 +2161,7 @@ struct helpconfig {
 }
 ``` <config-help> #vs
 A structure to hold the few help-related variables, namely
-- `enable` --- whether to enable auxiliary drawing by default;
+- `enable` --- whether to enable auxiliary help drawings by default;
 - `arcratio` --- the relative radius of the blue arcs seen near the center of the hole in @section-showcase, it may be useful to tweak if the arc covers the number in the center of the hole;
 - `arrowlength` --- the length of auxiliary arrows drawn by the sides of cross sections when `help = true`. A value of `-1` will disable these arrows (like in @section-showcase);
 - `linewidth` -- the pen containing the line width to draw help lines with.
@@ -2203,18 +2205,13 @@ Warnings are simply written with a direct call to `write`.
 ```
 smooth[] concat (smooth[][] smss)
 ``` <smooth-concat> #vs
-Concatenate an array of `smooth` objects. In Asymptote, it is difficult to write a polymorphic `concat` function.
+Concatenate an array of `smooth` objects. I wish Asymptote had proper polymorphism...
 
 ```
 void print (smooth sm)
-``` <smooth-print> #vs
-Print various information about the smooth object `sm` in the console.
-
-```
 void printall ()
-``` <smooth-printall> #vs
-Print all `smooth` objects in the global `smooth.cache` array.
-
+``` <smooth-print> #vs
+Print various information about the smooth object `sm`, or all objects in the global `smooth.cache` array.
 ```
 void smooth.checksubsetindex (int index, string fname)
 ``` <smooth-checksubsetindex> #vs
@@ -2845,7 +2842,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `pair[][] pp (... pair[])` #e @misc-p
   - `path pop (path[])` #e @misc-pop
   - `void print (smooth)` #e @smooth-print
-  - `void printall ()` #e @smooth-printall
+  - `void printall ()` #e @smooth-print
   - `void purgedeferredunder (deferredPath[])` #e @def-purgedeferredunder
   - `void phantom (picture, smooth)` #e @smooth-phantom
   - `void plainshipout (string, picture, orientation, string, bool, bool, string, string, light, projection)` #e @def-shipout

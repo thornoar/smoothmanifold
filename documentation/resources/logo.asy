@@ -6,7 +6,6 @@ size(21 cm);
 defaultpen(linewidth(.8) + fontsize(14pt));
 
 config.drawing.gaplength = .1;
-config.smooth.shiftsubsets = true;
 config.arrow.absmargins = true;
 config.arrow.mar = .03;
 config.drawing.fill = true;
@@ -15,7 +14,7 @@ config.drawing.mode = free;
 config.drawing.viewdir = dir(-100);
 config.section.freedom = 0.15;
 config.help.enable = false;
-config.drawing.labels = false;
+config.drawing.drawlabels = false;
 
 smooth sm1 = samplesmooth(3,0)
     .rotate(-50)
