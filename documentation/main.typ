@@ -268,7 +268,8 @@ Arguments:
 - `arrow` --- the arrow to attach to the path. Note that the type is `tarrow`, not `arrowbar`;
 - `bar` --- the bar to attach to the path. Note that the type is `tbar`, not `arrowbar`.
 
-Apart from different types of the `arrow`/`bar` arguments, the `fitpath` function is identical to `draw` in type signature, and they can be used interchangeably. Moreover, there are overloaded versions of `fitpath`, where parameters are given default values (one of these versions is used in the example above):
+// Apart from different types of the `arrow`/`bar` arguments, the `fitpath` function is identical to `draw` in type signature, and they can be used interchangeably.
+There are overloaded versions of `fitpath`, where parameters are given default values (one of these versions is used in the example above):
 #bl[
   #show: columns.with(2, gutter: 0pt)
   ```
@@ -297,6 +298,8 @@ Apart from different types of the `arrow`/`bar` arguments, the `fitpath` functio
   )
   ```<def-fitpath-array>
 ]
+
+This allows users to directly substitute any call to `draw` with a call to `fitpath` without changing the arguments.
 
 Here, `config` is the global configuration structure, see @sc-config. Furthermore, there are corresponding `fillfitpath` <def-fillfitpath> functions that serve the same purpose as `filldraw`.
 
