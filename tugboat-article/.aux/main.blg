@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2025/nixos.org)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: tugboat.bst
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: xampl.bib
+You've used 1 entry,
+            3501 wiz_defined-function locations,
+            769 strings with 5926 characters,
+and the built_in function-call counts, 384 in all, are:
+= -- 30
+> -- 7
+< -- 6
++ -- 4
+- -- 0
+* -- 10
+:= -- 81
+add.period$ -- 3
+call.type$ -- 1
+change.case$ -- 3
+chr.to.int$ -- 0
+cite$ -- 1
+duplicate$ -- 12
+empty$ -- 40
+format.name$ -- 2
+if$ -- 98
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 3
+newline$ -- 9
+num.names$ -- 2
+pop$ -- 12
+preamble$ -- 2
+purify$ -- 3
+quote$ -- 0
+skip$ -- 29
+stack$ -- 0
+substring$ -- 5
+swap$ -- 1
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 2
+warning$ -- 0
+while$ -- 2
+width$ -- 2
+write$ -- 13

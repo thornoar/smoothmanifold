@@ -1,0 +1,10 @@
+\newcommand{\noopsort}[1]{} \newcommand{\printfirst}[2]{#1}
+  \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
+\begin{thebibliography}{1}
+
+\bibitem{book-minimal}
+D.E.~Knuth.
+\newblock \emph{Seminumerical Algorithms}.
+\newblock Addison-Wesley, {\noopsort{1973c}}1981.
+
+\end{thebibliography}
