@@ -1,11 +1,11 @@
 import export;
 
 export.background = paleyellow;
-export.drawgrid = false;
-export.gridnumber = 20;
 export.xmargin = .5cm;
 export.prefix = "picture";
 config.system.insertdollars = true;
+config.help.drawgrid = false;
+config.help.gridnumber = 20;
 settings.outformat = "pdf";
 
 size(12cm);

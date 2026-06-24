@@ -4,14 +4,14 @@ settings.render = 16;
 size(20 cm);
 defaultpen(.5);
 
-config.drawing.gaplength = .07;
-config.smooth.shiftsubsets = true;
+config.drawing.gaplength = .09;
+// config.smooth.shiftsubsets = true;
 config.arrow.absmargins = true;
 config.arrow.mar = .04;
 config.drawing.fill = true;
 config.smooth.unit = true;
 config.drawing.mode = free;
-config.drawing.viewdir = dir(15);
+config.drawing.viewdir = dir(25);
 config.section.freedom = 0.15;
 config.help.enable = false;
 config.system.insertdollars = true;
@@ -23,9 +23,9 @@ smooth sm1 = samplesmooth(3,0)
     .rotate(-50)
     .setsection(0, 0, r(dn,dn,6))
     .setsection(1, 0, r(dn,dn,6))
-    .movesubset(0, shift = (0.05,.09))
+    .movesubset(0, shift = (0.07,.02))
     .setlabel("M", dir = dir(100))
-    .setlabel(0, label = "U", dir = dir(180));
+    .setlabel(0, label = "U", dir = dir(190));
 
 smooth sm2 = samplesmooth(1)
 .move(shift = (4,0), rotate = 90)
@@ -91,7 +91,7 @@ drawarrow(
     sm1,
 	0,
 	angle = 185,
-	radius = .62,
+	radius = .82,
 	L = Label(
         "\mathrm{id}_U",
         position = Relative(.22),

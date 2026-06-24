@@ -30,7 +30,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 // >config | Configuration structures
 
 struct systemconfig {
-    string version = "v6.4.1";
+    string version = "v6.5.0";
     int dummynumber = -10000;
     string dummystring = (string) dummynumber;
     pair dummypair = (dummynumber, dummynumber);
@@ -65,7 +65,6 @@ struct smoothconfig {
     real maxlength; // fuck my life... it's impossible to explain.
     bool inferlabels = true; // whether to create labels like "A \cap B" on intersection. This only works when `system.insertdollars` is `true`.
     bool addsubsets = true; // whether to intersect subsets in smooth object intersections.
-    bool correct = true; // whether non-clockwise paths should be reversed to clockwise.
     bool clip = false; // the default value passed to `addsubset`, `addhole`, and `movesubset`.
     bool unit = false; // whether to use unit coordinate by default.
     bool setcenter = true; // whether to automatically set the centers of various objects.
@@ -164,147 +163,207 @@ globalconfig config;
 // >values | A collection of pre-defined convenience values
 
 path[] convexpaths = new path[] { // [C]on[V]ex
-    (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
-    (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
-    (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
-    (-1.0522,0.0600251)..controls (-0.572004,1.31702) and (1.08045,1.07692)..(1.0522,-0.176544)..controls (1.0259,-1.34403) and (-1.457,-0.999597)..cycle,
-    (-1.3015,0.292664)..controls (-1.16377,1.02949) and (1.58727,0.964071)..(1.08802,-0.447604)..controls (0.699265,-1.54686) and (-1.45274,-0.516484)..cycle,
-    (-0.7747,-0.578443)..controls (-1.27059,0.149293) and (-1.30873,0.619498)..(-0.623203,0.977844)..controls (-0.168712,1.21542) and (0.994515,0.849099)..(0.943412,-0.00688622)..controls (0.860778,-1.39102) and (-0.244461,-1.35659)..cycle,
-    (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
-    (-0.723053,0.87455)..controls (-0.120509,1.45988) and (1.49431,0.148054)..(0.864221,-0.795359)..controls (0.400434,-1.48977) and (-1.84643,-0.216729)..cycle,
-    (0.28979,-0.834028)..controls (0.093337,-0.908653) and (-1.20138,-1.95019)..(-1.15209,0.0777484)..controls (-1.10261,2.11334) and (3.02512,0.204973)..cycle,
-    (1.01073,-0.409946)..controls (0.812824,-1.99319) and (-2.2123,-0.523035)..(-0.897641,0.36047)..controls (0.779873,1.48783) and (1.20823,1.17008)..cycle,
-    (0.636123,-0.975389)..controls (-0.853465,-1.50787) and (-1.37827,0.219109)..(-0.770416,0.961253)..controls (-0.154452,1.7133) and (2.19816,-0.417014)..cycle,
-    (0.805756,0.918845)..controls (1.7034,-0.664395) and (-0.374882,-1.93278)..(-0.890573,-0.742144)..controls (-1.3712,0.367538) and (0.34086,1.73882)..cycle,
-    (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle,
-    (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
+    // (-1.00195,0)..controls (-0.990469,1.33363) and (1.00998,1.31642)..(0.998502,-0.0172156)..controls (0.987026,-1.35085) and (-1.01342,-1.33363)..cycle,
+    // (-1.26284,0.599848)..controls (-0.829364,1.45475) and (1.64169,0.399899)..(1.07867,-0.86294)..controls (0.74517,-1.61099) and (-1.83112,-0.520921)..cycle,
+    // (-0.841836,0.446343)..controls (-0.227446,1.55993) and (1.50685,0.5614)..(0.858786,-0.590415)..controls (0.161022,-1.83057) and (-1.33903,-0.454818)..cycle,
+    // (-1.0522,0.0600251)..controls (-0.572004,1.31702) and (1.08045,1.07692)..(1.0522,-0.176544)..controls (1.0259,-1.34403) and (-1.457,-0.999597)..cycle,
+    // (-1.3015,0.292664)..controls (-1.16377,1.02949) and (1.58727,0.964071)..(1.08802,-0.447604)..controls (0.699265,-1.54686) and (-1.45274,-0.516484)..cycle,
+    // (-0.7747,-0.578443)..controls (-1.27059,0.149293) and (-1.30873,0.619498)..(-0.623203,0.977844)..controls (-0.168712,1.21542) and (0.994515,0.849099)..(0.943412,-0.00688622)..controls (0.860778,-1.39102) and (-0.244461,-1.35659)..cycle,
+    // (0.890573,-0.36047)..controls (-0.148296,-1.45705) and (-1.29345,-1.23691) .. (-0.996593,0.106021) .. controls (-0.669702,1.58481) and (2.03559,0.848164)..cycle,
+    // (-0.723053,0.87455)..controls (-0.120509,1.45988) and (1.49431,0.148054)..(0.864221,-0.795359)..controls (0.400434,-1.48977) and (-1.84643,-0.216729)..cycle,
+    // (0.28979,-0.834028)..controls (0.093337,-0.908653) and (-1.20138,-1.95019)..(-1.15209,0.0777484)..controls (-1.10261,2.11334) and (3.02512,0.204973)..cycle,
+    // (1.01073,-0.409946)..controls (0.812824,-1.99319) and (-2.2123,-0.523035)..(-0.897641,0.36047)..controls (0.779873,1.48783) and (1.20823,1.17008)..cycle,
+    // (0.636123,-0.975389)..controls (-0.853465,-1.50787) and (-1.37827,0.219109)..(-0.770416,0.961253)..controls (-0.154452,1.7133) and (2.19816,-0.417014)..cycle,
+    // (0.805756,0.918845)..controls (1.7034,-0.664395) and (-0.374882,-1.93278)..(-0.890573,-0.742144)..controls (-1.3712,0.367538) and (0.34086,1.73882)..cycle,
+    // (0.572511,-0.925913)..controls (-1.47015,-1.5479) and (-1.32586,0.925729)..(-0.28979,1.00366)..controls (1.30759,1.12382) and (1.65924,-0.595004)..cycle,
+    // (-1.08848,-0.169633)..controls (-1.65294,0.930585) and (1.00971,1.66132)..(1.0178,0.0282721)..controls (1.02487,-1.39947) and (-0.671464,-0.982457)..cycle
+    (-1.00195,0).. controls (-1.01342,-1.33363) and (0.987026,-1.35085) ..(0.998502,-0.0172156).. controls (1.00998,1.31642) and (-0.990469,1.33363) ..cycle,
+    (-1.26284,0.599848).. controls (-1.83112,-0.520921) and (0.74517,-1.61099) ..(1.07867,-0.86294).. controls (1.64169,0.399899) and (-0.829364,1.45475) ..cycle,
+    (-0.841836,0.446343).. controls (-1.33903,-0.454818) and (0.161022,-1.83057) ..(0.858786,-0.590415).. controls (1.50685,0.5614) and (-0.227446,1.55993) ..cycle,
+    (-1.0522,0.0600251).. controls (-1.457,-0.999597) and (1.0259,-1.34403) ..(1.0522,-0.176544).. controls (1.08045,1.07692) and (-0.572004,1.31702) ..cycle,
+    (-1.3015,0.292664).. controls (-1.45274,-0.516484) and (0.699265,-1.54686) ..(1.08802,-0.447604).. controls (1.58727,0.964071) and (-1.16377,1.02949) ..cycle,
+    (-0.7747,-0.578443).. controls (-0.244461,-1.35659) and (0.860778,-1.39102) ..(0.943412,-0.00688622).. controls (0.994515,0.849099) and (-0.168712,1.21542) ..(-0.623203,0.977844).. controls (-1.30873,0.619498) and (-1.27059,0.149293) ..cycle,
+    (0.890573,-0.36047).. controls (2.03559,0.848164) and (-0.669702,1.58481) ..(-0.996593,0.106021).. controls (-1.29345,-1.23691) and (-0.148296,-1.45705) ..cycle,
+    (-0.723053,0.87455).. controls (-1.84643,-0.216729) and (0.400434,-1.48977) ..(0.864221,-0.795359).. controls (1.49431,0.148054) and (-0.120509,1.45988) ..cycle,
+    (0.28979,-0.834028).. controls (3.02512,0.204973) and (-1.10261,2.11334) ..(-1.15209,0.0777484).. controls (-1.20138,-1.95019) and (0.093337,-0.908653) ..cycle,
+    (1.01073,-0.409946).. controls (1.20823,1.17008) and (0.779873,1.48783) ..(-0.897641,0.36047).. controls (-2.2123,-0.523035) and (0.812824,-1.99319) ..cycle,
+    (0.636123,-0.975389).. controls (2.19816,-0.417014) and (-0.154452,1.7133) ..(-0.770416,0.961253).. controls (-1.37827,0.219109) and (-0.853465,-1.50787) ..cycle,
+    (0.805756,0.918845).. controls (0.34086,1.73882) and (-1.3712,0.367538) ..(-0.890573,-0.742144).. controls (-0.374882,-1.93278) and (1.7034,-0.664395) ..cycle,
+    (0.572511,-0.925913).. controls (1.65924,-0.595004) and (1.30759,1.12382) ..(-0.28979,1.00366).. controls (-1.32586,0.925729) and (-1.47015,-1.5479) ..cycle,
+    (-1.08848,-0.169633).. controls (-0.671464,-0.982457) and (1.02487,-1.39947) ..(1.0178,0.0282721).. controls (1.00971,1.66132) and (-1.65294,0.930585) ..cycle,
 };
+
 path[] concavepaths = new path[] { // [C]on[C]ave
-    (
-        (-0.9,0).. controls
-        (-1.07649842837266,0.638748977821067) and
-        (-0.964116819714307,1.31556675048848) 
-        ..(-0.46,1.3).. controls
-        (0.0281888161644762,1.28492509435253) and
-        (0.0424415730404705,0.611597145023648) 
-        ..(0.4,0.36).. controls
-        (0.623716050683286,0.202581476469435) and
-        (0.955392557398132,0.2268850080704) 
-        ..(1.12,0).. controls
-        (1.39778902724123,-0.382887703564746) and
-        (1.00985460296201,-0.913845673503591) 
-        ..(0.4,-1).. controls
-        (0.0314808795565626,-1.05206079689921) and
-        (-0.356264634361184,-0.976905732695238) 
-        ..(-0.6,-0.7).. controls
-        (-0.770480811250471,-0.506318160575248) and
-        (-0.831474513408123,-0.247994188496873) 
-        ..cycle
-    ),
-    (
-        (0.523035,-1.10261)..controls
-        (-2.62474,-1.37362) and
-        (0.932069,3.11139)..(0.558375,0.388742)..controls
-        (0.508899,0.0282721) and
-        (1.59031,-1.01073)..cycle
-    ),
-    (
-        (-1.4,0).. controls
-        (-1.4330976353941,0.309902105154151) and
-        (-1.14752451684655,0.558611632511754) 
-        ..(-0.84,0.49).. controls
-        (-0.66443424676999,0.450829617534925) and
-        (-0.529507080118944,0.301231459889368) 
-        ..(-0.35,0.28).. controls
-        (0.10216096608008,0.226520006851507) and
-        (0.27539586949137,0.862356630570909) 
-        ..(0.7,0.91).. controls
-        (1.05908418967551,0.950291602166852) and
-        (1.33041677912753,0.603698618857815) 
-        ..(1.33,0.21).. controls
-        (1.32951602626534,-0.247172104636948) and
-        (1.00821765736334,-0.645111266508212) 
-        ..(0.56,-0.7).. controls
-        (0.274611440338081,-0.734948682488405) and
-        (0.00179568356868698,-0.609311459905892) 
-        ..(-0.28,-0.56).. controls
-        (-0.46548899922109,-0.527541258147606) and
-        (-0.65562744488586,-0.528541447729153) 
-        ..(-0.84,-0.49).. controls
-        (-1.11441028298393,-0.432636963666203) and
-        (-1.37134558383179,-0.268299042718725) 
-        ..cycle
-    ),
-    (
-        (-0.74,1.11).. controls
-        (-0.45217186192491,1.16995417728509) and
-        (-0.244186500029556,0.896228533675695) 
-        ..(-1.11022302462516e-16,0.74).. controls
-        (0.394876451006404,0.487361263147939) and
-        (1.0095388806718,0.479180198886787)
-        ..(1.11,1.1327982892113e-16).. controls
-        (1.33690476375748,-1.08229204047052) and
-        (-0.898239052326633,-1.59366714480983)
-        ..(-1.11,0.37).. controls
-        (-1.14560254698906,0.700143742564816) and
-        (-1.03848931729363,1.04782511478409) ..cycle
-    ),
-    (
-        (-1.35,0).. controls
-        (-1.18010190019904,0.416395394711846) and
-        (-0.593260371382216,0.281172231186116) 
-        ..(-0.27,0.54).. controls
-        (0.0113914268982608,0.76530418707376) and
-        (0.0415625335934956,1.24549540856936) 
-        ..(0.405,1.35).. controls
-        (1.23327036593247,1.5881649229556) and
-        (1.85490272745839,-0.0949264215164867) 
-        ..(0.27,-0.675).. controls
-        (0.0952777069905893,-0.738948268869059) and
-        (-0.0857655726904087,-0.78403391700961) 
-        ..(-0.27,-0.81).. controls
-        (-0.962087418222204,-0.907543111787485) and
-        (-1.54255992615578,-0.471936216774976) 
-        ..cycle
-    ),
-    (
-        (-0.69,0.23).. controls
-        (-0.56530943588509,0.830213108154057) and
-        (-0.490658723837313,1.55646651437028) 
-        ..(0,1.38).. controls
-        (0.325235552510512,1.26302830152094) and
-        (0.237200927517758,0.801860482003199) 
-        ..(0.46,0.575).. controls
-        (0.619891745450561,0.41219358416926) and
-        (0.894509662874465,0.412735950982866) 
-        ..(1.035,0.23).. controls
-        (1.25559773374585,-0.0569317384062731) and
-        (1.01749624107123,-0.438647936878262) 
-        ..(0.69,-0.69).. controls
-        (0.106935122935565,-1.13749997528092) and
-        (-0.664799927016652,-1.18767474273486) 
-        ..(-0.851,-0.644).. controls
-        (-0.950985536038634,-0.352058059741617) and
-        (-0.751751264242251,-0.0672471774939401) ..cycle
-    ),
-    (
-        (-0.84,-0.24).. controls
-        (-1.18825254216645,0.432752580408028) and
-        (-0.749760426462422,1.11594975136258) 
-        ..(-0.24,0.96).. controls
-        (0.0302529853898903,0.877322170006355) and
-        (0.10736936611544,0.557158491533225) 
-        ..(0.3,0.36).. controls
-        (0.513175121412852,0.141814114802958) and
-        (0.878268025246844,0.063643117790086) 
-        ..(0.96,-0.24).. controls
-        (1.09910636339287,-0.756795171199751) and
-        (0.418309528013558,-1.17658493090488) 
-        ..(-0.24,-0.84).. controls
-        (-0.497994898468632,-0.708090630046164) and
-        (-0.706794583247006,-0.497325581279094) 
-        ..cycle
-    )
+    // (
+    //     (-0.9,0).. controls
+    //     (-1.07649842837266,0.638748977821067) and
+    //     (-0.964116819714307,1.31556675048848) 
+    //     ..(-0.46,1.3).. controls
+    //     (0.0281888161644762,1.28492509435253) and
+    //     (0.0424415730404705,0.611597145023648) 
+    //     ..(0.4,0.36).. controls
+    //     (0.623716050683286,0.202581476469435) and
+    //     (0.955392557398132,0.2268850080704) 
+    //     ..(1.12,0).. controls
+    //     (1.39778902724123,-0.382887703564746) and
+    //     (1.00985460296201,-0.913845673503591) 
+    //     ..(0.4,-1).. controls
+    //     (0.0314808795565626,-1.05206079689921) and
+    //     (-0.356264634361184,-0.976905732695238) 
+    //     ..(-0.6,-0.7).. controls
+    //     (-0.770480811250471,-0.506318160575248) and
+    //     (-0.831474513408123,-0.247994188496873) 
+    //     ..cycle
+    // ),
+    // (
+    //     (0.523035,-1.10261)..controls
+    //     (-2.62474,-1.37362) and
+    //     (0.932069,3.11139)..(0.558375,0.388742)..controls
+    //     (0.508899,0.0282721) and
+    //     (1.59031,-1.01073)..cycle
+    // ),
+    // (
+    //     (-1.4,0).. controls
+    //     (-1.4330976353941,0.309902105154151) and
+    //     (-1.14752451684655,0.558611632511754) 
+    //     ..(-0.84,0.49).. controls
+    //     (-0.66443424676999,0.450829617534925) and
+    //     (-0.529507080118944,0.301231459889368) 
+    //     ..(-0.35,0.28).. controls
+    //     (0.10216096608008,0.226520006851507) and
+    //     (0.27539586949137,0.862356630570909) 
+    //     ..(0.7,0.91).. controls
+    //     (1.05908418967551,0.950291602166852) and
+    //     (1.33041677912753,0.603698618857815) 
+    //     ..(1.33,0.21).. controls
+    //     (1.32951602626534,-0.247172104636948) and
+    //     (1.00821765736334,-0.645111266508212) 
+    //     ..(0.56,-0.7).. controls
+    //     (0.274611440338081,-0.734948682488405) and
+    //     (0.00179568356868698,-0.609311459905892) 
+    //     ..(-0.28,-0.56).. controls
+    //     (-0.46548899922109,-0.527541258147606) and
+    //     (-0.65562744488586,-0.528541447729153) 
+    //     ..(-0.84,-0.49).. controls
+    //     (-1.11441028298393,-0.432636963666203) and
+    //     (-1.37134558383179,-0.268299042718725) 
+    //     ..cycle
+    // ),
+    // (
+    //     (-0.74,1.11).. controls
+    //     (-0.45217186192491,1.16995417728509) and
+    //     (-0.244186500029556,0.896228533675695) 
+    //     ..(-1.11022302462516e-16,0.74).. controls
+    //     (0.394876451006404,0.487361263147939) and
+    //     (1.0095388806718,0.479180198886787)
+    //     ..(1.11,1.1327982892113e-16).. controls
+    //     (1.33690476375748,-1.08229204047052) and
+    //     (-0.898239052326633,-1.59366714480983)
+    //     ..(-1.11,0.37).. controls
+    //     (-1.14560254698906,0.700143742564816) and
+    //     (-1.03848931729363,1.04782511478409) ..cycle
+    // ),
+    // (
+    //     (-1.35,0).. controls
+    //     (-1.18010190019904,0.416395394711846) and
+    //     (-0.593260371382216,0.281172231186116) 
+    //     ..(-0.27,0.54).. controls
+    //     (0.0113914268982608,0.76530418707376) and
+    //     (0.0415625335934956,1.24549540856936) 
+    //     ..(0.405,1.35).. controls
+    //     (1.23327036593247,1.5881649229556) and
+    //     (1.85490272745839,-0.0949264215164867) 
+    //     ..(0.27,-0.675).. controls
+    //     (0.0952777069905893,-0.738948268869059) and
+    //     (-0.0857655726904087,-0.78403391700961) 
+    //     ..(-0.27,-0.81).. controls
+    //     (-0.962087418222204,-0.907543111787485) and
+    //     (-1.54255992615578,-0.471936216774976) 
+    //     ..cycle
+    // ),
+    // (
+    //     (-0.69,0.23).. controls
+    //     (-0.56530943588509,0.830213108154057) and
+    //     (-0.490658723837313,1.55646651437028) 
+    //     ..(0,1.38).. controls
+    //     (0.325235552510512,1.26302830152094) and
+    //     (0.237200927517758,0.801860482003199) 
+    //     ..(0.46,0.575).. controls
+    //     (0.619891745450561,0.41219358416926) and
+    //     (0.894509662874465,0.412735950982866) 
+    //     ..(1.035,0.23).. controls
+    //     (1.25559773374585,-0.0569317384062731) and
+    //     (1.01749624107123,-0.438647936878262) 
+    //     ..(0.69,-0.69).. controls
+    //     (0.106935122935565,-1.13749997528092) and
+    //     (-0.664799927016652,-1.18767474273486) 
+    //     ..(-0.851,-0.644).. controls
+    //     (-0.950985536038634,-0.352058059741617) and
+    //     (-0.751751264242251,-0.0672471774939401) ..cycle
+    // ),
+    // (
+    //     (-0.84,-0.24).. controls
+    //     (-1.18825254216645,0.432752580408028) and
+    //     (-0.749760426462422,1.11594975136258) 
+    //     ..(-0.24,0.96).. controls
+    //     (0.0302529853898903,0.877322170006355) and
+    //     (0.10736936611544,0.557158491533225) 
+    //     ..(0.3,0.36).. controls
+    //     (0.513175121412852,0.141814114802958) and
+    //     (0.878268025246844,0.063643117790086) 
+    //     ..(0.96,-0.24).. controls
+    //     (1.09910636339287,-0.756795171199751) and
+    //     (0.418309528013558,-1.17658493090488) 
+    //     ..(-0.24,-0.84).. controls
+    //     (-0.497994898468632,-0.708090630046164) and
+    //     (-0.706794583247006,-0.497325581279094) 
+    //     ..cycle
+    // )
+
+
+    (-0.9,0).. controls (-0.831474513408123,-0.247994188496873) and (-0.770480811250471,-0.506318160575248)
+     ..(-0.6,-0.7).. controls (-0.356264634361184,-0.976905732695238) and (0.0314808795565626,-1.05206079689921)
+     ..(0.4,-1).. controls (1.00985460296201,-0.913845673503591) and (1.39778902724123,-0.382887703564746)
+     ..(1.12,0).. controls (0.955392557398132,0.2268850080704) and (0.623716050683286,0.202581476469435)
+     ..(0.4,0.36).. controls (0.0424415730404705,0.611597145023648) and (0.0281888161644762,1.28492509435253)
+     ..(-0.46,1.3).. controls (-0.964116819714307,1.31556675048848) and (-1.07649842837266,0.638748977821067)
+     ..cycle,
+    (0.523035,-1.10261).. controls (1.59031,-1.01073) and (0.508899,0.0282721)
+     ..(0.558375,0.388742).. controls (0.932069,3.11139) and (-2.62474,-1.37362)
+     ..cycle,
+    (-1.4,0).. controls (-1.37134558383179,-0.268299042718725) and (-1.11441028298393,-0.432636963666203)
+     ..(-0.84,-0.49).. controls (-0.65562744488586,-0.528541447729153) and (-0.46548899922109,-0.527541258147606)
+     ..(-0.28,-0.56).. controls (0.00179568356868698,-0.609311459905892) and (0.274611440338081,-0.734948682488405)
+     ..(0.56,-0.7).. controls (1.00821765736334,-0.645111266508212) and (1.32951602626534,-0.247172104636948)
+     ..(1.33,0.21).. controls (1.33041677912753,0.603698618857815) and (1.05908418967551,0.950291602166852)
+     ..(0.7,0.91).. controls (0.27539586949137,0.862356630570909) and (0.10216096608008,0.226520006851507)
+     ..(-0.35,0.28).. controls (-0.529507080118944,0.301231459889368) and (-0.66443424676999,0.450829617534925)
+     ..(-0.84,0.49).. controls (-1.14752451684655,0.558611632511754) and (-1.4330976353941,0.309902105154151)
+     ..cycle,
+    (-0.74,1.11).. controls (-1.03848931729363,1.04782511478409) and (-1.14560254698906,0.700143742564816)
+     ..(-1.11,0.37).. controls (-0.898239052326633,-1.59366714480983) and (1.33690476375748,-1.08229204047052)
+     ..(1.11,1.1327982892113e-16).. controls (1.0095388806718,0.479180198886787) and (0.394876451006404,0.487361263147939)
+     ..(-1.11022302462516e-16,0.74).. controls (-0.244186500029556,0.896228533675695) and (-0.45217186192491,1.16995417728509)
+     ..cycle,
+    (-1.35,0).. controls (-1.54255992615578,-0.471936216774976) and (-0.962087418222204,-0.907543111787485)
+     ..(-0.27,-0.81).. controls (-0.0857655726904087,-0.78403391700961) and (0.0952777069905893,-0.738948268869059)
+     ..(0.27,-0.675).. controls (1.85490272745839,-0.0949264215164867) and (1.23327036593247,1.5881649229556)
+     ..(0.405,1.35).. controls (0.0415625335934956,1.24549540856936) and (0.0113914268982608,0.76530418707376)
+     ..(-0.27,0.54).. controls (-0.593260371382216,0.281172231186116) and (-1.18010190019904,0.416395394711846)
+     ..cycle,
+    (-0.69,0.23).. controls (-0.751751264242251,-0.0672471774939401) and (-0.950985536038634,-0.352058059741617)
+     ..(-0.851,-0.644).. controls (-0.664799927016652,-1.18767474273486) and (0.106935122935565,-1.13749997528092)
+     ..(0.69,-0.69).. controls (1.01749624107123,-0.438647936878262) and (1.25559773374585,-0.0569317384062731)
+     ..(1.035,0.23).. controls (0.894509662874465,0.412735950982866) and (0.619891745450561,0.41219358416926)
+     ..(0.46,0.575).. controls (0.237200927517758,0.801860482003199) and (0.325235552510512,1.26302830152094)
+     ..(0,1.38).. controls (-0.490658723837313,1.55646651437028) and (-0.56530943588509,0.830213108154057)
+     ..cycle,
+    (-0.84,-0.24).. controls (-0.706794583247006,-0.497325581279094) and (-0.497994898468632,-0.708090630046164)
+     ..(-0.24,-0.84).. controls (0.418309528013558,-1.17658493090488) and (1.09910636339287,-0.756795171199751)
+     ..(0.96,-0.24).. controls (0.878268025246844,0.063643117790086) and (0.513175121412852,0.141814114802958)
+     ..(0.3,0.36).. controls (0.10736936611544,0.557158491533225) and (0.0302529853898903,0.877322170006355)
+     ..(-0.24,0.96).. controls (-0.749760426462422,1.11594975136258) and (-1.18825254216645,0.432752580408028)
+     ..cycle
 };
 
 path randomconvex ()
@@ -320,8 +379,8 @@ int free = 1;
 int cartesian = 2;
 int combined = 3;
 int dn = config.system.dummynumber;
-path ucircle = reverse(unitcircle); // [U]nit [C]ircle
-path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle; // [U]nit [S]quare
+// path ucircle = reverse(unitcircle); // [U]nit [C]ircle
+path usquare = (1,1) -- (-1,1) -- (-1,-1) -- (1,-1) -- cycle; // [U]nit [S]quare
 
 // >support | Supportiong utility functions
 
@@ -567,8 +626,8 @@ pair range (path g, pair center, pair dir, real ang, real orient = 1)
 // Calculate the subpath times based on `center`, `dir`, and `ang`.
 {
     return (
-        intersectiontime(g, center, rotate(orient*ang*.5)*dir),
-        intersectiontime(g, center, rotate(-orient*ang*.5)*dir)
+        intersectiontime(g, center, rotate(-orient*ang*.5)*dir),
+        intersectiontime(g, center, rotate(orient*ang*.5)*dir)
     );
 }
 
@@ -652,9 +711,9 @@ path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
 // Connect points around the origin with a path.
 {
     if (nums.length == 0) return nullpath;
-    if (nums.length == 1) return scale(nums[0])*ucircle;
+    if (nums.length == 1) return scale(nums[0])*unitcircle;
     
-    pair[] points = sequence(new pair (int i) { return nums[i]*dir(-360*(i/nums.length)); }, nums.length);
+    pair[] points = sequence(new pair (int i) { return nums[i]*dir(360*(i/nums.length)); }, nums.length);
 
     path res;
 
@@ -664,11 +723,11 @@ path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
         {
             if (arr.length == 2)
             {
-                return arr[0]{rotate(-90)*arr[0]} .. 
-                             {rotate(-90)*arr[1]}arr[1];
+                return arr[0]{rotate(90)*arr[0]} .. 
+                             {rotate(90)*arr[1]}arr[1];
             }
             pair a = arr.pop();
-            return getpath(arr) .. {rotate(-90)*a}a;
+            return getpath(arr) .. {rotate(90)*a}a;
         }
         res = (path) (getpath(points)..cycle);
     }
@@ -843,16 +902,11 @@ path[] combination (path p, path q, int mode, bool round, real roundcoeff)
 path[] difference (
     path p,
     path q,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 ) // Construct the set difference between two path-enclosed areas.
 {
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
     if (!meet(p, q))
     {
         if (windingnumber(p, point(q,0)) == -1) return new path[]{p, reverse(q)};
@@ -860,25 +914,18 @@ path[] difference (
         return new path[]{p};
     }
 
-    return combination(p, reverse(q), mode = -1, round = round, roundcoeff = roundcoeff);
+    return combination(p, reverse(q), mode = 1, round = round, roundcoeff = roundcoeff);
 }
 
 path[] difference (
     path[] ps,
     path q,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
 {
-    if (correct)
-    {
-        for (int i = 0; i < ps.length; ++i)
-        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
-        if (!clockwise(q)) q = reverse(q);
-    }
-
-    return concat(sequence(new path[] (int i){return difference(ps[i], q, correct = false, round = round, roundcoeff = roundcoeff);}, ps.length));
+    return concat(sequence(new path[] (int i){return difference(ps[i], q, round = round, roundcoeff = roundcoeff);}, ps.length));
 }
 
 path[] operator - (path p, path q)
@@ -890,16 +937,11 @@ path[] operator - (path[] p, path q)
 path[] symmetric (
     path p,
     path q,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 ) // Construct the set symmetric difference between two path-enclosed areas.
 {
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
     if (!meet(p, q))
     {
         if (windingnumber(p, point(q,0)) == -1)
@@ -909,7 +951,7 @@ path[] symmetric (
         return new path[] {p,q};
     }
 
-    return concat(difference(p,q,false,round,roundcoeff), difference(q,p,false,round,roundcoeff));
+    return concat(difference(p,q,round,roundcoeff), difference(q,p,round,roundcoeff));
 }
 
 path[] operator :: (path p, path q)
@@ -918,16 +960,11 @@ path[] operator :: (path p, path q)
 path[] intersection (
     path p,
     path q,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 ) // Construct the intersection of two path-enclosed areas.
 {
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
     if (!meet(p, q))
     {
         if (insidepath(p,q)) return new path[]{q};
@@ -935,60 +972,47 @@ path[] intersection (
         return new path[];
     }
 
-    return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
+    return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
 }
 
 path[] intersection (
     path[] ps,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
 {
-    if (correct)
-    {
-        for (int i = 0; i < ps.length; ++i)
-        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
-    }
     if (ps.length == 0) return new path[];
     if (ps.length == 1) return ps;
-    if (ps.length == 2) return intersection(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
+    if (ps.length == 2) return intersection(ps[0], ps[1], round = round, roundcoeff = roundcoeff);
     
     ps = sequence(new path (int i){return ps[i];}, ps.length);
     
     path p = ps.pop();
-    path[] prev = intersection(ps, correct = false, round = round, roundcoeff = roundcoeff);
+    path[] prev = intersection(ps, round = round, roundcoeff = roundcoeff);
     
-    return concat(sequence(new path[] (int i){return intersection(prev[i], p, correct);}, prev.length));
+    return concat(sequence(new path[] (int i){ return intersection(prev[i], p); }, prev.length));
 }
 
 path[] intersection (
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... path[] ps
-) {return intersection(ps, correct, round, roundcoeff);}
+) {return intersection(ps, round, roundcoeff);}
 
 path[] intersection (
     path p,
     path q,
     path[] holes,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
 {
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-        for (int i = 0; i < holes.length; ++i)
-        { if (!clockwise(holes[i])) holes[i] = reverse(holes[i]); }
-    }
-    
-    path[] res = intersection(p, q, correct = false, round = round, roundcoeff = roundcoeff);
+    path[] res = intersection(p, q, round = round, roundcoeff = roundcoeff);
     for (int i = 0; i < holes.length; ++i)
-    { res = difference(res, holes[i], correct = false, round = round, roundcoeff = roundcoeff); }
+    { res = difference(res, holes[i], round = round, roundcoeff = roundcoeff); }
     
     return res;
 }
@@ -999,16 +1023,11 @@ path[] operator ^ (path p, path q)
 path[] union (
     path p,
     path q,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 ) // Construct the union of two path-enclosed areas.
 {
-    if (correct)
-    {
-        if (!clockwise(p)) p = reverse(p);
-        if (!clockwise(q)) q = reverse(q);
-    }
     if (!meet(p, q))
     {
         if (insidepath(p,q)) return new path[]{p};
@@ -1016,25 +1035,19 @@ path[] union (
         return new path[]{p,q};
     }
     
-    return combination(p, q, mode = 1, round = round, roundcoeff = roundcoeff);
+    return combination(p, q, mode = -1, round = round, roundcoeff = roundcoeff);
 }
 
 path[] union (
     path[] ps,
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
 {
-    if (correct)
-    {
-        for (int i = 0; i < ps.length; ++i)
-        { if (!clockwise(ps[i])) ps[i] = reverse(ps[i]); }
-    }
-    
     if (ps.length == 0) return new path[];
     if (ps.length == 1) return ps;
-    if (ps.length == 2) return union(ps[0], ps[1], correct = false, round = round, roundcoeff = roundcoeff);
+    if (ps.length == 2) return union(ps[0], ps[1], round = round, roundcoeff = roundcoeff);
     
     for (int i = 0; i < ps.length; ++i)
     {
@@ -1042,7 +1055,7 @@ path[] union (
         {
             if (meet(ps[i], ps[j]))
             {
-                ps[i] = union(ps[i], ps[j], correct = false, round = round, roundcoeff = roundcoeff)[0];
+                ps[i] = union(ps[i], ps[j], round = round, roundcoeff = roundcoeff)[0];
                 ps.delete(j);
                 j = i;
             }
@@ -1053,11 +1066,11 @@ path[] union (
 }
 
 path[] union (
-    bool correct = true,
+    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... path[] ps
-) { return union(ps, correct, round, roundcoeff); }
+) { return union(ps, round, roundcoeff); }
 
 path[] operator | (path p, path q)
 { return union(p, q); }
@@ -1211,7 +1224,7 @@ void defaults ()
     config.smooth.maxlength = defaultconfig.smooth.maxlength;
     config.smooth.inferlabels = defaultconfig.smooth.inferlabels;
     config.smooth.addsubsets = defaultconfig.smooth.addsubsets;
-    config.smooth.correct = defaultconfig.smooth.correct;
+    // config.smooth.correct = defaultconfig.smooth.correct;
     config.smooth.clip = defaultconfig.smooth.clip;
     config.smooth.unit = defaultconfig.smooth.unit;
     config.smooth.setcenter = defaultconfig.smooth.setcenter;
@@ -1595,7 +1608,7 @@ struct hole
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool correct = config.smooth.correct,
+        // bool correct = config.smooth.correct,
         bool copy = false
     )
     {
@@ -1608,7 +1621,6 @@ struct hole
         }
         else
         {
-            if (!clockwise(contour) && correct) contour = reverse(contour);
             this.contour = shift(shift)*srap(scale, rotate, point)*contour;
             this.center = center;
             this.scnumber = scnumber;
@@ -1699,7 +1711,7 @@ struct subset
         real scale = 1,
         real rotate = 0,
         pair point = center(contour),
-        bool correct = config.smooth.correct,
+        // bool correct = config.smooth.correct,
         bool copy = false
     )
     {
@@ -1716,7 +1728,6 @@ struct subset
         }
         else
         {
-            contour = (clockwise(contour) && correct) ? contour : reverse(contour);
             this.contour = shift(shift)*srap(scale, rotate, point)*contour;
             this.center = center;
             this.label = label;
@@ -3492,7 +3503,7 @@ struct smooth
         pair viewdir = config.drawing.viewdir,
         bool distort = true,
         smooth[] attached = {},
-        bool correct = config.smooth.correct,
+        // bool correct = config.smooth.correct,
         bool copy = false,
         bool isderivative = false,
         bool unit = config.smooth.unit,
@@ -3519,7 +3530,7 @@ struct smooth
             if (scale <= 0)
             { halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-            this.contour = shift(shift)*srap(scale, rotate, point)*((!clockwise(contour) && correct) ? reverse(contour) : contour);
+            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
             this.center = shift(shift)*center;
             if (!config.system.repeatlabels && label != "" && smooth.repeats(label))
             {
@@ -3997,7 +4008,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 0)
         {
             return smooth(
-                contour = ucircle,
+                contour = unitcircle,
                 hratios = new real[] {.5},
                 vratios = r(),
                 distort = false,
@@ -4063,7 +4074,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 1)
         {
             return smooth(
-                contour = rotate(50) * reflect((0,0), (0,1))*concavepaths[4],
+                contour = rotate(50) * reverse(reflect((0,0), (0,1))*concavepaths[4]),
                 holes = new hole[] {
                     hole(
                         contour = rotate(45) * convexpaths[4],
@@ -4090,9 +4101,9 @@ smooth samplesmooth (int type, int num = 0, string label = "")
         if (num == 2)
         {
             return smooth(
-                contour = wavypath(2,2,2,2,2, 3.15, 2,2,2),
+                contour = wavypath(2,2,2,2, 3.15, 2,2,2,2),
                 holes = new hole[] {
-                    hole(contour = convexpaths[5], scale = .55, shift = (-2,.7), rotate = 10, sections = rr(161,230,8))
+                    hole(contour = convexpaths[5], scale = .52, shift = (-2,.7), rotate = 10, sections = rr(161,230,8))
                 },
                 subsets = new subset[] {
                     subset(contour = concavepaths[3], shift = (-.3,-.35), rotate = -50),
@@ -4148,27 +4159,27 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         contour = scale(.35)*convexpaths[4],
                         sections = rr(),
                         scale = .75,
-                        shift = (.9,.02),
-                        rotate = 5
+                        shift = (.88,.02),
+                        rotate = 7
                     ),
                     hole(
                         contour = scale(.35)*convexpaths[6],
                         sections = rr(),
                         scale = .75,
-                        shift = (-.4,-.75)
+                        shift = (-.35,-.67)
                     ),
                     hole(
                         contour = scale(.35)*convexpaths[5],
                         sections = rr(),
                         scale = .80,
-                        shift = (-.35,.6),
-                        rotate = -20
+                        shift = (-.39,.7),
+                        rotate = -15
                     )
                 },
                 subsets = new subset[] {
                     subset(
                         contour = scale(.35)*convexpaths[2],
-                        shift = (.05, -.1),
+                        shift = (.02, .0),
                         scale = .95
                     )
                 },
@@ -4191,7 +4202,7 @@ smooth samplesmooth (int type, int num = 0, string label = "")
                         rotate = 90
                     ),
                     hole(
-                        contour = reverse(ellipse(c = (0,0), a = 1, b = 2)),
+                        contour = ellipse(c = (0,0), a = 1, b = 2),
                         sections = new real[][] {
                             new real[] {90,190,6}
                         },
@@ -4551,7 +4562,7 @@ smooth[] union (
     if (!meet(sm1.contour, sm2.contour) && !insidepath(sm1.contour, sm2.contour) && !insidepath(sm2.contour, sm1.contour))
     { return new smooth[] {sm1, sm2}; }
 
-    path[] union = union(sm1.contour, sm2.contour, correct = false, round = round, roundcoeff = roundcoeff);
+    path[] union = union(sm1.contour, sm2.contour, round = round, roundcoeff = roundcoeff);
     path contour; 
     hole[] trueholes = concat(holecopy(sm1.holes), holecopy(sm2.holes));
     path[] holes;
@@ -4562,7 +4573,7 @@ smooth[] union (
     for (int i = 0; i < sm1.holes.length; ++i)
     {
         if (!meet(sm1.holes[i].contour, sm2.contour)) continue;
-        path[] diff = difference(sm1.holes[i].contour, sm2.contour, correct = false, round = round, roundcoeff = roundcoeff);
+        path[] diff = difference(sm1.holes[i].contour, sm2.contour, round = round, roundcoeff = roundcoeff);
         holes.append(diff);
         hrefs.append(array(value = -1, diff.length));
         diffused[i] = true;
@@ -4570,7 +4581,7 @@ smooth[] union (
     for (int i = 0; i < sm2.holes.length; ++i)
     {
         if (!meet(sm2.holes[i].contour, sm1.contour)) continue;
-        path[] diff = difference(sm2.holes[i].contour, sm1.contour, correct = false, round = round, roundcoeff = roundcoeff);
+        path[] diff = difference(sm2.holes[i].contour, sm1.contour, round = round, roundcoeff = roundcoeff);
         holes.append(diff);
         hrefs.append(array(value = -1, diff.length));
         diffused[sm1.holes.length + i] = true;
@@ -4581,7 +4592,7 @@ smooth[] union (
         bool used1 = false;
         for (int j = 0; j < sm2.holes.length; ++j)
         {
-            path[] intersect = intersection(sm1.holes[i].contour, sm2.holes[j].contour, correct = false, round = round, roundcoeff = roundcoeff);
+            path[] intersect = intersection(sm1.holes[i].contour, sm2.holes[j].contour, round = round, roundcoeff = roundcoeff);
 
             if (intersect.length > 0 || inside(sm2.holes[j].contour, sm1.holes[i].center))
             {
@@ -5073,7 +5084,7 @@ smooth rn (
     pair shift = (0,0),
     real scale = 1,
     real rotate = 0,
-    bool drawnow = false
+    bool drawnow = true
 ) // A method for the common diagram representation of the n-dimensional Eucledian space.
 {
     return smooth(
@@ -5198,10 +5209,6 @@ void draw (
     {
         for (int i = 0; i < contour.length; ++i)
         {
-            if (dspec.help && (i == 0 ? clockwise(contour[i]) : !clockwise(contour[i])))
-            {
-                debugpaths.push(contour[i]);
-            }
             fitpath(pic = pic, dspec.overlap = dspec.overlap || sm.isderivative, covermode = dspec.smoothoverlap ? (1-2*sgn(i)) : 0, dspec.drawnow = dspec.drawnow, gs = contour[i], L = "", p = dspec.contourpen, arrow = null, bar = null);
         }
     }
@@ -5232,7 +5239,7 @@ void draw (
                 if (dspec.help)
                 {
                     pair hlstart = point(curhlcontour, 0);
-                    pair hlmid = intersection(curhlcontour, hl.center, sdir);
+                    pair hlmid = intersection(hl.contour, hl.center, sdir);
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
                     pair hlvec = config.help.arcratio * radius(hl.contour) * unit(hlstart - hl.center);
                     draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + config.help.linewidth);
@@ -5339,10 +5346,6 @@ void draw (
         {
             if (!sm.subsets[i].isderivative)
             {
-                if (dspec.help && !clockwise(sm.subsets[i].contour))
-                {
-                    debugpaths.push(sm.subsets[i].contour);
-                }
                 fitpath(pic = pic, dspec.overlap = dspec.overlap || config.drawing.subsetoverlap || sm.subsets[i].isonboundary, covermode = dspec.subsetcovermode, dspec.drawnow = dspec.drawnow, gs = sm.subsets[i].contour, L = "", p = dspec.subsetcontourpens[min(sm.subsets[i].layer, dspec.subsetcontourpens.length-1)], arrow = null, bar = null);
             }
         }
@@ -5382,8 +5385,9 @@ void draw (
         if (dummy(sm.labelalign))
         {
             if (abs(sm.labeldir) == 0) align = (0,0);
-            else align = rotate(90)*dir(sm.contour, intersectiontime(sm.contour, sm.center, sm.labeldir));
+            else align = rotate(-90)*dir(sm.contour, intersectiontime(sm.contour, sm.center, sm.labeldir));
         }
+        // write(sm.labelalign);
         label(pic = pic, position = pos, L = Label((config.system.insertdollars ? ("$"+sm.label+"$") : sm.label), align = align, p = dspec.labelpen));
         if (dspec.help && abs(sm.labeldir) > 0)
         {
@@ -5402,7 +5406,7 @@ void draw (
             if (dummy(sb.labelalign))
             {
                 if (abs(sb.labeldir) == 0) align = (0,0);
-                else align = rotate(90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
+                else align = rotate(-90)*dir(sb.contour, intersectiontime(sb.contour, sb.center, sb.labeldir));
             }
             pen curlabelpen = (dspec.subsetlabelpens.length == 0)
                 ? dspec.subsetcontourpens[min(sb.layer, dspec.subsetcontourpens.length-1)]

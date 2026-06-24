@@ -1,6 +1,8 @@
 import export;
 size(17cm);
 
+srand(0);
+
 defaultpen(.8);
 
 export.background = paleyellow;
@@ -31,7 +33,7 @@ smooth sm2 = samplesmooth(1, 2)
     .movesubset(0, shift = (0,.1), inferlabels = true)
     .setlabel(2, dir = (0,0));
 
-draw(sm1, dpar(mode = cartesian, viewdir = dir(-50)));
+draw(sm1, dpar(mode = cartesian, viewdir = dir(-40)));
 draw(sm2, dpar(mode = free, viewdir = dir(20)));
 
 drawpath(sm1, 0, 1, range = 50, drawnow = true);

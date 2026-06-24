@@ -8,7 +8,8 @@ size(11cm);
 defaultpen(linewidth(.7pt));
 
 config.arrow.absmargins = true;
-config.drawing.labels = false;
+config.drawing.gaplength = .08;
+config.drawing.drawlabels = false;
 config.drawing.underdashes = false;
 
 smooth sm1 = smooth(
@@ -53,7 +54,7 @@ smooth sm2 = smooth(
             rotate = -130
         ),
         subset(
-            contour = reflect((0,0),(0,1))*concavepaths[2],
+            contour = reverse(reflect((0,0),(0,1))*concavepaths[2]),
             shift = (-.15,-.1),
             scale = .6,
             rotate = 30

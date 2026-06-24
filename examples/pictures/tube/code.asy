@@ -16,7 +16,7 @@ smooth sm = smooth(
     contour = (shift((0,th/2)) * arch) & ((1,th/2) -- (1,-th/2)) & (shift((0,-th/2)) * reflect((0,0), (1,0)) * reverse(arch)) & ((-1,-th/2) -- (-1,th/2)) & cycle,
     holes = new hole[]{
         hole(
-            contour = yscale(0.9) * scale(.35) * ucircle,
+            contour = yscale(0.9) * scale(.35) * unitcircle,
             sections = new real[][] {
                 r(45,5,1),
                 r(135,5,1),

@@ -10,7 +10,7 @@ export.xmargin = 1.5cm;
 
 config.drawing.viewdir = dir(40);
 config.drawing.mode = free;
-config.drawing.dashes = false;
+config.drawing.dash = false;
 config.system.insertdollars = true;
 
 smooth sm1 = samplesmooth(3).setlabel("M", dir(140));
@@ -21,7 +21,6 @@ union.setlabel(dir = dir(110));
 union.addsection(0, r(345, 40, 1));
 union.move(shift = (3.5,0));
 
-draw(sm1);
-draw(sm2, dpar(help = true));
+draw(sm1, sm2);
 draw(union, dpar(help = true));
 export(prefix = "picture", format = "pdf");

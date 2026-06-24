@@ -6,7 +6,7 @@ size(17 cm);
 defaultpen(.7);
 
 export.background = paleyellow;
-export.drawgrid = true;
+config.help.drawgrid = true;
 
 config.arrow.absmargins = true;
 config.drawing.gaplength = .09;
@@ -46,7 +46,7 @@ draw(rn, rnpar());
 drawarrow(
     ts,
 	rn,
-	arrow = DeferredArrow(SimpleHead, begin = true),
+	arrow = delayedArrow(SimpleHead, begin = true),
 	beginmargin = .07,
 	endmargin = -.3,
 	curve = -.2,
