@@ -5,9 +5,9 @@ config.help.arcratio = .3;
 config.help.arrowlength = -1;
 
 smooth sm = smooth(
-    contour = ucircle
+    contour = unitcircle
 ).addhole(
-    ucircle, scale = .5,
+    unitcircle, scale = .5,
     sections = new real[][]{
         {60, 120, 5}, {-90, 50, 3}
     }

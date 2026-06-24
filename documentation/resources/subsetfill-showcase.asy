@@ -4,12 +4,12 @@ size(3.5cm);
 defaultpen(1pt);
 
 smooth sm = smooth(
-    contour = ucircle
+    contour = unitcircle
 ).addsubsets(
-    scale(.8)*ucircle,
-    scale(.6)*ucircle,
-    scale(.4)*ucircle,
-    scale(.2)*ucircle
+    scale(.8)*unitcircle,
+    scale(.6)*unitcircle,
+    scale(.4)*unitcircle,
+    scale(.2)*unitcircle
 );
 
 draw(sm, dpar(

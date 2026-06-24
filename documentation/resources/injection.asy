@@ -5,7 +5,7 @@ config.arrow.mar = .1;
 size(0, 5cm);
 
 smooth sm1 = smooth(
-    contour = yscale(1.8) * ucircle
+    contour = yscale(1.8) * unitcircle
 )
 .addelement((.1,-.8), unit = true)
 .addelement((-.2,-.3), unit = true)
@@ -14,7 +14,7 @@ smooth sm1 = smooth(
 ;
 
 smooth sm2 = smooth(
-    contour = yscale(1.8) * ucircle
+    contour = yscale(1.8) * unitcircle
 )
 .addelement((-.2,-.7), unit = true)
 .addelement((.2,-.4), unit = true)

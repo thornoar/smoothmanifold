@@ -27,7 +27,7 @@ dot(x0, L = Label("$x_0$", align = N+W));
 path u1 = shift(.7, .3) * rotate(140) * concavepaths[0];
 fill(intersection(beps0, u1)[0], mediumgrey);
 fitpath(beps0, orange);
-fitpath(subpath(u1, .8, length(u1)-2.6), L = Label("$U_1$", position = Relative(.9), align = Relative(W)));
+fitpath(subpath(u1, 2.9, length(u1)-.9), L = Label("$U_1$", position = Relative(.99), align = Relative(N)));
 drawrad(x0, r[0][0], 220, "$\varepsilon$");
 
 pair x1i = (.55,-.2);
@@ -45,7 +45,7 @@ dot(x1o, L = Label("$x_1$", align = .3*N+1.4*E));
 path u2 = shift(2.1, -.8) * rotate(40) * concavepaths[5];
 fill(intersection(beps1b, u2)[0], mediumgrey);
 fitpath(beps1b, p = heavygreen);
-fitpath(subpath(u2, 1.1, length(u2)-1.8), L = Label("$U_2$", position = Relative(.93), align = Relative(W)));
+fitpath(subpath(u2, 1.9, length(u2)-1.1), L = Label("$U_2$", position = Relative(.98), align = Relative(W)));
 drawrad(x1o, r[1][0], 120, "$\varepsilon_1$");
 
 pair x2i = (2.65,-.45);
@@ -63,7 +63,7 @@ path u3 = shift(5.9, 1) * rotate(40) * concavepaths[3];
 fill(intersection(beps2b, u3)[0], mediumgrey);
 fitpath(beps2b, p = heavygreen);
 dot(x2o, L = Label("$x_2$", align = S+.5*W));
-fitpath(subpath(u3, 2.4, length(u2)-2.5), L = Label("$U_3$", position = Relative(.06), align = Relative(W)));
+fitpath(subpath(u3, .5, length(u2)-4.45), L = Label("$U_3$", position = Relative(.0), align = Relative(W)));
 drawrad(x2o, r[2][0], -20, "$\varepsilon_2$");
 
 pair x3i = (5.6,.58);

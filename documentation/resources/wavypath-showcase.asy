@@ -7,7 +7,7 @@ bool normaldir = true;
 draw(wavypath(nums, normaldir));
 
 for (int i = 0; i < nums.length; ++i) {
-    pair d = nums[i] * dir(-360*(i/nums.length));
+    pair d = nums[i] * dir(360*(i/nums.length));
     draw(
         (0,0) -- d, red, L = Label(
             "\texttt{"+(string)nums[i]+"}",

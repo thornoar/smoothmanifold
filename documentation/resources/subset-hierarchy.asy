@@ -21,9 +21,11 @@ smooth sm = smooth(contour = cntr)
     shift((1.2,.3)) * scale(.6) * convexpaths[2],
     shift((1.2,.3)) * scale(.4) * convexpaths[4],
     shift((1.2,.3)) * scale(.25) * rotate(-50) * convexpaths[6],
-    shift((1.25,-.1)) * scale(.6) * reflect((0,0), (0,1)) * rotate(-90) * concavepaths[2],
+    reverse(shift((1.25,-.1)) * scale(.6) * reflect((0,0), (0,1)) * rotate(-90) * concavepaths[2]),
     shift((.7,-.6)) * scale(.3) * convexpaths[3],
     unit = false
-)
-;
+);
+
 draw(sm);
+
+// draw(shift((1.25,-.1)) * scale(.6) * reflect((0,0), (0,1)) * rotate(-90) * concavepaths[2]);

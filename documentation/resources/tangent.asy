@@ -11,7 +11,7 @@ config.drawing.underdashes = true;
 config.drawing.smoothfill = gray(.92);
 
 smooth sm = samplesmooth(1)
-    .setlabel("M", dir = dir(-10))
+    .setlabel("$M$", dir = dir(-10))
     .setsection(0, new real[] {153, 270, 9})
     .rotate(20);
 

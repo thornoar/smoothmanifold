@@ -3036,6 +3036,7 @@ struct smooth
             {
                 write("> ? Could not add subset: has disconnected intersection with existing subsets. It will be drawn in red on the final picture. [ addsubset() ]");
                 this.subsets.delete(insertindex, this.subsets.length-1);
+                debugpaths.push(sb.contour);
                 subsetcleanreferences(this.subsets);
                 terminate = true;
                 return;
@@ -4828,13 +4829,14 @@ smooth tangentspace (
     pair x = comb(start, finish, abs(ratio));
 
     real incline = sqrt(1 - ratio * ratio);
+    string lab = "T_{"+eltlabel+"}" + sm.label;
     smooth res = smooth(
         contour = shift(x) * dscale(scale = incline, dir = sgn(ratio) * dir) * scale(size) * rotate(rotate) * usquare,
-        label = "T_{"+eltlabel+"}" + sm.label,
+        label = config.system.insertdollars ? lab : "$" + lab + "$",
         labeldir = dscale(scale = incline, dir = sgn(ratio) * dir) * rotate(rotate) * N
     );
     sm.attach(res);
-    sm.addelement(element(x, eltlabel, eltlabelalign));
+    sm.addelement(element(x, config.system.insertdollars ? eltlabel : "$" + eltlabel + "$", eltlabelalign));
 
     return res;
 }
@@ -5135,7 +5137,9 @@ void shaderegion (
     max += 0.1*diag;
     diag = max - min;
     real h = xpart(diag) * Tan(angle);
-    for (real y = ypart(min) - h; y <= ypart(max); y += vsep) {
+    real st = h < 0 ? ypart(min) : ypart(min) - h;
+    real fn = h < 0 ? ypart(max) - h : ypart(max);
+    for (real y = st; y <= fn; y += vsep) {
         real[][] sects = intersections(g, (xpart(min), y) -- (xpart(max), y+h));
         if (sects.length % 2 == 1) continue;
         for (int i = 0; i < sects.length; i += 2) {
@@ -5239,9 +5243,9 @@ void draw (
                     pair hlfinish = point(curhlcontour, length(curhlcontour));
                     pair hlvec = config.help.arcratio * radius(hl.contour) * unit(hlstart - hl.center);
                     draw(pic = pic, (hl.center + hlvec) -- hlstart, yellow + config.help.linewidth);
-                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][1]/2)*hlvec) -- hlmid, blue + config.help.linewidth, arrow = Arrow(SimpleHead));
-                    draw(pic = pic, (hl.center + rotate(-hl.sections[j][1])*hlvec) -- hlfinish, yellow + config.help.linewidth);
-                    draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CW), blue+config.help.linewidth);
+                    draw(pic = pic, (hl.center + rotate(hl.sections[j][1]/2)*hlvec) -- hlmid, blue + config.help.linewidth, arrow = Arrow(SimpleHead));
+                    draw(pic = pic, (hl.center + rotate(hl.sections[j][1])*hlvec) -- hlfinish, yellow + config.help.linewidth);
+                    draw(pic = pic, arc(hl.center, hl.center + hlvec, hlfinish, direction = CCW), blue+config.help.linewidth);
                 }
 
                 drawsections(pic, sectionparams(curhlcontour, cursmcontour, ceil(hl.sections[j][2]), config.section.freedom, config.section.precision), viewdir, dspec.dash, dspec.help, dspec.shade, scale, dspec.sectionpen, dspec.dashpen, dspec.shadepen);
