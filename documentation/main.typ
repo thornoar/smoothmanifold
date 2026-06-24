@@ -90,7 +90,7 @@
 
 #align(center)[
   #set text(size: 17pt)
-  `smoothmanifold.asy - v6.4.1` \ #v(0pt)
+  `smoothmanifold.asy - v6.5.0` \ #v(0pt)
   #set text(size: 18pt)
   Diagrams in higher mathematics with Asymptote\
   #set text(size: 14pt)
@@ -394,7 +394,6 @@ Based on different values for the `mode` parameter, the module defines the follo
   path[] difference (
     path p,
     path q,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -408,7 +407,7 @@ Based on different values for the `mode` parameter, the module defines the follo
   { return difference(p, q); }
   ``` <path-set-difference-operator>
 ]#vs
-Calculate the path(s) bounding the set difference of the regions bounded by `p` and `q`. The `correct` parameter determines whether the paths should be "corrected", i.e. oriented clockwise.
+Calculate the path(s) bounding the set difference of the regions bounded by `p` and `q`. Both paths should be oriented counter-clockwise.
 
 #bl[
   #show: columns.with(2, gutter: 0pt)
@@ -416,7 +415,6 @@ Calculate the path(s) bounding the set difference of the regions bounded by `p` 
   path[] symmetric (
     path p,
     path q,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -435,7 +433,6 @@ Calculate the path(s) bounding the set symmetric difference of the regions bound
   path[] intersection (
     path p,
     path q,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -453,7 +450,6 @@ Calculate the path(s) bounding the set intersection of the regions bounded by `p
   ```
   path[] intersection (
     path[] ps,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -461,7 +457,6 @@ Calculate the path(s) bounding the set intersection of the regions bounded by `p
   #colbreak()
   ```
   path[] intersection (
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... path[] ps
@@ -477,7 +472,6 @@ Inductively calculate the total intersection of an array of paths.
   path[] union (
     path p,
     path q,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -495,7 +489,6 @@ Calculate the path(s) bounding the set union of the regions bounded by `p` and `
   ```
   path[] union (
     path[] ps,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
   )
@@ -503,7 +496,6 @@ Calculate the path(s) bounding the set union of the regions bounded by `p` and `
   #colbreak()
   ```
   path[] union (
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... path[] ps
@@ -552,10 +544,9 @@ path randomconcave ()
 Allows the user to sample a random path from the above arrays.
 
 ```
-path ucircle = reverse(unitcircle);
-path usquare = (1,1) -- (1,-1) -- (-1,-1) -- (-1,1) -- cycle;
+path usquare = (1,1) -- (-1,1) -- (-1,-1) -- (1,-1) -- cycle;
 ``` <path-upaths> #vs
-Slightly changed versions of the `unitcircle` and `unitsquare` paths. Most notably, these are _clockwise,_ since most of this module-s functionality prefers to deal with clockwise paths.
+A square path that has `(0,0)` as its center, akin to the `unitcircle` path.
 
 ```
 pair center (path p, int n = 10, bool arc = true, bool force = false)
@@ -684,7 +675,7 @@ Connect an array of points with a path.
 path wavypath (real[] nums, bool normaldir = true, bool adjust = false)
 path wavypath (... real[] nums)
 ``` <path-wavypath> #vs
-Generate a clockwise cyclic path around the point `(0,0)`, based on the `nums` parameter. If `normaldir` is set to `true`, additional restrictions are imposed on the path. If `adjust` is `true`, then the path is shifted and scaled such that its `center` @path-center is `(0,0)`, and its `radius` @path-radius is `1`. Consider the following example:
+Generate a counter-clockwise cyclic path around the point `(0,0)`, based on the `nums` parameter. If `normaldir` is set to `true`, additional restrictions are imposed on the path. If `adjust` is `true`, then the path is shifted and scaled such that its `center` @path-center is `(0,0)`, and its `radius` @path-radius is `1`. Consider the following example:
 #example(
   image("resources/wavypath-showcase.svg"),
   ```
@@ -2053,7 +2044,6 @@ struct smoothconfig {
     real maxlength;
     bool inferlabels = true;
     bool addsubsets = true;
-    bool correct = true;
     bool clip = false;
     bool unit = false;
     bool setcenter = true;
@@ -2070,7 +2060,6 @@ A structure to hold all smooth object-related variables, whose meanings are as f
 - `maxlength` --- a parameter dependent on `maxsectionlength`, should not be set manually;
 - `inferlabels` --- the default value of the `inferlabels` parameter passed to `addsubset` @smooth-addsubset and its derivatives;
 - `addsubsets` --- the default value to pass to the `intersection` @smooth-intersection function and its derivatives;
-- `correct` --- whether non-clockwise paths should be reversed to clockwise. This value is passed as default in set operations with paths (see @sc-path-set);
 - `clip` --- the default value passed to the `addsubset` @smooth-addsubset, `addhole` @smooth-addhole, `movesubset` @smooth-movesubset and their derivatives, as the `clip` parameter;
 - `unit` --- whether to use unit coordinates (see @sc-smooth-unit). This is the default value of the `unit` parameter in all methods that accept it;
 - `setcenter` --- whether to automatically set the centers of various objects in various situations by calling `center` @path-center on their `contour`.
@@ -2492,7 +2481,6 @@ path[] intersection (
     path p,
     path q,
     path[] holes,
-    bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
@@ -2699,8 +2687,8 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `path[][] dc (... path[][])` #e @misc-c
   - `string[][] ds (... string[][])` #e @misc-s
   - `int[] difference (int[], int[])` #e @misc-difference
-  - `path[] difference (path, path, bool, bool, real)` #e @path-set-difference
-  - `path[] difference (path[], path, bool, bool, real)` #e @path-set-difference
+  - `path[] difference (path, path, bool, real)` #e @path-set-difference
+  - `path[] difference (path[], path, bool, real)` #e @path-set-difference
   - `bool dummy (int)` #e @config-dummy-int
   - `bool dummy (real)` #e @config-dummy-real
   - `bool dummy (pair)` #e @config-dummy-pair
@@ -2785,10 +2773,10 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `int[][] ii (... int[])` #e @misc-i
   - `real intersectiontime (path, pair, pair)` #e @path-intersectiontime
   - `pair intersection (path, pair, pair)` #e @path-intersection
-  - `path[] intersection (path, path, bool, bool, real)` #e @path-set-intersection
-  - `path[] intersection (path[], bool, bool, real)` #e @path-set-intersection-array
-  - `path[] intersection (bool, bool, real ... path[])` #e @path-set-intersection-array-dots
-  - `path[] intersection (path, path, path[], bool, bool, real)` #e @misc-intersection-holes
+  - `path[] intersection (path, path, bool, real)` #e @path-set-intersection
+  - `path[] intersection (path[], bool, real)` #e @path-set-intersection-array
+  - `path[] intersection (bool, real ... path[])` #e @path-set-intersection-array-dots
+  - `path[] intersection (path, path, path[], bool, real)` #e @misc-intersection-holes
   - `pen inverse (p)` #e @misc-inverse
   - `bool smooth.inside (pair)` #e @smooth-inside
   - `smooth[] intersection (smooth, smooth, bool, bool, real, bool)` #e @smooth-intersection
@@ -2904,7 +2892,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `string[] s (... string[])` #e @misc-s
   - `string[][] ss (... string[])` #e @misc-s
   - `path subcyclic (path, pair)` #e @path-subcyclic
-  - `path[] symmetric (path, path, bool, bool, real)` #e @path-set-symmetric
+  - `path[] symmetric (path, path, bool, real)` #e @path-set-symmetric
   - `real sectionsymmetryrating (pair, pair, pair)` #e @section-quality
   - `real sectiontoobroad (pair, pair, pair, pair)` #e @section-quality
   - `pen sectionpen (pen)` #e @pen-sections
@@ -2955,9 +2943,9 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
   - `path ucircle` #e @path-upaths
   - `path usquare` #e @path-upaths
   - `real[] unitseq (real)` #e @misc-unitseq
-  - `path[] union (path, path, bool, bool, real)` #e @path-set-union
-  - `path[] union (path[], bool, bool, real)` #e @path-set-union-array
-  - `path[] union (bool, bool, real ... path[])` #e @path-set-union-array-dots
+  - `path[] union (path, path, bool, real)` #e @path-set-union
+  - `path[] union (path[], bool, real)` #e @path-set-union-array
+  - `path[] union (bool, real ... path[])` #e @path-set-union-array-dots
   - `pen underpen (pen)` #e @pen-sections
   - `smooth[] union (smooth, smooth, bool, bool, real)` #e @smooth-union
   - `smooth[] union (smooth[], bool, bool, real)` #e @smooth-union

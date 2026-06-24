@@ -960,7 +960,6 @@ path[] operator :: (path p, path q)
 path[] intersection (
     path p,
     path q,
-    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 ) // Construct the intersection of two path-enclosed areas.
@@ -977,7 +976,6 @@ path[] intersection (
 
 path[] intersection (
     path[] ps,
-    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
@@ -995,7 +993,6 @@ path[] intersection (
 }
 
 path[] intersection (
-    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... path[] ps
@@ -1005,7 +1002,6 @@ path[] intersection (
     path p,
     path q,
     path[] holes,
-    // bool correct = true,
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
 )
