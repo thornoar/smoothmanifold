@@ -1,21 +1,20 @@
 # Fdb version 4
-["bibtex .aux/main"] 1782324792.03947 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1782324792.56873 0
-  ".aux/main.aux" 1782324792.40849 1053 4abe8a4d4e1beb0a1bb762e9bb25303a "pdflatex"
+["bibtex .aux/main"] 1783250151.43369 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783250151.98589 0
+  ".aux/main.aux" 1783250151.8236 1053 4abe8a4d4e1beb0a1bb762e9bb25303a "pdflatex"
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/bibtex/bib/base/xampl.bib" 1 10133 f9be7f8dae374e519240e5ff44523ed6 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/bibtex/bst/tugboat/tugboat.bst" 1 45715 5c03f56985c50b4682495bc896790a21 ""
   (generated)
   ".aux/main.bbl"
   ".aux/main.blg"
   (rewritten before read)
-["pdflatex"] 1782324792.09336 "./main.tex" "main.pdf" "main" 1782324792.56885 0
-  "./main.tex" 1782324791.30615 5432 dd56944bd3b64f28ffcff7afa1140931 ""
-  ".aux/main.aux" 1782324792.40849 1053 4abe8a4d4e1beb0a1bb762e9bb25303a "pdflatex"
-  ".aux/main.bbl" 1782324792.08948 309 d28df9d89f77abd51dd03e38aec7b60e "bibtex .aux/main"
-  ".aux/main.out" 1782324792.40949 673 390347b1003428f6d6b1bd4b731dc4f4 "pdflatex"
+["pdflatex"] 1783250151.49637 "./main.tex" "main.pdf" "main" 1783250151.98602 0
+  "./main.tex" 1783250149.51699 5458 7d60abbe71308c7b26e782318b24f080 ""
+  ".aux/main.aux" 1783250151.8236 1053 4abe8a4d4e1beb0a1bb762e9bb25303a "pdflatex"
+  ".aux/main.bbl" 1783250151.4926 309 d28df9d89f77abd51dd03e38aec7b60e "bibtex .aux/main"
+  ".aux/main.out" 1783250151.8236 673 390347b1003428f6d6b1bd4b731dc4f4 "pdflatex"
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1 2971 def0b6c1f0b107b3b936def894055589 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
-  "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/ecbl1000.tfm" 1 3584 f8f73f86042c9869339b7cc2945033b4 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/ecbx0900.tfm" 1 3584 1a7de6c99457381c64abc1a7c545505f ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/ecbx1000.tfm" 1 3584 2d666ecf6d466d8b007246bc2f94d9da ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/eccc1000.tfm" 1 3072 0e825b3b77feef5bf88d50fba1209c90 ""
@@ -38,7 +37,6 @@
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/public/cm/cmsy9.tfm" 1 1116 25a7bf822c58caf309a702ef79f4afbb ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy9.pfb" 1 32442 c975af247b6702f7ca0c299af3616b80 ""
-  "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbl1000.pfb" 1 149528 b1e204fa4d4bbd4987d564fa7d6d88ea ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbx0900.pfb" 1 143961 201304b65f97bc643fbd0bcf0685d1fe ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbx1000.pfb" 1 145408 43d44302ca7d82d487f511f83e309505 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfcc1000.pfb" 1 109713 30d6420127e1c84309fa7008a69b7170 ""
@@ -98,7 +96,7 @@
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1 5523635 ae7f280f9c87a20997cb858dffb8824e ""
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/web2c/pdftex/pdflatex.fmt" 1 3600242 8d4cd588a5a30bdf6b38d9762459dcba ""
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/web2c/texmf.cnf" 1 44007 d92b95bf14ec1447abe1b377328a62d3 ""
-  "main.tex" 1782324791.30615 5432 dd56944bd3b64f28ffcff7afa1140931 ""
+  "main.tex" 1783250149.51699 5458 7d60abbe71308c7b26e782318b24f080 ""
   (generated)
   ".aux/main.aux"
   ".aux/main.log"
