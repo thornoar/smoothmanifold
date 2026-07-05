@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=pdflatex 1980.1.1)  5 JUL 2026 13:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=pdflatex 1980.1.1)  5 JUL 2026 22:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -305,24 +305,24 @@ File: l3backend-pdftex.def 2025-06-09 L3 backend support: PDF output (pdfTeX)
 ) (.aux/main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 33.
+LaTeX Font Info:    ... okay on input line 33.
 
 (/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/te
 x/context/base/mkii/supp-pdf.mkii
@@ -350,13 +350,13 @@ x/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Info: Redefining \microtypecontext on input line 31.
-Package microtype Info: Applying patch `item' on input line 31.
-Package microtype Info: Applying patch `toc' on input line 31.
-Package microtype Info: Applying patch `eqnum' on input line 31.
-Package microtype Info: Applying patch `footnote' on input line 31.
-Package microtype Info: Applying patch `verbatim' on input line 31.
-LaTeX Info: Redefining \microtypesetup on input line 31.
+LaTeX Info: Redefining \microtypecontext on input line 33.
+Package microtype Info: Applying patch `item' on input line 33.
+Package microtype Info: Applying patch `toc' on input line 33.
+Package microtype Info: Applying patch `eqnum' on input line 33.
+Package microtype Info: Applying patch `footnote' on input line 33.
+Package microtype Info: Applying patch `verbatim' on input line 33.
+LaTeX Info: Redefining \microtypesetup on input line 33.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -368,7 +368,7 @@ Package microtype Info: Using default expansion set `alltext-nott'.
 LaTeX Warning: Command \showhyphens   has changed.
                Check if current package is valid.
 
-LaTeX Info: Redefining \showhyphens on input line 31.
+LaTeX Info: Redefining \showhyphens on input line 33.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -378,26 +378,31 @@ x/latex/microtype/mt-cmr.cfg
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-Package hyperref Info: Link coloring OFF on input line 31.
+Package hyperref Info: Link coloring OFF on input line 33.
  (.aux/main.out) (.aux/main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 35.
+(Font)              <7> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 35.
+(Font)              <5> on input line 49.
+<figures/surfaces.pdf, id=9, 199.1741pt x 87.00505pt>
+File: figures/surfaces.pdf Graphic file (type pdf)
+<use figures/surfaces.pdf>
+Package pdftex.def Info: figures/surfaces.pdf  used on input line 55.
+(pdftex.def)             Requested size: 199.17361pt x 87.00482pt.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `cmtt' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
+ (.aux/main.bbl)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <9> on input line 193.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 193.
 
 
-(.aux/main.bbl)
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <9> on input line 162.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 162.
 
 
 [901{/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/te
@@ -407,30 +412,30 @@ nc}
 
 
 {/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fo
-nts/enc/dvips/cm-super/cm-super-ts1.enc}] (.aux/main.aux)
+nts/enc/dvips/cm-super/cm-super-ts1.enc}
+
+ <./figures/surfaces.pdf>]
+(.aux/main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-06-09>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 390347B1003428F6D6B1BD4B731DC4F4;673.
+(rerunfilecheck)             Checksum: 9814C2D956916ADB9290ECA4E25C967A;103.
  ) 
 Here is how much of TeX's memory you used:
- 13060 strings out of 467888
- 199142 string characters out of 5412697
- 640912 words of memory out of 5000000
- 39662 multiletter control sequences out of 15000+600000
- 639736 words of font info for 99 fonts, out of 8000000 for 9000
+ 13033 strings out of 467888
+ 198949 string characters out of 5412697
+ 625912 words of memory out of 5000000
+ 39659 multiletter control sequences out of 15000+600000
+ 638132 words of font info for 88 fonts, out of 8000000 for 9000
  2904 hyphenation exceptions out of 8191
- 73i,7n,81p,1003b,461s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 73i,7n,81p,1003b,457s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/
-fonts/type1/public/amsfonts/cm/cmsy10.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xc
-ax7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy9.pf
-b></nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/
-fonts/type1/public/cm-super/sfbx0900.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xca
-x7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbx1000.pfb
+fonts/type1/public/amsfonts/cm/cmsy9.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xca
+x7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbx0900.pfb
 ></nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/f
-onts/type1/public/cm-super/sfcc1000.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax
+onts/type1/public/cm-super/sfbx1000.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax
 7ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfrm0700.pfb>
 </nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fo
 nts/type1/public/cm-super/sfrm0900.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax7
@@ -439,15 +444,14 @@ ngkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfrm1000.pfb><
 ts/type1/public/cm-super/sfsl0900.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax7n
 gkx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfsl1000.pfb></
 nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/font
-s/type1/public/cm-super/sfst1000.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax7ng
-kx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfti1000.pfb></n
+s/type1/public/cm-super/sfti1000.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax7ng
+kx-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sftt0900.pfb></n
 ix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts
-/type1/public/cm-super/sftt0900.pfb></nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngk
-x-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sftt1000.pfb>
-Output written on .aux/main.pdf (1 page, 246643 bytes).
+/type1/public/cm-super/sftt1000.pfb>
+Output written on .aux/main.pdf (1 page, 175417 bytes).
 PDF statistics:
- 119 PDF objects out of 1000 (max. 8388607)
- 86 compressed objects within 1 object stream
- 11 named destinations out of 1000 (max. 500000)
- 32297 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 89 PDF objects out of 1000 (max. 8388607)
+ 61 compressed objects within 1 object stream
+ 7 named destinations out of 1000 (max. 500000)
+ 29710 words of extra memory for PDF output out of 29859 (max. 10000000)
 
