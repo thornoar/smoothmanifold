@@ -34,12 +34,12 @@
 \maketitle
 
 \begin{abstract}
-Within the niche of mathematicians, there's a niche of people who need
-to draw diagrams in abstract mathematics.
+Within the niche of mathematicians, there's a niche of those who need
+to draw diagrams in pure mathematics.
 Within \emph{that} niche there's a niche of people who have experience
 in programming and feel comfortable writing code to produce graphics.
-This article is for them. It's a survey of the available tools and a showcase
-of a library I wrote specifically to simplify the process
+This article is for them. It's a survey of the available tools and
+a showcase of a library I wrote specifically to simplify the process
 of drawing diagrams in differential geometry, topology, set theory, etc.
 \end{abstract}
 
@@ -50,22 +50,25 @@ and I wanted to practice my \LaTeX\ skills by typesetting the lecture
 notes. I found myself needing to draw simple surfaces such as those seen
 on Figure \ref{fig.example}.
 
-\begin{figure}
-\begin{center}
+\begin{figure}[h]
+\centering
 \includegraphics{figures/surfaces.pdf}
-\end{center}
 \caption{Basic two-dimensional manifolds}
 \label{fig.example}
 \end{figure}
 
-At that point I realized I wasn't sure how to draw these surfaces. First
-of all, I had to choose a tool, of which there are several:
+At that point I realized I wasn't sure how to draw this. I started by
+considering the available tools:
 
 \begin{itemize}
   \item \textbf{Inkscape} (\url{https://www.inkscape.org})\\
-    This is a popular and versatile GUI tool for drawing vectorized
-    graphics, suitable when little precision is needed. I our case,
-    however, 
+    This is a popular and versatile GUI program for drawing vectorized
+    graphics, suitable when the diagram is simple enough to be drawn
+    by hand with some precision assistance. This assumption holds for
+    the left-hand side of Fig. \ref{fig.example}, but not for the
+    right-hand side. The reason is that these "cross section rings"
+    that mark the object as a 3-dimensional surface, have to be drawn
+    at precisely calculated positions, where they meet 
 \end{itemize}
 
 % \section{Introduction}
@@ -185,9 +188,9 @@ of all, I had to choose a tool, of which there are several:
 %
 % Email \verb|tugboat@tug.org| with any questions.
 
-\nocite{book-minimal}       % to make the example bibliography non-empty
-\bibliographystyle{tugboat} % tugboat's bibtex style
-\bibliography{xampl}        % replace with your .bib filename
+% \nocite{book-minimal}       % to make the example bibliography non-empty
+% \bibliographystyle{tugboat} % tugboat's bibtex style
+% \bibliography{xampl}        % replace with your .bib filename
 
 \makesignature
 \end{document}

@@ -131,9 +131,6 @@ INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdis
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/ecbx0900.tfm
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/tcrm1000.tfm
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/jknappen/ec/ectt1000.tfm
-INPUT .aux/main.bbl
-INPUT .aux/main.bbl
-INPUT .aux/main.bbl
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/public/cm/cmr9.tfm
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/public/cm/cmr6.tfm
 INPUT /nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/tfm/public/cm/cmmi9.tfm

@@ -1,17 +1,8 @@
 # Fdb version 4
-["bibtex .aux/main"] 1783282636.75301 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783284923.28596 0
-  ".aux/main.aux" 1783284923.09868 580 28e69f519ec5548fb540cf987485c1af "pdflatex"
-  "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/bibtex/bib/base/xampl.bib" 1 10133 f9be7f8dae374e519240e5ff44523ed6 ""
-  "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/bibtex/bst/tugboat/tugboat.bst" 1 45715 5c03f56985c50b4682495bc896790a21 ""
-  (generated)
-  ".aux/main.bbl"
-  ".aux/main.blg"
-  (rewritten before read)
-["pdflatex"] 1783284922.73714 "./main.tex" "main.pdf" "main" 1783284923.2861 0
-  "./main.tex" 1783284922.32583 6772 efe8bab1b62b301bca75576aba4ce0dd ""
-  ".aux/main.aux" 1783284923.09868 580 28e69f519ec5548fb540cf987485c1af "pdflatex"
-  ".aux/main.bbl" 1783282680.06092 309 d28df9d89f77abd51dd03e38aec7b60e "bibtex .aux/main"
-  ".aux/main.out" 1783284923.09868 103 9814c2d956916adb9290eca4e25c967a "pdflatex"
+["pdflatex"] 1783350687.63991 "./main.tex" "main.pdf" "main" 1783350687.9865 0
+  "./main.tex" 1783350686.2025 7049 460bb9b2c8f2b7b499ff3f5b73622808 ""
+  ".aux/main.aux" 1783350687.93608 495 8328d1ca5cab01490b0f97cbfabac4b6 "pdflatex"
+  ".aux/main.out" 1783350687.93708 103 9814c2d956916adb9290eca4e25c967a "pdflatex"
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1 2971 def0b6c1f0b107b3b936def894055589 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/nix/store/60l31nr7ikg0ysgy760wzx2xcax7ngkx-texlive-combined-2025-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -91,8 +82,8 @@
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1 5523635 ae7f280f9c87a20997cb858dffb8824e ""
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/web2c/pdftex/pdflatex.fmt" 1 3600242 8d4cd588a5a30bdf6b38d9762459dcba ""
   "/nix/store/fkrvjv6sp5k6706r4iwsb8phwbjrlqfj-texlive-combined-2025/share/texmf-var/web2c/texmf.cnf" 1 44007 d92b95bf14ec1447abe1b377328a62d3 ""
-  "figures/surfaces.pdf" 1783283803.20153 3898 a0cd8a324e9e79c6a6b8e521ea92e518 ""
-  "main.tex" 1783284922.32583 6772 efe8bab1b62b301bca75576aba4ce0dd ""
+  "figures/surfaces.pdf" 1783349736.83966 3898 554815f595bc27e4053a92844f8e209d ""
+  "main.tex" 1783350686.2025 7049 460bb9b2c8f2b7b499ff3f5b73622808 ""
   (generated)
   ".aux/main.aux"
   ".aux/main.log"

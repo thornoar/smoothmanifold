@@ -5431,7 +5431,7 @@ void draw (
         dot(pic = pic, sm.center, red+1);
         if (dspec.drawlabels) for (int i = 0; i < sm.holes.length; ++i)
         { label(pic = pic, L = Label((string)i, position = sm.holes[i].center, p = red, filltype = NoFill)); }
-        draw(sm.adjust(-1)*unitcircle, blue+config.help.linewidth);
+        // draw(sm.adjust(-1)*unitcircle, blue+config.help.linewidth);
     }
 
     // Applying the drawextra function if specified
