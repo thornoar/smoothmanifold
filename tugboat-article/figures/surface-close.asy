@@ -3,14 +3,30 @@ include common;
 size(5cm);
 // defaultpen(1pt);
 
+pen ghost = gray(.7);
+
 path p1 = (0,0){(.1,1)} .. (.3,.6) .. {(1,-1)}(2,.7);
-path p2 = (.5,-.2){(.5,1)} .. {(1,-1)}(1.9,-.3);
+path p2 = (.5,-.0){(.7,1)} .. {(1,-.7)}(1.9,.0);
 
-draw(p1 ^^ p2);
+// p1 = reflect((0,0),(1,0)) * p1;
+// p2 = reflect((0,0),(1,0)) * p2;
 
-pair[] params = sectionparams(p1, p2, 1, .9, 100)[0];
-write(params.length);
-path[] ell = sectionellipse()
+draw(p1 ^^ p2, ghost);
+
+pair[] ps = sectionparams(p1, p2, 5, .9, 100)[2];
+// write(ps.length);
+path[] ell = sectionellipse(ps[0], ps[1], ps[2], ps[3], .2*dir(40));
+
+draw(ell[0], ghost);
+draw(ell[1], dashed + ghost);
+
+draw(ps[0] -- ps[1]);
+draw((ps[0] - .4*ps[2]) -- (ps[0] + .4*ps[2]));
+draw((ps[1] - .4*ps[3]) -- (ps[1] + .4*ps[3]));
+draw(arc(ps[0], ps[0] + .1*ps[2], ps[1], CCW));
+draw(arc(ps[1], ps[1] + .1*ps[3], ps[0], CW));
+
+draw((0,0) .. (0,-.05), invisible);
 
 // smooth sm = 
 //     smooth(
