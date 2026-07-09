@@ -40,7 +40,7 @@ of drawing diagrams in differential geometry, topology, set theory, etc.
 Back in high school, I was attending a seminar on differential geometry,
 and I wanted to practice my \LaTeX\ skills by typesetting the lecture
 notes. I found myself needing to draw simple surfaces such as those seen
-on Figure \ref{fig:manifolds}.
+in Figure \ref{fig:manifolds}.
 
 \begin{figure}[ht]
 \centering
@@ -110,7 +110,7 @@ considering some of the available tools:
   \item \textbf{The \TikZ\ package} (\url{https://tikz.dev})\\
     For the absolute majority of \TeX\ users, this is the go-to tool
     for technical drawing, and reasonably so. \TikZ\ has a
-    comprehensive manual and a rich ecosystem of packages to suit
+    comprehensive manual and a rich ecosystem of libraries to suit
     virtually your every need. Clearly, both manifolds on
     Figure~\ref{fig:manifolds} can be drawn with \TikZ.\\
     However, my high school self was positively intimidated by the
@@ -171,7 +171,7 @@ settings.outformat = "eps";
 size(4cm);
 path p = (0,1) .. (1,0) .. (2,1) .. (3,0);
 path q = (0,0) .. (1,1) .. (2,0) .. (3,1);
-draw(p ^^ q);
+draw(p); draw(q);
 pair[] points = intersectionpoints(p, q);
 for (int i = 0; i < points.length; ++i) {
   dot(Label((string)i, align = W),
@@ -189,7 +189,7 @@ Figure~\ref{fig:sample}.
 \label{fig:sample}
 \end{figure}
 Take note of \asy's support of arrays and its native
-\texttt{intersectionpoints} function (whereas in \TikZ\ one would load
+\texttt{intersectionpoints} function (whereas a \TikZ\ user would load
 additional libraries to gain this functionality).
 
 \asy\ has other outstanding features such as powerful
@@ -221,7 +221,7 @@ smooth s = smooth(
 config.section.freedom = .9;
 size(5cm);
 draw(s, dpar(
-  mode = free, viewdir = 2.3*dir(90)
+  mode = free, viewdir = 3.0*dir(90)
 ));
 \end{verbatim}
 
@@ -240,13 +240,14 @@ You can see that the code is relatively high-level: instead of drawing
 cross section rings manually, we build a \emph{smooth object} with the
 \texttt{smooth} constructor, then add a hole to it with
 \texttt{addhole}, whose \texttt{sections} parameter allows to
-configure the positions of cross sections. It's not crucial to
+configure the positions of cross sections. It's not crucial for the
+reader to
 understand what exactly goes on in that \texttt{real[][]} array,
 suffice it to say that it tells \smo\ roughly where we want it to draw
 cross section rings around the given hole.
 
-After creating the smooth object and assigning it to the \texttt{s}
-variable, we set some configuration values. The
+After creating the smooth object and assigning it to the
+variable \texttt{s}, we set some configuration values. The
 \texttt{config.section.freedom} value determines how much leeway is
 given to the section finding algorithm (to be explained later), and the \texttt{size()}
 function allows us to set the picture's size.
@@ -273,12 +274,13 @@ pair[][] sectionparams
 \end{verbatim}
 It tries to find the best positions for \texttt{n} cross sections
 between the paths \texttt{g} and \texttt{h}, and it does so by first
-splitting both paths into regions, as seen in Figure~\ref{fig:regions}
+splitting both paths into regions, as seen in
+Figure~\ref{fig:regions}.
 
 \begin{figure}[h]
 \centering
 \includegraphics{figures/regions.pdf}
-\caption{\texttt{n} regions (blue) are formed between the paths
+\caption{\texttt{n} regions (filled gray) are formed between the paths
   \texttt{g} and \texttt{h}}
 \label{fig:regions}
 \end{figure}
@@ -297,20 +299,149 @@ the \texttt{config.section.freedom} settings option.
 
 Then, the algorithm proceeds to select \texttt{p} sample points along either edge of
 each region, and search for the optimal section position by minimizing
-a loss function. This is illustrated in Figure~\ref{fig:search}.
+a loss function. This is illustrated in Figure~\ref{fig:search}, with
+\texttt{p} equal to 10.
 
 \begin{figure}[h]
 \centering
 \includegraphics{figures/search.pdf}
-\caption{Selecting the optimal section position within one region}
+\caption{Selecting the optimal section position (circled) within one region}
 \label{fig:search}
 \end{figure}
 
 As you can see, not every combination of points is checked. This is a
 heuristic optimization based on the fact that ``good'' cross sections
 usually connect points whose indices are close. This allows the
-algorithm to run in $O(n p)$ time, whereas the naive implementation is
+algorithm to run in $O(n p)$ time, whereas the na\"ive implementation is
 $O(n p^2)$.
+
+One final note on the cross section mechanism concerns this ``illusion
+of 3D''. \asy\ has full support for actual 3-dimensional drawing and
+allows producing something like this with
+relatively little effort:
+
+\begin{figure}[h]
+\centering
+\includegraphics{figures/honest-torus.png}
+\caption{A real 3-dimensional torus}
+\label{fig:honest-torus}
+\end{figure}
+
+This certainly looks more realistic, but there are numerous objections
+to this approach:
+
+\begin{itemize}
+  \item Despite the work done by the \asy\ team on 3-dimensional
+    vector graphics, surfaces like this still force you to use a
+    bitmap image format (the picture in Figure~\ref{fig:honest-torus}
+    is an embedded \acro{PNG} image), which is not necessarily bad,
+    but I personally prefer vector graphics whenever possible, for
+    consistency.
+  \item The resulting image file typically will be much larger. Here,
+    the \acro{PNG} file with the ``real'' torus was 57.6 times larger
+    than the \acro{PDF} file embedded in Figure~\ref{fig:torus}.
+  \item In my opinion, the 3-dimensional torus in
+    Figure~\ref{fig:honest-torus} lacks some sort of ``textbook style''
+    that is kept in Figure~\ref{fig:torus}.
+\end{itemize}
+
+\subsection{Smooth objects as sets}%
+\label{sub:delayed}
+
+Having achieved my initial goal of drawing smooth manifolds, I
+forgot about the library for about a year. But one day I realized that
+the \texttt{smooth} structure can be used to model not only smooth
+manifolds, but \emph{sets} in general. Consider this set-theoretic
+diagram that illustrates the intersection of two sets:
+
+\begin{figure}[h]
+\centering
+\includegraphics{figures/intersection.pdf}
+\caption{Intersection of two subsets of a set $X$}
+\label{fig:inter}
+\end{figure}
+
+Of course, this diagram can be drawn with relative ease in plain \asy\
+or any other graphics program, but there is a common pattern that can be
+abstracted away: one encompassing cyclic path (labeled $X$ in
+Figure~\ref{fig:inter}) and a number of cyclic paths inside of it,
+representing subsets and their unions/intersections. Using the current
+version of \smo, the diagram in Figure~\ref{fig:inter} is generated
+with this code:
+
+\begin{verbatim}
+smooth sm = smooth(
+    (-1.5,-1) -- (1.5,-1)
+    -- (1.5,1) -- (-1.5,1) -- cycle,
+    label = "$X$",
+    labeldir = dir(90)
+).addsubset(
+  convexpaths[2],
+  scale = .8, shift = (-.4,.05),
+  label = "$A$", dir = dir(140)
+).addsubset(
+  convexpaths[3],
+  scale = .8, shift = (.4,0),
+  label = "$B$", dir = dir(40)
+).setlabel(2, "$A \cap B$", dir = (0,0));
+
+draw(sm, dpar(
+  fill = false,
+  drawnow = true,
+  subsetfill = new pen[]{gray(.8),gray(.5)}
+));
+\end{verbatim}
+
+The \texttt{smooth} structure has a field called \texttt{subsets} which
+holds an array of ``subsets'' and which can be added to by invoking the
+\texttt{addsubset} method. Most importantly, after adding the second
+subset, the intersection of the two subsets is \emph{automatically
+calculated and added as a third subset}, so that we can then set its
+label by calling \verb|.setlabel(2, "$A \cap B$")| (here, 2 is the
+index of the third subset, since arrays in \asy\ are zero-indexed).
+
+Why is this useful? Because now ``sets'' and ``subsets'' in your
+diagram are no longer just paths \Dash they are \asy\ objects, and
+module \smo\ provides many useful methods and functions to manipulate
+these objects. For example, the \texttt{smooth} structure has a method
+called \texttt{move} that allows one to shift, scale and rotate a
+smooth object, respecting this object's \texttt{holes} and
+\texttt{subsets}, as well as other data such as cross sections and
+labels:
+
+\begin{figure}[h]
+\centering
+\includegraphics{figures/move.pdf}
+\caption{Calling one method to move a smooth object along with its
+  hole, subset, label, and cross sections}
+\label{fig:move}
+\end{figure}
+
+Returning to Figure~\ref{fig:inter}, the automatic intersection of
+subsets is achieved via the function
+\begin{verbatim}
+path[] intersection (
+  path p, path q,
+  bool round, real roundcoeff
+)
+\end{verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics{figures/round.pdf}
+\caption{Intersection of two paths with rounded corners}
+\label{fig:round}
+\end{figure}
+
+It takes two \emph{cyclic} paths \texttt{p} and \texttt{q} as
+arguments and returns the paths that bound the intersection of the
+areas bounded by \texttt{p} and \texttt{q}. Additionally, the
+intersection can be ``rounded at the corners'' if the \texttt{round}
+switch is set to \texttt{true}, and the degree of rounding can be
+regulated with \texttt{roundcoeff}. An example can be seen in
+Figure~\ref{fig:round}.
+
+
 
 \bibliographystyle{tugboat}
 \bibliography{main}

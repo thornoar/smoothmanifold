@@ -6,8 +6,8 @@ size(7cm);
 path g = (0,1) .. (2,1.1) .. (3,.7);
 path h = (0,0) .. (1,-.5) .. (3,-.2);
 
-draw(g, L = Label("\texttt{g}", position = EndPoint, align = E));
-draw(h, L = Label("\texttt{h}", position = EndPoint, align = E));
+draw(g, grey, L = Label("\texttt{g}", black, position = EndPoint, align = 2*E));
+draw(h, grey, L = Label("\texttt{h}", black, position = EndPoint, align = 2*E));
 
 int n = 1;
 real r = 0.3;
@@ -21,9 +21,9 @@ real[] htimes = {.2,1.9};
 for (int i = 0; i < 2*n; i += 2)
 {
     fill(subpath(h, htimes[i], htimes[i+1]) -- subpath(g, gtimes[i+1],
-    gtimes[i]) -- cycle, paleblue);
-    draw(subpath(g, gtimes[i], gtimes[i+1]), blue + linewidth(1pt));
-    draw(subpath(h, htimes[i], htimes[i+1]), blue + linewidth(1pt));
+    gtimes[i]) -- cycle, gray(.8));
+    draw(subpath(g, gtimes[i], gtimes[i+1]), black + linewidth(1pt));
+    draw(subpath(h, htimes[i], htimes[i+1]), black + linewidth(1pt));
 }
 
 for (int i = 0; i < 2*n; i += 2)
@@ -44,11 +44,11 @@ for (int i = 0; i < 2*n; i += 2)
         bool changed = false;
         real val;
 
-        draw(point(g, curgtime) -- point(h, curhtime), red);
-        dot(point(g, curgtime), red + linewidth(2pt));
-        dot(point(h, curhtime), red + linewidth(2pt));
-        label((string)gi, point(g, curgtime), align = rotate(90)* 1 * dir(g, curgtime));
-        label((string)hi, point(h, curhtime), align = rotate(-90)* 1 * dir(h, curhtime));
+        draw(point(g, curgtime) -- point(h, curhtime));
+        dot(point(g, curgtime), linewidth(2pt));
+        dot(point(h, curhtime), linewidth(2pt));
+        if (gi != 5) label((string)gi, point(g, curgtime), align = rotate(90)* 1 * dir(g, curgtime));
+        if (hi != 7) label((string)hi, point(h, curhtime), align = rotate(-90)* 1 * dir(h, curhtime));
 
         if (gi < p && (val = sectionsymmetryrating(point(g, curgtime+gtimestep)-point(h, curhtime), dir(g, curgtime+gtimestep), dir(h, curhtime))) < minval)
         {
@@ -83,10 +83,10 @@ for (int i = 0; i < 2*n; i += 2)
         }
     }
 
-    draw(point(g, optgtime) -- point(h, opthtime), deepgreen +
-    linewidth(1pt));
-    dot(point(g, optgtime), deepgreen + linewidth(3.5pt));
-    dot(point(h, opthtime), deepgreen + linewidth(3.5pt));
+    draw(point(g, optgtime) -- point(h, opthtime), linewidth(1pt));
+    draw(circle(point(g, optgtime), .1), linewidth(1pt));
+    draw(circle(point(h, opthtime), .1), linewidth(1pt));
+    // dot(point(h, opthtime), linewidth(3.5pt));
 
     pres.push((optgtime, opthtime));
 }

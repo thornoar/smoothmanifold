@@ -4,8 +4,8 @@ size(7cm);
 path g = (0,.7){(4,1)} .. (1,1.3) .. (2,1) .. (3,1.1);
 path h = (-.1,0) .. (1,-.1) .. (2.1,.1) .. (3.2,.1);
 
-draw(g, L = Label("\texttt{g}", position = EndPoint, align = E));
-draw(h, L = Label("\texttt{h}", position = EndPoint, align = E));
+draw(g, grey, L = Label("\texttt{g}", black, position = EndPoint, align = 2*E));
+draw(h, grey, L = Label("\texttt{h}", black, position = EndPoint, align = 2*E));
 
 int n = 5;
 real r = 0.3;
@@ -35,7 +35,7 @@ for (int i = 0; i < n; ++i)
 for (int i = 0; i < 2*n; i += 2)
 {
     fill(subpath(h, htimes[i], htimes[i+1]) -- subpath(g, gtimes[i+1],
-    gtimes[i]) -- cycle, paleblue);
-    draw(subpath(g, gtimes[i], gtimes[i+1]), blue + linewidth(1pt));
-    draw(subpath(h, htimes[i], htimes[i+1]), blue + linewidth(1pt));
+    gtimes[i]) -- cycle, gray(.8));
+    draw(subpath(g, gtimes[i], gtimes[i+1]), black + linewidth(1pt));
+    draw(subpath(h, htimes[i], htimes[i+1]), black + linewidth(1pt));
 }

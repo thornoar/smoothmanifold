@@ -11,9 +11,8 @@ smooth sm =
     smooth(
         contour = concavepaths[4]
     )
-    .addhole(convexpaths[6], scale = .35, shift = (.55,.53), rotate =
-    60, sections = rr(50, 260, 3))
-    .addsubset(convexpaths[3], scale = .5, shift = (-.5,-.2))
+    .addhole(convexpaths[6], scale = .35, shift = (.55,.53), rotate = 60, sections = rr(50, 260, 3))
+    .addhole(convexpaths[1], scale = .35, shift = (-.4,-.13), rotate = 30, sections = rr(200, 210, 3))
     .shift((2.6,-.3))
     ;
 

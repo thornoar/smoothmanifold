@@ -1,5 +1,6 @@
 settings.outformat = "eps";
 size(4cm);
+defaultpen(fontsize(10pt));
 path p = (0,1) .. (1,0) .. (2,1) .. (3,0);
 path q = (0,0) .. (1,1) .. (2,0) .. (3,1);
 draw(p ^^ q);

@@ -1,2 +1,2 @@
 import smoothmanifold;
-defaultpen(.7pt);
+defaultpen(.7pt + fontsize(10pt));
