@@ -5,6 +5,6 @@ path q = (0,0) .. (1,1) .. (2,0) .. (3,1);
 draw(p ^^ q);
 pair[] points = intersectionpoints(p, q);
 for (int i = 0; i < points.length; ++i) {
-  dot(L = Label((string)i, align = W),
-    z = points[i], linewidth(4pt));
+  dot(Label((string)i, align = W),
+      points[i], linewidth(4pt));
 }

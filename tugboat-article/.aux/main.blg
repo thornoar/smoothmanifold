@@ -2,52 +2,50 @@ This is BibTeX, Version 0.99d (TeX Live 2025/nixos.org)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: tugboat.bst
-I found no \citation commands---while reading file main.aux
 Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
 Reallocated global_strs (elt_size=200001) to 20 items from 10.
 Reallocated glb_str_end (elt_size=4) to 20 items from 10.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-Database file #1: xampl.bib
-You've used 0 entries,
-            3501 wiz_defined-function locations,
-            764 strings with 5839 characters,
-and the built_in function-call counts, 53 in all, are:
-= -- 0
-> -- 1
-< -- 1
-+ -- 1
+Database file #1: main.bib
+You've used 3 entries,
+            3579 wiz_defined-function locations,
+            782 strings with 6116 characters,
+and the built_in function-call counts, 1204 in all, are:
+= -- 119
+> -- 23
+< -- 20
++ -- 12
 - -- 0
-* -- 2
-:= -- 33
-add.period$ -- 0
-call.type$ -- 0
-change.case$ -- 0
+* -- 36
+:= -- 181
+add.period$ -- 8
+call.type$ -- 3
+change.case$ -- 13
 chr.to.int$ -- 0
-cite$ -- 0
-duplicate$ -- 0
-empty$ -- 1
-format.name$ -- 0
-if$ -- 3
+cite$ -- 3
+duplicate$ -- 33
+empty$ -- 131
+format.name$ -- 8
+if$ -- 339
 int.to.chr$ -- 0
-int.to.str$ -- 0
-missing$ -- 0
-newline$ -- 4
-num.names$ -- 0
-pop$ -- 0
-preamble$ -- 2
-purify$ -- 0
+int.to.str$ -- 3
+missing$ -- 4
+newline$ -- 20
+num.names$ -- 6
+pop$ -- 30
+preamble$ -- 1
+purify$ -- 10
 quote$ -- 0
-skip$ -- 2
+skip$ -- 114
 stack$ -- 0
-substring$ -- 0
-swap$ -- 0
+substring$ -- 15
+swap$ -- 3
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 0
+type$ -- 24
 warning$ -- 0
-while$ -- 0
-width$ -- 0
-write$ -- 3
-(There was 1 error message)
+while$ -- 6
+width$ -- 4
+write$ -- 35

@@ -1,5 +1,23 @@
-\newcommand{\noopsort}[1]{} \newcommand{\printfirst}[2]{#1}
-  \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
-\begin{thebibliography}{}
+\begin{thebibliography}{1}
+
+\bibitem{snd}
+J.C.~Bowman.
+\newblock Asymptote: Interactive {\TeX}-aware {3D} vector graphics.
+\newblock \emph{\TUB}, 2010.
+\newblock
+  \url{https://www.math.ualberta.ca/~bowman/publications/tb98bowman.pdf}
+
+\bibitem{fst}
+J.C.~Bowman, A.~Hammerlindl.
+\newblock Asymptote, {A} vector graphics language.
+\newblock \emph{\TUB}, 2008.
+\newblock \url{https://www.math.ualberta.ca/~bowman/publications/asyTUG.pdf}
+
+\bibitem{manual}
+R.~Maksimovich.
+\newblock \texttt{smoothmanifold.asy}: Diagrams in higher mathematics with
+  {A}symptote.
+\newblock
+  \url{https://github.com/thornoar/smoothmanifold/blob/master/documentation/main.pdf}
 
 \end{thebibliography}

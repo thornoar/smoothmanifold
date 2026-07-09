@@ -1564,7 +1564,7 @@ Search for potential section positions between paths `g` and `h`, aiming to cons
 - `r` --- ranges from `0` to `1`, and can be interpreted as "freedom": when small, it restricts the section positions, but when large, the algorithm has more choice. The default value for `r` is captured by `config.section.freedom` (see @sc-config-section);
 - `p` --- controls precision. The bigger the value of `p`, the more precise the search, but the longer it takes.
 
-The algorithm runs in $O(n + p)$ time and produces an array of `pair` arrays, whose values can then be plugged into the `sectionellipse` @smooth-sectionellipse function.
+The algorithm runs in $O(n p)$ time and produces an array of `pair` arrays, whose values can then be plugged into the `sectionellipse` @smooth-sectionellipse function.
 
 ```
 void drawsections (picture pic, pair[][] sections, pair viewdir, bool dash, bool help, bool shade, real scale, pen sectionpen, pen dashpen, pen shadepen)
