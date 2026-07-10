@@ -8,13 +8,8 @@
 \title{Abstract Diagrams for the Working Mathematician}
 
 \author{Roman Maksimovich}
-% \address{Apartment C4, 43 Kam Ping St. \\ Hong Kong, 999077 \\ Hong Kong}
 \address{Hong Kong}
 \netaddress{r.a.maksimovich (at) gmail.com}
-
-% \newenvironment{verblock}
-% {\begin{minipage}{\linewidth}\begin{verbatim}}
-% {\end{verbatim}\end{minipage}}
 
 \newcommand{\asy}{\texttt{Asymptote}} 
 \newcommand{\smo}{\texttt{smoothmanifold}} 
@@ -34,9 +29,10 @@ Within the niche of mathematicians, there's a niche of those who need
 to draw diagrams related to pure mathematics.
 Within \emph{that} niche there's a niche of people who have experience
 in programming and feel comfortable writing code to produce graphics.
-This article is for them. It's a survey of the available tools and
-a showcase of a library I wrote specifically to simplify the process
-of drawing diagrams in differential geometry, topology, set theory, etc.
+This article is written with this niche in mind. It's a survey of the
+available tools and a showcase of a library I wrote specifically to
+simplify the process of drawing diagrams in differential geometry,
+topology, set theory, etc.
 \end{abstract}
 
 \section{Introduction}
@@ -58,19 +54,19 @@ considering some of the available tools:
 
 \begin{itemize}
   \item \textbf{Inkscape} (\url{https://www.inkscape.org})\\
-    This is a popular and versatile \acro{GUI} program for drawing vectorized
-    graphics, suitable when the diagram is simple enough to be drawn
-    by hand with some precision assistance. This assumption holds for
-    the left-hand side of Figure~\ref{fig:manifolds}, but not for the
-    right-hand side. The reason is that each ``cross section ring'' has
-    to be drawn at a precisely calculated position, where it meets its
-    bounding paths at equal angles, as illustrated on
-    Figure~\ref{fig:close}.\\
+    This is a popular and versatile \acro{GUI} program for drawing
+    vectorized graphics, suitable when the diagram is simple enough to
+    be drawn by hand with some precision assistance. This assumption
+    holds for the left-hand side of Figure~\ref{fig:manifolds}, but
+    not for the right-hand side. The reason is that each ``cross
+    section ring'' has to be drawn at a precisely calculated position,
+    where it meets its bounding paths at equal angles, as illustrated
+    on Figure~\ref{fig:close}.\\
     \begin{figure}[ht]
     \centering
     \includegraphics{figures/surface-close.pdf}
-    \caption{A good position for drawing a cross section ring, equal angles
-      with the tangent lines}
+    \caption{A good position for drawing a cross section ring, equal
+      angles with the tangent lines}
     \label{fig:close}
     \end{figure}
     Besides, it would be useful to tweak the count
@@ -88,7 +84,6 @@ considering some of the available tools:
 \end{picture}
       \end{verbatim}
     \end{minipage}
-    % \hfill
     \begin{minipage}{0.07\textwidth}
       \begin{picture}(15,20)
         \put(0,0){\line(1,2){15}}
@@ -135,38 +130,35 @@ considering some of the available tools:
 
 Then, in a stroke of luck, I heard about this vector graphics language
 called \asy\ (\url{https://asymptote.sourceforge.io}), and I knew that
-it was the one. \asy\ was initially introduced in 2004 at the University of Alberta by
-Andy Hammerlindl, John Bowman, and Tom Prince. It is based on the
-old \hologo{METAPOST} language, which in turn was based on
-Donald Knuth's \hologo{METAFONT} program. However, \asy\ has a \textbf{C}-like
-syntax and is indeed a full programming language with data structures,
-IEEE floating-point number support, control flow structures like
-\texttt{if}, \texttt{for}, and \texttt{while}, etc., as well as very
-high-level features such as default arguments and first-class
-functions (i.e. functions that can be returned or passed to other
-functions as values).
+it was the one. \asy\ was initially introduced in 2004 at the
+University of Alberta by Andy Hammerlindl, John Bowman, and Tom
+Prince. It is inspired by the old \hologo{METAPOST} language, which in
+turn was inspired by Donald Knuth's \hologo{METAFONT} program.
+However, \asy\ has a \textbf{C}-like syntax and is indeed a full
+programming language with data structures, IEEE floating-point number
+support, control flow structures like \texttt{if}, \texttt{for}, and
+\texttt{while}, etc., as well as very high-level features such as
+default arguments and first-class functions (i.e. functions that can
+be returned or passed to other functions as values).
 
 Readers of \TUB\ may have already read about \asy\ in
 \cite{fst} and \cite{snd}.
 
-Soon after
-learning about \asy, I started writing my own library for this
+Soon after learning about \asy, I started writing my own library for this
 language, one that I later came to use whenever I needed to create a
 diagram in abstract mathematics.
 
-\section{Module \smo}%
-\label{sec:smooth}
+\section{Module \smo}
 
-\subsection{The basics of \asy}%
-\label{sub:asy-basics}
+\subsection{The basics of \asy}
 
 An \asy\ user produces graphics by writing code in a file with the
 \texttt{.asy} extension, then invoking the \texttt{asy} program on
 the command line to compile the code to a picture in a format such as
-\acro{PDF}, \acro{SVG}, \acro{PostScript}, or a number of others. Additionally, one may
-write \asy\ code directly in a \LaTeX\ document by means of the
+\acro{PDF}, \acro{SVG}, PostScript, or a number of others. Additionally,
+one may write \asy\ code directly in a \LaTeX\ document by means of the
 \texttt{asymptote} package. This approach removes the necessity to
-manually include images, but the code becomes harder to debug.
+manually include images, but the code becomes harder to isolate.
 
 An example code snippet can look like this:
 \begin{center}
@@ -184,8 +176,8 @@ for (int i = 0; i < points.length; ++i) {
 \end{verbatim}
 \end{center}
 
-The result of compiling this code is an Encapsulated PostScript file shown in
-Figure~\ref{fig:sample}.
+The result of compiling this code is an Encapsulated PostScript file
+shown in Figure~\ref{fig:sample}.
 \begin{figure}
 \centering
 \includegraphics{figures/example.eps}
@@ -199,13 +191,12 @@ additional libraries to gain this functionality).
 \asy\ has other outstanding features such as powerful
 three-dimensional drawing, rich support for mathematical functions,
 but most importantly, the ease with which the language can be extended
-or modified. In the following subsections, I will outline the most prominent
-features of my own library (which
+or modified. In the following subsections, I will outline the most
+prominent features of my own library (which
 now counts more than 6000 lines of code) and how they allow for
 effortless drawing of abstract diagrams.
 
-\subsection{Smooth objects and cross sections}%
-\label{sub:cross}
+\subsection{Smooth objects and cross sections}
 
 As you recall, my original goal was drawing two-dimensional manifolds
 like those in Figure~\ref{fig:manifolds}, so this was the first
@@ -233,7 +224,7 @@ Compiling this code (assuming that the file
 \texttt{smoothmanifold.asy} is located where \asy\ can find it) yields
 the picture in Figure~\ref{fig:torus}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/torus.pdf}
 \caption{A torus}
@@ -253,7 +244,7 @@ cross section rings around the given hole.
 After creating the smooth object and assigning it to the
 variable \texttt{s}, we set some configuration values. The
 \texttt{config.section.freedom} value determines how much leeway is
-given to the section finding algorithm (to be explained later), and the \texttt{size()}
+given to the section search algorithm (to be explained later), and the \texttt{size()}
 function allows us to set the picture's size.
 
 Finally, we \texttt{draw} the smooth object, providing a \texttt{dpar}
@@ -263,14 +254,13 @@ the object (and its cross sections) should be drawn. The
 coordinate the widths of different cross section rings, such that
 together they create the illusion of a 3D object.
 
-Interested readers may consult the full\linebreak \smo\ manual
+Interested readers may consult page 22 of the full \smo\ manual
 \cite{manual} for more detail.
 
-\subsection{The cross section finding algorithm}%
-\label{sub:find}
+\subsection{The cross section search algorithm}
 
 Although I don't wish to delve too deep into technical aspects, I think
-the cross section finding algorithm merits a short discussion. The relevant
+the cross section search algorithm merits a short discussion. The relevant
 \smo\ function is
 \begin{verbatim}
 pair[][] sectionparams
@@ -281,7 +271,7 @@ between the paths \texttt{g} and \texttt{h}, and it does so by first
 splitting both paths into regions, as seen in
 Figure~\ref{fig:regions}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/regions.pdf}
 \caption{\texttt{n} regions (filled gray) are formed between the paths
@@ -294,7 +284,7 @@ space between
 the paths, and the algorithm will try to find an optimal
 position for a cross section in each region.
 The \texttt{real r} parameter of the
-\texttt{sectionparams} function determines the relative\linebreak width
+\texttt{sectionparams} function controls the relative width
 of these regions. If \texttt{r = 0}, each region is a line, and
 there is no choice. If \texttt{r = 1}, then the regions cover
 all space between \texttt{g} and \texttt{h}. In a sense,
@@ -306,7 +296,7 @@ each region, and search for the optimal section position by minimizing
 a loss function. This is illustrated in Figure~\ref{fig:search}, with
 \texttt{p} equal to 10.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/search.pdf}
 \caption{Selecting the optimal section position (circled) within one region}
@@ -323,7 +313,7 @@ One final note on the cross section mechanism concerns this ``illusion
 of 3D''. \asy\ has full support for actual 3-dimensional drawing and
 allows producing something like the torus in 
 Figure~\ref{fig:honest-torus} with relatively little effort.
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/honest-torus.png}
 \caption{A real 3-dimensional torus}
@@ -337,18 +327,20 @@ to this approach:
     vector graphics, surfaces like this still force you to use a
     bitmap image format (the picture in Figure~\ref{fig:honest-torus}
     is an embedded \acro{PNG} image), which is not necessarily bad,
-    but I personally prefer vector graphics whenever possible, for
-    consistency.
-  \item The resulting image file typically will be much larger. Here,
-    the \acro{PNG} file with the ``real'' torus was 57.6 times larger
-    than the \acro{PDF} file embedded in Figure~\ref{fig:torus}.
+    but vector images are usually orders of magnitude smaller in size
+    and are more consistent with a \acro{PDF} document using a
+    vectorized font.
+  \item 3-dimensional drawing in \asy\ typically requires a bit more
+    work, since one has to define surfaces either with a
+    mathematical function or as a surface of revolution, and one has
+    to consider lighting and perspective. In Figure~\ref{fig:torus}, a torus is just two
+    ellipses.
   \item In my opinion, the 3-dimensional torus in
     Figure~\ref{fig:honest-torus} lacks some sort of ``textbook style''
     that is kept in Figure~\ref{fig:torus}.
 \end{itemize}
 
-\subsection{Smooth objects as sets}%
-\label{sub:sets}
+\subsection{Smooth objects as sets}
 
 Having achieved my initial goal of drawing smooth manifolds, I
 forgot about the library for about a year. But one day I realized that
@@ -357,7 +349,7 @@ manifolds, but \emph{sets} in general. Consider the set-theoretic
 diagram in Figure~\ref{fig:inter} that illustrates the intersection of
 two sets.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/intersection.pdf}
 \caption{Intersection of two subsets of a set $X$}
@@ -376,8 +368,7 @@ with this code:
 smooth sm = smooth(
     (-1.5,-1) -- (1.5,-1)
     -- (1.5,1) -- (-1.5,1) -- cycle,
-    label = "$X$",
-    labeldir = dir(90)
+    label = "$X$", labeldir = dir(90)
 ).addsubset(
   convexpaths[2],
   scale = .8, shift = (-.4,.05),
@@ -412,7 +403,7 @@ smooth object, respecting this object's \texttt{holes} and
 \texttt{subsets}, as well as other data such as cross sections and
 labels.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/move.pdf}
 \caption{Calling one method to move a smooth object along with its
@@ -429,7 +420,7 @@ path[] intersection (
 )
 \end{verbatim}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/round.pdf}
 \caption{Intersection of two paths with rounded corners}
@@ -452,14 +443,13 @@ general to produce new paths from old.
 
 Side note: \asy\ already has a module called \texttt{roundedpath} that
 allows to round the corners of a path, and \smo\ does not depend on
-it.
+it, instead implementing rounding directly.
 
-\subsection{Delayed drawing of paths}%
-\label{sub:delayed}
+\subsection{Delayed drawing of paths}
 
 One of \asy's celebrated features is the so-called ``deferred
 drawing''. Essentially, whenever a \texttt{path} is drawn by \asy, it
-is stored in a structure called \texttt{picture} (in particular, the
+is stored in a structure of type \texttt{picture} (in particular, the
 \texttt{draw} function has an optional argument \texttt{picture pic},
 whose default value is \texttt{currentpicture}, that allows the user to specify the picture to draw
 the path on). However, crucially, instead of directly storing the control
@@ -480,13 +470,13 @@ However, this means that once the instruction to draw a path is stored
 inside a \texttt{picture}, this path becomes fully immutable. There is
 no way to ``change a path after it's drawn'', since the only way to
 even inspect this path is by calling the associated function, which
-will immediately draw the path, defeating the point.
+will immediately draw the path, defeating the purpose.
 
-And indeed, mutating a drawn path can be useful. For example, consider
+At the same time, mutating a drawn path can be useful. For example, consider
 Figure~\ref{fig:overlap}, where two circles overlap, and the portion
 of the left circle going ``under'' the right circle is drawn with a
 dashed \texttt{pen}.
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/overlap.pdf}
 \caption{One circle overlapping another}
@@ -502,18 +492,19 @@ fillfitpath(
   fillpen = gray(.85)
 );
 \end{verbatim}
-The \texttt{fitpath} function allows the user to draw a path on a picture
-and then mutate it afterwards, for example, split it into two subpaths
-and draw each one with different pens, as in Figure~\ref{fig:overlap}.
-It also allows to leave ``gaps'' in paths after they are drawn, as
-seen in Figure~\ref{fig:gaps}, which was generated using this code:
+The \texttt{fitpath} function allows the user to ``draw a path on a
+picture and then mutate it afterwards'', for example, split it into
+two subpaths and draw each one with different pens, as in
+Figure~\ref{fig:overlap}. It also allows to leave ``gaps'' in paths
+after they are drawn, as seen in Figure~\ref{fig:gaps}, which was
+generated using this code:
 \begin{verbatim}
 config.drawing.gaplength = 0.4;
 fitpath(box((-3,-.6), (3,.6)));
 fitpath(circle((0,0), 1.2));
 \end{verbatim}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics{figures/gaps.pdf}
 \caption{The circular path leaving gaps in the rectangular path}
@@ -522,20 +513,83 @@ fitpath(circle((0,0), 1.2));
 
 Of course, both of these pictures can be easily drawn in plain \asy\
 by first assigning the paths to variables, calculating their
-intersection points, taking subpaths, and finally drawing the subpath.
+intersection points, taking subpaths, and finally drawing the subpaths.
 However, this again constitutes a common pattern that can be
 abstracted away. And besides, what if the paths are not so easily
 isolated, for instance when they are the contours of smooth objects?
-An example can be seen in Figure~\ref{fig:smooth-overlap}.
+An example is shown in Figure~\ref{fig:smooth-overlap}.
 
 \begin{figure}
 \centering
 \includegraphics{figures/smooth-overlap.pdf}
   \caption{A circle (right) overlapping a smooth object (left) and
-  leaving gaps in its contour}
+  leaving gaps in its contour, difficult to draw manually}
 \label{fig:smooth-overlap}
 \end{figure}
 
+How does the \texttt{fitpath} function work internally? In slightly
+simplified terms, the \smo\ module has a global variable
+called
+\texttt{delayedPaths} which holds an array of paths. When the 
+\texttt{fitpath} function is
+called on a path \texttt{p}, it will traverse this array and modify
+the paths therein, based on their intersections with \texttt{p}. In
+particular, it will split existing paths into subpaths such that gaps
+are left wherever \texttt{p} intersects another path contained in
+\texttt{delayedPaths}. Finally, the path \texttt{p} itself is added to
+this array.
+
+And this is essentially all that the \texttt{fitpath} function does
+\Dash it doesn't actually draw anything on any \texttt{picture}.
+Of course, all the paths in \texttt{delayedPaths} will have to be
+drawn at some point. This is handled by the \texttt{drawdelayed}
+function which is called automatically before producing an image file
+from a \texttt{picture}, but can also be called manually by the user.
+
+As you can see, this system is essentially a second layer of deferred
+drawing, and I call it \emph{delayed drawing} (totally not
+confusing!). In fact, it's a bit more involved than the way I explained
+it here, and interested readers may see page 4 of the \smo\ manual
+\cite{manual} for further detail.
+
+As a closing remark on this section, I'd like to show a real-world use
+case for the delayed drawing system, pictured in
+Figure~\ref{fig:inverse}. It relates to the proof of the Inverse
+Function Theorem from real analysis. Given a point $y$, we construct a
+certain contraction mapping on a complete metric space, and prove that
+its fixed point $x$ is the unique preimage of $y$ under $F$, which
+then allows us to construct the inverse function to $F$. This diagram
+was part of a job I did for my university, supplying illustrations to
+the lecture notes for a course in real analysis.
+
+\begin{figure}[ht]
+\centering
+\includegraphics{figures/inverse.pdf}
+\caption{A construction step in the proof of the Inverse Function Theorem}
+\label{fig:inverse}
+\end{figure}
+
+\section{Conclusion}
+
+I have been developing and maintaining module \smo\ for close to 4
+years now, and I find it very useful whenever I have to prepare a
+technical diagram related to higher mathematics. I cannot help but
+think that there are people who would benefit from this library as well.
+
+\smo, like \asy, is free and open source software, available for
+download at\linebreak
+\url{https://github.com/thornoar/smoothmanifold}.
+
+I would also like to extend my thanks to John C. Bowman, Andy
+Hammerlindl, Tom Prince, and other people who developed and maintained
+\asy, for creating this graphics language and for gracefully
+neglecting to make many of \asy's core structures and functions
+\texttt{private}, which allows the user to perform some really dirty
+tricks and produce beautiful results.
+
+\begin{center}
+\includegraphics{figures/logo.pdf}
+\end{center}
 
 \bibliographystyle{tugboat}
 \bibliography{main}

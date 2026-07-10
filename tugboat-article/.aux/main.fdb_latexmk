@@ -1,17 +1,17 @@
 # Fdb version 4
-["bibtex .aux/main"] 1783690676.58631 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783691052.23859 0
+["bibtex .aux/main"] 1783715013.95646 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783715048.037 0
   "./main.bib" 1783617499.04079 735 fc09cd7b54b57bc3064fdf934ff02519 ""
-  ".aux/main.aux" 1783691052.07403 5185 aaee8307deb54527487d1562fc6e573c "pdflatex"
+  ".aux/main.aux" 1783715047.86999 5197 d31bd97ed6ff553ef2df359fe9f32177 "pdflatex"
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/bibtex/bst/tugboat/tugboat.bst" 1 47882 ec85aab816741ee6cc5112bf2fb2cfc4 ""
   (generated)
   ".aux/main.bbl"
   ".aux/main.blg"
   (rewritten before read)
-["pdflatex"] 1783691051.59061 "./main.tex" "main.pdf" "main" 1783691052.23875 0
-  "./main.tex" 1783691049.97912 21593 bc26dc03e41f6391f39837087b335798 ""
-  ".aux/main.aux" 1783691052.07403 5185 aaee8307deb54527487d1562fc6e573c "pdflatex"
-  ".aux/main.bbl" 1783690676.64496 679 6ca38f913af321a253167beb4b9b3501 "bibtex .aux/main"
-  ".aux/main.out" 1783691052.07403 1275 20d9f7718881a6f699781dbb8875a703 "pdflatex"
+["pdflatex"] 1783715047.38048 "./main.tex" "main.pdf" "main" 1783715048.03715 0
+  "./main.tex" 1783715046.09743 24442 61ac32be5e4046c1997f8bba49510d29 ""
+  ".aux/main.aux" 1783715047.86999 5197 d31bd97ed6ff553ef2df359fe9f32177 "pdflatex"
+  ".aux/main.bbl" 1783715014.00641 679 6ca38f913af321a253167beb4b9b3501 "bibtex .aux/main"
+  ".aux/main.out" 1783715047.87099 1363 125c6f4782f7a2fabcf47570759402b6 "pdflatex"
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1 2971 def0b6c1f0b107b3b936def894055589 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -38,11 +38,15 @@
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/tfm/public/knuth-lib/logo10.tfm" 1 200 14906d432f6644db247e04507b921171 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/hoekwater/mflogo-font/logo10.pfb" 1 3724 64a7599d5c6927bb0318e35f2f564cef ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
+  "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmmi7.pfb" 1 36281 c355509802a035cadc5f15869451dcee ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmmi9.pfb" 1 36094 798f80770b3b148ceedd006d487db67c ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1 35752 024fb6c41858982481f6968b5fc26508 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
+  "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1 32726 0a1aea6fcd6468ee2cf64d891f5c43c8 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1 32569 5e5ddc8df908dea60932f3c484a54c0d ""
+  "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy5.pfb" 1 32915 7bf7720c61a5b3a7ff25b0964421c9b6 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmsy9.pfb" 1 32442 c975af247b6702f7ca0c299af3616b80 ""
+  "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmti8.pfb" 1 35660 fb24af7afbadb71801619f1415838111 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/cm/cmtt10.pfb" 1 31099 c85edf1dd5b9e826d67c9c7293b6786c ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/amsfonts/latxfont/line10.pfb" 1 11493 4f5ed183a47d3197cf8cd322325db6de ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/type1/public/cm-super/sfbi1000.pfb" 1 193571 dce9a978093738902238b3e227edef6c ""
@@ -110,6 +114,8 @@
   "figures/gaps.pdf" 1783690852.36648 2990 5e56027cf4fce37a4aca3c2eceaa9de5 ""
   "figures/honest-torus.png" 1783621487.39467 224567 71b1a87f2db367a1d3fcd240915a77ed ""
   "figures/intersection.pdf" 1783627676.67903 5571 c6115c0ad99b957b862a8118ebbe7aff ""
+  "figures/inverse.pdf" 1783712208.01352 9226 1506328ca283a6ddceef35f605d71552 ""
+  "figures/logo.pdf" 1783713224.39269 9858 0add8b25afae474e13a83a701a782e55 ""
   "figures/move.pdf" 1783638654.27467 9574 2a97c64513fa9441fd211f378bf4571d ""
   "figures/overlap.pdf" 1783688145.80776 3078 b12f71a1d5fead035dcccb9214333b53 ""
   "figures/regions.pdf" 1783632252.67355 4826 d29eff3c438a402d2132b523a8aac8b1 ""
@@ -117,9 +123,9 @@
   "figures/search.pdf" 1783632230.79911 7194 b9b2b89346ccd62e4236eccf01990633 ""
   "figures/smooth-overlap.pdf" 1783690674.39758 5949 5b015d460433173ddba2876392a91747 ""
   "figures/surface-close.pdf" 1783621485.43618 3294 06e31815ad183c793743a73114d45f75 ""
-  "figures/surfaces.pdf" 1783621484.62956 4283 b560d5e1eeb1066c724fed8e10c4f34a ""
+  "figures/surfaces.pdf" 1783706158.14356 4131 7a368273eda3f14fe949d78b6273ff05 ""
   "figures/torus.pdf" 1783674430.91218 4110 e395f2582f5f0c1d18425b4a71bbe941 ""
-  "main.tex" 1783691049.97912 21593 bc26dc03e41f6391f39837087b335798 ""
+  "main.tex" 1783715046.09743 24442 61ac32be5e4046c1997f8bba49510d29 ""
   (generated)
   ".aux/main.aux"
   ".aux/main.log"
