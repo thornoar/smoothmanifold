@@ -1,17 +1,17 @@
 # Fdb version 4
-["bibtex .aux/main"] 1783637637.34861 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783638656.68582 0
+["bibtex .aux/main"] 1783690676.58631 ".aux/main.aux" ".aux/main.bbl" ".aux/main" 1783691052.23859 0
   "./main.bib" 1783617499.04079 735 fc09cd7b54b57bc3064fdf934ff02519 ""
-  ".aux/main.aux" 1783638656.52256 4146 63d82741329d5f205d6e795a057928f8 "pdflatex"
+  ".aux/main.aux" 1783691052.07403 5185 aaee8307deb54527487d1562fc6e573c "pdflatex"
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/bibtex/bst/tugboat/tugboat.bst" 1 47882 ec85aab816741ee6cc5112bf2fb2cfc4 ""
   (generated)
   ".aux/main.bbl"
   ".aux/main.blg"
   (rewritten before read)
-["pdflatex"] 1783638656.06397 "./main.tex" "main.pdf" "main" 1783638656.68595 0
-  "./main.tex" 1783638065.76807 17547 9d31038560175fab282d77e73f20fbe0 ""
-  ".aux/main.aux" 1783638656.52256 4146 63d82741329d5f205d6e795a057928f8 "pdflatex"
-  ".aux/main.bbl" 1783637637.39635 679 6ca38f913af321a253167beb4b9b3501 "bibtex .aux/main"
-  ".aux/main.out" 1783638656.52256 1089 58891863b06662d0f521ea75bef77781 "pdflatex"
+["pdflatex"] 1783691051.59061 "./main.tex" "main.pdf" "main" 1783691052.23875 0
+  "./main.tex" 1783691049.97912 21593 bc26dc03e41f6391f39837087b335798 ""
+  ".aux/main.aux" 1783691052.07403 5185 aaee8307deb54527487d1562fc6e573c "pdflatex"
+  ".aux/main.bbl" 1783690676.64496 679 6ca38f913af321a253167beb4b9b3501 "bibtex .aux/main"
+  ".aux/main.out" 1783691052.07403 1275 20d9f7718881a6f699781dbb8875a703 "pdflatex"
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1 2971 def0b6c1f0b107b3b936def894055589 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/nix/store/0mhwmnc5v7yal01pzxxa46qvhjb96sa3-texlive-combined-2025-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -107,16 +107,19 @@
   "/nix/store/921dfnmnfi0fydjfy3vjscpb8lvlfg5j-texlive-combined-2025/share/texmf-var/web2c/pdftex/pdflatex.fmt" 1 3636998 8558083d03cc25a87b1725739eb3f0ad ""
   "/nix/store/921dfnmnfi0fydjfy3vjscpb8lvlfg5j-texlive-combined-2025/share/texmf-var/web2c/texmf.cnf" 1 44007 1628eb89a04c4a76ad767aa0dd04d59f ""
   "figures/example.eps" 1783621485.33564 35085 303f3ed04c323f890c01e467a1d8ef45 ""
+  "figures/gaps.pdf" 1783690852.36648 2990 5e56027cf4fce37a4aca3c2eceaa9de5 ""
   "figures/honest-torus.png" 1783621487.39467 224567 71b1a87f2db367a1d3fcd240915a77ed ""
   "figures/intersection.pdf" 1783627676.67903 5571 c6115c0ad99b957b862a8118ebbe7aff ""
   "figures/move.pdf" 1783638654.27467 9574 2a97c64513fa9441fd211f378bf4571d ""
+  "figures/overlap.pdf" 1783688145.80776 3078 b12f71a1d5fead035dcccb9214333b53 ""
   "figures/regions.pdf" 1783632252.67355 4826 d29eff3c438a402d2132b523a8aac8b1 ""
   "figures/round.pdf" 1783637444.5808 6236 6bd8f94275026e2652914e7cfd5cddb0 ""
   "figures/search.pdf" 1783632230.79911 7194 b9b2b89346ccd62e4236eccf01990633 ""
+  "figures/smooth-overlap.pdf" 1783690674.39758 5949 5b015d460433173ddba2876392a91747 ""
   "figures/surface-close.pdf" 1783621485.43618 3294 06e31815ad183c793743a73114d45f75 ""
   "figures/surfaces.pdf" 1783621484.62956 4283 b560d5e1eeb1066c724fed8e10c4f34a ""
-  "figures/torus.pdf" 1783621484.52942 4126 c27c49113860f441dc1d31ff2bb54467 ""
-  "main.tex" 1783638065.76807 17547 9d31038560175fab282d77e73f20fbe0 ""
+  "figures/torus.pdf" 1783674430.91218 4110 e395f2582f5f0c1d18425b4a71bbe941 ""
+  "main.tex" 1783691049.97912 21593 bc26dc03e41f6391f39837087b335798 ""
   (generated)
   ".aux/main.aux"
   ".aux/main.log"

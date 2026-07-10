@@ -12,6 +12,10 @@
 \address{Hong Kong}
 \netaddress{r.a.maksimovich (at) gmail.com}
 
+% \newenvironment{verblock}
+% {\begin{minipage}{\linewidth}\begin{verbatim}}
+% {\end{verbatim}\end{minipage}}
+
 \newcommand{\asy}{\texttt{Asymptote}} 
 \newcommand{\smo}{\texttt{smoothmanifold}} 
 
@@ -317,17 +321,15 @@ $O(n p^2)$.
 
 One final note on the cross section mechanism concerns this ``illusion
 of 3D''. \asy\ has full support for actual 3-dimensional drawing and
-allows producing something like this with
-relatively little effort:
-
+allows producing something like the torus in 
+Figure~\ref{fig:honest-torus} with relatively little effort.
 \begin{figure}[h]
 \centering
 \includegraphics{figures/honest-torus.png}
 \caption{A real 3-dimensional torus}
 \label{fig:honest-torus}
 \end{figure}
-
-This certainly looks more realistic, but there are numerous objections
+It certainly looks more realistic, but there are numerous objections
 to this approach:
 
 \begin{itemize}
@@ -346,13 +348,14 @@ to this approach:
 \end{itemize}
 
 \subsection{Smooth objects as sets}%
-\label{sub:delayed}
+\label{sub:sets}
 
 Having achieved my initial goal of drawing smooth manifolds, I
 forgot about the library for about a year. But one day I realized that
 the \texttt{smooth} structure can be used to model not only smooth
-manifolds, but \emph{sets} in general. Consider this set-theoretic
-diagram that illustrates the intersection of two sets:
+manifolds, but \emph{sets} in general. Consider the set-theoretic
+diagram in Figure~\ref{fig:inter} that illustrates the intersection of
+two sets.
 
 \begin{figure}[h]
 \centering
@@ -361,7 +364,7 @@ diagram that illustrates the intersection of two sets:
 \label{fig:inter}
 \end{figure}
 
-Of course, this diagram can be drawn with relative ease in plain \asy\
+Of course, this diagram can be drawn with ease in plain \asy\
 or any other graphics program, but there is a common pattern that can be
 abstracted away: one encompassing cyclic path (labeled $X$ in
 Figure~\ref{fig:inter}) and a number of cyclic paths inside of it,
@@ -407,7 +410,7 @@ these objects. For example, the \texttt{smooth} structure has a method
 called \texttt{move} that allows one to shift, scale and rotate a
 smooth object, respecting this object's \texttt{holes} and
 \texttt{subsets}, as well as other data such as cross sections and
-labels:
+labels.
 
 \begin{figure}[h]
 \centering
@@ -418,7 +421,7 @@ labels:
 \end{figure}
 
 Returning to Figure~\ref{fig:inter}, the automatic intersection of
-subsets is achieved via the function
+subsets is achieved via the \smo\ function
 \begin{verbatim}
 path[] intersection (
   path p, path q,
@@ -441,6 +444,97 @@ switch is set to \texttt{true}, and the degree of rounding can be
 regulated with \texttt{roundcoeff}. An example can be seen in
 Figure~\ref{fig:round}.
 
+Similarly, \smo\ contains the functions \texttt{union},
+\texttt{difference}, and \texttt{symmetric} to calculate the union,
+difference, and symmetric difference of two areas. This can be useful
+not only to automatically construct subset intersections, but in
+general to produce new paths from old.
+
+Side note: \asy\ already has a module called \texttt{roundedpath} that
+allows to round the corners of a path, and \smo\ does not depend on
+it.
+
+\subsection{Delayed drawing of paths}%
+\label{sub:delayed}
+
+One of \asy's celebrated features is the so-called ``deferred
+drawing''. Essentially, whenever a \texttt{path} is drawn by \asy, it
+is stored in a structure called \texttt{picture} (in particular, the
+\texttt{draw} function has an optional argument \texttt{picture pic},
+whose default value is \texttt{currentpicture}, that allows the user to specify the picture to draw
+the path on). However, crucially, instead of directly storing the control
+points of the B\'ezier spline that a \texttt{path} represents, the
+\texttt{picture} structure stores a \emph{function} which, when
+called, will actually draw the path. This function has additional
+arguments whose values may not be known at the time that the user
+calls \texttt{draw}.
+This is mainly because \asy\ allows to draw paths in ``user
+coordinates'' which then have to be transformed into true PostScript
+coordinates. Since this transformation depends on the size of the
+picture, it is not known at the time of drawing any particular path.
+As a result, drawing is ``deferred'' until a path's true coordinates
+are known, and the function stored inside a \texttt{picture} can be
+called.
+
+However, this means that once the instruction to draw a path is stored
+inside a \texttt{picture}, this path becomes fully immutable. There is
+no way to ``change a path after it's drawn'', since the only way to
+even inspect this path is by calling the associated function, which
+will immediately draw the path, defeating the point.
+
+And indeed, mutating a drawn path can be useful. For example, consider
+Figure~\ref{fig:overlap}, where two circles overlap, and the portion
+of the left circle going ``under'' the right circle is drawn with a
+dashed \texttt{pen}.
+\begin{figure}[h]
+\centering
+\includegraphics{figures/overlap.pdf}
+\caption{One circle overlapping another}
+\label{fig:overlap}
+\end{figure}
+Using \smo, this can be achieved with the code
+\begin{verbatim}
+config.drawing.underdashes = true;
+config.drawing.gaplength = 0.001;
+fitpath(unitcircle);
+fillfitpath(
+  shift(1.2) * unitcircle,
+  fillpen = gray(.85)
+);
+\end{verbatim}
+The \texttt{fitpath} function allows the user to draw a path on a picture
+and then mutate it afterwards, for example, split it into two subpaths
+and draw each one with different pens, as in Figure~\ref{fig:overlap}.
+It also allows to leave ``gaps'' in paths after they are drawn, as
+seen in Figure~\ref{fig:gaps}, which was generated using this code:
+\begin{verbatim}
+config.drawing.gaplength = 0.4;
+fitpath(box((-3,-.6), (3,.6)));
+fitpath(circle((0,0), 1.2));
+\end{verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics{figures/gaps.pdf}
+\caption{The circular path leaving gaps in the rectangular path}
+\label{fig:gaps}
+\end{figure}
+
+Of course, both of these pictures can be easily drawn in plain \asy\
+by first assigning the paths to variables, calculating their
+intersection points, taking subpaths, and finally drawing the subpath.
+However, this again constitutes a common pattern that can be
+abstracted away. And besides, what if the paths are not so easily
+isolated, for instance when they are the contours of smooth objects?
+An example can be seen in Figure~\ref{fig:smooth-overlap}.
+
+\begin{figure}
+\centering
+\includegraphics{figures/smooth-overlap.pdf}
+  \caption{A circle (right) overlapping a smooth object (left) and
+  leaving gaps in its contour}
+\label{fig:smooth-overlap}
+\end{figure}
 
 
 \bibliographystyle{tugboat}
