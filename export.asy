@@ -50,6 +50,7 @@ struct exportconfig {
     bool clip = false;
     pair corner = (0,0);
     bool invertcolors = false;
+    bool drawgrid = false;
 
     exportanimationconfig animations;
     string[] natives;
@@ -163,7 +164,7 @@ void export(
 
     if (drawdelayed) drawdelayed(pic1, flush = !restore);
     if (debugpaths.length > 0) draw(pic = pic1, debugpaths, red+1);
-    if (config.help.drawgrid) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
+    if (export.drawgrid) drawgrid(pic1, pic1.userMin2(), pic1.userMax2());
 	if (export.enclose) framepicture(pic1);
 
     if (native) localshipout(prefix);

@@ -2150,6 +2150,9 @@ struct helpconfig {
     real arcratio = 0.2;
     real arrowlength = .2;
     pen linewidth = linewidth(.3);
+    int gridnumber = 10;
+    int gridplaces = 1;
+    pair gridmarginscale = .1;
 }
 ``` <config-help> #vs
 A structure to hold the few help-related variables, namely
@@ -2157,6 +2160,10 @@ A structure to hold the few help-related variables, namely
 - `arcratio` --- the relative radius of the blue arcs seen near the center of the hole in @section-showcase, it may be useful to tweak if the arc covers the number in the center of the hole;
 - `arrowlength` --- the length of auxiliary arrows drawn by the sides of cross sections when `help = true`. A value of `-1` will disable these arrows (like in @section-showcase);
 - `linewidth` -- the pen containing the line width to draw help lines with.
+- `gridnumber` and `gridplaces` --- default values to the
+  corresponding arguments of the `drawgrid` @misc-drawgrid function.
+- `gridmarginscale` --- determines the default value of the `margin`
+  argument of the `drawgrid` @misc-drawgrid function.
 
 == Arrow variables <sc-config-arrow>
 
@@ -2583,6 +2590,30 @@ Calculate the vertical and horizontal size of a given picture `p`.
 ] #vs
 A Gaussian integer structure, mainly used by the `combination` @path-combination function.
 
+```
+void drawgrid (
+    picture pic = currentpicture,
+    int places = config.help.gridplaces,
+    int number = config.help.gridnumber,
+    pair min = pic.userMin2(),
+    pair max = pic.userMax2(),
+    pair margin = (max - min)*config.help.gridmarginscale
+)
+``` <misc-drawgrid>
+Draw a number grid on the given `picture`. The `places` argument controls the number of decimal places to which the grid coordinates will be rounded. The `number` argument controls the number of grid lines to draw (both vertical and horizontal). This function is useful to get a coordinate reference on the picture and faster position elements on it. Consider an example:
+#example(
+  image("resources/grid.svg"),
+  ```
+  draw((-1.2,-1)--(2.4,2), red);
+  draw((-2.4,-1)--(3,1), blue);
+  draw(shift((-2,2)) * unitcircle);
+  draw(shift((1,1)) * unitcircle, deepgreen);
+
+  drawgrid(places = 1, number = 4);
+  ```,
+  [A showcase of the `drawgrid` function]
+)
+
 = Index <sc-index>
 
 #let section(letter, cnt) = {
@@ -2676,6 +2707,7 @@ A Gaussian integer structure, mainly used by the `combination` @path-combination
 
 #section("D")[
   - `struct drawingconfig` #e @config-drawing
+  - `void drawgrid (picture, int, int, pair, pair, pair)` #e @misc-drawgrid
   - `struct dpar` #e @smooth-dpar
   - `struct delayedPath` #e @def-delayedPath
   - `int dn` #e @dummynumber
