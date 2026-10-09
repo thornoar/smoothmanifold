@@ -1,17 +1,19 @@
-\documentclass{ltugboat}
+\documentclass[final]{ltugboat}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{hologo}
 \usepackage{microtype}
 \usepackage[hidelinks]{hyperref}
+\def\url{\tburl}
 
-\title{Abstract Diagrams for the Working Mathematician}
+\title{Abstract diagrams for the \\working mathematician:\\ The Asymptote
+\texttt{smoothmanifold} module}
 
 \author{Roman Maksimovich}
 \address{Hong Kong}
-\netaddress{r.a.maksimovich (at) gmail.com}
+\netaddress{r.a.maksimovich (at) gmail dot com}
 
-\newcommand{\asy}{\texttt{Asymptote}} 
+\newcommand{\asy}{Asymptote} 
 \newcommand{\smo}{\texttt{smoothmanifold}} 
 
 % Please state if you'd like to receive a physical copy of the TUGboat
@@ -49,10 +51,10 @@ in Figure \ref{fig:manifolds}.
 \label{fig:manifolds}
 \end{figure}
 
-At that point I realized I wasn't sure how to draw this. I started by
+At that point I realized I wasn't sure how to proceed. I started by
 considering some of the available tools:
 
-\begin{itemize}
+\begin{itemize}\parskip=0pt
   \item \textbf{Inkscape} (\url{https://www.inkscape.org})\\
     This is a popular and versatile \acro{GUI} program for drawing
     vectorized graphics, suitable when the diagram is simple enough to
@@ -61,7 +63,8 @@ considering some of the available tools:
     not for the right-hand side. The reason is that each ``cross
     section ring'' has to be drawn at a precisely calculated position,
     where it meets its bounding paths at equal angles, as illustrated
-    on Figure~\ref{fig:close}.\\
+    in Figure~\ref{fig:close}.
+
     \begin{figure}[ht]
     \centering
     \includegraphics{figures/surface-close.pdf}
@@ -69,12 +72,13 @@ considering some of the available tools:
       angles with the tangent lines}
     \label{fig:close}
     \end{figure}
-    Besides, it would be useful to tweak the count
+
+    Further, it would be useful to tweak the count
     and positions of these ``cross sections'' to see what works best
     for the picture, and this is not something that can be achieved
-    with a \acro{GUI} tool like \textbf{Inkscape}. Pass.
+    with a \acro{GUI} tool like \relax{Inkscape}. Pass.
   \item \textbf{\LaTeX's \texttt{picture} environment}\\
-    There are native drawing capabilities to \LaTeX, but they are
+    There are native drawing capabilities in \LaTeX, but they are
     severely limited. For instance, a straight line segment can be
     drawn like so:\\[5pt]
     \begin{minipage}{0.36\textwidth}
@@ -99,56 +103,71 @@ considering some of the available tools:
     vector graphics, it tries to assemble the diagram from glyphs
     found in \TeX's fonts, and these fonts only provide a small
     variety of sloped straight lines (if you are reading this article
-    digitally, you can zoom in on the straight line above and see that
-    it's actually three aligned forward slashes).\\
+    digitally, with some \acro{PDF} readers you can zoom in on the
+    straight line above and see that it's actually three aligned
+    forward slashes).
+
     To be fair, \texttt{picture} is also capable of drawing an arbitrary
     B\'ezier curve by putting it together from many black squares.
     Still, this is a pretty rudimentary tool unsuited for complicated
     technical drawing, and it's mainly used to define custom
     symbols rather than full diagrams. Pass.
   \item \textbf{The \TikZ\ package} (\url{https://tikz.dev})\\
-    For the absolute majority of \TeX\ users, this is the go-to tool
-    for technical drawing, and reasonably so. \TikZ\ has a
+    For a majority of \TeX\ users, this is probably the go-to tool
+    for technical drawing, and reasonably~so. \TikZ\ has a
     comprehensive manual and a rich ecosystem of libraries to suit
     virtually your every need. Clearly, both manifolds on
-    Figure~\ref{fig:manifolds} can be drawn with \TikZ.\\
+    Figure~\ref{fig:manifolds} can be drawn with \TikZ.
+
     However, my high school self was positively intimidated by the
     \TikZ\ manual (1321 pages?!), and besides, I wanted to write an
     \emph{algorithm} that could calculate the best positions for cross
     section rings, not just a \TeX\ macro. I was fascinated by the
-    \textbf{C} programming language at the time, and I wanted to write
+    \relax{C} programming language at the time, and I wanted to write
     a \emph{function} which would accept two paths as arguments, as
     well as the desired number of cross sections, and return the
     coordinates at which they would look best. \TeX\ certainly tries
     to provide some features of a full programming language, but in
     truth it is more of a markup language, poorly suited for writing
-    general-purpose algorithms. Hence, I passed on \TikZ\ also.
-    Alternatives to the \TikZ\ package (such as \texttt{pstricks},
-    \texttt{xypic}, \texttt{dratex}, etc.) suffer from the same and
-    more disadvantages.\\
+    general-purpose algorithms.
+    
+    Hence, I passed on \TikZ\ also.
+    Alternatives to \TikZ\ (such as \texttt{pstricks},
+    \texttt{xypic}, \texttt{dratex}, etc.)\ suffer from the same and
+    more disadvantages.
+
+  \item \hologo{METAPOST} (\url{https://tug.org/metapost.html})\\
+    Introduced by John D. Hobby in 1994, this language is based on
+    Donald Knuth's \hologo{METAFONT} program and allows users to
+    produce PostScript graphics with a set of drawing commands. Unlike
+    \TikZ\ and its cousins, \hologo{METAPOST} is a standalone complete
+    programming language with data structures and flow control (such
+    as \texttt{if} statements and \texttt{for} loops). However, while
+    still perfectly usable, I would consider \hologo{METAPOST} to be
+    outdated and lacking in certain features that are present in other
+    drawing tools, such as native \acro{PDF} output. And besides,
+    \hologo{METAPOST} turns out to have a successor which inherits its
+    advantages and adds many more features.
 \end{itemize}
 
-Then, in a stroke of luck, I heard about this vector graphics language
-called \asy\ (\url{https://asymptote.sourceforge.io}), and I knew that
-it was the one. \asy\ was initially introduced in 2004 at the
-University of Alberta by Andy Hammerlindl, John Bowman, and Tom
-Prince. It is inspired by the old \hologo{METAPOST} language, which in
-turn was inspired by Donald Knuth's \hologo{METAFONT} program.
-However, \asy\ has a \textbf{C}-like syntax and is indeed a full
-programming language with data structures, IEEE floating-point number
-support, control flow structures like \texttt{if}, \texttt{for}, and
-\texttt{while}, etc., as well as very high-level features such as
-default arguments and first-class functions (i.e. functions that can
-be returned or passed to other functions as values).
+That successor is a vector graphics language
+called \asy\ (\url{https://asymptote.sourceforge.io}). It was first introduced in 2004 at the University of Alberta by Andy
+Hammerlindl, John Bowman, and Tom Prince.
 
+\asy\ follows \hologo{METAPOST} in being a proper programming language
+with data structures, \IEEE\ floating-point number support, and
+control flow. But unlike \hologo{METAPOST}, it has a \relax{C}-like
+syntax and some very high-level features such as
+default arguments and first-class functions (i.e., functions that can
+be returned or passed to other functions as values).
 Readers of \TUB\ may have already read about \asy\ in
-\cite{fst} and \cite{snd}.
+\cite{snd} and \cite{fst}.
 
 Soon after learning about \asy, I started writing my own library for this
 language, one that I later came to use whenever I needed to create a
 diagram in abstract mathematics.
 
-\section{Module \smo}
+\section{The \smo\ module}
 
 \subsection{The basics of \asy}
 
@@ -160,7 +179,7 @@ one may write \asy\ code directly in a \LaTeX\ document by means of the
 \texttt{asymptote} package. This approach removes the necessity to
 manually include images, but the code becomes harder to isolate.
 
-An example code snippet can look like this:
+An example code snippet might look like this:
 \begin{center}
 \begin{verbatim}
 settings.outformat = "eps";
@@ -176,7 +195,7 @@ for (int i = 0; i < points.length; ++i) {
 \end{verbatim}
 \end{center}
 
-The result of compiling this code is an Encapsulated PostScript file
+The result of compiling this code is an Encapsulated PostScript file,
 shown in Figure~\ref{fig:sample}.
 \begin{figure}
 \centering
@@ -184,8 +203,8 @@ shown in Figure~\ref{fig:sample}.
 \caption{A sample picture produced by \asy}
 \label{fig:sample}
 \end{figure}
-Take note of \asy's support of arrays and its native
-\texttt{intersectionpoints} function (whereas a \TikZ\ user would load
+Note \asy's support of arrays and its native function
+\texttt{intersectionpoints} (whereas a \TikZ\ user would load
 additional libraries to gain this functionality).
 
 \asy\ has other outstanding features such as powerful
@@ -193,14 +212,14 @@ three-dimensional drawing, rich support for mathematical functions,
 but most importantly, the ease with which the language can be extended
 or modified. In the following subsections, I will outline the most
 prominent features of my own library (which
-now counts more than 6000 lines of code) and how they allow for
+now comes to more than 6000 lines of code) and how they allow for
 effortless drawing of abstract diagrams.
 
 \subsection{Smooth objects and cross sections}
 
 As you recall, my original goal was drawing two-dimensional manifolds
 like those in Figure~\ref{fig:manifolds}, so this was the first
-functionality I programmed into my library, \smo. A simple torus can
+functionality I programmed into my library, named \smo. A simple torus can
 be drawn by writing
 \begin{verbatim}
 import smoothmanifold;
@@ -234,12 +253,11 @@ the picture in Figure~\ref{fig:torus}.
 You can see that the code is relatively high-level: instead of drawing
 cross section rings manually, we build a \emph{smooth object} with the
 \texttt{smooth} constructor, then add a hole to it with
-\texttt{addhole}, whose \texttt{sections} parameter allows to
-configure the positions of cross sections. It's not crucial for the
-reader to
-understand what exactly goes on in that \texttt{real[][]} array,
-suffice it to say that it tells \smo\ roughly where we want it to draw
-cross section rings around the given hole.
+\texttt{addhole}, whose \texttt{sections} parameter allows
+configuring the positions of cross sections. It's not crucial for the
+reader to understand what exactly goes on in that \texttt{real[][]}
+array; suffice it to say that it tells \smo\ roughly where we want it
+to draw cross section rings around the given hole.
 
 After creating the smooth object and assigning it to the
 variable \texttt{s}, we set some configuration values. The
@@ -252,14 +270,14 @@ Finally, we \texttt{draw} the smooth object, providing a \texttt{dpar}
 the object (and its cross sections) should be drawn. The
 \texttt{viewdir} parameter is the ``direction of view'', and it helps
 coordinate the widths of different cross section rings, such that
-together they create the illusion of a 3D object.
+together they create the illusion of a \acro{3D} object.
 
 Interested readers may consult page 22 of the full \smo\ manual
 \cite{manual} for more detail.
 
 \subsection{The cross section search algorithm}
 
-Although I don't wish to delve too deep into technical aspects, I think
+Although I don't wish to delve too deeply into technical aspects, I think
 the cross section search algorithm merits a short discussion. The relevant
 \smo\ function is
 \begin{verbatim}
@@ -310,32 +328,28 @@ algorithm to run in $O(n p)$ time, whereas the na\"ive implementation is
 $O(n p^2)$.
 
 One final note on the cross section mechanism concerns this ``illusion
-of 3D''. \asy\ has full support for actual 3-dimensional drawing and
-allows producing something like the torus in 
-Figure~\ref{fig:honest-torus} with relatively little effort.
+of \acro{3D}''. \asy\ has full support for actual 3-dimensional drawing
+and allows producing something like the torus in 
+Figure~\ref{fig:honest-torus} with relatively little effort. In fact,
+\asy\ even allows to embed vectorized 3D objects, either through Adobe's
+\acro{PRC} format or (since very recently) via a custom \acro{V3D}
+format \cite{v3d}.
 \begin{figure}[ht]
 \centering
 \includegraphics{figures/honest-torus.png}
 \caption{A real 3-dimensional torus}
 \label{fig:honest-torus}
 \end{figure}
-It certainly looks more realistic, but there are numerous objections
+It certainly looks more realistic, but I see two objections
 to this approach:
 
 \begin{itemize}
-  \item Despite the work done by the \asy\ team on 3-dimensional
-    vector graphics, surfaces like this still force you to use a
-    bitmap image format (the picture in Figure~\ref{fig:honest-torus}
-    is an embedded \acro{PNG} image), which is not necessarily bad,
-    but vector images are usually orders of magnitude smaller in size
-    and are more consistent with a \acro{PDF} document using a
-    vectorized font.
   \item 3-dimensional drawing in \asy\ typically requires a bit more
     work, since one has to define surfaces either with a
     mathematical function or as a surface of revolution, and one has
     to consider lighting and perspective. In Figure~\ref{fig:torus}, a torus is just two
     ellipses.
-  \item In my opinion, the 3-dimensional torus in
+  \item In my personal opinion, the 3-dimensional torus in
     Figure~\ref{fig:honest-torus} lacks some sort of ``textbook style''
     that is kept in Figure~\ref{fig:torus}.
 \end{itemize}
@@ -347,7 +361,7 @@ forgot about the library for about a year. But one day I realized that
 the \texttt{smooth} structure can be used to model not only smooth
 manifolds, but \emph{sets} in general. Consider the set-theoretic
 diagram in Figure~\ref{fig:inter} that illustrates the intersection of
-two sets.
+two sets.\looseness-1
 
 \begin{figure}[ht]
 \centering
@@ -396,7 +410,7 @@ index of the third subset, since arrays in \asy\ are zero-indexed).
 
 Why is this useful? Because now ``sets'' and ``subsets'' in your
 diagram are no longer just paths \Dash they are \asy\ objects, and
-module \smo\ provides many useful methods and functions to manipulate
+the \smo\ module provides many useful methods and functions to manipulate
 these objects. For example, the \texttt{smooth} structure has a method
 called \texttt{move} that allows one to shift, scale and rotate a
 smooth object, respecting this object's \texttt{holes} and
@@ -406,9 +420,9 @@ labels.
 \begin{figure}[ht]
 \centering
 \includegraphics{figures/move.pdf}
-\caption{Calling one method to move a smooth object along with its
+\caption{Calling one method to move a smooth object, along with its
   hole, subset, label, and cross sections}
-\label{fig:move}
+% \label{fig:move}
 \end{figure}
 
 Returning to Figure~\ref{fig:inter}, the automatic intersection of
@@ -442,23 +456,25 @@ not only to automatically construct subset intersections, but in
 general to produce new paths from old.
 
 Side note: \asy\ already has a module called \texttt{roundedpath} that
-allows to round the corners of a path, and \smo\ does not depend on
+allows rounding the corners of a path; \smo\ does not depend on
 it, instead implementing rounding directly.
 
 \subsection{Delayed drawing of paths}
 
-One of \asy's celebrated features is the so-called ``deferred
+One of \asy's celebrated features is so-called ``deferred
 drawing''. Essentially, whenever a \texttt{path} is drawn by \asy, it
-is stored in a structure of type \texttt{picture} (in particular, the
+is stored in a structure of type \texttt{picture}. In particular, the
 \texttt{draw} function has an optional argument \texttt{picture pic},
-whose default value is \texttt{currentpicture}, that allows the user to specify the picture to draw
-the path on). However, crucially, instead of directly storing the control
+whose default value is \texttt{currentpicture}, that allows the user to
+specify the picture on which to draw the path.
+
+However, crucially, instead of directly storing the control
 points of the B\'ezier spline that a \texttt{path} represents, the
 \texttt{picture} structure stores a \emph{function} which, when
-called, will actually draw the path. This function has additional
+called, will draw the path. This function has additional
 arguments whose values may not be known at the time that the user
 calls \texttt{draw}.
-This is mainly because \asy\ allows to draw paths in ``user
+This is mainly because \asy\ allows drawing paths in ``user
 coordinates'' which then have to be transformed into true PostScript
 coordinates. Since this transformation depends on the size of the
 picture, it is not known at the time of drawing any particular path.
@@ -495,7 +511,7 @@ fillfitpath(
 The \texttt{fitpath} function allows the user to ``draw a path on a
 picture and then mutate it afterwards'', for example, split it into
 two subpaths and draw each one with different pens, as in
-Figure~\ref{fig:overlap}. It also allows to leave ``gaps'' in paths
+Figure~\ref{fig:overlap}. It also allows leaving ``gaps'' in paths
 after they are drawn, as seen in Figure~\ref{fig:gaps}, which was
 generated using this code:
 \begin{verbatim}
@@ -544,12 +560,12 @@ And this is essentially all that the \texttt{fitpath} function does
 Of course, all the paths in \texttt{delayedPaths} will have to be
 drawn at some point. This is handled by the \texttt{drawdelayed}
 function which is called automatically before producing an image file
-from a \texttt{picture}, but can also be called manually by the user.
+from a \texttt{picture}, but can also be called manually by the~user.
 
 As you can see, this system is essentially a second layer of deferred
 drawing, and I call it \emph{delayed drawing} (totally not
-confusing!). In fact, it's a bit more involved than the way I explained
-it here, and interested readers may see page 4 of the \smo\ manual
+confusing!). The true implementation is a bit more involved than my
+explanation here, and interested readers may see page 4 of the \smo\ manual
 \cite{manual} for further detail.
 
 As a closing remark on this section, I'd like to show a real-world use
@@ -571,8 +587,8 @@ the lecture notes for a course in real analysis.
 
 \section{Conclusion}
 
-I have been developing and maintaining module \smo\ for close to 4
-years now, and I find it very useful whenever I have to prepare a
+For close to four years, I have been developing and maintaining the
+\smo\ module, and I find it very useful whenever I have to prepare a
 technical diagram related to higher mathematics. I cannot help but
 think that there are people who would benefit from this library as well.
 
@@ -587,12 +603,14 @@ neglecting to make many of \asy's core structures and functions
 \texttt{private}, which allows the user to perform some really dirty
 tricks and produce beautiful results.
 
-\begin{center}
-\includegraphics{figures/logo.pdf}
-\end{center}
+% \begin{center}
+% \includegraphics{figures/logo.pdf}
+% \end{center}
 
+\small
 \bibliographystyle{tugboat}
 \bibliography{main}
 
+\advance\signaturewidth by 12pt
 \makesignature
 \end{document}
