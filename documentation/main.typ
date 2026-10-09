@@ -2670,7 +2670,7 @@ Draw a number grid on the given `picture`. The `places` argument controls the nu
 ]
 
 #section("B")[
-  - `pen brighen (pen, real)` #e @pen-subsets
+  - `pen brighten (pen, real)` #e @pen-subsets
 ]
 
 #section("C")[
