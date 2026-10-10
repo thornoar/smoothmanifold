@@ -143,8 +143,8 @@ considering some of the available tools:
     \TikZ\ and its cousins, \hologo{METAPOST} is a standalone complete
     programming language with data structures and flow control (such
     as \texttt{if} statements and \texttt{for} loops). However, while
-    still perfectly usable, I would consider \hologo{METAPOST} to be
-    outdated and lacking in certain features that are present in other
+    still perfectly usable, I would consider \hologo{METAPOST} to be showing
+    its age, as it lacks certain features present in other
     drawing tools, such as native \acro{PDF} output. And besides,
     \hologo{METAPOST} turns out to have a successor which inherits its
     advantages and adds many more features.
@@ -158,7 +158,7 @@ Hammerlindl, John Bowman, and Tom Prince.
 with data structures, \IEEE\ floating-point number support, and
 control flow. But unlike \hologo{METAPOST}, it has a \relax{C}-like
 syntax and some very high-level features such as
-default arguments and first-class functions (i.e., functions that can
+default arguments and first-class functions (i.e., functions can
 be returned or passed to other functions as values).
 Readers of \TUB\ may have already read about \asy\ in
 \cite{snd} and \cite{fst}.
@@ -328,11 +328,11 @@ algorithm to run in $O(n p)$ time, whereas the na\"ive implementation is
 $O(n p^2)$.
 
 One final note on the cross section mechanism concerns this ``illusion
-of \acro{3D}''. \asy\ has full support for actual 3-dimensional drawing
+of \acro{3D}''. \asy\ has full support for true 3-dimensional drawing
 and allows producing something like the torus in 
 Figure~\ref{fig:honest-torus} with relatively little effort. In fact,
-\asy\ even allows to embed vectorized 3D objects, either through Adobe's
-\acro{PRC} format or (since very recently) via a custom \acro{V3D}
+\asy\ even allows embedding vectorized 3D objects, through either Adobe's
+\acro{PRC} format or (since very recently) its own custom \acro{V3D}
 format \cite{v3d}.
 \begin{figure}[ht]
 \centering
@@ -581,6 +581,7 @@ the lecture notes for a course in real analysis.
 \begin{figure}[ht]
 \centering
 \includegraphics{figures/inverse.pdf}
+\vspace*{-2pt}
 \caption{A construction step in the proof of the Inverse Function Theorem}
 \label{fig:inverse}
 \end{figure}
@@ -611,6 +612,7 @@ tricks and produce beautiful results.
 \bibliographystyle{tugboat}
 \bibliography{main}
 
+\vspace*{-3pt}
 \advance\signaturewidth by 12pt
 \makesignature
 \end{document}
