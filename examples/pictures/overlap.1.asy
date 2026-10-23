@@ -1,0 +1,14 @@
+import smoothmanifold;
+
+size(10 cm);
+defaultpen(.7);
+
+config.drawing.dashopacity = .2;
+config.drawing.gaplength = .05;
+config.system.insertdollars = true;
+
+smooth sm1 = samplesmooth(2).move(shift = (-.7,-.1), rotate = -40);
+smooth sm2 = samplesmooth(1,1).move(shift = (.25,-.11), rotate = -20);
+
+draw(sm1, dpar(plain));
+draw(sm2, dpar(plain));
