@@ -1,5 +1,4 @@
 import smoothmanifold;
-settings.outformat = "pdf";
 
 size(11cm);
 defaultpen(linewidth(.7pt));

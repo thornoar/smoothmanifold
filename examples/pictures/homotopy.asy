@@ -1,3 +1,5 @@
+srand(0);
+
 import smoothmanifold;
 
 config.system.insertdollars = true;
@@ -5,7 +7,6 @@ config.drawing.gaplength = 0.03;
 settings.outformat = "pdf";
 
 size(12cm);
-srand(0);
 
 pen pathpen = linewidth(.7pt);
 

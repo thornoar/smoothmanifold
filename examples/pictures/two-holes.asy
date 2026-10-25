@@ -1,0 +1,21 @@
+import smoothmanifold;
+
+settings.render = 8;
+
+size(10 cm);
+defaultpen(.7);
+
+config.system.insertdollars = true;
+
+smooth sm = samplesmooth(2);
+
+dpar ds = dpar(help = true, dash = true, viewdir = dir(-35), sectionpen = linewidth(.5));
+
+for (int mode = 0; mode < 4; ++mode)
+{
+    erase();
+    draw(sm, ds.subs(mode = mode));
+    shipout(prefix = "two-holes."+mode(mode));
+}
+
+exit();
