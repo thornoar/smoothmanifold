@@ -1417,13 +1417,16 @@ struct hole
         }
     }
 
-    hole copy ()
-    { return hole(this.contour, this.center, copy(this.sections), scnumber = this.scnumber, copy = true); }
+    hole copy () {
+        hole res = hole(this.contour, this.center, copy(this.sections), scnumber = this.scnumber, copy = true);
+        return res;
+    }
 
-    hole replicate (hole h) { 
+    hole replicate (hole h) {
         this.contour = h.contour;
         this.center = h.center;
-        this.sections = h.sections;
+        this.sections = copy(h.sections);
+        this.scnumber = h.scnumber;
 
         return this;
     }
@@ -2247,7 +2250,7 @@ struct smooth
         string destlabel,
         element elt,
         bool unit = config.smooth.unit
-    ) { return this.setelement(findlocalelementindex(destlabel), elt, unit); }
+    ) { return this.setelement(findlocalelementindex(destlabel), elt, -1, unit); }
 
     smooth setelement (
         string destlabel,
@@ -2255,7 +2258,7 @@ struct smooth
         string label = config.system.dummystring,
         pair labelalign = config.system.dummypair,
         bool unit = config.smooth.unit
-    ) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, unit); }
+    ) { return this.setelement(findlocalelementindex(destlabel), pos, label, labelalign, -1, unit); }
 
     smooth rmelement (int index) {
         this.elements.delete(index);
@@ -3122,8 +3125,10 @@ struct smooth
             this.labelalign = labelalign;
             this.holes = holecopy(holes);
             this.subsets = subsetcopy(subsets);
-            this.hratios = hratios;
-            this.vratios = vratios;
+            this.elements = elementcopy(elements);
+            this.unitadjust = shift(this.center) * scale(radius(this.contour));
+            this.hratios = copy(hratios);
+            this.vratios = copy(vratios);
             this.attached = attached;
             this.isderivative = isderivative;
             this.drawextra = drawextra;
@@ -3172,10 +3177,11 @@ struct smooth
             holes = holecopy(this.holes),
             subsets = subsetcopy(this.subsets),
             elements = elementcopy(this.elements),
-            hratios = this.hratios,
-            vratios = this.vratios,
+            hratios = copy(this.hratios),
+            vratios = copy(this.vratios),
             attached = this.attached,
             drawextra = this.drawextra,
+            isderivative = this.isderivative,
             copy = true
         );
     }
@@ -3189,9 +3195,10 @@ struct smooth
         this.subsets = subsetcopy(sm.subsets);
         this.elements = elementcopy(sm.elements);
         this.unitadjust = sm.unitadjust;
-        this.hratios = sm.hratios;
-        this.vratios = sm.vratios;
+        this.hratios = copy(sm.hratios);
+        this.vratios = copy(sm.vratios);
         this.attached = sequence(new smooth (int i){return sm.attached[i].copy();}, sm.attached.length);
+        this.isderivative = sm.isderivative;
         this.drawextra = sm.drawextra;
 
         return this;
@@ -4964,10 +4971,10 @@ void drawcommuting (
 
     pair center = (1/sms.length)*sum(sequence(new pair (int i){ return sms[i].center; }, sms.length));
     real angd2 = 40;
-    if (direction == CCW) angd2 - angd2;
+    if (direction == CCW) angd2 = -angd2;
     real deg = degrees(sms[0].center - center);
     pair vec1 = size*dir(deg - angd2);
-    pair vec2 = dir(deg + angd2);
+    pair vec2 = size*dir(deg + angd2);
 
     draw(pic, arc(center, center+vec1, center+vec2, direction), p = p, arrow = ArcArrow(SimpleHead));
 }
@@ -5165,7 +5172,7 @@ void drawarrow (
         { finish = sm2.elements[indices2[2]].pos; }
     }
 
-    drawarrow(pic, sm1, index1, start, sm2, index2, finish, curve, angle, radius, points, L, p, arrow, bar, help, overlap, drawnow, beginmargin, endmargin);
+    drawarrow(pic = pic, sm1 = sm1, index1 = index1, start = start, sm2 = sm2, index2 = index2, finish = finish, curve = curve, angle = angle, radius = radius, reverse = reverse, points = points, L = L, p = p, arrow = arrow, bar = bar, help = help, overlap = overlap, drawnow = drawnow, beginmargin = beginmargin, endmargin = endmargin);
 }
 
 void drawpath (
@@ -5256,7 +5263,24 @@ void drawpath (
         index2 = indices2[1];
     }
 
-    drawpath(pic, sm1, index1, sm2, index2, range, angle, radius, reverse, points, L, p, help, overlap, drawnow);
+    drawpath(
+        pic = pic,
+		sm1 = sm1,
+		index1 = index1,
+		sm2 = sm2,
+		index2 = index2,
+		range = range,
+		angle = angle,
+		radius = radius,
+		reverse = reverse,
+		points = points,
+		L = L,
+		p = p,
+		help = help,
+		random = config.drawing.pathrandom,
+		overlap = overlap,
+		drawnow = drawnow
+    );
 }
 
 // >drawing | delayed drawing implementation
