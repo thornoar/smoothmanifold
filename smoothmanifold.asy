@@ -1407,8 +1407,9 @@ struct hole
             this.sections = sections;
             this.scnumber = scnumber;
         } else {
-            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
-            this.center = center;
+            transform t = shift(shift)*srap(scale, rotate, point);
+            this.contour = t*contour;
+            this.center = dummy(center) ? center : t*center;
             this.scnumber = scnumber;
             this.sections = new real[][];
             for (int i = 0; i < sections.length; ++i) {
@@ -1509,8 +1510,9 @@ struct subset
             this.isderivative = isderivative;
             this.isonboundary = isonboundary;
         } else {
-            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
-            this.center = center;
+            transform t = shift(shift)*srap(scale, rotate, point);
+            this.contour = t*contour;
+            this.center = dummy(center) ? center : t*center;
             this.label = label;
             this.labeldir = labeldir;
             this.labelalign = labelalign;
@@ -2041,7 +2043,7 @@ struct smooth
         { this.elements[i].move(shift, scale, rotate, point, true); }
 
         if (drag) for (int i = 0; i < this.attached.length; ++i)
-        { this.attached[i].move(shift, scale, rotate, point, drag); }
+        { this.attached[i].move(shift, scale, rotate, point, readjust, true); }
         
         return this;
     }
