@@ -90,7 +90,7 @@
 
 #align(center)[
   #set text(size: 17pt)
-  `smoothmanifold.asy - v6.5.0` \ #v(0pt)
+  `smoothmanifold.asy - v6.6.0` \ #v(0pt)
   #set text(size: 18pt)
   Diagrams in higher mathematics with Asymptote\
   #set text(size: 14pt)

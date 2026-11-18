@@ -1,0 +1,28 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=latex 1980.1.1)  18 NOV 2026 20:15
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**\scrollmode\input \nonstopmode\input unionlabel2_.tex
+
+(/nix/store/07jmfjcx98mfa3l654m4wzihrw479rd6-texlive-combined-2025-texmfdist/te
+x/latex/tools/.tex File ignored)
+! I can't find file `unionlabel2_.tex'.
+<*> ...e\input \nonstopmode\input unionlabel2_.tex
+                                                  
+(Press Enter to retry, or Control-D to exit)
+Please type another input file name
+! Emergency stop.
+<*> ...e\input \nonstopmode\input unionlabel2_.tex
+                                                  
+*** (job aborted, file error in nonstop mode)
+
+ 
+Here is how much of TeX's memory you used:
+ 15 strings out of 467534
+ 612 string characters out of 5398151
+ 433753 words of memory out of 5000000
+ 29023 multiletter control sequences out of 15000+600000
+ 627721 words of font info for 40 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 11i,0n,13p,133b,8s stack positions out of 10000i,1000n,20000p,200000b,200000s
+No pages of output.
