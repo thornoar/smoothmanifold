@@ -340,7 +340,7 @@ string[][] ss (... string[] source)
 { return new string[][]{source}; }
 
 string repeatstring (string str, int n) {
-    if (n == 0) return "";
+    if (n <= 0) return "";
     return repeatstring(str, n-1) + str;
 }
 
@@ -348,6 +348,7 @@ string repeatstring (string str, int n) {
 
 // Same as the standard Asymptote `concat` functions, but with more than two arguments.
 pair[] concat (pair[][] a) {
+    if (a.length == 0) return new pair[];
     if (a.length == 1) return a[0];
     pair[] b = a.pop();
     return concat(concat(a), b);
@@ -360,6 +361,7 @@ path[] concat (path[][] a) {
 }
 
 real[] unitseq (real step) {
+    if (step <= 0 || step > 1) return new real[];
     real[] res;
     real cur = step;
     while (cur < 1)
