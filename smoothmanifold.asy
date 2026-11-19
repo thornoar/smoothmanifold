@@ -3125,12 +3125,12 @@ struct smooth
             this.label = label;
             this.labeldir = labeldir;
             this.labelalign = labelalign;
-            this.holes = holecopy(holes);
-            this.subsets = subsetcopy(subsets);
-            this.elements = elementcopy(elements);
+            this.holes = holes;
+            this.subsets = subsets;
+            this.elements = elements;
             this.unitadjust = shift(this.center) * scale(radius(this.contour));
-            this.hratios = copy(hratios);
-            this.vratios = copy(vratios);
+            this.hratios = hratios;
+            this.vratios = vratios;
             this.attached = attached;
             this.isderivative = isderivative;
             this.drawextra = drawextra;
@@ -3170,22 +3170,22 @@ struct smooth
     }
 
     smooth copy () {
-        return smooth(
-            contour = this.contour,
-            center = this.center,
-            label = this.label,
-            labeldir = this.labeldir,
-            labelalign = this.labelalign,
-            holes = holecopy(this.holes),
-            subsets = subsetcopy(this.subsets),
-            elements = elementcopy(this.elements),
-            hratios = copy(this.hratios),
-            vratios = copy(this.vratios),
-            attached = this.attached,
-            drawextra = this.drawextra,
-            isderivative = this.isderivative,
-            copy = true
-        );
+        smooth cpy;
+        cpy.contour = this.contour;
+        cpy.center = this.center;
+        cpy.label = this.label;
+        cpy.labeldir = this.labeldir;
+        cpy.labelalign = this.labelalign;
+        cpy.holes = holecopy(this.holes);
+        cpy.subsets = subsetcopy(this.subsets);
+        cpy.elements = elementcopy(this.elements);
+        cpy.hratios = copy(this.hratios);
+        cpy.vratios = copy(this.vratios);
+        cpy.attached = this.attached;
+        cpy.drawextra = this.drawextra;
+        cpy.isderivative = this.isderivative;
+        cpy.drawextra = this.drawextra;
+        return cpy;
     }
     smooth replicate (smooth sm) {
         this.contour = sm.contour;
