@@ -4376,8 +4376,8 @@ The `covermode` parameter needs additional explanation. It determines what happe
             for (int j = 0; j < g.length; ++j) {
                 real[] aligntest = intersect(g[j], gs);
                 if (aligntest.length == 0) {
-                    bool inside;
-                    if (!gscyclic || !(inside = inside(gs, beginpoint(g[j]))) || covermode < 3) {
+                    bool inside = false;
+                    if (!gscyclic || !(inside = inside(gs, beginpoint(g[j]))) || covermode < 2) {
                         newg.push(g[j]);
                         newunder.push(under(inside, curdp[i].under[j]));
                     }
@@ -4388,8 +4388,8 @@ The `covermode` parameter needs additional explanation. It determines what happe
 
                 real[] cuttimes = new real[] {0};
                 bool[] skipped = array(2*(times.length+1), value = false);
-                real t1;
-                real t2;
+                real t1 = 0;
+                real t2 = 0;
                 real t3 = -1;
 
                 gjcyclic = gjcyclic && cyclic(g[j]);
@@ -4423,7 +4423,6 @@ The `covermode` parameter needs additional explanation. It determines what happe
                     cuttimes.pop();
                 } else if (t3 >= 0) {
                     if (t3 <= t2) cuttimes.pop();
-                    // else cuttimes.insert(cuttimes.length-1, t3);
                     else cuttimes.push(t3);
                 } else if (cuttimes.length % 2 == 1) {
                     if (gjcyclic)
@@ -5301,6 +5300,9 @@ void drawdelayed (
 
         int startind = 0;
         int finishind = g.length-1;
+    
+        if (finishind < startind) return;
+
         pen underp = underpen(p);
 
         bool beginarrow = arrow == null || arrow.begin;
@@ -5321,6 +5323,7 @@ void drawdelayed (
             finishind -= 1;
         }
         else if (!endarrow && !endbar) {
+            write("hi");
             draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             startind += 1;
         }
