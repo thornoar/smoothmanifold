@@ -1420,10 +1420,8 @@ struct hole
         }
     }
 
-    hole copy () {
-        hole res = hole(this.contour, this.center, copy(this.sections), scnumber = this.scnumber, copy = true);
-        return res;
-    }
+    hole copy ()
+    { return hole(this.contour, this.center, copy(this.sections), scnumber = this.scnumber, copy = true); }
 
     hole replicate (hole h) {
         this.contour = h.contour;
