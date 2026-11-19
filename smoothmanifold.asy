@@ -4975,7 +4975,7 @@ void drawcommuting (
     if (direction == CCW) angd2 = -angd2;
     real deg = degrees(sms[0].center - center);
     pair vec1 = size*dir(deg - angd2);
-    pair vec2 = size*dir(deg + angd2);
+    pair vec2 = dir(deg + angd2);
 
     draw(pic, arc(center, center+vec1, center+vec2, direction), p = p, arrow = ArcArrow(SimpleHead));
 }
