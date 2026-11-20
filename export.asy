@@ -32,7 +32,7 @@ struct exportanimationconfig {
     string outformat = "mp4";
     bool close = true;
     int messagelength = 50;
-    string listfilename = ".animation_input_list.txt";
+    string listfilename = "animation_input_list.txt";
 }
 
 struct exportconfig {
@@ -151,13 +151,28 @@ void export(
     void localshipout (string prefix1)
     {
         if (plainforce || (xmargin == 0 && ymargin == 0 && bgpen == nullpen && framepen == nullpen))
-        { plainshipout(prefix = prefix1, pic1, orientation, wait, view, options, script, light, P); }
+        { plainshipout(
+            prefix = prefix1,
+            pic = pic1,
+            orntn = orientation,
+            wait = wait,
+            view = view,
+            options = options,
+            script = script,
+            lt = light,
+            P = P
+        ); }
         else
         {
             shipout(
                 prefix = prefix1,
                 bbox(pic1, xmargin = xmargin, ymargin = ymargin, p = framepen, filltype = (bgpen == nullpen ? NoFill : Fill(p = bgpen))),
-                wait, view, options, script, light, P
+                wait = wait,
+                view = view,
+                options = options,
+                script = script,
+                light = light,
+                P = P
             );
         }
     }
