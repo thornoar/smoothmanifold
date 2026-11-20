@@ -1796,35 +1796,35 @@ struct dpar
         bool drawextraover = this.drawextraover
     ) // Create a new dpar with some attributes changed.
     {
-        this.contourpen = contourpen;
-        this.smoothfill = smoothfill;
-        this.subsetcontourpens = subsetcontourpens;
-        this.subsetfill = subsetfill;
-        this.sectionpen = sectionpen;
-        this.dashpen = dashpen;
-        this.shadepen = shadepen;
-        this.elementpen = elementpen;
-        this.labelpen = labelpen;
-        this.elementlabelpens = elementlabelpens;
-        this.subsetlabelpens = subsetlabelpens;
-        this.mode = mode;
-        this.viewdir = viewdir;
-        this.drawlabels = drawlabels;
-        this.fill = fill;
-        this.fillsubsets = fillsubsets;
-        this.drawcontour = drawcontour;
-        this.drawsubsetcontour = drawsubsetcontour;
-        this.subsetcovermode = subsetcovermode;
-        this.help = help;
-        this.dash = dash;
-        this.shade = shade;
-        this.avoidsubsets = avoidsubsets;
-        this.overlap = overlap;
-        this.smoothoverlap = smoothoverlap;
-        this.drawnow = drawnow;
-        this.drawextraover = drawextraover;
-
-        return this;
+        return dpar(
+            contourpen = contourpen,
+            smoothfill = smoothfill,
+            subsetcontourpens = subsetcontourpens,
+            subsetfill = subsetfill,
+            sectionpen = sectionpen,
+            dashpen = dashpen,
+            shadepen = shadepen,
+            elementpen = elementpen,
+            labelpen = labelpen,
+            elementlabelpens = elementlabelpens,
+            subsetlabelpens = subsetlabelpens,
+            mode = mode,
+            viewdir = viewdir,
+            drawlabels = drawlabels,
+            fill = fill,
+            fillsubsets = fillsubsets,
+            drawcontour = drawcontour,
+            drawsubsetcontour = drawsubsetcontour,
+            subsetcovermode = subsetcovermode,
+            help = help,
+            dash = dash,
+            shade = shade,
+            avoidsubsets = avoidsubsets,
+            overlap = overlap,
+            smoothoverlap = smoothoverlap,
+            drawnow = drawnow,
+            drawextraover = drawextraover
+        );
     }
 }
 
@@ -2875,8 +2875,9 @@ struct smooth
         int[] indices,
         bool recursive = true
     ) {
-        for (int i = indices.length-1; i >= 0; i -= 1)
-        { this.rmsubset(indices[i], recursive); }
+        int[] sorted = sort(indices);
+        for (int i = sorted.length-1; i >= 0; i -= 1)
+        { this.rmsubset(sorted[i], recursive); }
         return this;
     }
 
@@ -3138,8 +3139,9 @@ struct smooth
             if (scale <= 0)
             { halt("Could not build: scale value must be positive. [ smooth() ]"); }
             
-            this.contour = shift(shift)*srap(scale, rotate, point)*contour;
-            this.center = shift(shift)*center;
+            transform t = shift(shift)*srap(scale, rotate, point);
+            this.contour = t*contour;
+            this.center = t*center;
             if (!config.system.repeatlabels && label != "" && smooth.repeats(label)) {
                 halt("Could not build smooth object: entities with label \""+label+"\" already present. [ smooth() ]");
             }
@@ -3170,22 +3172,22 @@ struct smooth
     }
 
     smooth copy () {
-        smooth cpy;
-        cpy.contour = this.contour;
-        cpy.center = this.center;
-        cpy.label = this.label;
-        cpy.labeldir = this.labeldir;
-        cpy.labelalign = this.labelalign;
-        cpy.holes = holecopy(this.holes);
-        cpy.subsets = subsetcopy(this.subsets);
-        cpy.elements = elementcopy(this.elements);
-        cpy.hratios = copy(this.hratios);
-        cpy.vratios = copy(this.vratios);
-        cpy.attached = this.attached;
-        cpy.drawextra = this.drawextra;
-        cpy.isderivative = this.isderivative;
-        cpy.drawextra = this.drawextra;
-        return cpy;
+        return smooth(
+            contour = this.contour,
+            center = this.center,
+            label = this.label,
+            labeldir = this.labeldir,
+            labelalign = this.labelalign,
+            holes = holecopy(this.holes),
+            subsets = subsetcopy(this.subsets),
+            elements = elementcopy(this.elements),
+            hratios = copy(this.hratios),
+            vratios = copy(this.vratios),
+            attached = this.attached,
+            isderivative = this.isderivative,
+            drawextra = this.drawextra,
+            copy = true
+        );
     }
     smooth replicate (smooth sm) {
         this.contour = sm.contour;
@@ -4261,6 +4263,8 @@ smooth unite (
 ) // An alternative to `union` that only returns one smooth object, if there is only one.
 {
     smooth[] union = union(sms, keepdata, round, roundcoeff);
+    if (union.length < 1)
+    { halt("empty array of `smooth` objects. [ unite() ]"); }
     if (union.length > 1) 
     { write("> ? Union produced more than one object. Returning only the 0-th one. [ unite() ]"); }
     return union[0];
@@ -5321,7 +5325,6 @@ void drawdelayed (
             finishind -= 1;
         }
         else if (!endarrow && !endbar) {
-            write("hi");
             draw(pic = pic, g[0], p = under[0] > 0 ? underp : p, arrow = truearrow, bar = truebar);
             startind += 1;
         }
