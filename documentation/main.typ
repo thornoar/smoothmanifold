@@ -374,8 +374,9 @@ This function returns an array of paths because the combination of two bounded r
         drawpen = linewidth(.7),
         fillpen = palegrey
     );
+
     <...>
-    <...>
+
     filldraw(
         combination(p, q, 1, true, .04), // <- yes rounding
         drawpen = linewidth(.7),

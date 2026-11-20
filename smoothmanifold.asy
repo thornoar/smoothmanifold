@@ -2048,21 +2048,27 @@ struct smooth
 
     void xscale (real s)
     {
+        transform t = scale(s,1);
+
         pair center = this.center;
         this.move(shift = -center, drag = false);
-        this.contour = scale(s,1)*this.contour;
+        this.contour = t*this.contour;
+        this.labeldir = t*this.labeldir;
         
         for (hole hl : this.holes) {
-            hl.contour = scale(s,1)*hl.contour;
-            hl.center = scale(s,1)*hl.center;
+            hl.contour = t*hl.contour;
+            hl.center = t*hl.center;
 
             for (real[] sc : hl.sections)
-            { sc[0] = degrees(scale(s,1)*dir(sc[0])); }
+            { sc[0] = degrees(t*dir(sc[0])); }
         }
         for (subset sb : this.subsets) {
-            sb.contour = scale(s,1) * sb.contour;
-            sb.center = scale(s,1) * sb.center;
-            sb.labeldir = scale(1,s) * sb.labeldir;
+            sb.contour = t * sb.contour;
+            sb.center = t * sb.center;
+            sb.labeldir = t * sb.labeldir;
+        }
+        for (element elt : this.elements) {
+            elt.pos = t * elt.pos;
         }
 
         this.move(shift = center, drag = false);
@@ -2495,7 +2501,7 @@ struct smooth
         pair point = this.holes[index].center,
         bool movesections = false
     ) {
-        transform t = srap(scale, rotate, point) * shift(shift);
+        transform t = shift(shift) * srap(scale, rotate, point);
         path newcontour = t * this.holes[index].contour;
 
         bool outofbounds = false;
@@ -3962,8 +3968,10 @@ smooth[] intersection (
         for (int i = 0; i < cursm.subsets.length; ++i) {
             if (cursm.subsets[i].layer > 0) break;
 
-            if (!inside(cursm.contour, cursm.subsets[i].center))
-            { subsetdelete(cursm.subsets, i, true); }
+            if (!inside(cursm.contour, cursm.subsets[i].center)) {
+                subsetdelete(cursm.subsets, i, true);
+                i -= 1;
+            }
         }
 
         bool[] subsetsadded = array(subsets2.length, false);
@@ -4275,7 +4283,7 @@ smooth unite (
     bool round = false,
     real roundcoeff = config.paths.roundcoeff
     ... smooth[] sms
-) { return union(sms, keepdata, round, roundcoeff)[0]; }
+) { return unite(sms, keepdata, round, roundcoeff); }
 
 smooth operator + (smooth sm1, smooth sm2) { return unite(sm1, sm2); }
 
